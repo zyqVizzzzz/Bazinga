@@ -2,14 +2,18 @@
 	<div class="container mx-auto my-10 p-6">
 		<!-- 顶部标题 -->
 		<div class="flex justify-between items-center mb-6">
-			<h1 class="text-3xl font-bold text-primary">{{ scene.title }}</h1>
+			<h1 class="text-3xl font-bold text-primary">S01-E01</h1>
 			<button class="btn btn-secondary" @click="goBack">Back</button>
 		</div>
 
 		<!-- 台词展示部分 -->
 		<transition
 			:name="
-				slideDirection === 'right' ? 'fade-slide-right' : 'fade-slide-left'
+				!isFirstLoad
+					? slideDirection === 'right'
+						? 'fade-slide-right'
+						: 'fade-slide-left'
+					: ''
 			"
 			mode="out-in"
 		>
@@ -20,12 +24,11 @@
 					style="height: 500px"
 				>
 					<div class="card-body justify-center relative">
-						<!-- 添加 transition 组件 -->
-
 						<!-- 提示灯图标 -->
 						<div
 							class="absolute top-7 right-6 cursor-pointer"
 							@click="toggleHints"
+							v-if="currentKnowledgePoints.length > 0"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -42,14 +45,25 @@
 								/>
 							</svg>
 						</div>
-						<h2 class="card-title text-accent">Dialogue</h2>
-						<p class="text-lg flex justify-center items-center my-8">
+						<h2 class="card-title text-accent">{{ scene.title }}</h2>
+						<!-- 图片 -->
+						<p class="text-lg flex-col items-center justify-center items-center mt-8">
 							<img
 								:src="currentDialogue.img"
 								alt="Dialogue Image"
-								width="25%"
+								class="text-sm font-cute w-1/5 mx-auto text-center"
 							/>
+							<!-- Character 和 Emotion -->
+						<p
+							v-if="currentDialogue.meta"
+							class="text-sm font-cute w-2/3 mx-auto text-neutral-400	 text-center"
+						>
+							<strong>{{ currentDialogue.meta.character + " " }}</strong>
+							<span>{{ emotionEmoji }}</span>
 						</p>
+						</p>
+						
+						<!-- 台词文本 -->
 						<p class="text-lg my-3 font-cute w-2/3 mx-auto">
 							{{ currentDialogue.text }}
 						</p>
@@ -104,7 +118,7 @@
 		</transition>
 
 		<!-- Tabs 部分 -->
-		<div v-if="showHints" class="tabs mb-6">
+		<div v-if="showHints && currentKnowledgePoints.length > 0" class="tabs mb-6">
 			<a
 				href="#"
 				class="tab tab-bordered"
@@ -125,7 +139,7 @@
 
 		<!-- Knowledge Card 展示 -->
 		<div
-			v-if="showHints && activeTab === 'knowledge'"
+			v-if="showHints && activeTab === 'knowledge' && currentKnowledgePoints.length > 0"
 			class="grid grid-cols-1 md:grid-cols-2 gap-4"
 		>
 			<div
@@ -229,7 +243,6 @@ const toggleHints = () => {
 // 获取当前台词
 const currentDialogue = computed(() => {
 	// 检查 dialogues 是否有内容
-	console.log(dialogues.value[currentDialogueIndex.value]);
 	return dialogues.value.length > 0
 		? dialogues.value[currentDialogueIndex.value]
 		: {};
@@ -237,12 +250,13 @@ const currentDialogue = computed(() => {
 
 // 区分动画方向
 const slideDirection = ref("right");
-
+const isFirstLoad = ref(true); // 只有在第一次点击箭头的时候才会载入动画，避免第一张图片出现动画
 // 导航台词
 const nextDialogue = () => {
 	if (currentDialogueIndex.value < dialogues.value.length - 1) {
 		slideDirection.value = "right"; // 设置方向为向右
 		currentDialogueIndex.value++;
+		isFirstLoad.value = false;
 	}
 };
 
@@ -295,65 +309,81 @@ const activeTab = ref("knowledge");
 const goBack = () => {
 	router.push("/");
 };
+
+const emotionEmoji = computed(() => {
+	if (!currentDialogue.value.meta) return "";
+	const emotion = currentDialogue.value.meta.emotion;
+	switch (emotion) {
+		case "proud":
+			return "😌"; // Proud emoji
+		case "happy":
+			return "😊"; // Happy emoji
+		case "sad":
+			return "😢"; // Sad emoji
+		case "angry":
+			return "😠"; // Angry emoji
+		case "excited":
+			return "😆"; // Excited emoji
+		case "confused":
+			return "😕"; // Confused emoji
+		case "playful":
+			return "😜"; // Playful emoji
+		// 其他情感对应的表情符号
+		default:
+			return ""; // 默认情况下不显示表情符号
+	}
+});
 </script>
 <style scoped>
-/* 右侧滑动过渡效果 */
+/* 右箭头 - 当前卡片向左滑出，下一张渐显 */
 .fade-slide-right-enter-active,
 .fade-slide-right-leave-active {
-	@apply transition duration-500 ease-in-out;
+	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 .fade-slide-right-enter-from {
-	@apply opacity-0 translate-x-full;
+	transform: translateX(30%);
+	opacity: 0;
 }
 
 .fade-slide-right-enter-to {
-	@apply opacity-100 translate-x-0;
+	transform: translateX(0);
+	opacity: 1;
 }
 
 .fade-slide-right-leave-from {
-	@apply opacity-100 translate-x-0;
+	transform: translateX(0);
+	opacity: 1;
 }
 
 .fade-slide-right-leave-to {
-	@apply opacity-0 -translate-x-full;
+	transform: translateX(-30%);
+	opacity: 0;
 }
 
-/* 左侧滑动过渡效果 */
+/* 左箭头 - 当前卡片从左侧滑入，下一张渐隐 */
 .fade-slide-left-enter-active,
 .fade-slide-left-leave-active {
-	@apply transition duration-500 ease-in-out;
+	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 .fade-slide-left-enter-from {
-	@apply opacity-0 -translate-x-full;
+	transform: translateX(-30%);
+	opacity: 0;
 }
 
 .fade-slide-left-enter-to {
-	@apply opacity-100 translate-x-0;
+	transform: translateX(0);
+	opacity: 1;
 }
 
 .fade-slide-left-leave-from {
-	@apply opacity-100 translate-x-0;
+	transform: translateX(0);
+	opacity: 1;
 }
 
 .fade-slide-left-leave-to {
-	@apply opacity-0 translate-x-full;
-}
-.fade-slide-right-enter-active {
-	@apply transition-all duration-[400ms] ease-in-out;
-}
-
-.fade-slide-right-leave-active {
-	@apply transition-all duration-[100ms] ease-in-out;
-}
-
-/* 同样对左侧滑动过渡效果进行调整 */
-.fade-slide-left-enter-active {
-	@apply transition-all duration-[400ms] ease-in-out;
-}
-
-.fade-slide-left-leave-active {
-	@apply transition-all duration-[100ms] ease-in-out;
+	transform: translateX(30%);
+	opacity: 0;
 }
 </style>
