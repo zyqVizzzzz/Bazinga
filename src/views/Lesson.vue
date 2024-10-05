@@ -3,7 +3,7 @@
 		<!-- 顶部标题 -->
 		<div class="flex justify-between items-center mb-6">
 			<h1 class="text-3xl font-bold text-primary">S01-E01</h1>
-			<button class="btn btn-error" @click="goBack">Back</button>
+			<button class="btn btn-neutral-content" @click="goBack">Back</button>
 		</div>
 
 		<transition
@@ -26,16 +26,19 @@
 						<!-- 提示灯图标 -->
 						<h2 class="card-title text-accent relative mb-5">
 							{{ scene.title }}
+							<div class="absolute right-0 cursor-pointer" @click="toggleTrans">
+								<TransIcon :showTrans="showTrans" />
+							</div>
 							<div
-								class="absolute right-10 cursor-pointer"
+								class="absolute right-20 cursor-pointer"
 								@click="toggleHints"
 								v-if="currentKnowledgePoints.length > 0"
 							>
 								<LightIcon :showHints="showHints" />
 							</div>
 							<div
-								class="absolute right-0 cursor-pointer"
-								@click="toggleHints"
+								class="absolute right-10 cursor-pointer"
+								@click="togglePractice"
 								v-if="currentKnowledgePoints.length > 0"
 							>
 								<PracticeIcon :showPractice="showPractice" />
@@ -79,13 +82,16 @@
 								</p>
 
 								<!-- 台词文本 -->
-								<!-- <p class="text-lg my-8 font-cute w-2/3 mx-auto">
-									{{ currentDialogue.text }}
-								</p> -->
 								<p
-									class="text-lg my-8 font-cute w-2/3 mx-auto"
+									class="text-lg mt-8 mb-4 font-cute w-4/5 mx-auto"
 									v-html="highlightedText"
 								></p>
+								<p
+									v-if="showTrans"
+									class="china-font w-4/5 mx-auto text-sm italic text-neutral-400"
+								>
+									{{ currentDialogue.text_zh }}
+								</p>
 							</div>
 
 							<!-- 知识点展示 -->
@@ -95,36 +101,36 @@
 							>
 								<KnowledgeCard
 									:currentKnowledgePoints="currentKnowledgePoints"
+									:showTrans="showTrans"
 									@on-slide-change="handleSlideChange"
 								/>
 							</div>
 						</div>
 
 						<!-- 左右箭头按钮 -->
-						<div class="card-actions justify-between mt-4">
-							<button
-								class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost"
-								@click="prevDialogue"
-								:disabled="currentDialogueIndex.value === 0"
-							>
-								<LeftArrowIcon />
-							</button>
-							<button
-								class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost"
-								@click="nextDialogue"
-								:disabled="currentDialogueIndex.value === dialogues.length - 1"
-							>
-								<RightArrowIcon />
-							</button>
-						</div>
 					</div>
 				</div>
 			</div>
 		</transition>
-
+		<div class="card-actions justify-between mt-4 w-1/5 mx-auto">
+			<button
+				class="transform btn btn-primary btn-ghost px-4"
+				@click="prevDialogue"
+				:disabled="currentDialogueIndex === 0"
+			>
+				<LeftArrowIcon class="w-6 h-6" />
+			</button>
+			<button
+				class="transform btn btn-primary btn-ghost px-4"
+				@click="nextDialogue"
+				:disabled="currentDialogueIndex === dialogues.length - 1"
+			>
+				<RightArrowIcon class="w-6 h-6" />
+			</button>
+		</div>
 		<!-- Practice 部分 -->
 		<div
-			v-if="showHints && activeTab === 'practice' && currentPractice.length > 0"
+			v-if="showPractice && currentPractice.length > 0"
 			class="card w-full bg-base-100 shadow-lg"
 		>
 			<div class="card-body">
@@ -167,10 +173,8 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { Swiper, SwiperSlide } from "swiper/vue";
-import "swiper/swiper-bundle.css";
-import { Pagination } from "swiper/modules";
 import LightIcon from "../components/icons/Light.vue";
+import TransIcon from "../components/icons/Language.vue";
 import PracticeIcon from "../components/icons/Practice.vue";
 import LeftArrowIcon from "../components/icons/LeftArrow.vue";
 import RightArrowIcon from "../components/icons/RightArrow.vue";
@@ -209,10 +213,19 @@ onMounted(async () => {
 // 控制 Tabs 显示状态
 const showHints = ref(false);
 const showPractice = ref(false);
+const showTrans = ref(false);
 
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
 	showHints.value = !showHints.value;
+};
+
+const toggleTrans = () => {
+	showTrans.value = !showTrans.value;
+};
+
+const togglePractice = () => {
+	showPractice.value = !showPractice.value;
 };
 
 // 获取当前台词
@@ -232,6 +245,7 @@ const nextDialogue = () => {
 		slideDirection.value = "right"; // 设置方向为向右
 		currentDialogueIndex.value++;
 		isFirstLoad.value = false;
+		resetKnowledgeIndex(); // 重置知识点索引
 	}
 };
 
@@ -239,7 +253,14 @@ const prevDialogue = () => {
 	if (currentDialogueIndex.value > 0) {
 		slideDirection.value = "left"; // 设置方向为向左
 		currentDialogueIndex.value--;
+		resetKnowledgeIndex(); // 重置知识点索引
 	}
+};
+
+// 重置知识点索引方法
+const resetKnowledgeIndex = () => {
+	// 确保 `currentKnowledgePoints` 已更新
+	currentKnowledgeIndex.value = 0;
 };
 
 // 动态获取当前台词的知识点
@@ -320,11 +341,18 @@ const highlightedText = computed(() => {
 	const currentPoint =
 		currentKnowledgePoints.value[currentKnowledgeIndex.value];
 
-	// 高亮当前知识点的标题在文本中的匹配
-	if (text.includes(currentPoint.name)) {
+	// 增加安全检查，确保 `currentPoint` 存在
+	if (
+		currentPoint &&
+		currentPoint.name &&
+		typeof currentPoint.name === "string" &&
+		text.toLowerCase().includes(currentPoint.name.toLowerCase())
+	) {
 		const regex = new RegExp(`(${currentPoint.name})`, "gi"); // 使用正则表达式查找匹配，忽略大小写
 		// 使用 <span> 包裹匹配项，添加下划线样式
 		text = text.replace(regex, '<mark class="pink">$1</mark>');
+	} else {
+		return currentDialogue.value.text;
 	}
 
 	return text;

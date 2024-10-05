@@ -3,7 +3,7 @@
 	<Swiper
 		ref="mySwiper"
 		:modules="[Pagination]"
-		:loop="true"
+		:loop="currentKnowledgePoints.length > 1 ? true : false"
 		:slides-per-view="1"
 		space-between="30"
 		:pagination="pagination"
@@ -16,14 +16,20 @@
 			class="flex justify-center items-center h-full"
 		>
 			<div
-				class="knowledge-card overflow-hidden card w-2/3 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
+				class="knowledge-card overflow-hidden card w-4/5 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
 			>
 				<div class="card-body">
 					<h3 class="card-title text-secondary">
 						{{ point.name }}
 					</h3>
-					<p class="text-left font-extralight">
+					<p v-if="!showTrans" class="text-left text-base font-extralight">
 						{{ point.desc }}
+					</p>
+					<p
+						v-if="showTrans"
+						class="china-font text-left text-sm font-extralight"
+					>
+						{{ point.desc_zh }}
 					</p>
 				</div>
 				<div
@@ -52,6 +58,7 @@ const pagination = {
 
 defineProps({
 	currentKnowledgePoints: Object,
+	showTrans: Boolean,
 });
 
 // 当前知识点卡片索引
@@ -77,7 +84,7 @@ const addNote = (point) => {
 	background: rgba(0, 0, 0, 0.1);
 	cursor: pointer;
 	transition: opacity 0.3s ease-in-out;
-	color: #fbbf24;
+	color: #f6d860;
 	display: flex;
 	align-items: center;
 	justify-content: center;

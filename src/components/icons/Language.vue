@@ -4,8 +4,8 @@
 		fill="none"
 		viewBox="0 0 24 24"
 		stroke-width="1.5"
-		stroke="currentColor"
-		class="size-6"
+		:stroke="showTrans ? '#3d4451' : '#9ca3af'"
+		class="size-5"
 	>
 		<path
 			stroke-linecap="round"
@@ -14,3 +14,8 @@
 		/>
 	</svg>
 </template>
+<script setup>
+defineProps({
+	showTrans: Boolean,
+});
+</script>

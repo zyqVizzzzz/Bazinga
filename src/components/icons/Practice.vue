@@ -5,7 +5,7 @@
 		viewBox="0 0 24 24"
 		stroke-width="1.5"
 		:stroke="showPractice ? '#fcd34d' : '#9ca3af'"
-		class="size-6"
+		class="size-5"
 	>
 		<path
 			stroke-linecap="round"

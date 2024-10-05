@@ -13,7 +13,7 @@
 .swiper-pagination-bullet {
 	width: 10px;
 	height: 10px;
-	background: #944efc !important;
+	background: oklch(69.71% 0.329 342.55 / 1) !important;
 	border-radius: 50%;
 	margin: 0 5px;
 	cursor: pointer;
@@ -23,4 +23,7 @@ mark.pink {
 	background: none;
 	margin: 0 -2px;
 	padding: 0 2px;
+}
+.china-font {
+	font-family: "KaiTi SC";
 }

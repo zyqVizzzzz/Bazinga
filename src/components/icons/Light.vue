@@ -4,8 +4,8 @@
 		fill="none"
 		viewBox="0 0 24 24"
 		stroke-width="1.5"
-		:stroke="showHints ? '#fcd34d' : '#9ca3af'"
-		class="w-6 h-6 transition-colors duration-300"
+		:stroke="showHints ? '#3d4451' : '#9ca3af'"
+		class="w-5 h-5 transition-colors duration-300"
 	>
 		<path
 			stroke-linecap="round"
