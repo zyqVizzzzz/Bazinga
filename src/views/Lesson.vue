@@ -6,7 +6,6 @@
 			<button class="btn btn-secondary" @click="goBack">Back</button>
 		</div>
 
-		<!-- 台词展示部分 -->
 		<transition
 			:name="
 				!isFirstLoad
@@ -21,52 +20,101 @@
 			<div :key="currentDialogue.id">
 				<div
 					class="card w-full bg-base-100 shadow-lg mb-6 h-100 overflow-y-auto"
-					style="height: 500px"
+					style="min-height: 500px"
 				>
-					<div class="card-body justify-center relative">
+					<div class="card-body">
 						<!-- 提示灯图标 -->
-						<div
-							class="absolute top-7 right-6 cursor-pointer"
-							@click="toggleHints"
-							v-if="currentKnowledgePoints.length > 0"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								:stroke="showHints ? '#fcd34d' : '#9ca3af'"
-								class="w-6 h-6 transition-colors duration-300"
+						<h2 class="card-title text-accent relative mb-5">
+							{{ scene.title }}
+							<div
+								class="absolute right-0 cursor-pointer"
+								@click="toggleHints"
+								v-if="currentKnowledgePoints.length > 0"
 							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-								/>
-							</svg>
-						</div>
-						<h2 class="card-title text-accent">{{ scene.title }}</h2>
-						<!-- 图片 -->
-						<p class="text-lg flex-col items-center justify-center items-center mt-8">
-							<img
-								:src="currentDialogue.img"
-								alt="Dialogue Image"
-								class="text-sm font-cute w-1/5 mx-auto text-center"
-							/>
-							<!-- Character 和 Emotion -->
-						<p
-							v-if="currentDialogue.meta"
-							class="text-sm font-cute w-2/3 mx-auto text-neutral-400	 text-center"
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									:stroke="showHints ? '#fcd34d' : '#9ca3af'"
+									class="w-6 h-6 transition-colors duration-300"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+									/>
+								</svg>
+							</div>
+						</h2>
+						<!-- 卡片内容部分 -->
+						<div
+							class="card-content flex items-stretch"
+							style="min-height: 400px"
 						>
-							<strong>{{ currentDialogue.meta.character + " " }}</strong>
-							<span>{{ emotionEmoji }}</span>
-						</p>
-						</p>
-						
-						<!-- 台词文本 -->
-						<p class="text-lg my-3 font-cute w-2/3 mx-auto">
-							{{ currentDialogue.text }}
-						</p>
+							<!-- 台词部分 -->
+							<div
+								:class="
+									showHints && currentKnowledgePoints.length > 0
+										? 'w-3/5'
+										: 'w-full'
+								"
+								class="card-dialogue transition-all duration-300"
+							>
+								<p
+									class="text-lg flex-col items-center justify-center items-center mt-8"
+								>
+									<img
+										:src="currentDialogue.img"
+										alt="Dialogue Image"
+										class="text-sm font-cute mx-auto text-center"
+										:class="
+											showHints && currentKnowledgePoints.length > 0
+												? 'w-1/3'
+												: 'w-1/4'
+										"
+									/>
+									<!-- Character 和 Emotion -->
+								</p>
+								<p
+									v-if="currentDialogue.meta"
+									class="text-sm font-cute w-2/3 mx-auto text-neutral-400 text-center"
+								>
+									<strong>{{ currentDialogue.meta.character + " " }}</strong>
+									<span>{{ emotionEmoji }}</span>
+								</p>
+
+								<!-- 台词文本 -->
+								<p class="text-lg my-8 font-cute w-2/3 mx-auto">
+									{{ currentDialogue.text }}
+								</p>
+							</div>
+
+							<!-- 知识点部分 -->
+							<div
+								v-if="showHints && currentKnowledgePoints.length > 0"
+								class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l"
+							>
+								<div
+									class="card w-2/3 bg-base-100 shadow-lg mb-4 h-full mx-auto"
+								>
+									<div class="card-body">
+										<h3 class="card-title text-secondary justify-center">
+											{{ currentKnowledgePoints[0].name }}
+										</h3>
+										<p>{{ currentKnowledgePoints[0].desc }}</p>
+										<button
+											class="btn btn-sm btn-outline btn-primary"
+											@click="addNote(currentKnowledgePoints[0])"
+										>
+											Save to Notebook
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- 左右箭头按钮 -->
 						<div class="card-actions justify-between mt-4">
 							<!-- Prev 按钮 - 左箭头 -->
 							<button
@@ -118,7 +166,10 @@
 		</transition>
 
 		<!-- Tabs 部分 -->
-		<div v-if="showHints && currentKnowledgePoints.length > 0" class="tabs mb-6">
+		<div
+			v-if="showHints && currentKnowledgePoints.length > 0"
+			class="tabs mb-6"
+		>
 			<a
 				href="#"
 				class="tab tab-bordered"
@@ -139,7 +190,11 @@
 
 		<!-- Knowledge Card 展示 -->
 		<div
-			v-if="showHints && activeTab === 'knowledge' && currentKnowledgePoints.length > 0"
+			v-if="
+				showHints &&
+				activeTab === 'knowledge' &&
+				currentKnowledgePoints.length > 0
+			"
 			class="grid grid-cols-1 md:grid-cols-2 gap-4"
 		>
 			<div
