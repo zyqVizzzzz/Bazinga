@@ -27,7 +27,7 @@
 						<h2 class="card-title text-accent relative mb-5">
 							{{ scene.title }}
 							<div
-								class="absolute right-0 cursor-pointer"
+								class="absolute right-10 cursor-pointer"
 								@click="toggleHints"
 								v-if="currentKnowledgePoints.length > 0"
 							>
@@ -46,6 +46,26 @@
 									/>
 								</svg>
 							</div>
+							<div
+								class="absolute right-0 cursor-pointer"
+								@click="toggleHints"
+								v-if="currentKnowledgePoints.length > 0"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									:stroke="showPractice ? '#fcd34d' : '#9ca3af'"
+									class="size-6"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+									/>
+								</svg>
+							</div>
 						</h2>
 						<!-- 卡片内容部分 -->
 						<div
@@ -59,7 +79,7 @@
 										? 'w-3/5'
 										: 'w-full'
 								"
-								class="card-dialogue transition-all duration-300"
+								class="card-dialogue transition-all duration-500"
 							>
 								<p
 									class="text-lg flex-col items-center justify-center items-center mt-8"
@@ -90,7 +110,7 @@
 								</p>
 							</div>
 
-							<!-- 知识点部分 -->
+							<!-- Knowledge Card 展示 -->
 							<div
 								v-if="showHints && currentKnowledgePoints.length > 0"
 								class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
@@ -111,19 +131,32 @@
 										class="flex justify-center items-center h-full"
 									>
 										<div
-											class="card w-2/3 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto"
+											class="knowledge-card overflow-hidden card w-2/3 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
 										>
 											<div class="card-body">
 												<h3 class="card-title text-secondary justify-center">
 													{{ point.name }}
 												</h3>
 												<p>{{ point.desc }}</p>
-												<!-- <button
-													class="btn btn-sm btn-outline btn-primary"
-													@click="addNote(point)"
+											</div>
+											<div
+												class="knowledge-card-star text-center opacity-0 duration-300 cursor-pointer"
+												@click="addNote(point)"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke-width="1.5"
+													stroke="currentColor"
+													class="size-6"
 												>
-													Save to Notebook
-												</button> -->
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+													/>
+												</svg>
 											</div>
 										</div>
 									</SwiperSlide>
@@ -182,58 +215,6 @@
 				</div>
 			</div>
 		</transition>
-
-		<!-- Tabs 部分 -->
-		<div
-			v-if="showHints && currentKnowledgePoints.length > 0"
-			class="tabs mb-6"
-		>
-			<a
-				href="#"
-				class="tab tab-bordered"
-				:class="{ 'tab-active': activeTab === 'knowledge' }"
-				@click.prevent="activeTab = 'knowledge'"
-			>
-				Knowledge Points
-			</a>
-			<a
-				href="#"
-				class="tab tab-bordered"
-				:class="{ 'tab-active': activeTab === 'practice' }"
-				@click.prevent="activeTab = 'practice'"
-			>
-				Practice
-			</a>
-		</div>
-
-		<!-- Knowledge Card 展示 -->
-		<div
-			v-if="
-				showHints &&
-				activeTab === 'knowledge' &&
-				currentKnowledgePoints.length > 0
-			"
-			class="grid grid-cols-1 md:grid-cols-2 gap-4"
-		>
-			<div
-				v-for="(point, index) in currentKnowledgePoints"
-				:key="index"
-				class="card bg-base-100 shadow-lg"
-			>
-				<div class="card-body">
-					<h3 class="card-title text-secondary justify-center">
-						{{ point.name }}
-					</h3>
-					<p>{{ point.desc }}</p>
-					<button
-						class="btn btn-sm btn-outline btn-primary"
-						@click="addNote(point)"
-					>
-						Save to Notebook
-					</button>
-				</div>
-			</div>
-		</div>
 
 		<!-- Practice 部分 -->
 		<div
@@ -316,6 +297,7 @@ onMounted(async () => {
 
 // 控制 Tabs 显示状态
 const showHints = ref(false);
+const showPractice = ref(false);
 
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
@@ -383,9 +365,6 @@ const addNote = (point) => {
 	// 将知识点添加到用户的笔记本中
 	console.log("Added to notebook:", point);
 };
-
-// Tab 切换
-const activeTab = ref("knowledge");
 
 // 返回上一页
 const goBack = () => {
@@ -467,5 +446,23 @@ const emotionEmoji = computed(() => {
 .fade-slide-left-leave-to {
 	transform: translateX(30%);
 	opacity: 0;
+}
+
+/* 星号图标 */
+.knowledge-card-star {
+	width: 100%;
+	height: 40px;
+	background: rgba(0, 0, 0, 0.1);
+	cursor: pointer;
+	transition: opacity 0.3s ease-in-out;
+	color: #fbbf24;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 鼠标悬停显示星号 */
+.knowledge-card:hover .knowledge-card-star {
+	opacity: 1;
 }
 </style>
