@@ -93,24 +93,42 @@
 							<!-- 知识点部分 -->
 							<div
 								v-if="showHints && currentKnowledgePoints.length > 0"
-								class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l"
+								class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 							>
-								<div
-									class="card w-2/3 bg-base-100 shadow-lg mb-4 h-full mx-auto"
+								<!-- Swiper 轮播 -->
+								<Swiper
+									ref="mySwiper"
+									:modules="[Pagination]"
+									:loop="true"
+									:slides-per-view="1"
+									space-between="30"
+									:pagination="pagination"
+									class="h-full"
 								>
-									<div class="card-body">
-										<h3 class="card-title text-secondary justify-center">
-											{{ currentKnowledgePoints[0].name }}
-										</h3>
-										<p>{{ currentKnowledgePoints[0].desc }}</p>
-										<button
-											class="btn btn-sm btn-outline btn-primary"
-											@click="addNote(currentKnowledgePoints[0])"
+									<SwiperSlide
+										v-for="(point, index) in currentKnowledgePoints"
+										:key="index"
+										class="flex justify-center items-center h-full"
+									>
+										<div
+											class="card w-2/3 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto"
 										>
-											Save to Notebook
-										</button>
-									</div>
-								</div>
+											<div class="card-body">
+												<h3 class="card-title text-secondary justify-center">
+													{{ point.name }}
+												</h3>
+												<p>{{ point.desc }}</p>
+												<!-- <button
+													class="btn btn-sm btn-outline btn-primary"
+													@click="addNote(point)"
+												>
+													Save to Notebook
+												</button> -->
+											</div>
+										</div>
+									</SwiperSlide>
+								</Swiper>
+								<div class="swiper-pagination"></div>
 							</div>
 						</div>
 
@@ -262,6 +280,15 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/swiper-bundle.css";
+import { Pagination } from "swiper/modules";
+
+const mySwiper = ref(null); // Swiper 实例
+const pagination = {
+	el: ".swiper-pagination", // 分页点的容器
+	clickable: true, // 允许点击切换
+};
 
 const router = useRouter();
 const route = useRoute();

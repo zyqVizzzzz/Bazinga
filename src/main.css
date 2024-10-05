@@ -2,3 +2,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* 分页点样式 */
+.swiper-pagination {
+	width: 100%;
+	height: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.swiper-pagination-bullet {
+	width: 10px;
+	height: 10px;
+	background: #944efc !important;
+	border-radius: 50%;
+	margin: 0 5px;
+	cursor: pointer;
+}
