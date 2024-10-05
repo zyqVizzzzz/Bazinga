@@ -3,7 +3,7 @@
 		<!-- 顶部标题 -->
 		<div class="flex justify-between items-center mb-6">
 			<h1 class="text-3xl font-bold text-primary">S01-E01</h1>
-			<button class="btn btn-secondary" @click="goBack">Back</button>
+			<button class="btn btn-error" @click="goBack">Back</button>
 		</div>
 
 		<transition
@@ -31,40 +31,14 @@
 								@click="toggleHints"
 								v-if="currentKnowledgePoints.length > 0"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									:stroke="showHints ? '#fcd34d' : '#9ca3af'"
-									class="w-6 h-6 transition-colors duration-300"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-									/>
-								</svg>
+								<LightIcon :showHints="showHints" />
 							</div>
 							<div
 								class="absolute right-0 cursor-pointer"
 								@click="toggleHints"
 								v-if="currentKnowledgePoints.length > 0"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									:stroke="showPractice ? '#fcd34d' : '#9ca3af'"
-									class="size-6"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-									/>
-								</svg>
+								<PracticeIcon :showPractice="showPractice" />
 							</div>
 						</h2>
 						<!-- 卡片内容部分 -->
@@ -105,110 +79,42 @@
 								</p>
 
 								<!-- 台词文本 -->
-								<p class="text-lg my-8 font-cute w-2/3 mx-auto">
+								<!-- <p class="text-lg my-8 font-cute w-2/3 mx-auto">
 									{{ currentDialogue.text }}
-								</p>
+								</p> -->
+								<p
+									class="text-lg my-8 font-cute w-2/3 mx-auto"
+									v-html="highlightedText"
+								></p>
 							</div>
 
-							<!-- Knowledge Card 展示 -->
+							<!-- 知识点展示 -->
 							<div
 								v-if="showHints && currentKnowledgePoints.length > 0"
 								class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 							>
-								<!-- Swiper 轮播 -->
-								<Swiper
-									ref="mySwiper"
-									:modules="[Pagination]"
-									:loop="true"
-									:slides-per-view="1"
-									space-between="30"
-									:pagination="pagination"
-									class="h-full"
-								>
-									<SwiperSlide
-										v-for="(point, index) in currentKnowledgePoints"
-										:key="index"
-										class="flex justify-center items-center h-full"
-									>
-										<div
-											class="knowledge-card overflow-hidden card w-2/3 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
-										>
-											<div class="card-body">
-												<h3 class="card-title text-secondary justify-center">
-													{{ point.name }}
-												</h3>
-												<p>{{ point.desc }}</p>
-											</div>
-											<div
-												class="knowledge-card-star text-center opacity-0 duration-300 cursor-pointer"
-												@click="addNote(point)"
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke-width="1.5"
-													stroke="currentColor"
-													class="size-6"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
-													/>
-												</svg>
-											</div>
-										</div>
-									</SwiperSlide>
-								</Swiper>
-								<div class="swiper-pagination"></div>
+								<KnowledgeCard
+									:currentKnowledgePoints="currentKnowledgePoints"
+									@on-slide-change="handleSlideChange"
+								/>
 							</div>
 						</div>
 
 						<!-- 左右箭头按钮 -->
 						<div class="card-actions justify-between mt-4">
-							<!-- Prev 按钮 - 左箭头 -->
 							<button
 								class="absolute left-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost"
 								@click="prevDialogue"
 								:disabled="currentDialogueIndex.value === 0"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									stroke="currentColor"
-									class="w-6 h-6"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M15 19l-7-7 7-7"
-									/>
-								</svg>
+								<LeftArrowIcon />
 							</button>
-
-							<!-- Next 按钮 - 右箭头 -->
 							<button
 								class="absolute right-2 top-1/2 transform -translate-y-1/2 btn btn-circle btn-ghost"
 								@click="nextDialogue"
 								:disabled="currentDialogueIndex.value === dialogues.length - 1"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									stroke="currentColor"
-									class="w-6 h-6"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
+								<RightArrowIcon />
 							</button>
 						</div>
 					</div>
@@ -264,6 +170,11 @@ import { useRouter, useRoute } from "vue-router";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper-bundle.css";
 import { Pagination } from "swiper/modules";
+import LightIcon from "../components/icons/Light.vue";
+import PracticeIcon from "../components/icons/Practice.vue";
+import LeftArrowIcon from "../components/icons/LeftArrow.vue";
+import RightArrowIcon from "../components/icons/RightArrow.vue";
+import KnowledgeCard from "../components/knowledge-card/index.vue";
 
 const mySwiper = ref(null); // Swiper 实例
 const pagination = {
@@ -360,12 +271,6 @@ const checkAnswer = () => {
 	}
 };
 
-// 添加到笔记本
-const addNote = (point) => {
-	// 将知识点添加到用户的笔记本中
-	console.log("Added to notebook:", point);
-};
-
 // 返回上一页
 const goBack = () => {
 	router.push("/");
@@ -393,6 +298,36 @@ const emotionEmoji = computed(() => {
 		default:
 			return ""; // 默认情况下不显示表情符号
 	}
+});
+
+// 当前知识点卡片索引
+const currentKnowledgeIndex = ref(0);
+
+const handleSlideChange = (data) => {
+	currentKnowledgeIndex.value = data;
+};
+
+// 动态标记下划线
+const highlightedText = computed(() => {
+	// 如果提示灯未开启，或者没有知识点，直接返回原始文本
+	if (!showHints.value || currentKnowledgePoints.value.length === 0) {
+		return currentDialogue.value.text;
+	}
+
+	let text = currentDialogue.value.text;
+
+	// 当前知识点
+	const currentPoint =
+		currentKnowledgePoints.value[currentKnowledgeIndex.value];
+
+	// 高亮当前知识点的标题在文本中的匹配
+	if (text.includes(currentPoint.name)) {
+		const regex = new RegExp(`(${currentPoint.name})`, "gi"); // 使用正则表达式查找匹配，忽略大小写
+		// 使用 <span> 包裹匹配项，添加下划线样式
+		text = text.replace(regex, '<mark class="pink">$1</mark>');
+	}
+
+	return text;
 });
 </script>
 <style scoped>
@@ -447,22 +382,10 @@ const emotionEmoji = computed(() => {
 	transform: translateX(30%);
 	opacity: 0;
 }
-
-/* 星号图标 */
-.knowledge-card-star {
-	width: 100%;
-	height: 40px;
-	background: rgba(0, 0, 0, 0.1);
-	cursor: pointer;
-	transition: opacity 0.3s ease-in-out;
-	color: #fbbf24;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-/* 鼠标悬停显示星号 */
-.knowledge-card:hover .knowledge-card-star {
-	opacity: 1;
+/* 添加下划线样式 */
+span[style*="text-decoration: underline"] {
+	text-decoration: underline;
+	color: #fbbf24; /* 你可以自定义颜色 */
+	font-weight: bold; /* 你可以自定义粗细 */
 }
 </style>
