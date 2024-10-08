@@ -1,47 +1,52 @@
 <template>
-	<!-- Swiper 轮播 -->
-	<Swiper
-		ref="mySwiper"
-		:modules="[Pagination]"
-		:loop="currentKnowledgePoints.length > 1 ? true : false"
-		:slides-per-view="1"
-		space-between="30"
-		:pagination="pagination"
-		@slideChange="onSlideChange"
-		class="h-full"
+	<div
+		v-show="showHints && currentKnowledgePoints.length > 0"
+		class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 	>
-		<SwiperSlide
-			v-for="(point, index) in currentKnowledgePoints"
-			:key="index"
-			class="flex justify-center items-center h-full"
+		<!-- Swiper 轮播 -->
+		<Swiper
+			ref="mySwiper"
+			:modules="[Pagination]"
+			:loop="false"
+			:slides-per-view="1"
+			space-between="30"
+			:pagination="pagination"
+			@slideChange="onSlideChange"
+			class="h-full"
 		>
-			<div
-				class="knowledge-card overflow-hidden card w-4/5 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
+			<SwiperSlide
+				v-for="(point, index) in currentKnowledgePoints"
+				:key="index"
+				class="flex justify-center items-center h-full"
 			>
-				<div class="card-body">
-					<h3 class="card-title text-secondary">
-						{{ point.name }}
-					</h3>
-					<p v-if="!showTrans" class="text-left text-base font-extralight">
-						{{ point.desc }}
-					</p>
-					<p
-						v-if="showTrans"
-						class="china-font text-left text-sm font-extralight"
-					>
-						{{ point.desc_zh }}
-					</p>
-				</div>
 				<div
-					class="knowledge-card-star text-center opacity-0 duration-300 cursor-pointer"
-					@click="addNote(point)"
+					class="knowledge-card overflow-hidden card w-4/5 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
 				>
-					<StarIcon />
+					<div class="card-body">
+						<h3 class="card-title text-secondary">
+							{{ point.word }}
+						</h3>
+						<p v-if="!showTrans" class="text-left text-base font-extralight">
+							{{ point.definition }}
+						</p>
+						<p
+							v-if="showTrans"
+							class="china-font text-left text-sm font-extralight"
+						>
+							{{ point.definition_zh }}
+						</p>
+					</div>
+					<div
+						class="knowledge-card-star text-center opacity-0 duration-300 cursor-pointer"
+						@click="addNote(point)"
+					>
+						<StarIcon />
+					</div>
 				</div>
-			</div>
-		</SwiperSlide>
-	</Swiper>
-	<div class="swiper-pagination"></div>
+			</SwiperSlide>
+		</Swiper>
+		<div class="swiper-pagination"></div>
+	</div>
 </template>
 <script setup>
 import { ref, defineEmits } from "vue";
@@ -59,6 +64,7 @@ const pagination = {
 defineProps({
 	currentKnowledgePoints: Object,
 	showTrans: Boolean,
+	showHints: Boolean,
 });
 
 // 当前知识点卡片索引
