@@ -29,30 +29,19 @@
 						<div class="front">
 							<div class="card-body">
 								<!-- 提示灯图标 -->
-								<div
-									class="card-title text-accent relative mb-5 w-full flex space-between"
-								>
-									{{ currentDialogue.title }}
-									<div class="flex">
-										<div class="cursor-pointer" @click="toggleTrans">
-											<TransIcon :showTrans="showTrans" />
-										</div>
-										<div
-											class="cursor-pointer"
-											@click="toggleHints"
-											v-if="currentKnowledgePoints.length > 0"
-										>
-											<LightIcon :showHints="showHints" />
-										</div>
-										<div
-											class="cursor-pointer"
-											@click="togglePractice"
-											v-if="currentPractice.length > 0"
-										>
-											<PracticeIcon :showPractice="showPractice" />
-										</div>
-									</div>
-								</div>
+								<TitleBar
+									:isFlipped="isFlipped"
+									:title="currentDialogue.title"
+									:showTrans="showTrans"
+									:showHints="showHints"
+									:showPractice="showPractice"
+									:currentKnowledgePoints="currentKnowledgePoints"
+									:currentPractice="currentPractice"
+									@toggleTrans="toggleTrans"
+									@toggleHints="toggleHints"
+									@togglePractice="togglePractice"
+								/>
+
 								<!-- 卡片内容部分 -->
 								<div class="card-content flex items-stretch">
 									<div
@@ -100,58 +89,24 @@
 						<div class="back" style="min-height: 500px">
 							<!-- 背面：练习题 -->
 							<div class="card-body flex flex-col h-full">
-								<h2 class="card-title text-accent relative mb-5">
-									{{ scene.title }}
-									<div
-										class="absolute right-0 cursor-pointer"
-										@click="togglePractice"
-										v-if="currentKnowledgePoints.length > 0"
-									>
-										<PracticeIcon :showPractice="showPractice" />
-									</div>
-								</h2>
+								<TitleBar
+									:isFlipped="isFlipped"
+									:title="currentDialogue.title"
+									:showTrans="showTrans"
+									:showHints="showHints"
+									:showPractice="showPractice"
+									:currentKnowledgePoints="currentKnowledgePoints"
+									:currentPractice="currentPractice"
+									@toggleTrans="toggleTrans"
+									@toggleHints="toggleHints"
+									@togglePractice="togglePractice"
+								/>
 								<!-- Practice 部分 -->
-								<div class="flex-grow" v-if="currentPractice.length > 0">
-									<p>{{ currentPractice[0]?.question }}</p>
-									<div
-										class="mt-8"
-										v-if="currentPractice[0]?.type === 'multiple-choice'"
-									>
-										<div
-											v-for="(option, index) in currentPractice[0].options"
-											:key="index"
-											class="form-control"
-										>
-											<label class="label cursor-pointer">
-												<input
-													type="radio"
-													:value="option"
-													v-model="userAnswer"
-													class="radio radio-primary"
-												/>
-												<span class="label-text ml-2">{{ option }}</span>
-											</label>
-										</div>
-									</div>
-									<div
-										class="mt-8"
-										v-else-if="currentPractice[0]?.type === 'fill-in-the-blank'"
-									>
-										<input
-											type="text"
-											v-model="userAnswer"
-											placeholder="Your answer"
-											class="input input-bordered w-full mb-4"
-										/>
-									</div>
-
-									<div v-if="answerFeedback" class="mt-4">
-										<p>{{ answerFeedback }}</p>
-									</div>
-								</div>
-								<button class="btn btn-primary mt-auto" @click="checkAnswer">
-									Submit
-								</button>
+								<PracticeCard
+									:currentPractice="currentPractice"
+									:showHints="showHints"
+									:currentKnowledgePoints="currentKnowledgePoints"
+								/>
 							</div>
 						</div>
 					</div>
@@ -188,10 +143,11 @@ import RightArrowIcon from "../components/icons/RightArrow.vue";
 import KnowledgeCard from "../components/card/knowledge.vue";
 import DialogueCard from "../components/card/dialogue.vue";
 import ThumbnailCard from "../components/card/thumbnail.vue";
+import PracticeCard from "../components/card/practice.vue";
+import TitleBar from "../components/card/title.vue";
 
 const router = useRouter();
 const route = useRoute();
-const lesson = ref("");
 
 // 初始化 scene 和 dialogues
 const dialoguesData = ref(null);
@@ -225,6 +181,16 @@ const toggleHints = () => {
 
 const toggleTrans = () => {
 	showTrans.value = !showTrans.value;
+};
+
+/** 翻转卡片 */
+const isFlipped = ref(false);
+const togglePractice = () => {
+	console.log("d");
+	// 切换翻转状态
+	isFlipped.value = !isFlipped.value;
+	// 如果翻转到背面，显示练习题
+	showPractice.value = isFlipped.value;
 };
 
 // 获取当前台词
@@ -313,79 +279,16 @@ const currentPractice = computed(() => {
 	return currentDialogue.value.practice || [];
 });
 
-// 存储用户答案和反馈
-const userAnswer = ref("");
-const answerFeedback = ref("");
-
-// 检查答案
-const checkAnswer = () => {
-	const practice = currentPractice.value[0];
-	if (practice.type === "multiple-choice") {
-		if (userAnswer.value === practice.answer) {
-			answerFeedback.value = "Bazinga!!! 🎉";
-			setTimeout(() => {
-				togglePractice();
-			}, 1000);
-		} else {
-			answerFeedback.value = "Try again! ✨";
-		}
-	} else if (practice.type === "fill-in-the-blank") {
-		if (userAnswer.value.toLowerCase() === practice.answer.toLowerCase()) {
-			answerFeedback.value = "Bazinga!!! 🎉";
-			setTimeout(() => {
-				togglePractice();
-			}, 1000);
-		} else {
-			answerFeedback.value = "Try again! ✨";
-		}
-	}
-};
-
 // 返回上一页
 const goBack = () => {
 	router.push("/");
 };
-
-const emotionEmoji = computed(() => {
-	if (!currentDialogue.value.meta) return "";
-	const emotion = currentDialogue.value.meta.emotion;
-	switch (emotion) {
-		case "proud":
-			return "😌"; // Proud emoji
-		case "happy":
-			return "😊"; // Happy emoji
-		case "sad":
-			return "😢"; // Sad emoji
-		case "angry":
-			return "😠"; // Angry emoji
-		case "excited":
-			return "😆"; // Excited emoji
-		case "confused":
-			return "😕"; // Confused emoji
-		case "playful":
-			return "😜"; // Playful emoji
-		// 其他情感对应的表情符号
-		default:
-			return ""; // 默认情况下不显示表情符号
-	}
-});
 
 // 当前知识点卡片索引
 const currentKnowledgeIndex = ref(0);
 
 const handleSlideChange = (data) => {
 	currentKnowledgeIndex.value = data;
-};
-
-/** 翻转卡片 */
-const isFlipped = ref(false);
-const togglePractice = () => {
-	// 切换翻转状态
-	isFlipped.value = !isFlipped.value;
-	// 如果翻转到背面，显示练习题
-	showPractice.value = isFlipped.value;
-	userAnswer.value = "";
-	answerFeedback.value = "";
 };
 </script>
 <style scoped>
