@@ -1,7 +1,7 @@
 <template>
 	<div class="container mx-auto my-10 p-6">
 		<!-- 顶部标题 -->
-		<div class="flex justify-between items-center mb-6">
+		<div class="flex justify-between items-center mb-6 px-6">
 			<h1 class="text-3xl font-bold text-primary">
 				{{ scene.id }}-{{ currentDialogue.id }}
 			</h1>
@@ -62,16 +62,18 @@
 										<!-- 台词文本 -->
 										<DialogueCard
 											:showHints="showHints"
+											:showTrans="showTrans"
 											:currentKnowledgePoints="currentKnowledgePoints"
 											:highlightedText="highlightedText"
+											:highlightedTextZh="highlightedTextZh"
 										/>
 
-										<p
+										<!-- <p
 											v-if="showTrans"
 											class="china-font w-4/5 mx-auto text-sm italic text-neutral-400"
 										>
 											{{ currentDialogue.text_zh }}
-										</p>
+										</p> -->
 									</div>
 
 									<!-- 知识点展示 -->
@@ -155,6 +157,9 @@ const scene = ref({});
 const dialogues = ref([]);
 const currentDialogueIndex = ref(0);
 
+// 当前知识点卡片索引
+const currentKnowledgeIndex = ref(0);
+
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
 	const response = await fetch("/constants/S01/E01New.json");
@@ -185,8 +190,8 @@ const toggleTrans = () => {
 
 /** 翻转卡片 */
 const isFlipped = ref(false);
+
 const togglePractice = () => {
-	console.log("d");
 	// 切换翻转状态
 	isFlipped.value = !isFlipped.value;
 	// 如果翻转到背面，显示练习题
@@ -203,11 +208,13 @@ const currentDialogue = computed(() => {
 
 const highlightedText = computed(() => {
 	// 获取当前的台词内容
-	let text = currentDialogue.value.text;
+	let text = currentDialogue.value.text || [["", ""]];
 
 	try {
 		// 检查 text 是否为有效的 JSON 数组
 		const parsedText = Array.isArray(text) ? text : JSON.parse(text);
+
+		let wordMatched = false; // 用于标记知识点是否已经匹配
 
 		// 逐条处理台词
 		return parsedText.map(([speaker, line]) => {
@@ -219,17 +226,22 @@ const highlightedText = computed(() => {
 			const currentPoint =
 				currentKnowledgePoints.value[currentKnowledgeIndex.value];
 
+			// 如果提示灯开启且当前知识点存在，且没有匹配到知识点
 			if (
 				showHints.value &&
 				currentPoint &&
 				currentPoint.word &&
-				typeof currentPoint.word === "string"
+				typeof currentPoint.word === "string" &&
+				!wordMatched // 确保知识点尚未匹配过
 			) {
-				const regex = new RegExp(`(${currentPoint.word})`, "gi");
-				processedLine = processedLine.replace(
-					regex,
-					'<mark class="pink">$1</mark>'
-				);
+				// 构建正则表达式，仅匹配第一个单词
+				const regex = new RegExp(`(${currentPoint.word})`, "i");
+
+				// 使用回调函数确保只替换第一个匹配项
+				processedLine = processedLine.replace(regex, (match) => {
+					wordMatched = true; // 确保匹配后设置为 true，防止后续匹配
+					return `<mark class="pink">${match}</mark>`;
+				});
 			}
 
 			// 返回每句台词，带上角色名或处理 narration
@@ -237,6 +249,23 @@ const highlightedText = computed(() => {
 		});
 	} catch (error) {
 		console.error("Failed to parse dialogue array:", error);
+		return [];
+	}
+});
+
+const highlightedTextZh = computed(() => {
+	let textZh = currentDialogue.value.text_zh || [["", ""]];
+
+	try {
+		const parsedTextZh = textZh;
+
+		return parsedTextZh.map(([speaker, line]) => {
+			const isNarration = speaker.toLowerCase().includes("narration");
+
+			return { speaker, line, isNarration };
+		});
+	} catch (error) {
+		console.error("Failed to parse dialogue translation array:", error);
 		return [];
 	}
 });
@@ -283,9 +312,6 @@ const currentPractice = computed(() => {
 const goBack = () => {
 	router.push("/");
 };
-
-// 当前知识点卡片索引
-const currentKnowledgeIndex = ref(0);
 
 const handleSlideChange = (data) => {
 	currentKnowledgeIndex.value = data;
