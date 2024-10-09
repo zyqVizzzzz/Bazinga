@@ -61,6 +61,7 @@
 
 										<!-- 台词文本 -->
 										<DialogueCard
+											ref="dialogueCard"
 											:showHints="showHints"
 											:showTrans="showTrans"
 											:currentKnowledgePoints="currentKnowledgePoints"
@@ -313,8 +314,14 @@ const goBack = () => {
 	router.push("/");
 };
 
+// 获取 DialogueCard 的实例
+const dialogueCard = ref(null);
+
 const handleSlideChange = (data) => {
 	currentKnowledgeIndex.value = data;
+	const currentWord = currentKnowledgePoints.value[data].word;
+	// 调用 DialogueCard 组件中的 scrollToWord 方法
+	dialogueCard.value.scrollToWord(currentWord); // 调用子组件方法
 };
 </script>
 <style scoped>
