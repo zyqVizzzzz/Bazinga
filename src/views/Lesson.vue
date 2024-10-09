@@ -68,13 +68,6 @@
 											:highlightedText="highlightedText"
 											:highlightedTextZh="highlightedTextZh"
 										/>
-
-										<!-- <p
-											v-if="showTrans"
-											class="china-font w-4/5 mx-auto text-sm italic text-neutral-400"
-										>
-											{{ currentDialogue.text_zh }}
-										</p> -->
 									</div>
 
 									<!-- 知识点展示 -->
