@@ -30,17 +30,12 @@
 					<div class="card w-full h-full">
 						<div class="front">
 							<div class="card-body relative">
-								<!-- 提示灯图标 -->
+								<!-- 卡片标题 -->
 								<TitleBar
 									:isFlipped="isFlipped"
 									:title="currentDialogue.title"
-									:showTrans="showTrans"
-									:showHints="showHints"
 									:showPractice="showPractice"
-									:currentKnowledgePoints="currentKnowledgePoints"
 									:currentPractice="currentPractice"
-									@toggleTrans="toggleTrans"
-									@toggleHints="toggleHints"
 									@togglePractice="togglePractice"
 								/>
 
@@ -51,48 +46,16 @@
 										class="w-2/6 flex flex-col items-center p-4"
 										v-if="!showHints"
 									>
-										<div
-											class="capsule primary-capsule mb-10"
-											style="height: 100px; width: 150px; border-radius: 10px"
-											:style="{
-												backgroundImage: `url(${currentDialogue.img})`,
-												backgroundSize: 'cover',
-												backgroundPosition: 'center',
-											}"
-										></div>
-										<div
-											class="flex justify-around"
-											style="height: 100px; width: 150px; border-radius: 10px"
-										>
-											<div
-												class="capsule primary-capsule mb-4"
-												style="height: 50px; width: 50px; border-radius: 25px"
-												@mouseenter="isHovered = true"
-												@mouseleave="isHovered = false"
-												:style="{ opacity: isHovered ? 1 : 0.5 }"
-											>
-												<PlayIcon />
-											</div>
-											<div
-												class="capsule primary-capsule"
-												style="height: 50px; width: 50px; border-radius: 25px"
-												@mouseenter="isHovered = true"
-												@mouseleave="isHovered = false"
-												:style="{ opacity: isHovered ? 1 : 0.5 }"
-											>
-												<RecordIcon />
-											</div>
-										</div>
+										<SpeakingCapsule :thumbnail="currentDialogue.img" />
 									</div>
-									<!-- 中间台词本 -->
+									<!-- 台词 -->
 									<div
 										:class="{
-											'w-3/6': showKnowledgeCard || showThumbnailCard,
-											'w-full': !showKnowledgeCard && !showThumbnailCard,
+											'w-3/6': showKnowledgeCard,
+											'w-full': !showKnowledgeCard,
 										}"
 										class="transition-all duration-500"
 									>
-										<!-- 这里是台词本部分 -->
 										<DialogueCard
 											ref="dialogueCard"
 											:showHints="showHints"
@@ -102,30 +65,15 @@
 											:highlightedTextZh="highlightedTextZh"
 										/>
 									</div>
-									<!-- 知识点胶囊，点击后显示KnowledgeCard -->
+									<!-- 知识点胶囊 -->
 									<div
 										v-if="!showHints"
 										class="w-1/6 flex flex-col items-center px-4 py-2"
 									>
-										<div
-											class="capsule secondary-capsule mb-5"
-											:style="{
-												opacity: isHovered2 ? 1 : 0.5,
-												'border-radius': isHovered2 ? '5px' : '45px',
-											}"
-											@mouseenter="isHovered2 = true"
-											@mouseleave="isHovered2 = false"
-											@click="toggleHints"
-										>
-											<!-- 在这里可以用缩略图图片替代 -->
-											<div class="text-secondary text-lg">Notes</div>
-											<button class="flex items-center justify-center">
-												<LightIcon />
-											</button>
-										</div>
+										<ReadingCapsule @toggleHints="toggleHints" />
 									</div>
 
-									<!-- 知识点展示 -->
+									<!-- 知识点卡片 -->
 									<KnowledgeCard
 										:showHints="showHints"
 										:currentKnowledgePoints="currentKnowledgePoints"
@@ -133,8 +81,6 @@
 										@on-slide-change="handleSlideChange"
 									/>
 								</div>
-
-								<!-- 左右箭头按钮 -->
 							</div>
 						</div>
 						<div class="back" style="min-height: 500px">
@@ -143,13 +89,8 @@
 								<TitleBar
 									:isFlipped="isFlipped"
 									:title="currentDialogue.title"
-									:showTrans="showTrans"
-									:showHints="showHints"
 									:showPractice="showPractice"
-									:currentKnowledgePoints="currentKnowledgePoints"
 									:currentPractice="currentPractice"
-									@toggleTrans="toggleTrans"
-									@toggleHints="toggleHints"
 									@togglePractice="togglePractice"
 								/>
 								<!-- Practice 部分 -->
@@ -164,6 +105,7 @@
 				</div>
 			</div>
 		</transition>
+		<!-- 左右箭头按钮 -->
 		<div class="card-actions justify-between mt-4 w-1/5 mx-auto">
 			<button
 				class="transform btn btn-primary btn-ghost px-4"
@@ -186,35 +128,37 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import LightIcon from "../components/icons/Light.vue";
-import TransIcon from "../components/icons/Language.vue";
-import PracticeIcon from "../components/icons/Practice.vue";
+
 import LeftArrowIcon from "../components/icons/LeftArrow.vue";
 import RightArrowIcon from "../components/icons/RightArrow.vue";
+
+import TitleBar from "../components/card/title.vue";
 import KnowledgeCard from "../components/card/knowledge.vue";
 import DialogueCard from "../components/card/dialogue.vue";
-import ThumbnailCard from "../components/card/thumbnail.vue";
 import PracticeCard from "../components/card/practice.vue";
-import TitleBar from "../components/card/title.vue";
-import PlayIcon from "../components/icons/Play.vue";
-import PauseIcon from "../components/icons/Pause.vue";
-import RecordIcon from "../components/icons/Record.vue";
+import SpeakingCapsule from "../components/capsule/Speaking.vue";
+import ReadingCapsule from "../components/capsule/Reading.vue";
 
 const router = useRouter();
 const route = useRoute();
-
-const showThumbnailCard = ref(false);
-const isHovered = ref(false);
-const isHovered2 = ref(false);
 
 // 初始化 scene 和 dialogues
 const dialoguesData = ref(null);
 const scene = ref({});
 const dialogues = ref([]);
-const currentDialogueIndex = ref(0);
+const currentDialogueIndex = ref(0); // 当前台词卡片索引
+const currentKnowledgeIndex = ref(0); // 当前知识点卡片索引
 
-// 当前知识点卡片索引
-const currentKnowledgeIndex = ref(0);
+const slideDirection = ref("right"); // 动画方向
+const isFirstLoad = ref(true); // 只有在第一次点击箭头的时候才会载入动画，避免第一张图片出现动画
+const isFlipped = ref(false); // 是否翻转卡片
+
+// 控制子卡片显示状态
+const showHints = ref(false);
+const showPractice = ref(false);
+const showTrans = ref(false);
+
+const dialogueCard = ref(null); // 获取 DialogueCard 实例
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
@@ -230,29 +174,43 @@ onMounted(async () => {
 	}
 });
 
-// 控制 Tabs 显示状态
-const showHints = ref(false);
-const showPractice = ref(false);
-const showTrans = ref(false);
-
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
 	showHints.value = !showHints.value;
-	isHovered2.value = false;
 };
 
 const toggleTrans = () => {
 	showTrans.value = !showTrans.value;
 };
 
-/** 翻转卡片 */
-const isFlipped = ref(false);
-
 const togglePractice = () => {
 	// 切换翻转状态
 	isFlipped.value = !isFlipped.value;
 	// 如果翻转到背面，显示练习题
 	showPractice.value = isFlipped.value;
+};
+
+// 导航台词
+const nextDialogue = () => {
+	if (currentDialogueIndex.value < dialogues.value.length - 1) {
+		slideDirection.value = "right"; // 设置方向为向右
+		currentDialogueIndex.value++;
+		isFirstLoad.value = false;
+		resetKnowledgeIndex(); // 重置知识点索引
+	}
+};
+
+const prevDialogue = () => {
+	if (currentDialogueIndex.value > 0) {
+		slideDirection.value = "left"; // 设置方向为向左
+		currentDialogueIndex.value--;
+		resetKnowledgeIndex(); // 重置知识点索引
+	}
+};
+
+// 重置知识点索引方法
+const resetKnowledgeIndex = () => {
+	currentKnowledgeIndex.value = 0;
 };
 
 // 获取当前台词
@@ -327,33 +285,6 @@ const highlightedTextZh = computed(() => {
 	}
 });
 
-// 区分动画方向
-const slideDirection = ref("right");
-const isFirstLoad = ref(true); // 只有在第一次点击箭头的时候才会载入动画，避免第一张图片出现动画
-// 导航台词
-const nextDialogue = () => {
-	if (currentDialogueIndex.value < dialogues.value.length - 1) {
-		slideDirection.value = "right"; // 设置方向为向右
-		currentDialogueIndex.value++;
-		isFirstLoad.value = false;
-		resetKnowledgeIndex(); // 重置知识点索引
-	}
-};
-
-const prevDialogue = () => {
-	if (currentDialogueIndex.value > 0) {
-		slideDirection.value = "left"; // 设置方向为向左
-		currentDialogueIndex.value--;
-		resetKnowledgeIndex(); // 重置知识点索引
-	}
-};
-
-// 重置知识点索引方法
-const resetKnowledgeIndex = () => {
-	// 确保 `currentKnowledgePoints` 已更新
-	currentKnowledgeIndex.value = 0;
-};
-
 // 动态获取当前台词的知识点
 const currentKnowledgePoints = computed(() => {
 	// 确保 currentDialogue 有效并存在 knowledge
@@ -365,14 +296,6 @@ const currentPractice = computed(() => {
 	return currentDialogue.value.practice || [];
 });
 
-// 返回上一页
-const goBack = () => {
-	router.push("/");
-};
-
-// 获取 DialogueCard 的实例
-const dialogueCard = ref(null);
-
 const handleSlideChange = (data) => {
 	currentKnowledgeIndex.value = data;
 	const currentWord = currentKnowledgePoints.value[data].word;
@@ -381,6 +304,42 @@ const handleSlideChange = (data) => {
 };
 </script>
 <style scoped>
+.flip-container {
+	perspective: 1000px;
+}
+
+.card {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	transform-style: preserve-3d;
+	transition: transform 0.8s ease-in-out;
+}
+
+.flip-container.flipped .card {
+	transform: rotateY(180deg);
+}
+
+.front,
+.back {
+	backface-visibility: hidden;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+
+.front {
+	transform: rotateY(0deg);
+	z-index: 2;
+}
+
+.back {
+	transform: rotateY(180deg);
+	z-index: 1;
+}
+
 /* 右箭头 - 当前卡片向左滑出，下一张渐显 */
 .fade-slide-right-enter-active,
 .fade-slide-right-leave-active {
@@ -431,92 +390,5 @@ const handleSlideChange = (data) => {
 .fade-slide-left-leave-to {
 	transform: translateX(30%);
 	opacity: 0;
-}
-.flip-container {
-	perspective: 1000px;
-}
-
-.card {
-	width: 100%;
-	height: 100%;
-	position: relative;
-	transform-style: preserve-3d;
-	transition: transform 0.8s ease-in-out;
-}
-
-.flip-container.flipped .card {
-	transform: rotateY(180deg);
-}
-
-.front,
-.back {
-	backface-visibility: hidden;
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	left: 0;
-}
-
-.front {
-	transform: rotateY(0deg);
-	z-index: 2;
-}
-
-.back {
-	transform: rotateY(180deg);
-	z-index: 1;
-}
-
-/* 自定义胶囊的样式 */
-.btn-active {
-	background-color: #4caf50;
-	color: white;
-}
-
-/* 控制图标尺寸 */
-.svg-icon {
-	width: 2rem;
-	height: 2rem;
-}
-
-.transition-opacity {
-	transition: all 0.3s ease;
-}
-
-/* transition-shadow 让阴影变得平滑 */
-.transition-shadow {
-	transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
-.custom-shadow-primary {
-	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.4); /* 蓝色阴影 */
-}
-.custom-shadow-secondary {
-	box-shadow: 0 4px 12px rgba(255, 0, 255, 0.4); /* 蓝色阴影 */
-}
-
-.capsule {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: space-around;
-	padding: 8px 0; /* 等效于 py-4 */
-	width: 90px;
-	height: 200px;
-	position: relative;
-	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
-	cursor: pointer;
-	border-color: transparent; /* 初始状态下隐藏边框 */
-}
-.primary-capsule {
-	border: 2px solid var(--primary-color); /* 使用 Tailwind 中的 primary 颜色 */
-	box-shadow: 0 4px 15px rgba(0, 0, 255, 0.4); /* 蓝色阴影 */
-}
-.secondary-capsule {
-	padding: 24px 0; /* 等效于 py-4 */
-	width: 80px;
-	height: 150px;
-	border: 2px solid var(--secondary-color); /* 使用 Tailwind 中的 secondary 颜色 */
-	box-shadow: 0 4px 12px rgba(255, 0, 255, 0.4); /* 红色阴影 */
 }
 </style>
