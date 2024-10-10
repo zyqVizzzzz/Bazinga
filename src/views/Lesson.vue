@@ -36,7 +36,7 @@
 									:title="currentDialogue.title"
 									:showPractice="showPractice"
 									:currentPractice="currentPractice"
-									@togglePractice="togglePractice"
+									@on-toggle-practice="togglePractice"
 								/>
 
 								<!-- 卡片内容部分 -->
@@ -51,8 +51,8 @@
 									<!-- 台词 -->
 									<div
 										:class="{
-											'w-3/6': showKnowledgeCard,
-											'w-full': !showKnowledgeCard,
+											'w-4/6': showHints,
+											'w-full': !showHints,
 										}"
 										class="transition-all duration-500"
 									>
@@ -78,6 +78,7 @@
 										:showHints="showHints"
 										:currentKnowledgePoints="currentKnowledgePoints"
 										:showTrans="showTrans"
+										@on-toggle-hints="toggleHints"
 										@on-slide-change="handleSlideChange"
 									/>
 								</div>
@@ -91,7 +92,7 @@
 									:title="currentDialogue.title"
 									:showPractice="showPractice"
 									:currentPractice="currentPractice"
-									@togglePractice="togglePractice"
+									@on-toggle-practice="togglePractice"
 								/>
 								<!-- Practice 部分 -->
 								<PracticeCard
@@ -106,7 +107,10 @@
 			</div>
 		</transition>
 		<!-- 左右箭头按钮 -->
-		<div class="card-actions justify-between mt-4 w-1/5 mx-auto">
+		<div
+			v-if="!isFlipped"
+			class="card-actions justify-between mt-4 w-1/5 mx-auto"
+		>
 			<button
 				class="transform btn btn-primary btn-ghost px-4"
 				@click="prevDialogue"
@@ -162,7 +166,7 @@ const dialogueCard = ref(null); // 获取 DialogueCard 实例
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
-	const response = await fetch("/constants/S01/E01New.json");
+	const response = await fetch("/constants/S01/E01.json");
 	if (response.ok) {
 		dialoguesData.value = await response.json();
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {

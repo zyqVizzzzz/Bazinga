@@ -3,6 +3,17 @@
 		v-show="showHints && currentKnowledgePoints.length > 0"
 		class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 	>
+		<button
+			class="absolute left-0 transform -translate-x-1/2 bg-white text-white p-2 rounded-full"
+			style="
+				top: 50%;
+				transform: translateY(-50%) translateX(-50%);
+				z-index: 9999;
+			"
+			@click="onToggleHints"
+		>
+			<LightIcon />
+		</button>
 		<!-- Swiper 轮播 -->
 		<Swiper
 			ref="mySwiper"
@@ -94,6 +105,7 @@ import "swiper/swiper-bundle.css";
 import { Pagination } from "swiper/modules";
 import StarIcon from "../icons/Star.vue";
 import BookmarkIcon from "../icons/Bookmark.vue";
+import LightIcon from "../icons/Light.vue";
 
 const mySwiper = ref(null); // Swiper 实例
 const pagination = {
@@ -109,7 +121,7 @@ defineProps({
 
 // 当前知识点卡片索引
 const currentKnowledgeIndex = ref(0);
-const emit = defineEmits(["on-slide-change"]);
+const emit = defineEmits(["on-slide-change", "on-toggle-hints"]);
 // Swiper 滑动事件处理，更新当前知识点卡片索引
 const onSlideChange = (swiper) => {
 	currentKnowledgeIndex.value = swiper.activeIndex;
@@ -124,6 +136,10 @@ const isBookmarked = ref(false);
 // 切换书签状态
 const toggleBookmark = () => {
 	isBookmarked.value = !isBookmarked.value;
+};
+
+const onToggleHints = () => {
+	emit("on-toggle-hints");
 };
 
 // 添加到笔记本
