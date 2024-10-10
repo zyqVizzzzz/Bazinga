@@ -1,7 +1,9 @@
 <template>
 	<div
-		class="mx-8 my-2 text-left overflow-y-auto"
-		:class="showHints && currentKnowledgePoints.length > 0 ? 'w-full' : 'w-3/5'"
+		class="px-6 py-2 text-left overflow-y-auto"
+		:class="
+			showHints && currentKnowledgePoints.length > 0 ? 'w-full' : 'w-full'
+		"
 		style="height: 350px"
 		v-if="highlightedText.length"
 	>

@@ -20,7 +20,7 @@
 				class="flex justify-center items-center h-full"
 			>
 				<div
-					class="knowledge-card overflow-hidden card w-4/5 bg-base-100 shadow-lg mb-4 h-5/6 mx-auto relative"
+					class="knowledge-card overflow-hidden card w-4/5 bg-base-100 knowledge-capsule mb-4 h-5/6 mx-auto relative"
 				>
 					<div class="card-body block py-4 px-6">
 						<!-- 单词及音标 -->
@@ -173,5 +173,9 @@ const addNote = (point) => {
 	100% {
 		transform: translateY(10px);
 	}
+}
+
+.knowledge-capsule {
+	box-shadow: 0 6px 15px rgba(255, 0, 255, 0.1); /* 红色阴影 */
 }
 </style>

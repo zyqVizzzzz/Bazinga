@@ -1,29 +1,36 @@
 <template>
 	<h2
-		class="card-title text-accent relative mb-5 w-full flex justify-between items-center"
+		class="px-6 pb-3 card-title text-accent relative mb-5 w-full flex justify-between items-center border-b"
 	>
 		<!-- 左边的 title -->
 		<span>{{ title }}</span>
 
 		<!-- 右边的图标 -->
 		<div class="flex items-center">
-			<div class="cursor-pointer" @click="onToggleTrans" v-if="!isFlipped">
+			<!-- <div class="cursor-pointer" @click="onToggleTrans" v-if="!isFlipped">
 				<TransIcon :showTrans="showTrans" />
-			</div>
-			<div
+			</div> -->
+			<!-- <div
 				class="cursor-pointer ml-4"
 				@click="onToggleHints"
-				v-if="currentKnowledgePoints.length > 0 && !isFlipped"
+				v-if="showHints && currentKnowledgePoints.length > 0 && !isFlipped"
 			>
 				<LightIcon :showHints="showHints" />
-			</div>
-			<div
-				class="cursor-pointer ml-4"
+			</div> -->
+
+			<a
+				class="text-base"
+				style="
+					position: absolute;
+					bottom: 8px;
+					right: 20px;
+					cursor: pointer;
+					color: #222;
+				"
 				@click="onTogglePractice"
-				v-if="currentPractice.length > 0"
 			>
-				<PracticeIcon :showPractice="showPractice" />
-			</div>
+				Let's Bazinga!!!!
+			</a>
 		</div>
 	</h2>
 </template>

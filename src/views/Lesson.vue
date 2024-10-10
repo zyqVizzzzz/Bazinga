@@ -5,7 +5,9 @@
 			<h1 class="text-3xl font-bold text-primary">
 				{{ scene.id }}-{{ currentDialogue.id }}
 			</h1>
-			<button class="btn btn-neutral-content" @click="goBack">Back</button>
+			<button class="btn btn-neutral-content" @click="toggleTrans">
+				{{ showTrans ? "英文模式" : "双语模式" }}
+			</button>
 		</div>
 
 		<transition
@@ -27,7 +29,7 @@
 				>
 					<div class="card w-full h-full">
 						<div class="front">
-							<div class="card-body">
+							<div class="card-body relative">
 								<!-- 提示灯图标 -->
 								<TitleBar
 									:isFlipped="isFlipped"
@@ -44,22 +46,53 @@
 
 								<!-- 卡片内容部分 -->
 								<div class="card-content flex items-stretch">
+									<!-- 听力胶囊 -->
 									<div
-										:class="
-											showHints && currentKnowledgePoints.length > 0
-												? 'w-3/5'
-												: 'w-full'
-										"
-										class="card-dialogue transition-all duration-500 flex items-start"
+										class="w-2/6 flex flex-col items-center p-4"
+										v-if="!showHints"
 									>
-										<!-- 图片部分 -->
-										<ThumbnailCard
-											:currentDialogue="currentDialogue"
-											:showHints="showHints"
-											:currentKnowledgePoints="currentKnowledgePoints"
-										/>
-
-										<!-- 台词文本 -->
+										<div
+											class="capsule primary-capsule mb-10"
+											style="height: 100px; width: 150px; border-radius: 10px"
+											:style="{
+												backgroundImage: `url(${currentDialogue.img})`,
+												backgroundSize: 'cover',
+												backgroundPosition: 'center',
+											}"
+										></div>
+										<div
+											class="flex justify-around"
+											style="height: 100px; width: 150px; border-radius: 10px"
+										>
+											<div
+												class="capsule primary-capsule mb-4"
+												style="height: 50px; width: 50px; border-radius: 25px"
+												@mouseenter="isHovered = true"
+												@mouseleave="isHovered = false"
+												:style="{ opacity: isHovered ? 1 : 0.5 }"
+											>
+												<PlayIcon />
+											</div>
+											<div
+												class="capsule primary-capsule"
+												style="height: 50px; width: 50px; border-radius: 25px"
+												@mouseenter="isHovered = true"
+												@mouseleave="isHovered = false"
+												:style="{ opacity: isHovered ? 1 : 0.5 }"
+											>
+												<RecordIcon />
+											</div>
+										</div>
+									</div>
+									<!-- 中间台词本 -->
+									<div
+										:class="{
+											'w-3/6': showKnowledgeCard || showThumbnailCard,
+											'w-full': !showKnowledgeCard && !showThumbnailCard,
+										}"
+										class="transition-all duration-500"
+									>
+										<!-- 这里是台词本部分 -->
 										<DialogueCard
 											ref="dialogueCard"
 											:showHints="showHints"
@@ -68,6 +101,28 @@
 											:highlightedText="highlightedText"
 											:highlightedTextZh="highlightedTextZh"
 										/>
+									</div>
+									<!-- 知识点胶囊，点击后显示KnowledgeCard -->
+									<div
+										v-if="!showHints"
+										class="w-1/6 flex flex-col items-center px-4 py-2"
+									>
+										<div
+											class="capsule secondary-capsule mb-5"
+											:style="{
+												opacity: isHovered2 ? 1 : 0.5,
+												'border-radius': isHovered2 ? '5px' : '45px',
+											}"
+											@mouseenter="isHovered2 = true"
+											@mouseleave="isHovered2 = false"
+											@click="toggleHints"
+										>
+											<!-- 在这里可以用缩略图图片替代 -->
+											<div class="text-secondary text-lg">Notes</div>
+											<button class="flex items-center justify-center">
+												<LightIcon />
+											</button>
+										</div>
 									</div>
 
 									<!-- 知识点展示 -->
@@ -141,9 +196,16 @@ import DialogueCard from "../components/card/dialogue.vue";
 import ThumbnailCard from "../components/card/thumbnail.vue";
 import PracticeCard from "../components/card/practice.vue";
 import TitleBar from "../components/card/title.vue";
+import PlayIcon from "../components/icons/Play.vue";
+import PauseIcon from "../components/icons/Pause.vue";
+import RecordIcon from "../components/icons/Record.vue";
 
 const router = useRouter();
 const route = useRoute();
+
+const showThumbnailCard = ref(false);
+const isHovered = ref(false);
+const isHovered2 = ref(false);
 
 // 初始化 scene 和 dialogues
 const dialoguesData = ref(null);
@@ -176,6 +238,7 @@ const showTrans = ref(false);
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
 	showHints.value = !showHints.value;
+	isHovered2.value = false;
 };
 
 const toggleTrans = () => {
@@ -403,5 +466,57 @@ const handleSlideChange = (data) => {
 .back {
 	transform: rotateY(180deg);
 	z-index: 1;
+}
+
+/* 自定义胶囊的样式 */
+.btn-active {
+	background-color: #4caf50;
+	color: white;
+}
+
+/* 控制图标尺寸 */
+.svg-icon {
+	width: 2rem;
+	height: 2rem;
+}
+
+.transition-opacity {
+	transition: all 0.3s ease;
+}
+
+/* transition-shadow 让阴影变得平滑 */
+.transition-shadow {
+	transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.custom-shadow-primary {
+	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.4); /* 蓝色阴影 */
+}
+.custom-shadow-secondary {
+	box-shadow: 0 4px 12px rgba(255, 0, 255, 0.4); /* 蓝色阴影 */
+}
+
+.capsule {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-around;
+	padding: 8px 0; /* 等效于 py-4 */
+	width: 90px;
+	height: 200px;
+	position: relative;
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+}
+.primary-capsule {
+	border: 2px solid var(--primary-color); /* 使用 Tailwind 中的 primary 颜色 */
+	box-shadow: 0 4px 15px rgba(0, 0, 255, 0.4); /* 蓝色阴影 */
+}
+.secondary-capsule {
+	padding: 24px 0; /* 等效于 py-4 */
+	width: 80px;
+	height: 150px;
+	border: 2px solid var(--secondary-color); /* 使用 Tailwind 中的 secondary 颜色 */
+	box-shadow: 0 4px 12px rgba(255, 0, 255, 0.4); /* 红色阴影 */
 }
 </style>
