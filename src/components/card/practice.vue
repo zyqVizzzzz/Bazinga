@@ -45,9 +45,10 @@
 		<div
 			class="button-group flex justify-center items-center space-x-16 fixed bottom-4 left-0 right-0 mx-auto"
 		>
-			<!-- Prev 按钮 -->
+			<!-- Prev 按钮，默认隐藏 -->
 			<button
-				class="btn-prev shadow-lg w-16 h-8 bg-white rounded-lg bg-white transition-transform transform hover:scale-105 focus:ring-2 focus:ring-primary focus:outline-none"
+				v-if="showPrevNext"
+				class="btn-prev shadow-lg w-16 h-8 bg-white rounded-lg transition-all transform focus:ring-2 focus:ring-primary focus:outline-none animate-prev"
 				@click="goToPreviousQuestion"
 				:disabled="currentIndex === 0"
 			>
@@ -56,15 +57,17 @@
 
 			<!-- 中心的 Submit 按钮 -->
 			<button
+				:class="['btn-submit', { 'rotate-360': submitClicked }]"
 				class="btn btn-primary shadow-lg w-20 h-20 mt-6 mb-6 py-2 px-4 rounded-full transition-transform transform hover:scale-105 focus:ring-2 focus:ring-primary focus:outline-none"
 				@click="checkAnswer"
 			>
 				<FlashIcon />
 			</button>
 
-			<!-- Next 按钮 -->
+			<!-- Next 按钮，默认隐藏 -->
 			<button
-				class="btn-next shadow-lg w-16 h-8 bg-white rounded-lg transition-transform transform hover:scale-105 focus:ring-2 focus:ring-primary focus:outline-none"
+				v-if="showPrevNext"
+				class="btn-next shadow-lg w-16 h-8 bg-white rounded-lg transition-all transform focus:ring-2 focus:ring-primary focus:outline-none animate-next"
 				@click="goToNextQuestion"
 				:disabled="currentIndex === currentPractice.length - 1"
 			>
@@ -86,6 +89,10 @@ const props = defineProps({
 	showHints: Boolean,
 	currentKnowledgePoints: Array, // 根据实际数据结构设置
 });
+
+// 控制按钮显示的状态
+const showPrevNext = ref(false);
+const submitClicked = ref(false);
 
 // 存储用户答案和反馈
 const userAnswer = ref("");
@@ -114,6 +121,7 @@ const resetInputs = () => {
 	userAnswer.value = ""; // 清空用户的输入
 	answerFeedback.value = ""; // 清空反馈信息
 	feedbackClass.value = ""; // 重置反馈样式
+	showPrevNext.value = false; // 隐藏Prev和Next按钮
 };
 
 // 检查答案
@@ -124,10 +132,15 @@ const checkAnswer = () => {
 			.split("/")
 			.map((ans) => ans.trim().toLowerCase());
 		if (possibleAnswers.includes(userAnswer.value.trim().toLowerCase())) {
-			answerFeedback.value = "Correct!!! 🎉";
 			feedbackClass.value = "input-success"; // 给输入框绿色反馈
+
+			// 启动Submit按钮旋转动画
+			submitClicked.value = true;
+
+			// 1秒后显示Prev和Next按钮，并完成Submit旋转
 			setTimeout(() => {
-				goToNextQuestion(); // 1秒后跳到下一题
+				showPrevNext.value = true;
+				submitClicked.value = false;
 			}, 1000);
 		} else {
 			answerFeedback.value = "Try again! ✨";
@@ -173,5 +186,49 @@ const checkAnswer = () => {
 	right: 0;
 	display: flex;
 	justify-content: center;
+}
+/* Submit按钮旋转动画 */
+.rotate-360 {
+	animation: rotate360 1s ease-in-out;
+}
+
+@keyframes rotate360 {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Prev按钮和Next按钮从中间弹射出来的动画 */
+.animate-prev {
+	animation: slideOutLeft 0.8s ease forwards;
+}
+
+.animate-next {
+	animation: slideOutRight 0.8s ease forwards;
+}
+
+@keyframes slideOutLeft {
+	0% {
+		transform: translateX(50%);
+		opacity: 0;
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideOutRight {
+	0% {
+		transform: translateX(-50%);
+		opacity: 0;
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 </style>
