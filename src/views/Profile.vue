@@ -1,3 +1,3 @@
 <template>
-	<div>Notebook</div>
+	<div>Profile</div>
 </template>

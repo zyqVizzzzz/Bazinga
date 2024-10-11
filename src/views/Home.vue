@@ -6,12 +6,9 @@
 			:key="scene.id"
 			class="card w-80 bg-base-100 shadow-lg hover:shadow-xl transition-shadow"
 		>
-			<!-- 卡片头部 -->
 			<div class="card-body justify-center items-center">
 				<h2 class="card-title justify-center text-primary">{{ scene.name }}</h2>
 				<p style="flex-grow: 0">{{ scene.description }}</p>
-
-				<!-- 操作按钮 -->
 				<div
 					class="card-actions justify-center mt-4"
 					v-if="index !== scenes.length - 1"
@@ -48,11 +45,12 @@ const scenes = ref([
 ]);
 
 const goToLesson = (id) => {
-	router.push("/lesson/" + id);
+	router.push("/Category/" + id);
 };
 </script>
 <style>
 .home {
 	width: 100%;
+	margin-top: 140px;
 }
 </style>

@@ -6,6 +6,7 @@
 		stroke-width="1.5"
 		stroke="currentColor"
 		class="size-6"
+		:class="solid ? 'text-secondary' : ''"
 	>
 		<path
 			stroke-linecap="round"
@@ -14,4 +15,8 @@
 		/>
 	</svg>
 </template>
-<script setup></script>
+<script setup>
+defineProps({
+	solid: Boolean,
+});
+</script>

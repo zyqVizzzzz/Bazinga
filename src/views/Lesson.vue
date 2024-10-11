@@ -166,7 +166,12 @@ const dialogueCard = ref(null); // 获取 DialogueCard 实例
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
-	const response = await fetch("/constants/S01/E01.json");
+	const courseId = route.params.id; // 比如 'simpsons'
+	const season = route.params.season; // 比如 'S01'
+	const episode = route.params.episode; // 比如 'E01'
+	const response = await fetch(
+		`/constants/${courseId}/${season}/${episode}.json`
+	);
 	if (response.ok) {
 		dialoguesData.value = await response.json();
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {

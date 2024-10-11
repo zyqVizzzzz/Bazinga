@@ -84,10 +84,9 @@
 					</div>
 
 					<!-- 收藏功能 -->
-
 					<div
 						class="knowledge-card-star absolute -top-6 right-0 m-4 text-center opacity-0 duration-300 cursor-pointer"
-						:class="{ 'opacity-100': isHovered }"
+						:class="{ clicked: isBookmarked }"
 						@click="toggleBookmark"
 					>
 						<BookmarkIcon :solid="isBookmarked" />
@@ -148,20 +147,6 @@ const addNote = (point) => {
 };
 </script>
 <style scoped>
-/* 星号图标 */
-/* .knowledge-card-star {
-	width: 100%;
-	height: 40px;
-	background: rgba(0, 0, 0, 0.1);
-	cursor: pointer;
-	transition: opacity 0.3s ease-in-out;
-	color: #f6d860;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-} */
-
-/* 鼠标悬停显示星号 */
 .knowledge-card-star {
 	position: absolute;
 	top: -24px;
@@ -177,18 +162,8 @@ const addNote = (point) => {
 	transform: translateY(0);
 }
 
-.bookmark-animated {
-	animation: bookmarkDrop 0.5s ease forwards;
-}
-
-/* 书签的下拉动画 */
-@keyframes bookmarkDrop {
-	0% {
-		transform: translateY(-20px);
-	}
-	100% {
-		transform: translateY(10px);
-	}
+.clicked {
+	transform: translateY(3px) !important;
 }
 
 .knowledge-capsule {

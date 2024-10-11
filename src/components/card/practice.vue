@@ -58,7 +58,7 @@
 			<!-- 中心的 Submit 按钮 -->
 			<button
 				:class="['btn-submit', { 'rotate-360': submitClicked }]"
-				class="btn btn-primary shadow-lg w-20 h-20 mt-6 mb-6 py-2 px-4 rounded-full transition-transform transform hover:scale-105 focus:ring-2 focus:ring-primary focus:outline-none"
+				class="btn btn-accent shadow-lg w-20 h-20 mt-6 mb-6 py-2 px-4 rounded-full transition-transform transform hover:scale-105 focus:ring-2 focus:ring-primary focus:outline-none"
 				@click="checkAnswer"
 			>
 				<FlashIcon />
@@ -166,12 +166,12 @@ const checkAnswer = () => {
 }
 
 .btn-submit {
-	box-shadow: 0 4px 10px rgba(0, 0, 255, 0.5); /* 强烈的蓝色阴影 */
+	box-shadow: 0 4px 10px rgba(0, 0, 255, 0.4); /* 强烈的蓝色阴影 */
 }
 
 .input-success {
-	border-color: green;
-	background-color: #e6ffed;
+	border-color: #37cdbe;
+	background-color: #e0f4f2;
 }
 
 .input-error {
