@@ -49,7 +49,7 @@ const selectNote = (note) => {
 /* Sidebar */
 .sidebar {
 	max-width: 250px;
-	height: calc(100vh - 180px); /* Full height with some margin for header */
+	height: calc(100vh - 250px);
 	overflow-y: auto;
 }
 
@@ -64,5 +64,9 @@ const selectNote = (note) => {
 
 .sidebar li:hover {
 	color: white;
+}
+
+.edit-content {
+	height: calc(100vh - 250px);
 }
 </style>

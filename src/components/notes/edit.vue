@@ -1,84 +1,92 @@
 <template>
-	<div class="card bg-white shadow-md rounded-lg p-6 mb-4">
-		<h3 class="text-xl font-bold mb-4">{{ selectedNote.word }}</h3>
-		<p class="text-gray-600 mb-4">{{ selectedNote.symbols }}</p>
-		<p class="text-gray-600 flex justify-center">
-			<VolumeIcon />
-		</p>
-	</div>
-
-	<div
-		v-if="
-			selectedNote.system?.rootAnalysis.root ||
-			selectedNote.system?.affixAnalysis.suffix
-		"
-		class="card bg-white shadow-md rounded-lg mb-4 p-6"
-	>
-		<!-- 词根部分 -->
-		<div
-			v-if="selectedNote.system.rootAnalysis.root"
-			class="text-gray-600 mb-4"
-		>
-			<div class="mb-1 font-bold">
-				{{ selectedNote.system.rootAnalysis.root }}
-			</div>
-			<div>
-				{{ selectedNote.system.rootAnalysis.meaning_zh }}
-			</div>
-		</div>
-
-		<!-- 前缀部分 -->
-		<p
-			v-if="selectedNote.system.affixAnalysis.prefix"
-			class="text-gray-600 mb-2 font-bold"
-		>
-			{{ selectedNote.system.affixAnalysis.prefix }} -
-			{{ selectedNote.system.affixAnalysis.prefixMeaning_zh }}
-		</p>
-
-		<!-- 后缀部分 -->
-		<div
-			v-if="selectedNote.system.affixAnalysis.suffix"
-			class="text-gray-600 mb-2"
-		>
-			<div class="font-bold">
-				-{{ selectedNote.system.affixAnalysis.suffix }}
-			</div>
-			<p class="mt-1">
-				{{ selectedNote.system.affixAnalysis.suffixMeaning_zh }}
+	<div class="card bg-white shadow-md rounded-lg p-4 pt-6 mb-4 h-full">
+		<div class="border-b p-4 text-left relative" style="left: 1px">
+			<h3 class="text-xl font-bold mb-2 flex items-center">
+				<span>{{ selectedNote.word }}</span>
+				<span class="ml-4 relative cursor-pointer" style="top: 2px"
+					><VolumeIcon
+				/></span>
+			</h3>
+			<p class="text-gray-600 mb-4">
+				{{ selectedNote.pos }} {{ selectedNote.word_zh }};
+				<span class="ml-3">{{ selectedNote.symbols }}</span>
 			</p>
 		</div>
-		<p class="text-gray-600 mt-4 mb-2 font-bold">
-			{{ selectedNote.decomposedWord }}
-		</p>
-		<p class="text-gray-600 mb-2">{{ selectedNote.definition }}</p>
-		<p class="text-gray-600 mb-4">{{ selectedNote.definition_zh }}</p>
-	</div>
+		<div
+			v-if="
+				selectedNote.system?.rootAnalysis.root ||
+				selectedNote.system?.affixAnalysis.suffix
+			"
+			class="py-2 px-4 pb-6 border-b"
+		>
+			<p class="text-gray-600 mt-4 mb-3 font-bold text-left">
+				{{ selectedNote.decomposedWord }}：<span class="font-normal text-sm">{{
+					selectedNote.definition_zh
+				}}</span>
+			</p>
+			<!-- 词根部分 -->
+			<div
+				v-if="selectedNote.system.rootAnalysis.root"
+				class="text-gray-600 mb-1 text-left"
+			>
+				<p class="mb-1 font-bold">
+					<span class="text-sm">[词根] </span
+					>{{ selectedNote.system.rootAnalysis.root }}：<span
+						class="font-normal text-sm"
+						>{{ selectedNote.system.rootAnalysis.meaning_zh }}</span
+					>
+				</p>
+			</div>
+			<!-- 前缀部分 -->
+			<p
+				v-if="selectedNote.system.affixAnalysis.prefix"
+				class="text-gray-600 mb-2 font-bold"
+			>
+				{{ selectedNote.system.affixAnalysis.prefix }} -
+				{{ selectedNote.system.affixAnalysis.prefixMeaning_zh }}
+			</p>
 
-	<!-- Spelling Card -->
-	<div class="card bg-white shadow-md rounded-lg p-6 mt-4">
-		<h3 class="text-base font-bold mb-2">
-			<!-- 处理例句，包含动态的输入框或正确的单词 -->
-			<span v-for="(segment, index) in sentenceSegments" :key="index">
-				<span v-if="segment.isWord">
-					<!-- 如果拼写正确，显示正确的单词，否则显示输入框 -->
-					<template v-if="spellingCorrect">
-						<strong>{{ selectedNote.word }}</strong>
-					</template>
-					<template v-else>
-						<input
-							type="text"
-							v-model="spellingInput"
-							class="border-b-2 border-gray-300 text-center text-lg w-40 focus:outline-none"
-							@input="onInputChange"
-							ref="inputRef"
-						/>
-					</template>
+			<!-- 后缀部分 -->
+			<div
+				v-if="selectedNote.system.affixAnalysis.suffix"
+				class="text-gray-600 mb-2 text-left"
+			>
+				<p class="mb-1 font-bold">
+					<span class="text-sm">[后缀] </span>-{{
+						selectedNote.system.affixAnalysis.suffix
+					}}：<span class="font-normal text-sm">{{
+						selectedNote.system.affixAnalysis.suffixMeaning_zh
+					}}</span>
+				</p>
+			</div>
+		</div>
+		<!-- Spelling Card -->
+		<div class="p-4 mt-4">
+			<h3 class="text-base font-bold mb-2 text-left">
+				<!-- 处理例句，包含动态的输入框或正确的单词 -->
+				<span v-for="(segment, index) in sentenceSegments" :key="index">
+					<span v-if="segment.isWord">
+						<!-- 如果拼写正确，显示正确的单词，否则显示输入框 -->
+						<template v-if="spellingCorrect">
+							<strong>{{ selectedNote.word }}</strong>
+						</template>
+						<template v-else>
+							<input
+								type="text"
+								v-model="spellingInput"
+								class="border-b-2 border-gray-300 text-left text-base w-20 focus:outline-none"
+								@input="onInputChange"
+								ref="inputRef"
+							/>
+						</template>
+					</span>
+					<span v-else>{{ segment.text }}</span>
 				</span>
-				<span v-else>{{ segment.text }}</span>
-			</span>
-		</h3>
-		<p class="mb-2 text-gray-600">{{ selectedNote.example_zh }}</p>
+			</h3>
+			<p v-if="spellingCorrect" class="mb-2 text-gray-600 text-sm text-left">
+				{{ selectedNote.example_zh }}
+			</p>
+		</div>
 	</div>
 </template>
 <script setup>
