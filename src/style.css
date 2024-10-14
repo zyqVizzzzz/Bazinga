@@ -1,6 +1,13 @@
+@font-face {
+	font-family: "SJFQS"; /* 给字体命名 */
+	src: url("/fonts/SJFQS.ttf") format("truetype"); /* 引入字体文件路径 */
+	font-weight: normal;
+	font-style: normal;
+	unicode-range: U+4E00-9FFF;
+}
+
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-	font-family: "Chalkboard SE", sans-serif;
+	font-family: "Comic Sans MS", Hannotate SC;
 	line-height: 1.5;
 	font-weight: 400;
 
@@ -37,6 +44,7 @@ body {
 	flex-direction: column;
 	height: 100vh;
 }
+
 .font-cute {
 	font-family: "Chalkboard SE", sans-serif; /* 你可以替换为其他字体 */
 	font-family: "Noteworthy", sans-serif;

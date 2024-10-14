@@ -87,6 +87,7 @@ const logout = () => {
 }
 .content {
 	flex: 1 0 auto;
+	min-height: 800px;
 }
 
 .dropdown-content {

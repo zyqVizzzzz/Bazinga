@@ -1,0 +1,92 @@
+export const suffixes = [
+	{
+		suffix: "able",
+		definition: "is; can be",
+		examples: ["affordable", "sensible"],
+	},
+	{ suffix: "ible", definition: "is; can be", examples: ["sensible"] },
+	{
+		suffix: "al",
+		definition: "having characteristics of",
+		examples: ["universal"],
+	},
+	{
+		suffix: "ial",
+		definition: "having characteristics of",
+		examples: ["facial"],
+	},
+	{
+		suffix: "ed",
+		definition: "past tense verbs; adjectives",
+		examples: ["the dog walked", "the walked dog"],
+	},
+	{ suffix: "en", definition: "made of", examples: ["golden"] },
+	{
+		suffix: "er",
+		definition: "one who; person connected with",
+		examples: ["teacher", "professor"],
+	},
+	{ suffix: "er", definition: "more", examples: ["taller"] },
+	{ suffix: "est", definition: "the most", examples: ["tallest"] },
+	{ suffix: "ful", definition: "full of", examples: ["helpful"] },
+	{
+		suffix: "ic",
+		definition: "having characteristics of",
+		examples: ["poetic"],
+	},
+	{
+		suffix: "ing",
+		definition: "verb forms; present participles",
+		examples: ["sleeping"],
+	},
+	{
+		suffix: "ion",
+		definition: "act; process",
+		examples: ["submission", "motion"],
+	},
+	{
+		suffix: "tion",
+		definition: "act; process",
+		examples: ["relation", "edition"],
+	},
+	{ suffix: "ation", definition: "act; process", examples: ["relation"] },
+	{ suffix: "ity", definition: "state of", examples: ["activity", "society"] },
+	{ suffix: "ty", definition: "state of", examples: ["society"] },
+	{
+		suffix: "ive",
+		definition: "adjective form of noun",
+		examples: ["active", "comparative", "sensitive"],
+	},
+	{
+		suffix: "ative",
+		definition: "adjective form of noun",
+		examples: ["comparative"],
+	},
+	{
+		suffix: "itive",
+		definition: "adjective form of noun",
+		examples: ["sensitive"],
+	},
+	{ suffix: "less", definition: "without", examples: ["hopeless"] },
+	{ suffix: "ly", definition: "how something is", examples: ["lovely"] },
+	{
+		suffix: "ment",
+		definition: "state of being; act of",
+		examples: ["contentment"],
+	},
+	{
+		suffix: "ness",
+		definition: "state of; condition of",
+		examples: ["openness"],
+	},
+	{
+		suffix: "ous",
+		definition: "having qualities of",
+		examples: ["riotous", "courageous", "gracious"],
+	},
+	{ suffix: "eous", definition: "having qualities of", examples: ["gracious"] },
+	{ suffix: "ious", definition: "having qualities of", examples: ["gracious"] },
+	{ suffix: "s", definition: "more than one", examples: ["trains"] },
+	{ suffix: "es", definition: "more than one", examples: ["trenches"] },
+	{ suffix: "y", definition: "characterized by", examples: ["gloomy"] },
+];
