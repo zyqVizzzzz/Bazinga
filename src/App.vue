@@ -2,7 +2,6 @@
 import { useRouter } from "vue-router";
 import { ref } from "vue";
 
-const isOpen = ref(false);
 const router = useRouter();
 const goToHome = () => {
 	router.push("/");
@@ -10,10 +9,6 @@ const goToHome = () => {
 
 const goToLink = (path) => {
 	router.push("/" + path);
-};
-
-const closeDropdown = () => {
-	isOpen.value = false; // 关闭下拉菜单
 };
 
 const logout = () => {
@@ -27,7 +22,7 @@ const logout = () => {
 			<a
 				@click="goToHome"
 				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
-				>Bazinga</a
+				>Bazinga!!!</a
 			>
 		</div>
 		<div class="flex-none">

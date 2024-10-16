@@ -9,8 +9,10 @@ export default {
 	// 	themes: [
 	// 		{
 	// 			mytheme: {
-	// 				// primary: "#ff6363",
-	// 				// secondary: "#ffd36e",
+	// 				// primary: "#a991f7",
+	// 				// secondary: "#d94219",
+	// 				// accent: "#37cdbe",
+	// 				// neutral: "#3d4451",
 	// 				// accent: "#a1c4fd",
 	// 				// neutral: "#f3f4f6",
 	// 				// "base-100": "#ffffff",

@@ -66,7 +66,7 @@ const onTogglePractice = () => {
 }
 
 .title-jam.expanded {
-	width: 150px; /* Hover 时宽度自动扩展 */
+	width: 160px; /* Hover 时宽度自动扩展 */
 }
 
 .title-jam:hover {
