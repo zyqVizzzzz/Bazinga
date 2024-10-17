@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
 
 // 引入 Tailwind CSS 相关插件
 import tailwindcss from "tailwindcss";
@@ -11,6 +12,11 @@ export default defineConfig({
 	css: {
 		postcss: {
 			plugins: [tailwindcss, autoprefixer],
+		},
+	},
+	resolve: {
+		alias: {
+			"@": fileURLToPath(new URL("./src", import.meta.url)), // 让 '@' 指向 'src' 目录
 		},
 	},
 });

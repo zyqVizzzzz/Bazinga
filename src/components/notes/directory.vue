@@ -18,21 +18,7 @@
 <script setup>
 import { ref } from "vue";
 
-const notesCate = ref([
-	"S01-E01",
-	"S01-E02",
-	"S01-E03",
-	"S01-E04",
-	"S01-E05",
-	"S01-E06",
-	"S01-E07",
-	"S01-E08",
-	"S01-E09",
-	"S01-E10",
-	"S01-E11",
-	"S01-E12",
-	"S01-E13",
-]);
+const notesCate = ref(["N-01", "N-02"]);
 
 // 点击笔记目录导航到指定笔记
 const goToNote = (id) => {

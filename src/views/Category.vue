@@ -1,28 +1,54 @@
 <template>
-	<div class="container mt-10 mx-auto flex flex-col items-center">
-		<!-- 剧集信息展示 -->
-		<div v-if="infoData" class="mb-6 text-center">
-			<h1 class="text-3xl font-semibold mb-2 flex justify-center">
-				{{ isChinese ? infoData.name_zh : infoData.name }}
-			</h1>
-			<button
-				@click="toggleLanguage"
-				class="text-xs py-2 px-6 mt-1 mb-4 bg-gray-200 text-gray-600 hover:bg-gray-300 rounded-full transition duration-300"
-			>
-				{{ isChinese ? "English" : "中文" }}
-			</button>
-			<h2 class="text-xl font-semibold mb-2 text-gray-600">
-				{{ isChinese ? infoData.description_zh : infoData.description }}
-			</h2>
+	<div
+		class="w-full mx-auto flex flex-col items-center"
+		style="margin-top: -64px"
+	>
+		<!-- 剧集信息和详细信息的容器，带有背景图和渐变遮罩 -->
+		<div
+			class="relative w-full mb-8"
+			style="padding-top: 96px; padding-bottom: 64px"
+		>
+			<!-- 背景图片 -->
+			<div
+				v-if="infoData"
+				class="absolute inset-0 bg-cover bg-center opacity-50 filter-blur"
+				:style="{ backgroundImage: 'url(' + infoData.banner + ')' }"
+			></div>
 
-			<div class="bg-blue-100 mt-4 p-4 rounded-lg shadow-md">
-				<p class="font-semibold">
-					{{ isChinese ? "难度等级" : "Level" }}:
-					{{ isChinese ? infoData.level_zh : infoData.level }}
-				</p>
-				<p class="text-sm my-2 text-left">
-					{{ isChinese ? infoData.level_info_zh : infoData.level_info }}
-				</p>
+			<!-- 渐变遮罩层 -->
+			<div
+				class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"
+			></div>
+
+			<!-- 剧集信息展示，放在遮罩层上 -->
+			<div
+				v-if="infoData"
+				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
+			>
+				<h1 class="text-4xl font-semibold mb-4">
+					{{ isChinese ? infoData.name_zh : infoData.name }}
+				</h1>
+				<button
+					@click="toggleLanguage"
+					class="text-sm py-2 px-6 bg-gray-200 text-gray-600 opacity-80 hover:bg-gray-300 rounded-full transition duration-300 mb-4"
+				>
+					{{ isChinese ? "English" : "中文" }}
+				</button>
+				<h2 class="text-xl font-semibold mb-2 text-gray-200 w-4/5">
+					{{ isChinese ? infoData.description_zh : infoData.description }}
+				</h2>
+
+				<div
+					class="bg-white bg-opacity-70 mt-4 p-4 rounded-lg shadow-md text-black w-3/5"
+				>
+					<p class="font-semibold">
+						{{ isChinese ? "难度等级" : "Level" }}:
+						{{ isChinese ? infoData.level_zh : infoData.level }}
+					</p>
+					<p class="text-sm my-2 text-left">
+						{{ isChinese ? infoData.level_info_zh : infoData.level_info }}
+					</p>
+				</div>
 			</div>
 		</div>
 
@@ -32,20 +58,18 @@
 		</div>
 
 		<!-- 当前季的课程卡片 -->
-		<div v-else-if="currentSeasonEpisodes.length > 0">
+		<div v-else-if="currentSeasonEpisodes.length > 0" class="w-2/3">
 			<h2 class="text-xl font-semibold mb-4">{{ currentSeason }}</h2>
 
 			<!-- 卡片样式的课程列表 -->
-			<div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
 				<div
 					v-for="episode in currentSeasonEpisodes"
 					:key="episode"
+					@click="goToLesson(currentSeason, episode)"
 					class="card shadow-lg px-6 py-4 text-center cursor-pointer hover:shadow-xl transition-all duration-300"
 				>
-					<p
-						class="text-base font-bold"
-						@click="goToLesson(currentSeason, episode)"
-					>
+					<p class="text-sm font-bold">
 						{{ isChinese ? `第 ${episode} 集` : `Episode ${episode}` }}
 					</p>
 				</div>
@@ -98,7 +122,6 @@ const toggleLanguage = () => {
 };
 
 const goToLesson = (season, episode) => {
-	// 跳转到具体的课程页面
 	const episodeStr = `E${episode.toString().padStart(2, "0")}`; // 格式化集数，如 E01
 	router.push(`/Category/${route.params.id}/${season}/${episodeStr}`);
 };
@@ -108,8 +131,7 @@ const loadCategoryData = async () => {
 	try {
 		const response = await fetch("/constants/Category.json");
 		const data = await response.json();
-
-		// 检查 id 是否存在于 JSON 数据中
+		console.log(id.value);
 		if (data[id.value]) {
 			const category = data[id.value];
 
@@ -166,9 +188,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container {
-	max-width: 800px;
-	padding: 2rem;
+.bg-cover {
+	background-size: cover;
+	background-position: center;
 }
 
 .card {
@@ -187,4 +209,9 @@ button[disabled] {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
+.filter-blur {
+	filter: blur(5px) brightness(100%);
+	backdrop-filter: blur(10px);
+}
 </style>
+<!-- bg-gradient-to-b from-transparent to-black opacity-90 -->

@@ -14,10 +14,10 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { getDefinitions } from "../utils/decompose.js";
-import DirectoryCard from "../components/notes/directory.vue";
-import BookCard from "../components/notes/book.vue";
-import EditCard from "../components/notes/edit.vue";
+import { getDefinitions } from "@/utils/decompose.js";
+import DirectoryCard from "@/components/notes/directory.vue";
+import BookCard from "@/components/notes/book.vue";
+import EditCard from "@/components/notes/edit.vue";
 
 const notes = ref([]);
 const vocabularyNotes = ref([]);

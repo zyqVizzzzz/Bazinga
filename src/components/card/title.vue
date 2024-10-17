@@ -2,7 +2,7 @@
 	<h2
 		class="pl-6 pr-2 pb-3 card-title text-accent relative mb-5 w-full flex justify-between items-center border-b"
 	>
-		<span v-if="!isFlipped">{{ title }}</span>
+		<span v-if="!isFlipped">{{ id + ": " + title }}</span>
 		<div
 			class="flex items-center text-base font-normal title-jam"
 			@click="onTogglePractice"
@@ -36,6 +36,7 @@ import { ref } from "vue";
 const props = defineProps({
 	isFlipped: Boolean,
 	title: String,
+	id: String,
 	showPractice: Boolean,
 	currentPractice: Array,
 });

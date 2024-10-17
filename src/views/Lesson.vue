@@ -1,13 +1,13 @@
 <template>
 	<div class="container mx-auto my-10 p-6">
 		<!-- 顶部标题 -->
-		<div class="flex justify-between items-center mb-6 px-6">
-			<h1 class="text-3xl font-bold text-primary">
-				{{ scene.id }}-{{ currentDialogue.id }}
-			</h1>
-			<button class="btn btn-neutral-content" @click="toggleTrans">
+		<div class="flex justify-between items-center mb-2 px-6">
+			<!-- <h1 class="text-2xl font-bold">
+				{{ scene.id }}
+			</h1> -->
+			<!-- <button class="btn btn-neutral-content" @click="toggleTrans">
 				{{ showTrans ? "英文模式" : "双语模式" }}
-			</button>
+			</button> -->
 		</div>
 
 		<transition
@@ -21,7 +21,7 @@
 			mode="out-in"
 		>
 			<!-- key 用于触发动画，确保每次对话内容变化时都会有动画效果 -->
-			<div :key="currentDialogue.id">
+			<div :key="currentDialogue.id" class="relative">
 				<div
 					class="card w-full bg-base-100 shadow-lg mb-6 h-100 overflow-y-auto flip-container"
 					:class="{ flipped: isFlipped }"
@@ -34,6 +34,7 @@
 								<TitleBar
 									:isFlipped="isFlipped"
 									:title="currentDialogue.title"
+									:id="currentDialogue.id"
 									:showPractice="showPractice"
 									:currentPractice="currentPractice"
 									@on-toggle-practice="togglePractice"
@@ -104,6 +105,28 @@
 						</div>
 					</div>
 				</div>
+				<div
+					class="text-xs text-center mt-3 trans-capsule absolute"
+					:style="{
+						opacity: isHovered ? 1 : 0.5,
+					}"
+					@mouseenter="isHovered = true"
+					@mouseleave="isHovered = false"
+				>
+					<span
+						@click="toggleTrans"
+						class="cursor-pointer"
+						:class="showTrans ? 'text-gray-400' : 'font-bold'"
+						>英</span
+					>
+					/
+					<span
+						@click="toggleTrans"
+						class="cursor-pointer"
+						:class="!showTrans ? 'text-gray-400' : 'font-bold'"
+						>译</span
+					>
+				</div>
 			</div>
 		</transition>
 		<!-- 左右箭头按钮 -->
@@ -133,19 +156,20 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import LeftArrowIcon from "../components/icons/LeftArrow.vue";
-import RightArrowIcon from "../components/icons/RightArrow.vue";
+import LeftArrowIcon from "@/components/icons/LeftArrow.vue";
+import RightArrowIcon from "@/components/icons/RightArrow.vue";
 
-import TitleBar from "../components/card/title.vue";
-import KnowledgeCard from "../components/card/knowledge.vue";
-import DialogueCard from "../components/card/dialogue.vue";
-import PracticeCard from "../components/card/practice.vue";
-import SpeakingCapsule from "../components/capsule/Speaking.vue";
-import ReadingCapsule from "../components/capsule/Reading.vue";
+import TitleBar from "@/components/card/title.vue";
+import KnowledgeCard from "@/components/card/knowledge.vue";
+import DialogueCard from "@/components/card/dialogue.vue";
+import PracticeCard from "@/components/card/practice.vue";
+import SpeakingCapsule from "@/components/capsule/Speaking.vue";
+import ReadingCapsule from "@/components/capsule/Reading.vue";
 
 const router = useRouter();
 const route = useRoute();
 
+const isHovered = ref(false);
 // 初始化 scene 和 dialogues
 const dialoguesData = ref(null);
 const scene = ref({});
@@ -399,5 +423,24 @@ const handleSlideChange = (data) => {
 .fade-slide-left-leave-to {
 	transform: translateX(30%);
 	opacity: 0;
+}
+
+.trans-capsule {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 12px; /* 等效于 py-4 */
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+	width: 90px;
+	height: 20px;
+	margin: 8px auto 0;
+	border-radius: 20px;
+	border: 2px solid var(--secondary-color); /* 使用 Tailwind 中的 secondary 颜色 */
+	box-shadow: 0 4px 12px rgba(207, 165, 55, 0.3); /* 红色阴影 */
+	bottom: 14px;
+	left: 50%;
+	transform: translateX(-50%);
 }
 </style>
