@@ -16,7 +16,13 @@
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1">
 				<!-- 如果用户已登录，显示 Notebook 和 Profile -->
-
+				<li v-if="isLoggedIn">
+					<a
+						class="btn btn-white btn-ghost hover:text-inherit"
+						@click="goToHome('profile')"
+						>Home</a
+					>
+				</li>
 				<li v-if="isLoggedIn">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
@@ -121,7 +127,7 @@ watch(
 			checkLoginStatus();
 		}
 
-		if (newPath.includes("Category")) {
+		if (newPath.includes("category")) {
 			isCategory.value = true;
 		} else {
 			isCategory.value = false;

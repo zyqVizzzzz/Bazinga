@@ -160,7 +160,7 @@
 				style="top: -100px; width: 200%"
 			>
 				<div class="arrow-base arrow-4"></div>
-				Notice: With math, 6900 simply cannot be contained by 500
+				With math, 6900 simply cannot be contained by 500
 			</div>
 		</div>
 	</div>
@@ -243,8 +243,8 @@ const user = {
 	background-image: url("@/assets/5.png");
 	transform: scaleY(1) scaleX(-1) rotate(80deg);
 	position: absolute;
-	bottom: -55px;
-	left: 50px;
+	bottom: -50px;
+	left: 60px;
 }
 
 .edit-module {

@@ -13,12 +13,12 @@ const routes = [
 		component: Home,
 	},
 	{
-		path: "/Category/:id",
+		path: "/category/:id",
 		name: "Category",
 		component: Category,
 	},
 	{
-		path: "/Category/:id/:season/:episode", // 根据季和集进入具体课程内容
+		path: "/category/:id/:season/:episode", // 根据季和集进入具体课程内容
 		name: "Lesson",
 		component: Lesson,
 	},

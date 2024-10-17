@@ -108,7 +108,7 @@ const articles = ref([
 ]);
 
 const goToLesson = (id) => {
-	router.push("/Category/" + id);
+	router.push("/category/" + id);
 };
 </script>
 <style>
