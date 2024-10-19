@@ -166,7 +166,8 @@ const checkAnswer = () => {
 }
 
 .btn-submit {
-	box-shadow: 0 4px 10px rgba(0, 0, 255, 0.4); /* 强烈的蓝色阴影 */
+	box-shadow: 0 4px 10px rgba(var(--primary-color-rgb), 0.4); /* 强烈的蓝色阴影 */
+	color: #fff;
 }
 
 .input-success {

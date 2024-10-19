@@ -19,6 +19,21 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	--primary-color: #7a81d5; /* 进一步提高饱和度的蓝色 */
+	--secondary-color: #e64b94; /* 进一步提高饱和度的粉色 */
+	--accent-color: #5cc6bb; /* 进一步提高饱和度的绿色 */
+	--neutral-color: #505665; /* 进一步提高饱和度的灰色 */
+	--base-100-color: #f2f2f2; /* 浅灰白背景 */
+	--orange-color: #e36a32; /* 进一步提高饱和度的橙色 */
+
+	/* RGB values for reference */
+	--primary-color-rgb: 122, 129, 213;
+	--secondary-color-rgb: 230, 75, 148;
+	--accent-color-rgb: 92, 198, 187;
+	--neutral-color-rgb: 80, 86, 101;
+	--base-100-color-rgb: 242, 242, 242;
+	--orange-color-rgb: 227, 106, 50;
 }
 
 a {
@@ -45,9 +60,6 @@ body {
 	height: 100vh;
 }
 
-.font-cute {
-	font-family: "Chalkboard SE", sans-serif; /* 你可以替换为其他字体 */
-	font-family: "Noteworthy", sans-serif;
-	font-family: "Comic Sans MS", sans-serif;
-	font-weight: 300;
+.modal-white {
+	background-color: white !important;
 }

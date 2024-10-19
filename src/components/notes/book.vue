@@ -2,10 +2,10 @@
 	<!-- 笔记容器，带有分页 -->
 	<div
 		ref="notebookRef"
-		class="relative notebook bg-white shadow-md rounded-lg px-6 py-5 w-full bg-grid-paper"
+		class="relative notebook bg-white shadow-md rounded-lg border-2 border-black px-6 py-5 w-full bg-grid-paper"
 	>
-		<h2 class="text-2xl font-medium text-gray-600 text-left mb-4 pl-2">
-			Vocabulary
+		<h2 class="text-2xl font-medium text-gray-800 text-left mb-4 pl-2">
+			生词表
 		</h2>
 		<ul
 			class="list-disc list-inside text-gray-700 text-left mb-6 flex flex-wrap"
@@ -16,62 +16,77 @@
 				:key="index"
 			>
 				<div
-					class="pl-2 transition-shadow duration-300 ease-in-out hover:shadow-red cursor-pointer"
+					class="pl-2 transition-shadow duration-300 ease-in-out cursor-pointer flex items-center"
 					style="padding-top: 2px; padding-bottom: 2px"
 					@click="selectNote(note)"
 				>
-					<span class="font-bold text-base">{{ note.word }}</span>
-					<span class="ml-4 text-gray-500">{{ note.pos }}</span>
-					<span class="text-gray-800 ml-2"
-						><strong>{{ note.word_zh }}</strong></span
-					>
+					<mark class="pink" v-if="activeNote.word === note.word"
+						>{{ note.word }}
+
+						<span class="ml-4 text-gray-500">{{ note.pos }}</span>
+						<span class="text-gray-800 ml-2">
+							<strong>{{ note.word_zh }}</strong>
+						</span>
+					</mark>
+					<div v-else>
+						<span class="text-base">{{ note.word }}</span>
+
+						<span class="ml-4 text-gray-500">{{ note.pos }}</span>
+						<span class="text-gray-800 ml-2">
+							<strong>{{ note.word_zh }}</strong>
+						</span>
+					</div>
 				</div>
 			</li>
 		</ul>
 		<!-- 分页器 -->
-		<div class="absolute right-4 bottom-4 inline-flex items-center space-x-4">
+		<div
+			class="absolute right-50 bottom-4 transform -translate-x-1/2 inline-flex items-center space-x-4"
+		>
 			<button
-				class="btn btn-secondary"
+				class="btn btn-secondary btn-sm px-4 text-white"
 				@click="prevPage"
 				:disabled="currentPage === 1"
 			>
-				Prev
+				<
 			</button>
 			<span class="text-gray-600">{{ currentPage }} / {{ totalPages }}</span>
 			<button
-				class="btn btn-secondary"
+				class="btn btn-secondary btn-sm px-4 text-white"
 				@click="nextPage"
 				:disabled="currentPage === totalPages"
 			>
-				Next
+				>
 			</button>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-const notebookRef = ref(null);
-const currentPage = ref(1);
+import { ref, toRefs, computed, onMounted, onBeforeUnmount } from "vue";
+import BookmarkIcon from "@/components/icons/Bookmark.vue";
 
-// 将父组件的相关 props 或数据传递到这里
-const notes = ref([]); // 用于存储词汇笔记
-// const vocabularyNotes = ref([]);
 const props = defineProps({
 	notes: Object,
+	activeNote: Object,
 });
+
+const notebookRef = ref(null);
+const currentPage = ref(1);
+const { activeNote } = toRefs(props);
 
 // 每页显示的项目数，默认设置为 6
 const itemsPerPage = ref(6);
 
-// 监听窗口大小并根据容器高度动态计算每页的项目数
 const calculateItemsPerPage = () => {
-	const containerHeight = notebookRef.value?.offsetHeight - 192 || 0; // 获取容器高度
-	console.log(containerHeight);
-	const itemHeight = 36; // 假设每个项目的高度为40px (可根据实际调整)
-	itemsPerPage.value = Math.ceil(containerHeight / itemHeight) * 2; // 根据高度计算每页显示的项目数
+	const containerHeight = notebookRef.value?.offsetHeight - 192 || 0;
+	const itemHeight = 36;
+	itemsPerPage.value = Math.ceil(containerHeight / itemHeight) * 2;
+};
 
-	console.log(itemsPerPage.value);
+// 处理窗口大小变化
+const handleResize = () => {
+	calculateItemsPerPage();
 };
 
 // 计算总页数
@@ -87,15 +102,15 @@ const paginatedVocabularyNotes = computed(() => {
 	return props.notes.slice(start, end);
 });
 
-// 监听窗口变化，动态调整每页项目数
-const handleResize = () => {
-	calculateItemsPerPage();
-};
-
 // 在组件挂载时初始化
 onMounted(() => {
-	calculateItemsPerPage(); // 初始化时计算每页项目数
-	window.addEventListener("resize", handleResize); // 监听窗口变化
+	calculateItemsPerPage();
+	window.addEventListener("resize", handleResize);
+	// 默认选中第一个单词
+	if (props.notes.length > 0) {
+		activeNote.value = props.notes[0]; // 设置为第一个单词
+		emit("on-select-note", activeNote.value); // 默认选中第一个单词
+	}
 });
 
 // 清除监听器
@@ -107,7 +122,7 @@ const emit = defineEmits(["on-select-note"]);
 
 // 选中笔记并展示在 edit-content 区域
 const selectNote = (note) => {
-	// 在父组件中处理选中逻辑
+	activeNote.value = note; // 设置当前选中的单词为 active
 	emit("on-select-note", note);
 };
 
@@ -128,6 +143,9 @@ const prevPage = () => {
 <style scoped>
 /* 自定义阴影颜色为浅红色 */
 .hover\:shadow-red:hover {
+	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
+}
+.shadow-red {
 	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
 }
 
@@ -159,7 +177,8 @@ const prevPage = () => {
 
 .notebook {
 	position: relative;
-	height: calc(100vh - 250px);
+	height: calc(100vh - 280px);
+	min-height: 600px;
 	overflow-y: auto;
 }
 

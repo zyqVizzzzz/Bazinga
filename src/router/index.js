@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue"; // 引入 Home 页面
 import Notebook from "../views/Notebook.vue"; // 引入 笔记本（Notebook） 页面
+
 import Category from "../views/Category.vue"; // 引入 目录（Category） 页面
 import Lesson from "../views/Lesson.vue"; // 引入 课程（Lesson） 页面
 import Profile from "../views/Profile.vue"; // 引入 课程（Lesson） 页面

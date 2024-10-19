@@ -49,7 +49,6 @@ const onToggleHints = () => {
 	padding: 24px 0; /* 等效于 py-4 */
 	width: 80px;
 	height: 150px;
-	border: 2px solid var(--secondary-color); /* 使用 Tailwind 中的 secondary 颜色 */
-	box-shadow: 0 4px 12px rgba(255, 0, 255, 0.4); /* 红色阴影 */
+	box-shadow: 0 4px 12px rgba(var(--secondary-color-rgb), 0.7); /* 红色阴影 */
 }
 </style>

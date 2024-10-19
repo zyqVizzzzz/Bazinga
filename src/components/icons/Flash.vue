@@ -5,7 +5,7 @@
 		viewBox="0 0 24 24"
 		stroke-width="1.5"
 		stroke="currentColor"
-		class="size-6"
+		:class="size ? 'size-' + size : 'size-6'"
 	>
 		<path
 			stroke-linecap="round"
@@ -14,3 +14,8 @@
 		/>
 	</svg>
 </template>
+<script setup>
+defineProps({
+	size: String,
+});
+</script>

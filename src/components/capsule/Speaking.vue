@@ -56,8 +56,8 @@ const isHoveredR = ref(false);
 	height: 100px;
 	width: 150px;
 	border-radius: 10px;
-	border: 2px solid var(--primary-color);
-	box-shadow: 0 4px 15px rgba(0, 0, 255, 0.4); /* 蓝色阴影 */
+	/* border: 2px solid var(--primary-color); */
+	box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.4); /* 蓝色阴影 */
 }
 .capsule-tooltips {
 	height: 100px;

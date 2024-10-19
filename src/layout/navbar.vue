@@ -19,8 +19,15 @@
 				<li v-if="isLoggedIn">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToHome('profile')"
+						@click="goToHome()"
 						>Home</a
+					>
+				</li>
+				<li v-if="isLoggedIn">
+					<a
+						class="btn btn-white btn-ghost hover:text-inherit"
+						@click="goToLink('notebook')"
+						>Notebook</a
 					>
 				</li>
 				<li v-if="isLoggedIn">

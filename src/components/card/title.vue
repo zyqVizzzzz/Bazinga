@@ -71,8 +71,8 @@ const onTogglePractice = () => {
 }
 
 .title-jam:hover {
-	color: #37cdbe; /* Hover后的文字颜色 */
-	box-shadow: 0 1px 8px rgba(6, 111, 101, 0.326); /* Hover后的蓝色阴影 */
+	color: var(--accent-color); /* Hover后的文字颜色 */
+	box-shadow: 0 1px 8px rgba(var(--accent-color-rgb), 0.2); /* Hover后的蓝色阴影 */
 }
 
 /* 保证容器高度和宽度 */

@@ -13,13 +13,13 @@
 .swiper-pagination-bullet {
 	width: 10px;
 	height: 10px;
-	background: oklch(69.71% 0.329 342.55 / 1) !important;
+	background: rgb(var(--secondary-color-rgb)) !important;
 	border-radius: 50%;
 	margin: 0 5px;
 	cursor: pointer;
 }
 mark.pink {
-	border-bottom: 3px solid oklch(69.71% 0.329 342.55 / 1);
+	border-bottom: 3px solid rgb(var(--secondary-color-rgb));
 	background: none;
 	margin: 0 -2px;
 	padding: 0 2px;

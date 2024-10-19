@@ -47,7 +47,9 @@
 
 				<!-- Submit Button -->
 				<div class="text-center">
-					<button type="submit" class="btn btn-primary w-full">Log In</button>
+					<button type="submit" class="btn btn-primary w-full text-gray-100">
+						Log In
+					</button>
 				</div>
 			</form>
 

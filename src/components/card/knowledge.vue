@@ -35,38 +35,39 @@
 				>
 					<div class="card-body block py-4 px-6">
 						<!-- 单词及音标 -->
-						<h3 class="card-title text-secondary text-lg">
+						<h3 class="card-title text-secondary text-lg mb-1">
 							{{ point.word }}
 						</h3>
 						<!-- 词性 -->
 						<p
 							v-if="point.pos"
-							class="text-left text-sm text-gray-500 font-light mb-1"
+							class="text-left text-sm text-gray-500 font-light mb-2"
 						>
-							{{ point.pos }}
-							<span v-if="point.symbols" class="text-sm text-gray-500 ml-2"
+							{{ point.word_zh }}
+							<span class="text-sm text-gray-500 ml-2">{{ point.pos }}</span>
+
+							<span v-if="point.symbols" class="text-sm text-gray-500 ml-4"
 								>[{{ point.symbols }}]</span
 							>
-						</p>
-						<!-- 定义 -->
-						<p class="text-left text-sm mb-3">
-							{{ point.word_zh }}
 						</p>
 						<!-- Rank (根据 rank 动态显示星级) -->
 						<div class="flex items-center relative -left-1 mb-4">
 							<span class="badge badge-secondary"
-								><span class="relative -top-0.5">{{ point.type }}</span>
-								<div class="ml-2 flex">
-									<template v-for="n in 5">
-										<StarIcon
-											:class="
-												n <= point.rank ? 'text-yellow-400' : 'text-pink-300'
-											"
-										/>
-									</template>
-								</div>
+								><span class="relative -top-0.5 text-white">{{
+									point.type
+								}}</span>
 							</span>
+							<!-- <div class="ml-2 flex">
+								<template v-for="n in 5">
+									<StarIcon
+										:class="
+											n <= point.rank ? 'text-yellow-500' : 'text-pink-300'
+										"
+									/>
+								</template>
+							</div> -->
 						</div>
+
 						<div class="border border-base-200 border-b"></div>
 						<!-- 例句 -->
 						<p
