@@ -107,7 +107,7 @@
 				</div>
 				<div
 					v-if="!isFlipped"
-					class="text-xs text-center mt-3 trans-capsule absolute"
+					class="text-xs text-center mt-3 trans-capsule shadow-md absolute"
 					:style="{
 						opacity: isHovered ? 1 : 0.5,
 					}"
@@ -438,8 +438,8 @@ const handleSlideChange = (data) => {
 	height: 20px;
 	margin: 8px auto 0;
 	border-radius: 20px;
-	border: 2px solid rgba(var(--orange-color-rgb), 0.3); /* 使用 Tailwind 中的 secondary 颜色 */
-	box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); /* 红色阴影 */
+	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
+	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
 	bottom: 18px;
 	left: 50%;
 	transform: translateX(-50%);
