@@ -26,7 +26,7 @@
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
 			>
 				<h1 class="text-4xl font-semibold mb-4">
-					{{ isChinese ? infoData.name_zh : infoData.name }}
+					{{ isChinese ? infoData.showName : infoData.name }}
 				</h1>
 				<!-- <button
 					@click="toggleLanguage"
@@ -35,7 +35,7 @@
 					{{ isChinese ? "English" : "中文" }}
 				</button> -->
 				<h2 class="text-xl font-semibold mb-2 text-gray-200 w-4/5">
-					{{ isChinese ? infoData.description_zh : infoData.description }}
+					{{ infoData.description }}
 				</h2>
 
 				<div
@@ -43,10 +43,10 @@
 				>
 					<p class="font-semibold">
 						{{ isChinese ? "难度等级" : "Level" }}:
-						{{ isChinese ? infoData.level_zh : infoData.level }}
+						{{ infoData.difficulty }}
 					</p>
 					<p class="text-sm my-2 text-left">
-						{{ isChinese ? infoData.level_info_zh : infoData.level_info }}
+						{{ infoData.difficultyDetails }}
 					</p>
 				</div>
 			</div>
@@ -104,6 +104,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import apiClient from "@/api";
 
 const router = useRouter();
 const route = useRoute();
@@ -129,28 +130,13 @@ const goToLesson = (season, episode) => {
 // 异步加载 JSON 数据
 const loadCategoryData = async () => {
 	try {
-		const response = await fetch("/constants/Category.json");
-		const data = await response.json();
-		console.log(id.value);
-		if (data[id.value]) {
-			const category = data[id.value];
-
-			// 存储 Info 信息
-			if (category.Info) {
-				infoData.value = category.Info;
-			}
-
-			// 存储季节数据
-			seasons.value = Object.keys(category).filter((key) => key !== "Info");
-			episodes.value = seasons.value.reduce((acc, season) => {
-				acc[season] = category[season];
-				return acc;
-			}, {});
-		} else {
-			infoData.value = null;
-			seasons.value = [];
-			episodes.value = {};
-		}
+		// const response = await fetch("/constants/Category.json");
+		const response = await apiClient.get(`/catalogs/${route.params.id}`);
+		infoData.value = response.data;
+		response.data.seasons.forEach((item) => {
+			seasons.value.push(item.seasonNumber);
+			episodes.value[item.seasonNumber] = item.episodes;
+		});
 	} catch (error) {
 		console.error("Error loading JSON:", error);
 		infoData.value = null;

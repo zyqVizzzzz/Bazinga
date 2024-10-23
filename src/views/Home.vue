@@ -10,11 +10,11 @@
 				v-for="scene in scenes"
 				:key="scene.id"
 				class="card w-80 bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-				@click="goToLesson(scene.id)"
+				@click="goToLesson(scene._id)"
 			>
-				<div class="w-full" style="height: 150px" v-if="scene.logo">
+				<div class="w-full" style="height: 150px" v-if="scene.banner">
 					<img
-						:src="scene.logo"
+						:src="scene.banner"
 						alt="logo"
 						class="w-full h-full object-cover"
 						style="border-radius: 0.8rem 0.8rem 0 0"
@@ -24,18 +24,16 @@
 				<div
 					class="card-body justify-center items-center"
 					style="height: 180px"
+					:style="{ color: scene.theme }"
 				>
-					<h2
-						class="card-title justify-center text-primary"
-						:style="{ color: scene.themeColor }"
-					>
+					<h2 class="card-title justify-center">
 						{{ scene.name }}
 					</h2>
 					<p
 						style="flex-grow: 0; font-weight: 900"
-						:style="{ color: scene.themeColor }"
+						:style="{ color: scene.theme }"
 					>
-						{{ scene.description }}
+						{{ scene.showName }}
 					</p>
 					<!-- <p class="text-xs" style="flex-grow: 0; font-weight: 900">
 					{{ scene.level }}
@@ -76,27 +74,24 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import apiClient from "@/api";
 
 const router = useRouter();
-const scenes = ref([
-	{
-		id: "simpsons",
-		name: "The Simpsons",
-		description: "辛普森一家",
-		level: "初级/中级",
-		logo: new URL("@/assets/simpsons.jpg", import.meta.url).href,
-		// themeColor: "#e6c800",
-		themeColor: "#cfa537",
-	},
-	{
-		id: "rickandmorty",
-		name: "Rick and Morty",
-		level: "中级/高级",
-		logo: new URL("@/assets/ram.jpg", import.meta.url).href,
-		description: "瑞克和莫蒂",
-		themeColor: "#1d7414",
-	},
-]);
+const scenes = ref([]);
+
+onMounted(() => {
+	getCatalogs();
+});
+
+const getCatalogs = async () => {
+	try {
+		const response = await apiClient.get("/catalogs");
+		scenes.value = response.data;
+		console.log(scenes.value);
+	} catch (error) {
+		console.error("Failed to fetch catalogs", error);
+	}
+};
 
 // 文章列表数据
 const articles = ref([
