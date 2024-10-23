@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col w-full p-6">
+	<div class="flex flex-col w-full p-6 relative">
 		<!-- 工具箱栏 -->
 		<div class="w-full toolbox mb-6">
 			<Toolbox @on-search-word="onSearchWord" :flashState="flashState" />
@@ -8,7 +8,7 @@
 		<div class="w-full flex">
 			<!-- 单词列表 -->
 			<div
-				class="w-1/2 notebook-container mr-4 flex flex-col"
+				class="w-1/2 notebook-container border-2 border-gray-500 bg-paper mr-4 flex flex-col"
 				v-if="vocabularyNotes.length"
 			>
 				<BookCard
@@ -18,7 +18,10 @@
 				/>
 			</div>
 			<!-- 详细释义 -->
-			<div class="w-1/2 edit-content" v-if="selectedNote">
+			<div
+				class="w-1/2 bg-paper border-2 border-gray-500 edit-content"
+				v-if="selectedNote"
+			>
 				<EditCard :selectedNote="selectedNote" @on-add-point="onAddPoint" />
 			</div>
 		</div>
@@ -91,6 +94,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.notebook-container {
+	overflow-y: auto;
+	height: calc(100vh - 280px);
+	min-height: 600px;
+}
 .edit-content {
 	height: calc(100vh - 280px);
 	min-height: 600px;

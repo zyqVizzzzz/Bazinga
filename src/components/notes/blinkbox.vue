@@ -34,7 +34,7 @@
 			<!-- 动画容器 -->
 			<div
 				v-if="!isBackgroundOpened"
-				class="text-lg text-secondary cursor-pointer font-bold flex flex-col items-center justify-center"
+				class="text-lg text-secondary cursor-pointer font-bold w-20 flex flex-col items-center justify-center"
 			>
 				<!-- 闪电图标带抖动动画 -->
 				<FlashIcon

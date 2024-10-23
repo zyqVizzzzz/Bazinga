@@ -1,7 +1,5 @@
 <template>
-	<div
-		class="toolbox w-full flex items-center justify-between p-2 bg-black rounded-lg"
-	>
+	<div class="toolbox w-full flex items-center justify-between p-2 rounded-lg">
 		<div>
 			<button
 				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
@@ -22,7 +20,7 @@
 				placeholder="输入单词"
 			/>
 			<button
-				class="btn btn-sm h-8 text-xs px-4 border-2 border-none text-secondary bg-white hover:border-secondary hover:bg-secondary hover:text-white"
+				class="btn btn-sm bg-paper h-8 text-xs px-4 border-2 border-none text-secondary hover:border-secondary hover:bg-secondary"
 				@click="searchWord"
 			>
 				搜索
@@ -87,6 +85,8 @@ watch(flashState, (newVal, oldVal) => {
 <style scoped>
 .toolbox {
 	height: 50px; /* 调整工具箱栏的高度 */
+	background: linear-gradient(155deg, #222222, #1b1b1b);
+	box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
 }
 /* 闪电图标的动画效果 */
 @keyframes lightningMove {

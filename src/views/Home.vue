@@ -2,7 +2,7 @@
 	<div class="home">
 		<h1 class="text-2xl font-bold mb-10 text-center">
 			Version 1.0.0
-			<span class="text-base block">持续更新中...</span>
+			<span class="text-base block">美剧笔记本</span>
 		</h1>
 		<div class="flex flex-wrap justify-center mb-20 gap-12">
 			<!-- 循环渲染关卡 -->
@@ -48,7 +48,7 @@
 		<div class="w-full mt-10">
 			<h1 class="text-2xl font-bold mb-10 text-center">
 				Version 2.0.0
-				<span class="text-base block">版本日志</span>
+				<span class="text-base block">AI同伴 & 自制剧集</span>
 			</h1>
 
 			<div
@@ -65,7 +65,7 @@
 						</div>
 						<div class="text-base">
 							{{ article.title_zh }}
-							--------------------------------------------- 0%
+							----------------------------------------------------- 1%
 						</div>
 					</div>
 				</div>
@@ -101,8 +101,8 @@ const scenes = ref([
 // 文章列表数据
 const articles = ref([
 	{
-		title: "Base6900：6900 simply cannot be contained by 500",
-		title_zh: "一封开发者的来信",
+		title: "With math, 6900 simply cannot be contained by 500",
+		title_zh: "开发者留言",
 		progress: 0,
 	},
 ]);

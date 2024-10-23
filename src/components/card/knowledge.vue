@@ -99,7 +99,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, defineEmits } from "vue";
+import { ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper-bundle.css";
 import { Pagination } from "swiper/modules";

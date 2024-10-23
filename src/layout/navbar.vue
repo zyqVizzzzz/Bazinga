@@ -16,28 +16,28 @@
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1">
 				<!-- 如果用户已登录，显示 Notebook 和 Profile -->
-				<li v-if="isLoggedIn">
+				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToHome()"
-						>Home</a
+						>首页</a
 					>
 				</li>
-				<li v-if="isLoggedIn">
+				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('notebook')"
-						>Notebook</a
+						>笔记</a
 					>
 				</li>
-				<li v-if="isLoggedIn">
+				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('profile')"
-						>Profile</a
+						>个人主页</a
 					>
 				</li>
-				<li v-if="isLoggedIn">
+				<li v-if="isLogin">
 					<a class="btn btn-white btn-ghost hover:text-inherit" @click="logout">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -57,18 +57,18 @@
 				</li>
 
 				<!-- 如果用户未登录，显示 Signup 和 Login -->
-				<li v-else>
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('signup')"
-						>Signup</a
-					>
-				</li>
-				<li v-else>
+				<li v-if="!isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('login')"
 						>Login</a
+					>
+				</li>
+				<li v-if="!isLogin">
+					<a
+						class="btn btn-white btn-ghost hover:text-inherit"
+						@click="goToLink('signup')"
+						>Signup</a
 					>
 				</li>
 			</ul>
@@ -77,12 +77,15 @@
 </template>
 <script setup>
 import { useRouter, useRoute } from "vue-router";
-import { ref, onMounted, watch } from "vue";
-import apiClient from "@/api";
+import { ref, onMounted, watch, computed } from "vue";
+
+import { useLoginStore } from "@/store/index";
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
+const { setLoginState } = loginStore;
 
 const router = useRouter();
 const route = useRoute();
-const isLoggedIn = ref(false); // 用来跟踪用户是否已登录
 const username = ref(""); // 保存已登录用户的名字
 const isCategory = ref(false);
 const isProfile = ref(false);
@@ -100,7 +103,7 @@ const goToLink = (path) => {
 // 登出逻辑
 const logout = () => {
 	localStorage.removeItem("token"); // 删除 JWT
-	isLoggedIn.value = false; // 设置用户未登录状态
+	setLoginState(false);
 	username.value = "";
 	router.push({
 		path: "/login",
@@ -108,32 +111,14 @@ const logout = () => {
 	});
 };
 
-const checkLoginStatus = async () => {
-	try {
-		const response = await apiClient.get("/auth/status"); // 假设接口返回用户登录状态
-		if (response.data.status === "logged_in") {
-			isLoggedIn.value = true;
-			username.value = response.data.user.email; // 获取用户名
-		} else {
-			isLoggedIn.value = false;
-		}
-	} catch (error) {
-		console.error("Error checking login status:", error);
-	}
-};
-
 // 在挂载时检查登录状态
 onMounted(() => {
-	checkLoginStatus();
+	// checkLoginStatus();
 });
 
 watch(
 	() => route.path,
 	(newPath, oldPath) => {
-		if (oldPath === "/login" || newPath === "/login") {
-			checkLoginStatus();
-		}
-
 		if (newPath.includes("category")) {
 			isCategory.value = true;
 		} else {

@@ -28,12 +28,12 @@
 				<h1 class="text-4xl font-semibold mb-4">
 					{{ isChinese ? infoData.name_zh : infoData.name }}
 				</h1>
-				<button
+				<!-- <button
 					@click="toggleLanguage"
 					class="text-sm py-2 px-6 bg-gray-200 text-gray-600 opacity-80 hover:bg-gray-300 rounded-full transition duration-300 mb-4"
 				>
 					{{ isChinese ? "English" : "中文" }}
-				</button>
+				</button> -->
 				<h2 class="text-xl font-semibold mb-2 text-gray-200 w-4/5">
 					{{ isChinese ? infoData.description_zh : infoData.description }}
 				</h2>
@@ -115,7 +115,7 @@ const seasons = ref([]); // 用于存储季节的 key (如 S01, S02)
 const episodes = ref({}); // 用于存储每季的集数
 const currentSeasonIndex = ref(0); // 当前季的索引
 const loading = ref(true); // 加载状态
-const isChinese = ref(false); // 控制是否显示中文
+const isChinese = ref(true); // 控制是否显示中文
 
 const toggleLanguage = () => {
 	isChinese.value = !isChinese.value;

@@ -20,6 +20,10 @@ export default {
 					boxShadow: {
 						secondary: "0 4px 12px rgba(230, 75, 148, 0.3)", // 使用你的 secondary 颜色
 					},
+					zIndex: {
+						100: "100",
+						200: "200",
+					},
 				},
 			},
 		],

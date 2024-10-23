@@ -1,15 +1,5 @@
 <template>
 	<div class="container mx-auto my-10 p-6">
-		<!-- 顶部标题 -->
-		<div class="flex justify-between items-center mb-2 px-6">
-			<!-- <h1 class="text-2xl font-bold">
-				{{ scene.id }}
-			</h1> -->
-			<!-- <button class="btn btn-neutral-content" @click="toggleTrans">
-				{{ showTrans ? "英文模式" : "双语模式" }}
-			</button> -->
-		</div>
-
 		<transition
 			:name="
 				!isFirstLoad
@@ -26,6 +16,11 @@
 					class="card w-full bg-base-100 shadow-lg mb-6 h-100 overflow-y-auto flip-container"
 					:class="{ flipped: isFlipped }"
 					style="min-height: 500px; height: auto"
+					:style="
+						!isListenMode
+							? 'box-shadow: 0px 8px 10px rgba(0,0,0, 0.2)'
+							: 'box-shadow: 0px 8px 10px rgba(var(--primary-color-rgb), 0.2);'
+					"
 				>
 					<div class="card w-full h-full">
 						<div class="front">
@@ -154,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import LeftArrowIcon from "@/components/icons/LeftArrow.vue";
@@ -166,6 +161,11 @@ import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
+
+import { useLessonStore } from "@/store";
+
+const lessonStore = useLessonStore();
+const isListenMode = ref(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -207,6 +207,19 @@ onMounted(async () => {
 		console.error("Failed to load JSON file.");
 	}
 });
+
+watch(
+	() => lessonStore.isListenMode, // 监控 isListenMode 的状态变化
+	(newVal) => {
+		if (newVal) {
+			isListenMode.value = newVal;
+			console.log("Listen mode is activated");
+		} else {
+			isListenMode.value = newVal;
+			console.log("Listen mode is deactivated");
+		}
+	}
+);
 
 // 切换显示 Tabs 的状态
 const toggleHints = () => {

@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "../views/Home.vue"; // 引入 Home 页面
-import Notebook from "../views/Notebook.vue"; // 引入 笔记本（Notebook） 页面
-
-import Category from "../views/Category.vue"; // 引入 目录（Category） 页面
-import Lesson from "../views/Lesson.vue"; // 引入 课程（Lesson） 页面
-import Profile from "../views/Profile.vue"; // 引入 课程（Lesson） 页面
+import Home from "@/views/Home.vue";
+import Notebook from "@/views/Notebook.vue";
+import Category from "@/views/Category.vue";
+import Lesson from "@/views/Lesson.vue";
+import Profile from "@/views/Profile.vue";
 import Login from "@/views/Login.vue";
+import Signup from "@/views/Signup.vue";
 
 const routes = [
 	{
@@ -37,6 +37,11 @@ const routes = [
 		path: "/login",
 		name: "Login",
 		component: Login,
+	},
+	{
+		path: "/signup",
+		name: "Signup",
+		component: Signup,
 	},
 ];
 

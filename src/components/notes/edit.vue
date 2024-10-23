@@ -1,7 +1,5 @@
 <template>
-	<div
-		class="card bg-white shadow-md border-2 border-black rounded-lg p-4 pt-5 mb-4 h-full"
-	>
+	<div class="card relative rounded-lg p-4 pt-5 mb-4 h-full">
 		<h2
 			class="text-2xl pb-2 font-medium text-gray-800 text-left pl-4 flex justify-between items-center"
 		>
@@ -12,7 +10,8 @@
 			></span>
 			<span class="flex items-center">
 				<button
-					class="edit-shadow mr-4 text-xs text-secondary bg-white rounded-lg px-4 py-2 transition-all duration-300"
+					class="edit-shadow bg-paper mr-4 text-xs text-secondary rounded-lg px-4 py-2 transition-all duration-300"
+					style="border: none"
 					@click="toggleEditModal"
 				>
 					编辑
@@ -26,7 +25,7 @@
 			</span>
 		</h2>
 
-		<div class="border-b p-4 text-left relative">
+		<div class="border-b border-gray-300 p-4 text-left relative">
 			<p class="text-sm flex items-center">
 				<span class="mr-2">{{ selectedNote.symbols }}；</span
 				>{{ selectedNote.pos }} {{ selectedNote.word_zh }}；
@@ -38,7 +37,7 @@
 				selectedNote.system?.affixAnalysis.suffix ||
 				selectedNote.system?.affixAnalysis.prefix
 			"
-			class="py-4 px-4 border-b"
+			class="py-4 px-4 border-b border-gray-300"
 		>
 			<p class="text-gray-600 mb-4 font-bold text-left">
 				<span class="font-normal text-sm">{{
@@ -94,7 +93,7 @@
 				</p>
 			</div>
 		</div>
-		<div class="border-b px-4 py-4 text-left relative">
+		<div class="border-b border-gray-300 px-4 py-4 text-left relative">
 			<p class="text-gray-600 mb-2 text-sm text-left">
 				<span class="font-bold"
 					>{{ selectedNote.system?.wordInflections.baseForm_zh }} - </span

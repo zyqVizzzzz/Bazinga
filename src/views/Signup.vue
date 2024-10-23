@@ -2,11 +2,11 @@
 	<div class="mt-40 flex items-center justify-center">
 		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
 			<h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">
-				Login
+				Sign Up
 			</h1>
 
-			<form @submit.prevent="login">
-				<!-- Username Input -->
+			<form @submit.prevent="register">
+				<!-- Email Input -->
 				<div class="mb-4">
 					<label
 						for="email"
@@ -14,7 +14,7 @@
 						>Email:</label
 					>
 					<input
-						type="text"
+						type="email"
 						id="email"
 						v-model="email"
 						class="input input-bordered w-full"
@@ -40,6 +40,23 @@
 					/>
 				</div>
 
+				<!-- Confirm Password Input -->
+				<div class="mb-4">
+					<label
+						for="confirmPassword"
+						class="text-left pl-3 block text-gray-700 text-sm mb-2"
+						>Confirm Password:</label
+					>
+					<input
+						type="password"
+						id="confirmPassword"
+						v-model="confirmPassword"
+						class="input input-bordered w-full"
+						placeholder="Confirm your password"
+						required
+					/>
+				</div>
+
 				<!-- Error Message -->
 				<div v-if="errorMessage" class="text-red-500 text-sm mb-4">
 					{{ errorMessage }}
@@ -48,16 +65,16 @@
 				<!-- Submit Button -->
 				<div class="text-center">
 					<button type="submit" class="btn btn-primary w-full text-gray-100">
-						Log In
+						Sign Up
 					</button>
 				</div>
 			</form>
 
-			<!-- Sign up Link -->
+			<!-- Login Link -->
 			<p class="text-center text-sm mt-4 text-gray-600">
-				Don't have an account?
-				<a @click="goToSignup" class="text-blue-500 cursor-pointer"
-					>Sign up here</a
+				Already have an account?
+				<a @click="goToLogin" class="text-blue-500 cursor-pointer"
+					>Log in here</a
 				>.
 			</p>
 		</div>
@@ -66,43 +83,41 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import apiClient from "@/api"; // axios 实例
-
-import { useLoginStore } from "@/store/index";
-const loginStore = useLoginStore();
-const { setLoginState } = loginStore;
+import { useRouter } from "vue-router";
+import apiClient from "@/api";
 
 const router = useRouter();
-const route = useRoute();
 
-// 用户输入的用户名和密码
+// 用户输入的注册信息
 const email = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 const errorMessage = ref("");
 
-// 登录函数
-const login = async () => {
+// 注册函数
+const register = async () => {
+	if (password.value !== confirmPassword.value) {
+		errorMessage.value = "Passwords do not match. Please try again.";
+		return;
+	}
+
 	try {
-		const response = await apiClient.post("/auth/login", {
+		const response = await apiClient.post("/users/register", {
 			email: email.value,
 			password: password.value,
 		});
-
-		if (response.data.access_token) {
-			localStorage.setItem("token", response.data.access_token); // 保存 token
-			setLoginState(true);
-			const redirectPath = route.query.redirect || "/";
-			router.replace({ path: redirectPath, force: true });
+		console.log(response.data);
+		if (response.data.user) {
+			router.push("/login"); // 注册成功后跳转到登录页面
 		}
 	} catch (error) {
-		errorMessage.value = "Invalid email or password. Please try again.";
+		errorMessage.value = "Registration failed. Please try again.";
 	}
 };
 
-// 跳转到注册页面
-const goToSignup = () => {
-	router.push("/signup");
+// 跳转到登录页面
+const goToLogin = () => {
+	router.push("/login");
 };
 </script>
 

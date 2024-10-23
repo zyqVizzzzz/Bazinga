@@ -2,7 +2,7 @@
 	<!-- 笔记容器，带有分页 -->
 	<div
 		ref="notebookRef"
-		class="relative notebook bg-white shadow-md rounded-lg border-2 border-black px-6 py-5 w-full bg-grid-paper"
+		class="relative notebook bg-white shadow-md rounded-lg px-6 py-5 w-full bg-grid-paper"
 	>
 		<h2 class="text-2xl font-medium text-gray-800 text-left mb-4 pl-2">
 			生词表
@@ -165,21 +165,19 @@ const prevPage = () => {
 
 /* 细格子背景 */
 .bg-grid-paper {
-	background-color: white;
+	background-color: transparent;
 	background-image: linear-gradient(
 			90deg,
 			rgba(0, 0, 0, 0.03) 1px,
 			transparent 1px
 		),
 		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-	background-size: 20px 20px; /* 网格间距 */
+	background-size: 15px 15px; /* 网格间距 */
 }
 
 .notebook {
 	position: relative;
-	height: calc(100vh - 280px);
-	min-height: 600px;
-	overflow-y: auto;
+	height: 100%;
 }
 
 .pagination-container {

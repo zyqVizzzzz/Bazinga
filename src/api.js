@@ -1,4 +1,5 @@
 import axios from "axios";
+import router from "@/router";
 
 // 创建 axios 实例
 const apiClient = axios.create({
@@ -30,7 +31,11 @@ apiClient.interceptors.response.use(
 	(error) => {
 		// 可以在这里处理错误，如未授权、网络问题等
 		if (error.response && error.response.status === 401) {
-			console.error("Unauthorized access - perhaps you need to log in.");
+			const currentRoute = router.currentRoute.value; // 获取当前路由
+			router.push({
+				path: "/login",
+				query: { redirect: currentRoute.fullPath },
+			});
 		}
 		return Promise.reject(error);
 	}
