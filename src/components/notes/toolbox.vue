@@ -5,7 +5,7 @@
 				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
 				@click="startReviewMode"
 			>
-				重点词汇{{ count }}
+				重点词汇
 				<div v-if="showLightning" class="lightning-animation absolute flex">
 					<FlashIcon :size="'4'" class="mr-2" />+1
 				</div>

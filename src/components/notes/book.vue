@@ -59,12 +59,16 @@
 </template>
 
 <script setup>
-import { ref, toRefs, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
 
-const notebookRef = ref(null);
 const emit = defineEmits(["on-select-note"]);
+const props = defineProps({
+	searchWord: Object,
+	searchIndex: Number,
+});
 
+const notebookRef = ref(null);
 const vocabularyNotes = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = ref(20);
@@ -113,10 +117,30 @@ const prevPage = () => {
 		getNotebook(currentPage.value);
 	}
 };
+
+watch(
+	() => [props.searchWord, props.searchIndex],
+	([newSearchWord, newSearchIndex], [oldSearchWord, oldSearchIndex]) => {
+		if (newSearchIndex !== oldSearchIndex || newSearchWord !== oldSearchWord) {
+			const page = Math.ceil((newSearchIndex + 1) / itemsPerPage.value); // 根据索引确定页码
+			currentPage.value = page;
+			// 调用 getNotebook，确保在正确页码加载后设置 activeNote
+			getNotebook(page).then(() => {
+				// 将 activeNote 设置为搜索的单词
+				const foundNote = vocabularyNotes.value.find(
+					(note) => note.word === newSearchWord.word
+				);
+				if (foundNote) {
+					selectNote(foundNote); // 设置选中单词
+				}
+			});
+		}
+	},
+	{ deep: true }
+);
 </script>
 
 <style scoped>
-/* 自定义阴影颜色为浅红色 */
 .hover\:shadow-red:hover {
 	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
 }
@@ -124,12 +148,10 @@ const prevPage = () => {
 	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
 }
 
-/* 过渡效果 */
 .transition-shadow {
 	transition: box-shadow 0.3s ease-in-out;
 }
 
-/* 信纸背景 */
 .bg-line-paper {
 	background-image: linear-gradient(
 		transparent 28px,
@@ -138,7 +160,6 @@ const prevPage = () => {
 	background-size: 100% 29px;
 }
 
-/* 细格子背景 */
 .bg-grid-paper {
 	background-color: transparent;
 	background-image: linear-gradient(
