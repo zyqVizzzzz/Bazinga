@@ -12,30 +12,26 @@
 		>
 			<li
 				class="mt-2 w-1/2"
-				v-for="(note, index) in paginatedVocabularyNotes"
+				v-for="(note, index) in vocabularyNotes"
 				:key="index"
 			>
 				<div
-					class="pl-2 transition-shadow duration-300 ease-in-out cursor-pointer flex items-center"
+					class="pl-2 transition-shadow duration-300 ease-in-out cursor-pointer flex"
 					style="padding-top: 2px; padding-bottom: 2px"
 					@click="selectNote(note)"
 				>
 					<mark class="pink" v-if="activeNote.word === note.word"
 						>{{ note.word }}
-
-						<span class="ml-4 text-gray-500">{{ note.pos }}</span>
-						<span class="text-gray-800 ml-2">
-							<strong>{{ note.word_zh }}</strong>
-						</span>
 					</mark>
 					<div v-else>
 						<span class="text-base">{{ note.word }}</span>
-
-						<span class="ml-4 text-gray-500">{{ note.pos }}</span>
-						<span class="text-gray-800 ml-2">
-							<strong>{{ note.word_zh }}</strong>
-						</span>
 					</div>
+				</div>
+				<div class="pl-2 text-sm">
+					<span class="text-gray-500 mr-2" v-if="note.pos">{{ note.pos }}</span>
+					<span class="text-gray-800">
+						<strong>{{ note.word_zh }}</strong>
+					</span>
 				</div>
 			</li>
 		</ul>
@@ -64,61 +60,26 @@
 
 <script setup>
 import { ref, toRefs, computed, onMounted, onBeforeUnmount } from "vue";
-import BookmarkIcon from "@/components/icons/Bookmark.vue";
-
-const props = defineProps({
-	notes: Object,
-	activeNote: Object,
-});
+import apiClient from "@/api";
 
 const notebookRef = ref(null);
+const emit = defineEmits(["on-select-note"]);
+
+const vocabularyNotes = ref([]);
 const currentPage = ref(1);
-const { activeNote } = toRefs(props);
+const itemsPerPage = ref(20);
+const totalCounts = ref(0);
+const activeNote = ref({});
 
-// 每页显示的项目数，默认设置为 6
-const itemsPerPage = ref(6);
-
-const calculateItemsPerPage = () => {
-	const containerHeight = notebookRef.value?.offsetHeight - 192 || 0;
-	const itemHeight = 36;
-	itemsPerPage.value = Math.ceil(containerHeight / itemHeight) * 2;
-};
-
-// 处理窗口大小变化
-const handleResize = () => {
-	calculateItemsPerPage();
-};
+onMounted(() => {
+	getNotebook();
+});
 
 // 计算总页数
 const totalPages = computed(() => {
-	const totalItems = props.notes.length;
+	const totalItems = totalCounts.value;
 	return Math.ceil(totalItems / itemsPerPage.value);
 });
-
-// 获取当前页显示的 vocabulary 内容
-const paginatedVocabularyNotes = computed(() => {
-	const start = (currentPage.value - 1) * itemsPerPage.value;
-	const end = start + itemsPerPage.value;
-	return props.notes.slice(start, end);
-});
-
-// 在组件挂载时初始化
-onMounted(() => {
-	calculateItemsPerPage();
-	window.addEventListener("resize", handleResize);
-	// 默认选中第一个单词
-	if (props.notes.length > 0) {
-		activeNote.value = props.notes[0]; // 设置为第一个单词
-		emit("on-select-note", activeNote.value); // 默认选中第一个单词
-	}
-});
-
-// 清除监听器
-onBeforeUnmount(() => {
-	window.removeEventListener("resize", handleResize);
-});
-
-const emit = defineEmits(["on-select-note"]);
 
 // 选中笔记并展示在 edit-content 区域
 const selectNote = (note) => {
@@ -126,16 +87,30 @@ const selectNote = (note) => {
 	emit("on-select-note", note);
 };
 
+const getNotebook = async (page = 1, limit = 20) => {
+	const response = await apiClient.get(
+		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}`
+	);
+	if (response.status === 200) {
+		const { notes, total } = response.data;
+		vocabularyNotes.value = notes;
+		totalCounts.value = total;
+		selectNote(vocabularyNotes.value[0]);
+	}
+};
+
 // 分页导航
 const nextPage = () => {
 	if (currentPage.value < totalPages.value) {
 		currentPage.value++;
+		getNotebook(currentPage.value);
 	}
 };
 
 const prevPage = () => {
 	if (currentPage.value > 1) {
 		currentPage.value--;
+		getNotebook(currentPage.value);
 	}
 };
 </script>

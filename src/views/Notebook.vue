@@ -9,13 +9,8 @@
 			<!-- 单词列表 -->
 			<div
 				class="w-1/2 notebook-container border-2 border-gray-500 bg-paper mr-4 flex flex-col"
-				v-if="vocabularyNotes.length"
 			>
-				<BookCard
-					:notes="vocabularyNotes"
-					:activeNote="selectedNote || vocabularyNotes[0]"
-					@on-select-note="selectNote"
-				/>
+				<BookCard @on-select-note="selectNote" />
 			</div>
 			<!-- 详细释义 -->
 			<div
@@ -37,6 +32,7 @@ import BlinkBoxCard from "@/components/notes/blinkbox.vue";
 import Toolbox from "@/components/notes/toolbox.vue";
 import BookCard from "@/components/notes/book.vue";
 import EditCard from "@/components/notes/edit.vue";
+import apiClient from "@/api";
 
 import { useNotebookStore } from "@/store/index";
 const notebookStore = useNotebookStore();
@@ -47,25 +43,19 @@ const selectedNote = ref(null);
 const flashState = ref(0);
 
 const onSearchWord = async (word) => {
-	const response = await fetch(`/constants/Notebook.json`);
-	if (response.ok) {
-		const data = await response.json();
-		const notes = data.notes.filter((note) => note.from === "knowledges");
-		const result = notes.find(
-			(note) => note.word.toLowerCase() === word.toLowerCase()
-		);
-		if (result) {
-			selectNote(result);
-		} else {
-			console.log("未查到单词");
-		}
-	}
+	// const result = vocabularyNotes.value.find(
+	// 	(note) => note.word.toLowerCase() === word.toLowerCase()
+	// );
+	// if (result) {
+	// 	selectNote(result);
+	// } else {
+	// 	console.log("未查到单词");
+	// }
 };
 
 // 选中笔记并展示在 edit-content 区域
 const selectNote = (note) => {
 	selectedNote.value = note;
-	// Object.assign(selectedNote.value, getDefinitions(note.word));
 };
 
 const onAddPoint = () => {
@@ -81,26 +71,17 @@ watch(showBlinkbox, (newValue) => {
 	}
 });
 
-onMounted(async () => {
-	const response = await fetch(`/constants/Notebook.json`);
-	if (response.ok) {
-		const data = await response.json();
-		vocabularyNotes.value = data.notes.filter(
-			(note) => note.from === "knowledges"
-		);
-		console.log(vocabularyNotes.value);
-	}
-});
+onMounted(async () => {});
 </script>
 
 <style scoped>
 .notebook-container {
 	overflow-y: auto;
 	height: calc(100vh - 280px);
-	min-height: 600px;
+	min-height: 730px;
 }
 .edit-content {
 	height: calc(100vh - 280px);
-	min-height: 600px;
+	min-height: 730px;
 }
 </style>

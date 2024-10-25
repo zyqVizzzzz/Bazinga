@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-show="showHints && currentKnowledgePoints.length > 0"
+		v-show="showHints && localKnowledgePoints.length > 0"
 		class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 	>
 		<button
@@ -26,7 +26,7 @@
 			class="h-full"
 		>
 			<SwiperSlide
-				v-for="(point, index) in currentKnowledgePoints"
+				v-for="(point, index) in localKnowledgePoints"
 				:key="index"
 				class="flex justify-center items-center h-full"
 			>
@@ -87,8 +87,8 @@
 					<!-- 收藏功能 -->
 					<div
 						class="knowledge-card-star absolute -top-6 right-0 m-4 text-center opacity-0 duration-300 cursor-pointer"
-						:class="{ clicked: isBookmarked }"
-						@click="toggleBookmark"
+						:class="{ clicked: point.marked }"
+						@click="toggleBookmark(point)"
 					>
 						<BookmarkIcon :solid="isBookmarked" />
 					</div>
@@ -99,13 +99,13 @@
 	</div>
 </template>
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper-bundle.css";
 import { Pagination } from "swiper/modules";
-import StarIcon from "../icons/Star.vue";
 import BookmarkIcon from "../icons/Bookmark.vue";
 import LightIcon from "../icons/Light.vue";
+import apiClient from "@/api";
 
 const mySwiper = ref(null); // Swiper 实例
 const pagination = {
@@ -113,39 +113,86 @@ const pagination = {
 	clickable: true, // 允许点击切换
 };
 
-defineProps({
+const props = defineProps({
 	currentKnowledgePoints: Object,
-	showTrans: Boolean,
 	showHints: Boolean,
+	currentCustomNotes: Array,
+	resourceId: String,
+	currentDialogueIndex: Number,
 });
+const emit = defineEmits(["on-slide-change", "on-toggle-hints", "update-note"]);
 
-// 当前知识点卡片索引
-const currentKnowledgeIndex = ref(0);
-const emit = defineEmits(["on-slide-change", "on-toggle-hints"]);
-// Swiper 滑动事件处理，更新当前知识点卡片索引
+const currentKnowledgeIndex = ref(0); // 当前知识点卡片索引
+const localKnowledgePoints = ref([]); // 创建局部的响应式数组
+
+// 滑动事件处理，更新当前知识点卡片索引
 const onSlideChange = (swiper) => {
 	currentKnowledgeIndex.value = swiper.activeIndex;
-	emit("on-slide-change", currentKnowledgeIndex.value); // 可以传递数据作为参数
+	emit("on-slide-change", currentKnowledgeIndex.value);
 };
 
-// 鼠标悬停状态
-const isHovered = ref(false);
 // 是否收藏状态
 const isBookmarked = ref(false);
-
-// 切换书签状态
-const toggleBookmark = () => {
-	isBookmarked.value = !isBookmarked.value;
+const toggleBookmark = async (point) => {
+	point.scene = props.currentDialogueIndex + 1; // 当前场景
+	try {
+		if (point.marked) {
+			// 移除笔记
+			const response = await apiClient.post("/lesson-notes/remove", {
+				resourceId: props.resourceId,
+				word: point.word,
+			});
+			if (response.status === 201) {
+				point.marked = false;
+				emit("update-note", {
+					word: point.word,
+					action: "remove",
+					scene: point.scene,
+				});
+			}
+		} else {
+			// 添加笔记
+			const response = await apiClient.put(
+				`/lesson-notes/${props.resourceId}`,
+				point
+			);
+			if (response.status === 200) {
+				point.marked = true;
+				emit("update-note", { note: point, action: "add", scene: point.scene }); // 通知父组件更新笔记（添加）
+			}
+		}
+	} catch (error) {
+		console.error("Error updating bookmark:", error);
+	}
 };
 
 const onToggleHints = () => {
 	emit("on-toggle-hints");
 };
 
-// 添加到笔记本
-const addNote = (point) => {
-	console.log("Added to notebook:", point);
+// 比对两个数组的 word 属性
+const compareCustomNotesWithKnowledgePoints = () => {
+	localKnowledgePoints.value.forEach((point) => {
+		// 检查 currentCustomNotes 数组中是否存在相同的 word
+		const matchedNote = props.currentCustomNotes.find(
+			(note) => note.word === point.word
+		);
+		if (matchedNote) {
+			point.marked = true;
+		} else {
+			point.marked = false;
+		}
+	});
+	console.log(props.currentCustomNotes, localKnowledgePoints.value);
 };
+
+onMounted(() => {
+	localKnowledgePoints.value = JSON.parse(
+		JSON.stringify(props.currentKnowledgePoints)
+	);
+
+	compareCustomNotesWithKnowledgePoints();
+});
 </script>
 <style scoped>
 .knowledge-card-star {
@@ -164,6 +211,7 @@ const addNote = (point) => {
 }
 
 .clicked {
+	opacity: 1;
 	transform: translateY(3px) !important;
 }
 

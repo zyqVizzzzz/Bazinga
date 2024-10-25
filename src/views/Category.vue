@@ -123,7 +123,7 @@ const toggleLanguage = () => {
 };
 
 const goToLesson = (season, episode) => {
-	const episodeStr = `E${episode.toString().padStart(2, "0")}`; // 格式化集数，如 E01
+	const episodeStr = `${episode.toString()}`; // 格式化集数，如 E01
 	router.push(`/category/${route.params.id}/${season}/${episodeStr}`);
 };
 

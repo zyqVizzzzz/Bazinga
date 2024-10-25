@@ -73,9 +73,14 @@
 									<KnowledgeCard
 										:showHints="showHints"
 										:currentKnowledgePoints="currentKnowledgePoints"
-										:showTrans="showTrans"
+										:currentCustomNotes="
+											customNotes[currentDialogueIndex + 1] || []
+										"
+										:currentDialogueIndex="currentDialogueIndex"
+										:resourceId="episodeId"
 										@on-toggle-hints="toggleHints"
 										@on-slide-change="handleSlideChange"
+										@update-note="handleUpdateNote"
 									/>
 								</div>
 							</div>
@@ -163,6 +168,7 @@ import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
 
 import { useLessonStore } from "@/store";
+import apiClient from "@/api";
 
 const lessonStore = useLessonStore();
 const isListenMode = ref(false);
@@ -188,24 +194,94 @@ const showPractice = ref(false);
 const showTrans = ref(false);
 
 const dialogueCard = ref(null); // 获取 DialogueCard 实例
+const episodeId = ref("");
 
-// 在组件挂载时，确保数据加载正确
-onMounted(async () => {
-	const courseId = route.params.id; // 比如 'simpsons'
-	const season = route.params.season; // 比如 'S01'
-	const episode = route.params.episode; // 比如 'E01'
-	const response = await fetch(
-		`/constants/${courseId}/${season}/${episode}.json`
-	);
-	if (response.ok) {
-		dialoguesData.value = await response.json();
+const getLesson = async () => {
+	const courseId = route.params.id;
+	const season = route.params.season;
+	const episode = route.params.episode;
+
+	try {
+		// 获取课程的元数据
+		const res = await apiClient.get(
+			`/lessons/show/${courseId}/season/${season}/episode/${episode}`
+		);
+
+		// 检查是否有有效的数据
+		if (!res.data || !res.data.scriptUrl) {
+			throw new Error("课程信息不完整或未找到");
+		}
+
+		// 获取剧本文件
+		const scriptRes = await fetch(res.data.scriptUrl);
+		if (!scriptRes.ok) {
+			throw new Error("无法获取剧本文件");
+		}
+
+		dialoguesData.value = await scriptRes.json();
+
+		// 检查 JSON 数据结构是否正确
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
 			scene.value = dialoguesData.value.scenes[0];
 			dialogues.value = scene.value.dialogues || [];
+			episodeId.value = res.data._id;
+		} else {
+			throw new Error("剧本中没有场景数据");
 		}
-	} else {
-		console.error("Failed to load JSON file.");
+	} catch (error) {
+		console.error("Error loading lesson:", error);
+	} finally {
 	}
+};
+
+const customNotes = ref({});
+const getVocabulary = async () => {
+	try {
+		const res = await apiClient.get(`/lesson-notes/${episodeId.value}`);
+		const notes = res.data.notes;
+		const categorizedNotes = {};
+
+		// 根据 scene 进行分类
+		notes.forEach((note) => {
+			const scene = note.scene;
+			if (!categorizedNotes[scene]) {
+				categorizedNotes[scene] = [];
+			}
+			categorizedNotes[scene].push(note);
+		});
+
+		customNotes.value = categorizedNotes;
+		console.log("customNotes", customNotes.value);
+	} catch (error) {
+		console.error("Error fetching vocabulary:", error);
+	}
+};
+
+const handleUpdateNote = ({ note, word, action, scene }) => {
+	console.log("in", customNotes.value, scene);
+
+	// 检查 customNotes.value 是否存在该 scene 的数组，如果不存在则初始化为一个空数组
+	if (!customNotes.value[scene]) {
+		customNotes.value[scene] = [];
+	}
+
+	if (action === "add") {
+		// 如果是添加笔记，将新笔记推送到 customNotes 中
+		customNotes.value[scene].push(note);
+	} else if (action === "remove") {
+		// 如果是移除笔记，根据 word 删除 customNotes 中的相应条目
+		console.log(customNotes.value[scene]);
+		customNotes.value[scene] = customNotes.value[scene].filter(
+			(n) => n.word !== word
+		);
+		console.log(customNotes.value[scene]);
+	}
+};
+
+// 在组件挂载时，确保数据加载正确
+onMounted(async () => {
+	await getLesson();
+	await getVocabulary();
 });
 
 watch(
@@ -334,7 +410,6 @@ const highlightedTextZh = computed(() => {
 
 // 动态获取当前台词的知识点
 const currentKnowledgePoints = computed(() => {
-	// 确保 currentDialogue 有效并存在 knowledge
 	return currentDialogue.value.knowledge || [];
 });
 
