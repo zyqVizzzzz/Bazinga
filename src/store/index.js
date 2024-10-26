@@ -76,13 +76,14 @@ export const useLessonStore = defineStore("lesson", {
 export const useNotebookStore = defineStore("notebook", {
 	state: () => ({
 		showBlinkbox: false,
+		currentActiveNote: {},
 	}),
-	getters: {
-		doubleCount: (state) => state.count * 2,
-	},
 	actions: {
 		toggleBlinkBox() {
 			this.showBlinkbox = !this.showBlinkbox;
+		},
+		setCurrentActiveNote(note) {
+			this.currentActiveNote = note;
 		},
 	},
 	// persist: true,

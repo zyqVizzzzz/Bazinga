@@ -1,14 +1,11 @@
 <template>
 	<div class="toolbox w-full flex items-center justify-between p-2 rounded-lg">
-		<div>
+		<div class="action-buttons flex items-center space-x-2">
 			<button
-				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
-				@click="startReviewMode"
+				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white"
+				@click="openBlinkBox"
 			>
-				重点词汇
-				<div v-if="showLightning" class="lightning-animation absolute flex">
-					<FlashIcon :size="'4'" class="mr-2" />+1
-				</div>
+				单词盲盒
 			</button>
 		</div>
 
@@ -27,12 +24,15 @@
 			</button>
 		</div>
 
-		<div class="action-buttons flex items-center space-x-2">
+		<div>
 			<button
-				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white"
-				@click="openBlinkBox"
+				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
+				@click="startReviewMode"
 			>
-				单词盲盒
+				重点词汇
+				<div v-if="showLightning" class="lightning-animation absolute flex">
+					<FlashIcon :size="'4'" class="mr-2" />+1
+				</div>
 			</button>
 		</div>
 	</div>
@@ -112,8 +112,9 @@ watch(flashState, (newVal, oldVal) => {
 .lightning-animation {
 	color: var(--secondary-color);
 	font-size: 14px;
-	animation: lightningMove 3s ease-in-out forwards;
+	animation: lightningMove 2s ease-in-out forwards;
 	position: absolute;
-	right: -60px; /* 控制闪电图标在按钮右侧 */
+	top: -25px; /* 控制闪电图标在按钮右侧 */
+	z-index: 9999;
 }
 </style>

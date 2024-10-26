@@ -5,7 +5,7 @@
 		</div>
 		<div class="w-full flex">
 			<div
-				class="w-1/2 notebook-container border-2 border-gray-500 bg-paper mr-4 flex flex-col"
+				class="w-1/2 notebook-container border-2 border-gray-500 mr-4 flex flex-col"
 			>
 				<BookCard
 					:searchIndex="searchIndex"
@@ -15,7 +15,7 @@
 				/>
 			</div>
 			<div
-				class="w-1/2 bg-paper border-2 border-gray-500 edit-content"
+				class="w-1/2 border-2 border-gray-500 edit-content"
 				v-if="selectedNote"
 			>
 				<EditCard :selectedNote="selectedNote" @on-add-point="onAddPoint" />
@@ -70,9 +70,11 @@ watch(showBlinkbox, (newValue) => {
 	overflow-y: auto;
 	height: calc(100vh - 280px);
 	min-height: 730px;
+	border-radius: 8px;
 }
 .edit-content {
 	height: calc(100vh - 280px);
 	min-height: 730px;
+	border-radius: 8px;
 }
 </style>

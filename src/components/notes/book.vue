@@ -40,7 +40,7 @@
 			class="absolute right-50 bottom-4 transform -translate-x-1/2 inline-flex items-center space-x-4"
 		>
 			<button
-				class="btn btn-secondary btn-sm px-4 text-white"
+				class="btn btn-sm px-4 text-white"
 				@click="prevPage"
 				:disabled="currentPage === 1"
 			>
@@ -48,7 +48,7 @@
 			</button>
 			<span class="text-gray-600">{{ currentPage }} / {{ totalPages }}</span>
 			<button
-				class="btn btn-secondary btn-sm px-4 text-white"
+				class="btn btn-sm px-4 text-white"
 				@click="nextPage"
 				:disabled="currentPage === totalPages"
 			>
@@ -61,6 +61,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
+import { useNotebookStore } from "@/store/index";
 
 const emit = defineEmits(["on-select-note"]);
 const props = defineProps({
@@ -75,6 +76,9 @@ const itemsPerPage = ref(20);
 const totalCounts = ref(0);
 const activeNote = ref({});
 
+const notebookStore = useNotebookStore();
+const { setCurrentActiveNote } = notebookStore;
+
 onMounted(() => {
 	getNotebook();
 });
@@ -88,6 +92,7 @@ const totalPages = computed(() => {
 // 选中笔记并展示在 edit-content 区域
 const selectNote = (note) => {
 	activeNote.value = note; // 设置当前选中的单词为 active
+	setCurrentActiveNote(note);
 	emit("on-select-note", note);
 };
 
@@ -155,7 +160,7 @@ watch(
 .bg-line-paper {
 	background-image: linear-gradient(
 		transparent 28px,
-		rgba(229, 229, 229, 0.4) 12px
+		rgba(229, 229, 229, 0.2) 12px
 	);
 	background-size: 100% 29px;
 }

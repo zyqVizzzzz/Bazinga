@@ -2,7 +2,7 @@
 	<h2
 		class="pl-6 pr-2 pb-3 card-title text-accent relative mb-5 w-full flex justify-between items-center border-b"
 	>
-		<span v-if="!isFlipped">{{ id + ": " + title }}</span>
+		<span>{{ id + ": " + title }}</span>
 		<div
 			class="flex items-center text-base font-normal title-jam"
 			@click="onTogglePractice"
@@ -13,10 +13,10 @@
 			<div class="jam-text-wrapper">
 				<!-- 旧文字 -->
 				<span
-					class="text-slide"
+					class="text-slide text-sm"
 					:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
 				>
-					Flip it
+					练习模式
 				</span>
 				<!-- 新文字 -->
 				<span
@@ -27,7 +27,6 @@
 				</span>
 			</div>
 		</div>
-		<span v-if="isFlipped">{{ title }}</span>
 	</h2>
 </template>
 
@@ -67,12 +66,12 @@ const onTogglePractice = () => {
 }
 
 .title-jam.expanded {
-	width: 160px; /* Hover 时宽度自动扩展 */
+	width: 170px; /* Hover 时宽度自动扩展 */
 }
 
 .title-jam:hover {
 	color: var(--accent-color); /* Hover后的文字颜色 */
-	box-shadow: 0 1px 8px rgba(var(--accent-color-rgb), 0.2); /* Hover后的蓝色阴影 */
+	box-shadow: 0 1px 8px rgba(var(--accent-color-rgb), 0.5); /* Hover后的蓝色阴影 */
 }
 
 /* 保证容器高度和宽度 */
