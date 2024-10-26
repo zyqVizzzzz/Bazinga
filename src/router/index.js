@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
 import Notebook from "@/views/Notebook.vue";
+import Notebook2 from "@/views/Notebook2.vue";
 import Category from "@/views/Category.vue";
 import Lesson from "@/views/Lesson.vue";
 import Profile from "@/views/Profile.vue";
@@ -28,6 +29,11 @@ const routes = [
 		path: "/notebook",
 		name: "Notebook",
 		component: Notebook,
+	},
+	{
+		path: "/notebook2",
+		name: "Notebook2",
+		component: Notebook2,
 	},
 	{
 		path: "/profile",

@@ -5,7 +5,7 @@
 		class="relative notebook bg-white shadow-md rounded-lg px-6 py-5 w-full bg-grid-paper"
 	>
 		<h2 class="text-2xl font-medium text-gray-800 text-left mb-4 pl-2">
-			生词表
+			{{ isImportantMode ? "重点词表" : "生词表" }}
 		</h2>
 		<ul
 			class="list-disc list-inside text-gray-700 text-left mb-6 flex flex-wrap"
@@ -67,6 +67,8 @@ const emit = defineEmits(["on-select-note"]);
 const props = defineProps({
 	searchWord: Object,
 	searchIndex: Number,
+	isImportantMode: Boolean,
+	minusPoint: Number,
 });
 
 const notebookRef = ref(null);
@@ -75,6 +77,7 @@ const currentPage = ref(1);
 const itemsPerPage = ref(20);
 const totalCounts = ref(0);
 const activeNote = ref({});
+const isImportantMode = ref(false);
 
 const notebookStore = useNotebookStore();
 const { setCurrentActiveNote } = notebookStore;
@@ -98,7 +101,7 @@ const selectNote = (note) => {
 
 const getNotebook = async (page = 1, limit = 20) => {
 	const response = await apiClient.get(
-		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}`
+		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}&isImportant=${isImportantMode.value}`
 	);
 	if (response.status === 200) {
 		const { notes, total } = response.data;
@@ -142,6 +145,30 @@ watch(
 		}
 	},
 	{ deep: true }
+);
+
+watch(
+	() => props.isImportantMode,
+	(newValue) => {
+		console.log(newValue);
+		if (newValue) {
+			isImportantMode.value = props.isImportantMode;
+			getNotebook();
+		} else {
+			isImportantMode.value = false;
+			getNotebook();
+		}
+	}
+);
+
+watch(
+	() => props.minusPoint,
+	(newValue, oldValue) => {
+		console.log(newValue, oldValue);
+		if (newValue > oldValue) {
+			getNotebook();
+		}
+	}
 );
 </script>
 

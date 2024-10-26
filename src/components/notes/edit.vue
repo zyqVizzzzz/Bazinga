@@ -12,9 +12,12 @@
 			<span class="flex items-center">
 				<span
 					class="text-secondary cursor-pointer transition-all mr-1 duration-300 relative"
-					@click="togglePoint"
+					@click="toggleImportantBadge"
 					style="top: 1px"
-					><BookmarkIcon :solid="true" :fill="isFill" size="5"
+					><BookmarkIcon
+						:solid="true"
+						:fill="selectedNote.isImportant"
+						size="5"
 				/></span>
 			</span>
 		</h2>
@@ -176,11 +179,6 @@ const { selectedNote } = toRefs(props);
 
 const emit = defineEmits(["on-close-blink", "on-add-point"]);
 
-const isFill = ref(false);
-const togglePoint = () => {
-	isFill.value = !isFill.value;
-	emit("on-add-point");
-};
 const commentContent = ref(""); // 初始文本
 
 const showEditModal = ref(false);
@@ -214,6 +212,29 @@ const updateComment = async () => {
 	return res.data;
 };
 
+const isFill = ref(false);
+
+const toggleImportantBadge = async () => {
+	if (!selectedNote.value.isImportant) {
+		const importantObj = { ...selectedNote.value, isImportant: true };
+		const res = await apiClient.put(
+			`/lesson-notes/${selectedNote.value.resourceId}`,
+			importantObj
+		);
+		console.log(res.data);
+		selectedNote.value.isImportant = true;
+		emit("on-add-point");
+	} else {
+		const importantObj = { ...selectedNote.value, isImportant: false };
+		const res = await apiClient.put(
+			`/lesson-notes/${selectedNote.value.resourceId}`,
+			importantObj
+		);
+		selectedNote.value.isImportant = false;
+		emit("on-minus-point");
+	}
+};
+
 const cancelEditModal = () => {
 	showEditModal.value = false;
 	if (selectedNote.value.comment) {
@@ -245,6 +266,7 @@ watch(
 	() => selectedNote.value,
 	(newValue) => {
 		if (newValue) {
+			// isFill.value = newValue.isImportant;
 			showEditModal.value = false;
 			if (newValue.comment) {
 				commentContent.value = newValue.comment.replace(/<br>/g, "\n");
