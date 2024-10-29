@@ -30,3 +30,36 @@ mark.pink {
 	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 4px 8px 12px rgba(0, 0, 0, 0.2);
 	border-radius: 8px !important;
 }
+.editor-container {
+	text-align: left; /* 确保文本和工具栏居左对齐 */
+}
+
+.editorjs-container {
+	min-height: 300px;
+	padding: 10px;
+	text-align: left; /* 让编辑器内容默认居左 */
+}
+
+.editorjs-container .ce-toolbar__content {
+	justify-content: flex-start; /* 让工具栏居左对齐 */
+}
+
+.editorjs-container .ce-block__content,
+.editorjs-container .ce-paragraph {
+	text-align: left !important; /* 确保编辑内容居左 */
+	padding: 0em 0;
+}
+.editorjs-container .ce-header {
+	padding: 0.6em 0 !important;
+}
+.editorjs-container .ce-block b {
+	color: rgb(var(--secondary-color-rgb));
+}
+.editorjs-container .ce-block i {
+	font-style: italic;
+	color: gray;
+}
+
+.editorjs-container .ce-block mark {
+	background-color: rgba(var(--secondary-color-rgb), 0.3);
+}

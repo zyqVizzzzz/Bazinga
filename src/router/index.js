@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
 import Notebook from "@/views/Notebook.vue";
-import Notebook2 from "@/views/Notebook2.vue";
 import Category from "@/views/Category.vue";
 import Lesson from "@/views/Lesson.vue";
 import Profile from "@/views/Profile.vue";
 import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
+import Membership from "@/views/Membership.vue";
+import CardList from "@/views/CardList.vue";
+import CardCreate from "@/views/CardCreate.vue";
 import Test from "@/views/Test.vue";
 
 const routes = [
@@ -26,14 +28,19 @@ const routes = [
 		component: Lesson,
 	},
 	{
+		path: "/all-collections",
+		name: "CardList",
+		component: CardList,
+	},
+	{
+		path: "/create-collection",
+		name: "CardCreate",
+		component: CardCreate,
+	},
+	{
 		path: "/notebook",
 		name: "Notebook",
 		component: Notebook,
-	},
-	{
-		path: "/notebook2",
-		name: "Notebook2",
-		component: Notebook2,
 	},
 	{
 		path: "/profile",
@@ -49,6 +56,11 @@ const routes = [
 		path: "/signup",
 		name: "Signup",
 		component: Signup,
+	},
+	{
+		path: "/membership",
+		name: "Membership",
+		component: Membership,
 	},
 	{
 		path: "/test",

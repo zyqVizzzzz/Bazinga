@@ -61,14 +61,7 @@
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('login')"
-						>Login</a
-					>
-				</li>
-				<li v-if="!isLogin">
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('signup')"
-						>Signup</a
+						>登录</a
 					>
 				</li>
 			</ul>

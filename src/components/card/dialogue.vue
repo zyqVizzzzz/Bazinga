@@ -100,7 +100,7 @@ const speakText = (text) => {
 				);
 				switchToBackupVoice(text); // 超时未开始，切换到备用语音
 			}
-		}, 3000); // 3 秒超时
+		}, 5000); // 3 秒超时
 
 		window.speechSynthesis.speak(utterance);
 	} else {

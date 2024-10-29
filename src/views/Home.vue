@@ -4,7 +4,7 @@
 			Version 1.0.0
 			<span class="text-base block">美剧笔记本</span>
 		</h1>
-		<div class="flex flex-wrap justify-center mb-20 gap-12">
+		<div class="flex flex-wrap justify-center mb-10 gap-12">
 			<!-- 循环渲染关卡 -->
 			<div
 				v-for="scene in scenes"
@@ -41,12 +41,17 @@
 				</div>
 			</div>
 		</div>
+		<div class="text-center mb-16 font-bold">
+			<span class="text-primary cursor-pointer" @click="goToAllScenes">
+				查看更多...
+			</span>
+		</div>
 
 		<!-- 第二部分: Version 1.1.0 文章目录 -->
 		<div class="w-full mt-10">
 			<h1 class="text-2xl font-bold mb-10 text-center">
 				Version 2.0.0
-				<span class="text-base block">AI同伴 & 自制剧集</span>
+				<span class="text-base block">AI同伴 & 笔记上传/分享</span>
 			</h1>
 
 			<div
@@ -93,6 +98,10 @@ const getCatalogs = async () => {
 	}
 };
 
+const goToAllScenes = () => {
+	router.push("/all-collections");
+};
+
 // 文章列表数据
 const articles = ref([
 	{
@@ -109,7 +118,7 @@ const goToLesson = (id) => {
 <style>
 .home {
 	width: 100%;
-	margin-top: 120px;
+	margin-top: 100px;
 }
 .bg-custom {
 	background-color: rgba(255, 255, 255, 1);

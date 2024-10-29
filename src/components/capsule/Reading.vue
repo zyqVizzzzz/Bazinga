@@ -10,7 +10,7 @@
 		@click="onToggleHints"
 	>
 		<!-- 在这里可以用缩略图图片替代 -->
-		<div class="text-secondary text-lg">Notes</div>
+		<div class="text-secondary">单词</div>
 		<button class="flex items-center justify-center">
 			<LightIcon />
 		</button>

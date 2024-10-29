@@ -2,7 +2,7 @@
 	<div class="mt-40 flex items-center justify-center">
 		<div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
 			<h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">
-				Login
+				登录
 			</h1>
 
 			<form @submit.prevent="login">
@@ -11,14 +11,14 @@
 					<label
 						for="email"
 						class="pl-3 text-left block text-gray-700 text-sm mb-2 focus:border-none"
-						>Email:</label
+						>邮箱:</label
 					>
 					<input
 						type="text"
 						id="email"
 						v-model="email"
 						class="input input-bordered w-full"
-						placeholder="Enter your email"
+						placeholder="输入邮箱"
 						required
 					/>
 				</div>
@@ -28,14 +28,14 @@
 					<label
 						for="password"
 						class="text-left pl-3 block text-gray-700 text-sm mb-2"
-						>Password:</label
+						>密码:</label
 					>
 					<input
 						type="password"
 						id="password"
 						v-model="password"
 						class="input input-bordered w-full"
-						placeholder="Enter your password"
+						placeholder="输入密码"
 						required
 					/>
 				</div>
@@ -48,16 +48,15 @@
 				<!-- Submit Button -->
 				<div class="text-center">
 					<button type="submit" class="btn btn-primary w-full text-gray-100">
-						Log In
+						登录
 					</button>
 				</div>
 			</form>
 
 			<!-- Sign up Link -->
 			<p class="text-center text-sm mt-4 text-gray-600">
-				Don't have an account?
-				<a @click="goToSignup" class="text-blue-500 cursor-pointer"
-					>Sign up here</a
+				还没有账号?
+				<a @click="goToSignup" class="text-blue-500 cursor-pointer">立即注册</a
 				>.
 			</p>
 		</div>
@@ -96,7 +95,7 @@ const login = async () => {
 			router.replace({ path: redirectPath, force: true });
 		}
 	} catch (error) {
-		errorMessage.value = "Invalid email or password. Please try again.";
+		errorMessage.value = "邮箱或密码有误，请重新登录";
 	}
 };
 

@@ -34,7 +34,7 @@
 }
 
 .word-module {
-	top: -62px;
+	top: -82px;
 	left: -350px;
 	z-index: 20;
 }
@@ -44,8 +44,8 @@
 	background-image: url("@/assets/6.png");
 	background-size: 100% 100%;
 	position: absolute;
-	top: 40px;
+	top: 50px;
 	right: -125px;
-	transform: scaleX(-1) rotate(40deg);
+	transform: scaleX(-1) rotate(30deg);
 }
 </style>

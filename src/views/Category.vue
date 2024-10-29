@@ -59,6 +59,36 @@
 
 		<!-- 当前季的课程卡片 -->
 		<div v-else-if="currentSeasonEpisodes.length > 0" class="w-2/3">
+			<div
+				v-if="currentProgress.course"
+				role="alert"
+				class="mb-2 alert alert-primary text-sm"
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+				<div class="relative" style="top: -2px">
+					当前进度：{{
+						currentProgress.season +
+						"-E" +
+						formatEpisode(currentProgress.episode)
+					}}，<span
+						@click="linkToProgress"
+						class="text-primary font-bold cursor-pointer"
+						>继续学习</span
+					>
+				</div>
+			</div>
 			<h2 class="text-xl font-semibold mb-4">{{ currentSeason }}</h2>
 
 			<!-- 卡片样式的课程列表 -->
@@ -70,7 +100,7 @@
 					class="card shadow-lg px-6 py-4 text-center cursor-pointer hover:shadow-xl transition-all duration-300"
 				>
 					<p class="text-sm font-bold">
-						{{ isChinese ? `第 ${episode} 集` : `Episode ${episode}` }}
+						{{ `第 ${episode.ep} 集` }}
 					</p>
 				</div>
 			</div>
@@ -96,7 +126,11 @@
 
 		<!-- 如果没有找到对应的季数据 -->
 		<div v-else class="text-center">
-			<p class="text-red-500">No data found for this category.</p>
+			<p>
+				没有找到数据，<span class="text-primary cursor-pointer" @click="addData"
+					>添加第一集卡片笔记</span
+				>
+			</p>
 		</div>
 	</div>
 </template>
@@ -105,6 +139,8 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import apiClient from "@/api";
+import { useAppStore } from "@/store";
+const appStore = useAppStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -118,13 +154,17 @@ const currentSeasonIndex = ref(0); // 当前季的索引
 const loading = ref(true); // 加载状态
 const isChinese = ref(true); // 控制是否显示中文
 
-const toggleLanguage = () => {
-	isChinese.value = !isChinese.value;
-};
-
 const goToLesson = (season, episode) => {
-	const episodeStr = `${episode.toString()}`; // 格式化集数，如 E01
-	router.push(`/category/${route.params.id}/${season}/${episodeStr}`);
+	const episodeStr = `${episode.ep.toString()}`; // 格式化集数，如 E01
+	console.log(episode);
+	router.push({
+		path: `/category/${route.params.id}/${season}/${episodeStr}`,
+		query: {
+			mode: episode.scriptUrl ? "preview" : "edit",
+			script: episode.scriptUrl,
+			sign: episode._id,
+		},
+	});
 };
 
 // 异步加载 JSON 数据
@@ -145,6 +185,35 @@ const loadCategoryData = async () => {
 	} finally {
 		loading.value = false;
 	}
+};
+
+const addData = async () => {};
+
+const currentProgress = ref({});
+const getUserProfile = async () => {
+	try {
+		const response = await apiClient.get("/users/me");
+		console.log(response.data);
+
+		appStore.initProgress(response.data.learningProgress);
+		const foundProgress = response.data.learningProgress.find(
+			(p) => p.course === route.params.id
+		);
+
+		if (foundProgress) {
+			currentProgress.value = foundProgress;
+		}
+	} catch (error) {
+		console.log(error);
+	}
+};
+const formatEpisode = (episode) => {
+	return episode < 10 ? `0${episode}` : episode.toString();
+};
+const linkToProgress = () => {
+	router.push(
+		`/category/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}?progress=true`
+	);
 };
 
 // 获取当前季的集数
@@ -170,6 +239,7 @@ const nextSeason = () => {
 // 页面加载时调用
 onMounted(() => {
 	loadCategoryData();
+	getUserProfile();
 });
 </script>
 

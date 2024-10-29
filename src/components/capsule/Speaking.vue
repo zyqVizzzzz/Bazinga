@@ -14,14 +14,15 @@
 			@mouseleave="isHoveredP = false"
 			@click="openListenMode"
 			:style="{
+				opacity: isHoveredP ? 1 : 0.7,
 				'box-shadow': isHoveredP
-					? '0 4px 20px rgba(var(--primary-color-rgb), 0.5)'
-					: '0 4px 15px rgba(var(--primary-color-rgb), 0.3)',
+					? '0 4px 20px rgba(var(--primary-color-rgb), 0.8)'
+					: '0 4px 15px rgba(var(--primary-color-rgb), 0.5)',
 			}"
 		>
-			<ListenIcon />
+			<RecordIcon />
 		</div>
-		<div
+		<!-- <div
 			class="capsule primary-capsule capsule-tooltips_items"
 			@mouseenter="isHoveredR = true"
 			@mouseleave="isHoveredR = false"
@@ -32,43 +33,19 @@
 			}"
 		>
 			<RecordIcon />
-		</div>
+		</div> -->
 	</div>
-	<div v-if="isFocusP" class="text-xs" style="width: 90%">
-		<p class="mb-3">点击右侧对话即可进行朗读！！！</p>
-		<p class="mb-1">
+	<div v-if="lessonStore.isListenMode" class="text-xs" style="width: 90%">
+		<p class="mt-4">朗读模式已启动，再次点击右侧对话即可开始朗读。</p>
+		<p class="mt-4">
 			注：语音服务由 Google TTS
-			提供，使用【谷歌浏览器】搭配科学上网可获得更优质的音频效果！
+			提供。搭配【谷歌浏览器】和科学上网可获得更优质的音频效果。
 		</p>
 	</div>
-	<!-- <div
-		v-if="isFocusP"
-		class="player-card py-2 px-4 flex justify-between items-center rounded-lg"
-	>
-		<button
-			class="play-btn text-primary w-6 h-6 flex items-center justify-center rounded-full"
-		>
-			<PlayIcon />
-		</button>
-		<button
-			class="pause-btn text-primary w-6 h-6 flex items-center justify-center rounded-full"
-		>
-			<PauseIcon />
-		</button>
-		<button
-			class="plus-btn text-primary w-6 h-6 flex items-center justify-center rounded-full"
-		>
-			<CloudIcon />
-		</button>
-	</div> -->
 </template>
 <script setup>
 import { ref } from "vue";
-import PlayIcon from "../icons/Play.vue";
-import PauseIcon from "../icons/Pause.vue";
-import CloudIcon from "../icons/Cloud.vue";
 import RecordIcon from "../icons/Record.vue";
-import ListenIcon from "../icons/Listen.vue";
 import { useLessonStore } from "@/store";
 import { getVoicesList } from "@/utils/speechSynthesisHelper";
 
@@ -79,6 +56,7 @@ defineProps({
 const lessonStore = useLessonStore();
 const isHoveredP = ref(false);
 const isFocusP = ref(false);
+const isSpeakingMode = ref(false);
 const isHoveredR = ref(false);
 
 const openListenMode = async () => {
@@ -87,7 +65,6 @@ const openListenMode = async () => {
 		lessonStore.setVoicesList(voicesList);
 	}
 	lessonStore.setListenMode();
-	console.log("Voices list loaded and set in store:", lessonStore.isListenMode);
 	lessonStore.isListenMode ? (isFocusP.value = true) : (isFocusP.value = false);
 };
 </script>
@@ -111,7 +88,7 @@ const openListenMode = async () => {
 	box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.4); /* 蓝色阴影 */
 }
 .capsule-tooltips {
-	height: 80px;
+	height: 60px;
 	width: 150px;
 	border-radius: 10px;
 }

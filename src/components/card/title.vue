@@ -2,7 +2,7 @@
 	<h2
 		class="pl-6 pr-2 pb-3 card-title text-accent relative mb-5 w-full flex justify-between items-center border-b"
 	>
-		<span>{{ id + ": " + title }}</span>
+		<span>{{ title }}</span>
 		<div
 			class="flex items-center text-base font-normal title-jam"
 			@click="onTogglePractice"

@@ -1,5 +1,13 @@
 <template>
-	<div class="container mx-auto my-10 p-6">
+	<div v-if="!isEditMode" class="container mx-auto my-10 p-6">
+		<div
+			v-if="isSaveProgressToast"
+			class="toast toast-top toast-center mt-5 opacity-70"
+		>
+			<div class="alert alert-info bg-black text-white">
+				<span>进度保存成功！</span>
+			</div>
+		</div>
 		<transition
 			:name="
 				!isFirstLoad
@@ -36,7 +44,7 @@
 								/>
 
 								<!-- 卡片内容部分 -->
-								<div class="card-content flex items-stretch">
+								<div class="card-content flex items-stretch relative">
 									<!-- 听力胶囊 -->
 									<div
 										class="w-2/6 flex flex-col items-center p-4"
@@ -68,7 +76,6 @@
 									>
 										<ReadingCapsule @toggleHints="toggleHints" />
 									</div>
-
 									<!-- 知识点卡片 -->
 									<KnowledgeCard
 										:showHints="showHints"
@@ -107,12 +114,7 @@
 				</div>
 				<div
 					v-if="!isFlipped"
-					class="text-xs text-center mt-3 trans-capsule shadow-md absolute"
-					:style="{
-						opacity: isHovered ? 1 : 0.5,
-					}"
-					@mouseenter="isHovered = true"
-					@mouseleave="isHovered = false"
+					class="text-xs text-center mt-2 trans-capsule shadow-md absolute"
 				>
 					<span
 						@click="toggleTrans"
@@ -128,12 +130,26 @@
 						>译</span
 					>
 				</div>
+				<div
+					v-if="!isFlipped"
+					@click="saveProgress"
+					class="text-xs text-center mt-2 save-capsule shadow-md absolute text-gray-600"
+				>
+					<span class="cursor-pointer font-bold">保存进度</span>
+				</div>
+				<div
+					v-if="!isFlipped"
+					@click="editCard"
+					class="text-primary text-xs text-center mt-2 product-capsule shadow-md absolute"
+				>
+					<span class="cursor-pointer font-bold">编辑卡片</span>
+				</div>
 			</div>
 		</transition>
 		<!-- 左右箭头按钮 -->
 		<div
 			v-if="!isFlipped"
-			class="card-actions justify-between mt-4 w-1/5 mx-auto"
+			class="card-actions justify-between mt-4 w-1/4 mx-auto items-center"
 		>
 			<button
 				class="transform btn btn-primary btn-ghost px-4"
@@ -142,6 +158,21 @@
 			>
 				<LeftArrowIcon class="w-6 h-6" />
 			</button>
+			<input
+				type="text"
+				ref="editPageRef"
+				v-model.number="currentPage"
+				class="border rounded-md w-12 text-center mx-2"
+				style="height: 3rem"
+				@blur="editPage(false)"
+				@keydown.enter="jumpToPage"
+				v-if="isEditPage"
+				:min="1"
+				:max="totalPages"
+			/>
+			<div @click="editPage(true)" v-if="!isEditPage">
+				{{ currentPage }} / {{ totalPages }}
+			</div>
 			<button
 				class="transform btn btn-primary btn-ghost px-4"
 				@click="nextDialogue"
@@ -151,10 +182,13 @@
 			</button>
 		</div>
 	</div>
+	<div v-else class="container mx-auto my-10 p-6">
+		<CardEdit />
+	</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import LeftArrowIcon from "@/components/icons/LeftArrow.vue";
@@ -166,12 +200,16 @@ import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
+import CardEdit from "./CardEdit.vue";
+import { decryptUrl } from "@/utils/crypto.js";
 
-import { useLessonStore } from "@/store";
+import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
 
 const lessonStore = useLessonStore();
 const isListenMode = ref(false);
+
+const appStore = useAppStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -196,35 +234,93 @@ const showTrans = ref(false);
 const dialogueCard = ref(null); // 获取 DialogueCard 实例
 const episodeId = ref("");
 
-const getLesson = async () => {
+// 页码相关
+const currentPage = ref(1);
+const totalPages = ref(0);
+const isEditPage = ref(false);
+const editPageRef = ref(null);
+
+const editCurrentPage = ref(0);
+const editPage = (isTrue) => {
+	isEditPage.value = isTrue;
+	if (isTrue) {
+		editCurrentPage.value = currentPage.value;
+		nextTick(() => {
+			editPageRef.value?.focus(); // 确保 DOM 渲染完成后再执行 focus
+		});
+	} else {
+		if (currentPage.value) {
+			jumpToPage();
+		} else {
+			currentPage.value = editCurrentPage.value;
+		}
+	}
+};
+
+const editCard = () => {
 	const courseId = route.params.id;
 	const season = route.params.season;
 	const episode = route.params.episode;
+	const script = route.query.script;
+	router.push({
+		path: `/category/${courseId}/${season}/${episode}`,
+		query: {
+			mode: "edit",
+			script: script,
+		},
+	});
+};
 
+// 跳转到指定页码的函数
+const jumpToPage = () => {
+	const page = currentPage.value;
+	if (page >= 1 && page <= dialogues.value.length) {
+		currentDialogueIndex.value = page - 1;
+		isEditPage.value = false;
+	}
+};
+
+const progressJumpToPage = () => {
+	const progress = appStore.progressList.find(
+		(p) => p.course === route.params.id
+	);
+	currentPage.value = parseInt(progress.page);
+	jumpToPage();
+};
+
+const isEditMode = ref(false);
+const getLesson = async () => {
+	const scriptUrl = route.query.script;
+	const mode = route.query.mode;
+	if (mode === "edit") {
+		isEditMode.value = true;
+		if (!scriptUrl) {
+			return;
+		}
+	} else {
+		isEditMode.value = false;
+	}
 	try {
 		// 获取课程的元数据
-		const res = await apiClient.get(
-			`/lessons/show/${courseId}/season/${season}/episode/${episode}`
-		);
-
-		// 检查是否有有效的数据
-		if (!res.data || !res.data.scriptUrl) {
+		const scriptRes = await fetch(scriptUrl);
+		if (!scriptRes.ok) {
 			throw new Error("课程信息不完整或未找到");
 		}
 
-		// 获取剧本文件
-		const scriptRes = await fetch(res.data.scriptUrl);
-		if (!scriptRes.ok) {
-			throw new Error("无法获取剧本文件");
-		}
-
-		dialoguesData.value = await scriptRes.json();
+		const res = await scriptRes.json();
+		console.log(res);
+		dialoguesData.value = res.scriptData;
 
 		// 检查 JSON 数据结构是否正确
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
 			scene.value = dialoguesData.value.scenes[0];
 			dialogues.value = scene.value.dialogues || [];
-			episodeId.value = res.data._id;
+			episodeId.value = route.query.sign;
+			totalPages.value = dialogues.value.length;
+			await getVocabulary();
+			if (route.query.progress) {
+				progressJumpToPage();
+			}
 		} else {
 			throw new Error("剧本中没有场景数据");
 		}
@@ -251,15 +347,12 @@ const getVocabulary = async () => {
 		});
 
 		customNotes.value = categorizedNotes;
-		console.log("customNotes", customNotes.value);
 	} catch (error) {
 		console.error("Error fetching vocabulary:", error);
 	}
 };
 
 const handleUpdateNote = ({ note, word, action, scene }) => {
-	console.log("in", customNotes.value, scene);
-
 	// 检查 customNotes.value 是否存在该 scene 的数组，如果不存在则初始化为一个空数组
 	if (!customNotes.value[scene]) {
 		customNotes.value[scene] = [];
@@ -270,18 +363,15 @@ const handleUpdateNote = ({ note, word, action, scene }) => {
 		customNotes.value[scene].push(note);
 	} else if (action === "remove") {
 		// 如果是移除笔记，根据 word 删除 customNotes 中的相应条目
-		console.log(customNotes.value[scene]);
 		customNotes.value[scene] = customNotes.value[scene].filter(
 			(n) => n.word !== word
 		);
-		console.log(customNotes.value[scene]);
 	}
 };
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
 	await getLesson();
-	await getVocabulary();
 });
 
 watch(
@@ -295,6 +385,15 @@ watch(
 			console.log("Listen mode is deactivated");
 		}
 	}
+);
+
+// 监听 route 变化
+watch(
+	() => route.query,
+	async () => {
+		await getLesson();
+	},
+	{ immediate: false }
 );
 
 // 切换显示 Tabs 的状态
@@ -372,8 +471,9 @@ const highlightedText = computed(() => {
 				typeof currentPoint.word === "string" &&
 				!wordMatched // 确保知识点尚未匹配过
 			) {
-				// 构建正则表达式，仅匹配第一个单词
-				const regex = new RegExp(`(${currentPoint.word})`, "i");
+				// 将单词中的所有标点替换为匹配的字符
+				const sanitizedWord = currentPoint.word.replace(/[’']/g, "['’]");
+				const regex = new RegExp(`\\b(${sanitizedWord})\\b`, "i");
 
 				// 使用回调函数确保只替换第一个匹配项
 				processedLine = processedLine.replace(regex, (match) => {
@@ -424,6 +524,33 @@ const handleSlideChange = (data) => {
 	// 调用 DialogueCard 组件中的 scrollToWord 方法
 	dialogueCard.value.scrollToWord(currentWord); // 调用子组件方法
 };
+
+const isSaveProgressToast = ref(false);
+const saveProgress = async () => {
+	const course = route.params.id;
+	const season = route.params.season;
+	const episode = route.params.episode;
+	const page = currentPage.value;
+	appStore.saveProgress(course, season, episode, page);
+	try {
+		const response = await apiClient.post("/users/me/update", {
+			learningProgress: appStore.progressList,
+		});
+		if ((response.status = 200)) {
+			isSaveProgressToast.value = true;
+			setTimeout(() => {
+				isSaveProgressToast.value = false;
+			}, 2000);
+		}
+	} catch (error) {
+		console.error(error);
+	}
+};
+
+// 监听对话索引变化，更新当前页码
+watch(currentDialogueIndex, (newIndex) => {
+	currentPage.value = newIndex + 1;
+});
 </script>
 <style scoped>
 .flip-container {
@@ -523,13 +650,46 @@ const handleSlideChange = (data) => {
 	cursor: pointer;
 	border-color: transparent; /* 初始状态下隐藏边框 */
 	width: 90px;
-	height: 20px;
-	margin: 8px auto 0;
+	height: 30px;
+	margin: 0px auto 0;
 	border-radius: 20px;
 	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
 	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
-	bottom: 18px;
-	left: 50%;
-	transform: translateX(-50%);
+	bottom: -50px;
+	right: 8rem;
+}
+.save-capsule {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 12px; /* 等效于 py-4 */
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+	width: 90px;
+	height: 30px;
+	margin: 0px auto 0;
+	border-radius: 20px;
+	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
+	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
+	bottom: -50px;
+	right: 1rem;
+}
+.product-capsule {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 12px; /* 等效于 py-4 */
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+	width: 120px;
+	height: 30px;
+	margin: 0px auto 0;
+	border-radius: 20px;
+	border: 2px solid rgba(var(--primary-color-rgb), 0.3);
+	box-shadow: 0 2px 4px rgba(var(--primary-color-rgb), 0.3);
+	bottom: -50px;
+	left: 1rem;
 }
 </style>

@@ -51,24 +51,71 @@
 							>
 						</p>
 						<!-- Rank (根据 rank 动态显示星级) -->
-						<div class="flex items-center relative -left-1 mb-4">
+						<div class="flex items-center relative -left-1 mb-4 text-xs">
 							<span class="badge badge-secondary"
 								><span class="relative -top-0.5 text-white">{{
 									point.type
 								}}</span>
 							</span>
-							<!-- <div class="ml-2 flex">
-								<template v-for="n in 5">
-									<StarIcon
-										:class="
-											n <= point.rank ? 'text-yellow-500' : 'text-pink-300'
-										"
-									/>
-								</template>
-							</div> -->
+							<span class="badge badge-secondary ml-2"
+								><span class="relative -top-0.5 text-white">{{
+									point.book
+								}}</span>
+							</span>
 						</div>
 
-						<div class="border border-base-200 border-b"></div>
+						<div class="border-gray-300 border-b"></div>
+						<div
+							class="py-2 border-b border-gray-300"
+							v-if="
+								point.system?.rootAnalysis.root ||
+								point.system?.affixAnalysis.suffix ||
+								point.system?.affixAnalysis.prefix
+							"
+						>
+							<div>
+								<!-- 词根 -->
+								<div
+									v-if="point.system.rootAnalysis.root"
+									class="text-gray-600 mb-1 text-left"
+								>
+									<p class="font-bold">
+										<span class="text-xs">[词根] </span
+										>{{ point.system.rootAnalysis.root }}：<span
+											class="font-normal text-xs"
+											>{{ point.system.rootAnalysis.meaning_zh }}</span
+										>
+									</p>
+								</div>
+								<!-- 前缀 -->
+								<div
+									v-if="point.system.affixAnalysis.prefix"
+									class="text-gray-600 mb-1 text-left"
+								>
+									<p class="mb-1 font-bold">
+										<span class="text-xs">[前缀] </span
+										>{{ point.system.affixAnalysis.prefix }}-：<span
+											class="font-normal text-xs"
+											>{{ point.system.affixAnalysis.prefixMeaning_zh }}</span
+										>
+									</p>
+								</div>
+
+								<!-- 后缀 -->
+								<div
+									v-if="point.system.affixAnalysis.suffix"
+									class="text-gray-600 text-left"
+								>
+									<p class="mb-1 font-bold">
+										<span class="text-xs">[后缀] </span>-{{
+											point.system.affixAnalysis.suffix
+										}}：<span class="font-normal text-xs">{{
+											point.system.affixAnalysis.suffixMeaning_zh
+										}}</span>
+									</p>
+								</div>
+							</div>
+						</div>
 						<!-- 例句 -->
 						<p
 							v-if="point.example"
@@ -78,7 +125,7 @@
 						</p>
 						<p
 							v-if="point.example_zh"
-							class="china-font text-left text-xs mt-2"
+							class="china-font text-left text-xs mt-1"
 						>
 							<strong></strong> {{ point.example_zh }}
 						</p>
@@ -183,7 +230,6 @@ const compareCustomNotesWithKnowledgePoints = () => {
 			point.marked = false;
 		}
 	});
-	console.log(props.currentCustomNotes, localKnowledgePoints.value);
 };
 
 onMounted(() => {

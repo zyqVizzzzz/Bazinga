@@ -6,15 +6,15 @@ import Navbar from "@/layout/navbar.vue";
 	<Navbar />
 	<div class="content">
 		<router-view></router-view>
-	</div>
-	<div class="copyright text-sm text-left text-gray-400">
-		Copyright 2024 Bazinga · All rights reserved
+		<!-- <div class="copyright text-sm text-center text-gray-400 mt-10 mb-2">
+			Copyright 2024 Bazinga · All rights reserved
+		</div> -->
 	</div>
 </template>
 
 <style scoped>
 .content {
 	flex: 1 0 auto;
-	min-height: 800px;
+	min-height: 500px;
 }
 </style>

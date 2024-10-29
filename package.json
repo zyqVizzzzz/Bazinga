@@ -9,11 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.30.6",
+    "@editorjs/header": "^2.8.8",
+    "@editorjs/list": "^1.10.0",
+    "@editorjs/marker": "^1.4.0",
     "@heroicons/vue": "^2.1.5",
     "axios": "^1.7.7",
+    "crypto-js": "^4.2.0",
     "pinia": "^2.2.4",
     "pinia-plugin-persistedstate": "^4.1.1",
     "swiper": "^11.1.14",
+    "vditor": "^3.10.7",
     "vue": "^3.4.37",
     "vue-router": "^4.4.5"
   },
