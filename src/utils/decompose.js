@@ -59,11 +59,11 @@ export function getDefinitions(word) {
 
 	return {
 		prefix: result.prefix,
-		prefixDefinition: prefixDefinition,
+		prefixMeaning: prefixDefinition,
 		root: result.root,
-		rootDefinition: rootDefinition,
+		meaning: rootDefinition,
 		suffix: result.suffix,
-		suffixDefinition: suffixDefinition,
+		suffixMeaning: suffixDefinition,
 		decomposedWord: decomposedWord, // 返回拆解版单词
 	};
 }

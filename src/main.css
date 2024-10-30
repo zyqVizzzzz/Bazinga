@@ -63,3 +63,12 @@ mark.pink {
 .editorjs-container .ce-block mark {
 	background-color: rgba(var(--secondary-color-rgb), 0.3);
 }
+.editorjs-container .codex-editor__redactor {
+	padding-bottom: 100px !important;
+}
+
+.container:has(.editor-box) {
+	margin-left: 0;
+	margin-right: 0;
+	max-width: 100%;
+}

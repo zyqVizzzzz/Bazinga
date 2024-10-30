@@ -38,9 +38,14 @@
 					'text-dialogue mb-2': true, // 每个台词默认 mb-2
 				}"
 			>
-				<span class="text-sm mr-2 font-extralight text-gray-400"
+				<span
+					v-if="dialogue.speaker"
+					class="text-sm mr-2 font-extralight text-gray-400"
 					>[{{ dialogue.speaker }}]</span
 				>
+				<span v-else class="text-sm font-extralight text-gray-400">{{
+					dialogue.speaker
+				}}</span>
 				<span @click="speakText(dialogue.line)" v-html="dialogue.line"></span>
 			</p>
 

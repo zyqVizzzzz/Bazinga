@@ -1,58 +1,330 @@
 <template>
 	<!-- 动态编辑区域 -->
-	<div class="flex space-x-4">
-		<div
-			class="editor-container p-4 w-4/6 text-sm mt-4 bg-white rounded shadow-lg"
-		>
-			<!-- Markdown 编辑器 -->
-			<div id="editorjs" class="editorjs-container"></div>
+	<div class="flex editor-box">
+		<div class="editor-container p-4 text-sm -mt-4">
+			<div
+				class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
+				style="height: 540px; overflow-y: auto"
+			>
+				<!-- Markdown 编辑器 -->
+				<div id="editorjs" class="editorjs-container"></div>
+			</div>
+			<!-- 分页按钮 -->
+			<div class="flex justify-between mt-4">
+				<button
+					@click="switchDialogue('previous')"
+					:disabled="currentDialogueIndex === 0"
+					class="btn btn-primary btn-sm text-white"
+				>
+					上一页
+				</button>
+				<div class="space-x-4">
+					<button
+						@click="saveDialogue"
+						class="btn btn-sm text-white btn-primary"
+					>
+						生成卡片
+					</button>
+					<button
+						@click="backToPreview"
+						class="btn btn-sm text-white btn-primary"
+					>
+						返回预览
+					</button>
+				</div>
+				<button
+					@click="switchDialogue('next')"
+					:disabled="currentDialogueIndex === totalDialogues - 1"
+					class="btn btn-primary btn-sm text-white"
+				>
+					下一页
+				</button>
+			</div>
 		</div>
-		<div class="toolbox-container w-2/6">
-			<div class="card w-full bg-white rounded p-4 text-center shadow-lg">
-				<h3 class="text-lg font-semibold">知识点</h3>
 
-				<!-- 遍历展示 Knowledge 字段中的所有 word -->
+		<div class="toolbox-container w-2/5 -mt-4">
+			<div
+				class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
+			>
+				<h3 v-if="!isEditing" class="text-lg font-semibold">知识点</h3>
+				<!-- 检查当前项是否处于编辑状态 -->
 				<div
+					v-if="isEditing"
+					class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
+				>
+					<!-- 编辑表单 -->
+					<div class="text-center mb-2 font-bold text-base">
+						{{ editedFields.word }}
+					</div>
+					<!-- 词性选择 -->
+					<!-- 中文释义输入 -->
+					<div class="flex items-center justify-between space-x-2 mb-2">
+						<div>
+							<select
+								v-model="editedFields.pos"
+								id="pos"
+								class="select select-bordered select-sm w-full max-w-xs"
+							>
+								<option value="">词性</option>
+								<option value="n.">n.</option>
+								<option value="v.">v.</option>
+								<option value="adj.">adj.</option>
+								<option value="adv.">adv.</option>
+								<option value="excl.">excl.</option>
+								<option value="phr.">phr.</option>
+								<!-- 根据需要添加更多词性选项 -->
+							</select>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.word_zh"
+								id="word_zh"
+								placeholder="请输入中文释义"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="mb-2">
+						<input
+							type="text"
+							v-model="editedFields.definition_zh"
+							id="definition_zh"
+							placeholder="请输入详细释义"
+							class="input input-bordered input-sm w-full max-w-xs"
+						/>
+					</div>
+					<div class="mb-2">
+						<select
+							v-model="editedFields.type"
+							id="type"
+							class="select select-bordered select-sm w-full max-w-xs"
+						>
+							<option value="">请选择类型</option>
+							<option value="vocabulary">词汇</option>
+							<option value="phrase">短语</option>
+							<option value="daily expression">日常用语</option>
+							<!-- 根据需要添加更多词性选项 -->
+						</select>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.affixAnalysis.prefix"
+								id="prefix"
+								placeholder="前缀"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.rootAnalysis.root"
+								id="root"
+								placeholder="词根"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.affixAnalysis.suffix"
+								id="suffix"
+								placeholder="后缀"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.affixAnalysis.prefixMeaning"
+								id="prefixMeaning"
+								placeholder="前缀"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.rootAnalysis.rootMeaning"
+								id="rootMeaning"
+								placeholder="词根"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.affixAnalysis.suffixMeaning"
+								id="suffixMeaning"
+								placeholder="后缀"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="mb-2">
+						<textarea
+							v-model="editedFields.example"
+							id="example"
+							placeholder="请输入例句"
+							class="textarea textarea-bordered w-full max-w-xs p-2"
+						></textarea>
+					</div>
+					<div class="mb-2">
+						<textarea
+							v-model="editedFields.example_zh"
+							id="example_zh"
+							placeholder="请输入例句释义"
+							class="textarea textarea-bordered w-full p-2"
+						></textarea>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div class="w-1/3">
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.baseForm_zh"
+								id="baseForm_zh"
+								placeholder="原型"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.baseForm"
+								id="baseForm"
+								placeholder="原型"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div class="w-1/3">
+							<input
+								type="text"
+								v-model="
+									editedFields.system.wordInflections.presentParticiple_zh
+								"
+								id="presentParticiple_zh"
+								placeholder="现在分词"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.presentParticiple"
+								id="presentParticiple"
+								placeholder="现在分词"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div class="w-1/3">
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.pastTense_zh"
+								id="pastTense_zh"
+								placeholder="过去式"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.pastTense"
+								id="pastTense"
+								placeholder="过去式"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2 mb-2">
+						<div class="w-1/3">
+							<input
+								type="text"
+								v-model="
+									editedFields.system.wordInflections.presentParticiple_zh
+								"
+								id="presentParticiple_zh"
+								placeholder="现在分词"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div>
+							<input
+								type="text"
+								v-model="editedFields.system.wordInflections.presentParticiple"
+								id="presentParticiple"
+								placeholder="现在分词"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-end mt-4 space-x-2">
+						<button
+							@click="saveKnowledge(index)"
+							class="text-secondary text-sm"
+						>
+							保存
+						</button>
+						<button @click="cancelEdit" class="text-gray-500 text-sm">
+							取消
+						</button>
+					</div>
+				</div>
+				<div
+					v-else
 					v-for="(item, index) in knowledges"
 					:key="index"
 					class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
 				>
 					{{ index + 1 }}. <span>{{ item.word }}</span>
-
-					<!-- 编辑图标 -->
 					<span
-						class="edit-icon text-blue-500 text-xs absolute right-0"
-						@click="editKnowledge(item)"
+						class="edit-icon text-secondary text-xs absolute right-0"
+						@click="startEditing(index, item)"
 					>
 						编辑
 					</span>
 				</div>
 			</div>
-			<button @click="saveDialogue" class="mt-4 btn text-white btn-primary">
-				保存原文
-			</button>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import EditorJS from "@editorjs/editorjs";
-import CustomItalic from "@/utils/CustomItalic";
+import { getDefinitions } from "@/utils/decompose.js";
+
+const handleTranslate = async () => {
+	const result = await apiClient.post("/translation", { text: "hello world" });
+	if (result.statusCode === 200) {
+		console.log("Translated text:", result.translatedText);
+	} else {
+		console.error(result.errorMessage);
+	}
+};
 
 const route = useRoute();
 const router = useRouter();
-const dialogueText = ref(""); // 保存台词的内容
 
-const showDialogueEditor = ref(true);
 const editor = ref(null);
+const currentDialogueIndex = ref(0); // 当前对话索引
+const totalDialogues = ref(0); // 总对话数
+const knowledges = ref([]); // 知识点列表
+const existingBoldWords = new Set(); // 保存已存在的加粗单词
 
 const defaultJson = ref({
 	scenes: [
 		{
-			id: route.params.season + "-" + route.params.episode,
+			id: `${route.params.season}-${route.params.episode}`,
 			title: route.params.episode,
 			dialogues: [
 				{
@@ -64,16 +336,13 @@ const defaultJson = ref({
 					text: [
 						[
 							"narration",
-							"The Simpsons are rushing to the school auditorium to watch their kids' performance. Homer is driving a bit recklessly.",
+							"The Simpsons are rushing to the school auditorium...",
 						],
 						["Marge", "Ooh! Careful, Homer!"],
 						["Homer", "There's no time. We're late."],
 					],
 					text_zh: [
-						[
-							"narration",
-							"1. 标题 - 用 # 来标记。2. 选中单词 - 选择 Marker，标记知识点。3. 选中段落 - 加粗，标记该段落为补充性的段落。4. 英文原文和中文翻译保持在相邻行。",
-						],
+						["narration", "辛普森一家匆忙赶往学校礼堂观看孩子们的表演..."],
 						["", "哦！小心点，荷马！"],
 						["", "没时间了，我们迟到了。"],
 					],
@@ -84,35 +353,6 @@ const defaultJson = ref({
 							type: "vocabulary",
 							word: "rushing",
 							definition: "Moving or doing something quickly due to urgency.",
-							symbols: "/ˈrʌʃɪŋ/",
-							pos: "v.",
-							example: "They were rushing to catch the train.",
-							word_zh: "匆忙",
-							definition_zh: "因为紧急情况而快速行动。",
-							example_zh: "他们匆忙赶火车。",
-							system: {
-								rootAnalysis: {
-									root: "rush",
-									meaning: "move swiftly",
-									meaning_zh: "迅速移动",
-								},
-								affixAnalysis: {
-									suffix: "ing",
-									suffixMeaning:
-										"present participle, indicating an ongoing action",
-									suffixMeaning_zh: "现在分词，表示正在进行的动作",
-								},
-								wordInflections: {
-									baseForm: "rush",
-									baseForm_zh: "原型",
-									presentParticiple: "rushing",
-									presentParticiple_zh: "现在分词",
-									pastTense: "rushed",
-									pastTense_zh: "过去式",
-									pastParticiple: "rushed",
-									pastParticiple_zh: "过去分词",
-								},
-							},
 						},
 					],
 				},
@@ -120,368 +360,381 @@ const defaultJson = ref({
 		},
 	],
 });
+const editFieldsInit = {
+	word: "",
+	pos: "",
+	word_zh: "",
+	example: "",
+	example_zh: "",
+	type: "",
+	definition_zh: "",
+};
+const isEditing = ref(false); // 当前正在编辑的索引
+const editedFields = ref(editFieldsInit);
 
-const knowledges = ref([]);
+const startEditing = (index, item) => {
+	isEditing.value = true;
+	editedFields.value = {
+		word: item.word,
+		pos: item.pos,
+		word_zh: item.word_zh,
+		example: item.example,
+		example_zh: item.example_zh,
+		type: item.type,
+		definition_zh: item.definition_zh,
+	};
+	const { prefix, prefixMeaning, suffix, suffixMeaning, root, rootMeaning } =
+		getDefinitions(item.word);
+	Object.assign(editedFields.value, {
+		system: {
+			affixAnalysis: { prefix, prefixMeaning, suffix, suffixMeaning },
+			rootAnalysis: { root, rootMeaning },
+			wordInflections: {
+				baseForm: item.baseForm,
+				baseForm_zh: "原型",
+				presentParticiple: item.presentParticiple,
+				pastParticiple_zh: "过去分词",
+				pastTense: item.pastTense,
+				pastTense_zh: "过去式",
+				presentParticiple: item.presentParticiple,
+				presentParticiple_zh: "现在分词",
+			},
+		},
+	});
+};
 
+const saveKnowledge = (index) => {
+	knowledges.value[index] = {
+		...knowledges.value[index],
+		...editedFields.value,
+	};
+	console.log(knowledges.value[index]);
+	cancelEdit();
+};
+
+const cancelEdit = () => {
+	isEditing.value = false;
+	editedFields.value = editFieldsInit;
+};
+
+// 当前对话内容
+const currentDialogue = computed(
+	() => defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value]
+);
+
+// 加载默认 JSON 并更新对话数
 const fetchDefaultJson = async () => {
 	if (route.query.script) {
 		const scriptUrl = route.query.script;
-		const scriptRes = await fetch(scriptUrl);
-		if (!scriptRes.ok) {
+		const response = await fetch(scriptUrl);
+		if (response.ok) {
+			const res = await response.json();
+			defaultJson.value = res.scriptData;
+			totalDialogues.value = defaultJson.value.scenes[0].dialogues.length;
+		} else {
 			throw new Error("课程信息不完整或未找到");
 		}
-		const res = await scriptRes.json();
-		console.log(res);
-		defaultJson.value = res.scriptData;
 	}
 };
 
-const initData = async () => {
+// 初始化编辑器中的对话数据
+const initEditorWithDialogueData = async () => {
 	const blocks = [];
+	const dialogueData = currentDialogue.value;
+	initKnowledgesData();
 
-	// 将标题作为 Markdown 样式的一级标题
-	blocks.push({
-		type: "paragraph",
-		data: {
-			text: `# ${defaultJson.value.scenes[0].dialogues[0].title}`,
-		},
-	});
-
-	// 添加空行
-	blocks.push({
-		type: "paragraph",
-		data: { text: "\u200B" },
-	});
+	// 添加标题
+	blocks.push({ type: "paragraph", data: { text: `# ${dialogueData.title}` } });
+	blocks.push({ type: "paragraph", data: { text: "\u200B" } }); // 空行
 
 	// 添加 text 和 text_zh 内容
-	defaultJson.value.scenes[0].dialogues[0].text.forEach((textItem, index) => {
+	dialogueData.text.forEach((textItem, index) => {
 		const [character, dialogue] = textItem;
-
-		// 原文
 		blocks.push({
 			type: "paragraph",
 			data: {
-				text:
-					character && character != "narration"
-						? `[${character}] ${dialogue}`
-						: dialogue, // 如果角色名为空或旁白，仅显示对话内容
+				text: character ? `[${character}] ${dialogue}` : dialogue,
 			},
 		});
-
-		// 中文翻译
-		const textZhItem = defaultJson.value.scenes[0].dialogues[0].text_zh[index];
+		const textZhItem = dialogueData.text_zh[index];
 		if (textZhItem) {
 			const [characterZh, dialogueZh] = textZhItem;
 			blocks.push({
 				type: "paragraph",
 				data: {
-					text:
-						characterZh && characterZh != "narration"
-							? `[${characterZh}] ${dialogueZh}`
-							: dialogueZh,
+					text: characterZh ? `[${characterZh}] ${dialogueZh}` : dialogueZh,
 				},
 			});
 		}
-
-		// 添加空行
-		blocks.push({
-			type: "paragraph",
-			data: { text: "\u200B" },
-		});
+		blocks.push({ type: "paragraph", data: { text: "\u200B" } }); // 空行
 	});
-
 	return blocks;
 };
 
-const initKnowledgesData = async () => {
-	knowledges.value = defaultJson.value.scenes[0].dialogues[0].knowledge;
-	// 页面初始化时，调用以添加默认的加粗项
+// 初始化知识点数据
+const initKnowledgesData = () => {
+	knowledges.value = currentDialogue.value.knowledge;
 	initializeDefaultBoldWords();
 };
 
-// 将知识点中的单词标记
-const boldKnowledgeWords = async (editorInstance, knowledgeArray) => {
+// 将知识点中的单词加粗
+const boldKnowledgeWords = async (editorInstance) => {
 	const content = await editorInstance.save();
 	const newBlocks = content.blocks.map((block) => {
-		if (block.type === "paragraph" && block.data.text.trim() !== "") {
-			knowledgeArray.forEach(({ word }) => {
+		if (block.type === "paragraph" && block.data.text.trim()) {
+			knowledges.value.forEach(({ word }) => {
 				const regExp = new RegExp(`(${word})`, "gi");
-				// 使用 <b> 标签确保加粗文本的标记能够被用户取消
 				block.data.text = block.data.text.replace(regExp, `<b>${word}</b>`);
 			});
 		}
 		return block;
 	});
-
 	editorInstance.render({ blocks: newBlocks });
 };
 
-onMounted(async () => {
-	await fetchDefaultJson();
-	const blocks = await initData();
-
-	// 初始化 Editor.js 实例
-	editor.value = new EditorJS({
-		holder: "editorjs",
-		placeholder: "",
-		data: {
-			blocks,
-		},
-		inlineToolbar: ["bold", "italic"], // 只允许加粗和倾斜（倾斜用来标记是否是特殊内容）
-		onReady: () => {
-			// 标记知识点单词
-			const knowledgeArray = defaultJson.value.scenes[0].dialogues[0].knowledge;
-			boldKnowledgeWords(editor.value, knowledgeArray);
-			initKnowledgesData();
-		},
-		onChange: async () => {
-			const content = await editor.value.save();
-			checkBoldText(content);
-		},
-	});
-});
-
-onBeforeUnmount(() => {
-	if (editor.value) {
-		editor.value.destroy(); // 组件卸载时销毁编辑器实例
-	}
-});
-
-let boldAdded = false; // 标志变量，用于追踪是否已经有加粗文本
-let latestBoldText = ""; // 用于记录最新加粗的内容
-const existingBoldWords = new Set(); // 保存已存在的默认加粗内容
-
-// 初始化时，将默认加粗项加入 existingBoldWords
+// 初始化默认加粗项
 const initializeDefaultBoldWords = () => {
-	defaultJson.value.scenes[0].dialogues[0].knowledge.forEach((item) => {
+	currentDialogue.value.knowledge.forEach((item) => {
 		existingBoldWords.add(item.word.toLowerCase());
 	});
 };
 
-// 检查是否有新增的加粗文本
+// 检查新增加粗的单词并更新
 const checkBoldText = (content) => {
 	let hasBoldText = false;
+	let latestBoldText = "";
+	const currentBoldWords = new Set(); // 存储当前文本中的加粗项
 
 	content.blocks.forEach((block) => {
-		if (block.type === "paragraph" && block.data.text.includes("<b>")) {
+		if (block.type === "paragraph") {
+			// 提取所有 <b> 标签内容并排除其他标签的影响
 			const boldMatches = block.data.text.match(/<b>(.*?)<\/b>/g);
 			if (boldMatches) {
-				// 获取最新的加粗文本内容
-				const currentBoldText = boldMatches.map((boldTag) =>
-					boldTag.replace(/<\/?b>/g, "")
-				);
+				const cleanBoldWords = boldMatches
+					.map((boldTag) =>
+						// 移除所有标签，保留纯净的文本
+						boldTag.replace(/<\/?[^>]+(>|$)/g, "")
+					)
+					.filter(
+						(word) => !existingBoldWords.has(word.toLowerCase()) // 过滤已存在的加粗项
+					);
 
-				// 过滤掉已存在的默认加粗项，仅保留新增的加粗项
-				const newBoldWords = currentBoldText.filter(
-					(word) => !existingBoldWords.has(word.toLowerCase())
-				);
-
-				// 如果存在新的加粗项
-				if (newBoldWords.length > 0) {
+				// 添加新加粗项
+				if (cleanBoldWords.length) {
 					hasBoldText = true;
-					latestBoldText = newBoldWords.join(" ");
-
-					// 将新增的加粗项加入 knowledges
-					newBoldWords.forEach((boldText) => {
-						const newKnowledge = {
-							from: "generated",
-							book: "custom",
-							type: "vocabulary",
+					latestBoldText = cleanBoldWords.join(" ");
+					cleanBoldWords.forEach((boldText) => {
+						knowledges.value.push({
+							from: "knowledges",
 							word: boldText,
+							book: "",
 							definition: "",
-							symbols: "",
-							pos: "",
-							example: "",
-							word_zh: "",
 							definition_zh: "",
+							example: "",
 							example_zh: "",
+							pos: "",
+							symbols: "",
 							system: {
-								rootAnalysis: {
-									root: boldText,
-									meaning: "",
-									meaning_zh: "",
-								},
 								affixAnalysis: {
 									suffix: "",
 									suffixMeaning: "",
 									suffixMeaning_zh: "",
+									prefix: "",
+									prefixMeaning: "",
+									prefixMeaning_zh: "",
 								},
+								rootAnalysis: { root: "watch", meaning: "", meaning_zh: "" },
 								wordInflections: {
-									baseForm: boldText,
+									baseForm: "",
 									baseForm_zh: "原型",
 									presentParticiple: "",
-									presentParticiple_zh: "现在分词",
+									pastParticiple_zh: "过去分词",
 									pastTense: "",
 									pastTense_zh: "过去式",
-									pastParticiple: "",
-									pastParticiple_zh: "过去分词",
+									presentParticiple: "",
+									presentParticiple_zh: "现在分词",
 								},
 							},
-						};
-						knowledges.value.push(newKnowledge);
-						existingBoldWords.add(boldText.toLowerCase()); // 将新增的加粗内容添加到已存在的加粗项集合
+							type: "vocabulary",
+							word_zh: "",
+						});
+						existingBoldWords.add(boldText.toLowerCase());
 					});
 				}
+
+				// 将当前块的加粗项添加到 currentBoldWords 中
+				boldMatches.forEach((boldTag) => {
+					const cleanWord = boldTag
+						.replace(/<\/?[^>]+(>|$)/g, "")
+						.toLowerCase();
+					currentBoldWords.add(cleanWord);
+				});
 			}
 		}
 	});
 
-	// 触发回调，并更新状态
-	if (hasBoldText && !boldAdded) {
-		boldAdded = true;
-		onBoldTextAdded(latestBoldText);
-	} else if (!hasBoldText && boldAdded) {
-		boldAdded = false;
-		latestBoldText = "";
+	// 检查哪些加粗项被移除
+	existingBoldWords.forEach((word) => {
+		if (!currentBoldWords.has(word)) {
+			// 从 knowledges 列表中移除取消加粗的项
+			const index = knowledges.value.findIndex(
+				(item) => item.word.toLowerCase() === word
+			);
+			if (index !== -1) {
+				knowledges.value.splice(index, 1);
+			}
+			// 从 existingBoldWords 中移除
+			existingBoldWords.delete(word);
+		}
+	});
+
+	if (hasBoldText) {
+		console.log("新增加粗文本:", latestBoldText);
 	}
 };
 
-// 切换台词编辑区域的显示状态
-const toggleDialogueEditor = () => {
-	showDialogueEditor.value = !showDialogueEditor.value;
-};
-const saveDialogue = async () => {
-	try {
-		const savedData = await editor.value.save(); // 获取编辑器内容
+// 切换对话
+const switchDialogue = async (direction) => {
+	if (
+		(direction === "next" &&
+			currentDialogueIndex.value < totalDialogues.value - 1) ||
+		(direction === "previous" && currentDialogueIndex.value > 0)
+	) {
+		currentDialogueIndex.value += direction === "next" ? 1 : -1;
 
-		// 初始化输出结构
-		const outputJson = {
-			scenes: [
-				{
-					id: route.params.season + "-" + route.params.episode,
-					title: route.params.episode,
-					dialogues: [
-						{
-							id: "Scene1",
-							season: route.params.season,
-							episode: route.params.episode,
-							title: "", // 用于存储标题
-							img: defaultJson.value.scenes[0].dialogues[0].img,
-							text: [],
-							text_zh: [],
-							knowledge: knowledges.value, // 直接加入当前的知识点数组
-						},
-					],
-				},
-			],
-		};
-
-		let isEnglishLine = true; // 标记当前行是否为英文内容
-		let hasTitle = false; // 用于确认是否已有标题
-		let tempText = []; // 临时存储英文文本
-		let tempTextZh = []; // 临时存储中文翻译
-
-		// 遍历编辑器内容，按需填充文本和翻译内容
-		savedData.blocks.forEach((block) => {
-			if (block.type === "paragraph") {
-				let lineText = block.data.text.trim();
-
-				// 移除所有 <b> 标签
-				lineText = lineText.replace(/<\/?b>/g, "");
-
-				// 检查是否为标题
-				if (lineText.startsWith("#")) {
-					// 仅保留第一个标题
-					if (!hasTitle) {
-						outputJson.scenes[0].dialogues[0].title = lineText
-							.replace(/^#/, "")
-							.trim();
-						hasTitle = true;
-					}
-				} else if (lineText !== "\u200B") {
-					// 排除空行
-					let character = ""; // 初始化角色名为空字符串
-					let dialogue = lineText;
-
-					// 检查是否有角色名的格式，如 "[Marge]"
-					const characterMatch = lineText.match(/^\[(.*?)\]\s*(.*)/);
-					if (characterMatch) {
-						character = characterMatch[1]; // 提取角色名
-						dialogue = characterMatch[2]; // 提取对话内容
-					}
-
-					if (isEnglishLine) {
-						tempText = [character, dialogue]; // 设置英文行
-					} else {
-						tempTextZh = [character, dialogue]; // 设置中文行
-
-						// 英文和中文行匹配完成，加入输出内容
-						outputJson.scenes[0].dialogues[0].text.push(tempText);
-						outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
-
-						// 重置临时存储
-						tempText = [];
-						tempTextZh = [];
-					}
-					isEnglishLine = !isEnglishLine; // 切换行状态
-				}
-			}
-		});
-
-		// 如果剩余未成对的行，填充为空行进行匹配
-		if (tempText.length && !tempTextZh.length) {
-			outputJson.scenes[0].dialogues[0].text.push(tempText);
-			outputJson.scenes[0].dialogues[0].text_zh.push(["", ""]);
-		} else if (tempTextZh.length && !tempText.length) {
-			outputJson.scenes[0].dialogues[0].text.push(["", ""]);
-			outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
+		// 销毁当前 EditorJS 实例
+		if (editor.value) {
+			await editor.value.destroy();
+			editor.value = null; // 确保实例完全销毁
 		}
 
-		console.log("保存的 JSON 格式数据：", outputJson);
-
-		submitSceneData(outputJson);
-	} catch (error) {
-		console.error("保存 Editor.js 内容时出错：", error);
+		// 初始化新的 EditorJS 实例
+		const blocks = await initEditorWithDialogueData();
+		editor.value = new EditorJS({
+			holder: "editorjs",
+			placeholder: "",
+			data: {
+				blocks,
+			},
+			inlineToolbar: ["bold", "italic"], // 只允许加粗和倾斜
+			onReady: () => {
+				boldKnowledgeWords(editor.value); // 每次重新初始化时标记知识点单词
+			},
+			onChange: async () => {
+				const content = await editor.value.save();
+				checkBoldText(content);
+			},
+		});
 	}
 };
 
-const submitSceneData = (jsonData) => {
-	const catalogId = route.params.id;
-	const seasonNumber = route.params.season;
-	const episodeNumber = route.params.episode;
-	uploadScript(catalogId, seasonNumber, episodeNumber, jsonData);
+const saveDialogue = async () => {
+	const savedData = await editor.value.save();
+	const outputJson = {
+		scenes: [
+			{
+				id: `${route.params.season}-${route.params.episode}`,
+				title: route.params.episode,
+				dialogues: [
+					{
+						id: "scene" + currentDialogueIndex.value,
+						season: route.params.season,
+						episode: route.params.episode,
+						title: savedData.blocks
+							.find((block) => block.data.text.startsWith("#"))
+							.data.text.replace(/^#/, "")
+							.trim(),
+						img: currentDialogue.value.img,
+						text: [],
+						text_zh: [],
+						knowledge: knowledges.value,
+					},
+				],
+			},
+		],
+	};
+
+	let isEnglishLine = true;
+	let tempText = [];
+	let tempTextZh = [];
+
+	savedData.blocks.forEach((block) => {
+		let lineText = block.data.text.trim().replace(/<\/?b>/g, "");
+		if (!lineText.startsWith("#") && lineText !== "\u200B") {
+			const match = lineText.match(/^\[(.*?)\]\s*(.*)/);
+			const character = match ? match[1] : "";
+			const dialogue = match ? match[2] : lineText;
+
+			if (isEnglishLine) {
+				tempText = [character, dialogue];
+			} else {
+				tempTextZh = [character, dialogue];
+				outputJson.scenes[0].dialogues[0].text.push(tempText);
+				outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
+				tempText = [];
+				tempTextZh = [];
+			}
+			isEnglishLine = !isEnglishLine;
+		}
+	});
+
+	// 如果剩余未成对的行，填充空项
+	if (tempText.length && !tempTextZh.length)
+		outputJson.scenes[0].dialogues[0].text.push(tempText);
+	if (tempTextZh.length && !tempText.length)
+		outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
+
+	submitSceneData(outputJson);
 };
 
-const uploadScript = async (
-	catalogId,
-	seasonNumber,
-	episodeNumber,
-	jsonData
-) => {
+// 提交数据
+const submitSceneData = (jsonData) => {
+	const catalogId = route.params.id;
+	const season = route.params.season;
+	const episode = route.params.episode;
+	uploadScript(catalogId, season, episode, jsonData);
+};
+
+// 上传脚本数据
+const uploadScript = async (catalogId, season, episode, jsonData) => {
 	try {
-		// 发送请求到后端，上传 JSON 数据
 		const response = await apiClient.post(
-			"/scripts/" + catalogId + "/" + seasonNumber + "/" + episodeNumber,
+			`/scripts/${catalogId}/${season}/${episode}`,
 			{
-				scriptData: jsonData, // 要上传的 JSON 数据
+				scriptData: jsonData,
 			}
 		);
-
 		if (response.status === 200) {
-			console.log("Script URL:", response.data.message);
-			router
-				.replace({
-					path: route.path,
-					query: {
-						...route.query,
-						mode: "preview",
-					},
-				})
-				.then(() => {
-					// 重新加载组件
-					window.location.reload();
-				});
-		} else {
-			console.error("Failed to upload script");
 		}
 	} catch (error) {
 		console.error("Error uploading script:", error);
 	}
 };
 
-const editKnowledge = (item) => {
-	console.log("编辑知识点:", item.word);
+const backToPreview = () => {
+	router.replace({
+		path: route.path,
+		query: { ...route.query, mode: "preview" },
+	});
 };
+
+onMounted(async () => {
+	handleTranslate();
+
+	await fetchDefaultJson();
+	const blocks = await initEditorWithDialogueData();
+
+	editor.value = new EditorJS({
+		holder: "editorjs",
+		placeholder: "",
+		data: { blocks },
+		inlineToolbar: ["bold", "italic"],
+		onReady: () => boldKnowledgeWords(editor.value),
+		onChange: async () => checkBoldText(await editor.value.save()),
+	});
+});
+
+onBeforeUnmount(() => editor.value && editor.value.destroy());
 </script>
 
 <style scoped>
@@ -499,6 +752,12 @@ const editKnowledge = (item) => {
 	width: 100%;
 	text-align: left;
 	min-height: 500px;
+}
+.shadow-editor {
+	box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3); /* 红色阴影 */
+}
+.shadow-knowledge {
+	box-shadow: 0 4px 8px rgba(var(--secondary-color-rgb), 0.3); /* 红色阴影 */
 }
 /* 悬停时显示编辑图标 */
 .edit-icon {

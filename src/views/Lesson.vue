@@ -201,7 +201,6 @@ import PracticeCard from "@/components/card/practice.vue";
 import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
 import CardEdit from "./CardEdit.vue";
-import { decryptUrl } from "@/utils/crypto.js";
 
 import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
@@ -261,12 +260,14 @@ const editCard = () => {
 	const courseId = route.params.id;
 	const season = route.params.season;
 	const episode = route.params.episode;
+	const sign = route.query.sign;
 	const script = route.query.script;
 	router.push({
 		path: `/category/${courseId}/${season}/${episode}`,
 		query: {
 			mode: "edit",
 			script: script,
+			sign: sign,
 		},
 	});
 };
@@ -336,7 +337,9 @@ const getVocabulary = async () => {
 		const res = await apiClient.get(`/lesson-notes/${episodeId.value}`);
 		const notes = res.data.notes;
 		const categorizedNotes = {};
-
+		if (res.data.statusCode === 404) {
+			return;
+		}
 		// 根据 scene 进行分类
 		notes.forEach((note) => {
 			const scene = note.scene;
