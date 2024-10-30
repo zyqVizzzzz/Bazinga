@@ -83,6 +83,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
 
@@ -104,12 +105,16 @@ const register = async () => {
 			email: email.value,
 			password: password.value,
 		});
-		console.log(response.data);
-		if (response.data.user) {
-			router.push("/login"); // 注册成功后跳转到登录页面
+		if (response.data.code === 200) {
+			if (response.data.data.user) {
+				showToast({ message: "注册成功！", type: "success" });
+				router.push("/login"); // 注册成功后跳转到登录页面
+			}
+		} else {
+			errorMessage.value = "邮箱或密码有误，请重新登录";
 		}
 	} catch (error) {
-		errorMessage.value = "Registration failed. Please try again.";
+		errorMessage.value = "注册失败";
 	}
 };
 

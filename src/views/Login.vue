@@ -66,7 +66,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import apiClient from "@/api"; // axios 实例
+import apiClient from "@/api";
 
 import { useLoginStore } from "@/store/index";
 const loginStore = useLoginStore();
@@ -88,11 +88,15 @@ const login = async () => {
 			password: password.value,
 		});
 
-		if (response.data.access_token) {
-			localStorage.setItem("token", response.data.access_token); // 保存 token
-			setLoginState(true);
-			const redirectPath = route.query.redirect || "/";
-			router.replace({ path: redirectPath, force: true });
+		if (response.data.code === 200) {
+			if (response.data.data.access_token) {
+				localStorage.setItem("token", response.data.data.access_token); // 保存 token
+				setLoginState(true);
+				const redirectPath = route.query.redirect || "/";
+				router.replace({ path: redirectPath, force: true });
+			}
+		} else {
+			errorMessage.value = "邮箱或密码有误，请重新登录";
 		}
 	} catch (error) {
 		errorMessage.value = "邮箱或密码有误，请重新登录";

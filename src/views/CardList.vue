@@ -17,6 +17,12 @@
 						style="border-radius: 0.8rem 0.8rem 0 0"
 					/>
 				</div>
+				<div
+					class="w-full"
+					:style="{ background: scene.theme }"
+					style="height: 150px; border-radius: 0.8rem 0.8rem 0 0"
+					v-else
+				></div>
 
 				<div
 					class="card-body justify-center items-center"
@@ -24,13 +30,13 @@
 					:style="{ color: scene.theme }"
 				>
 					<h2 class="card-title justify-center">
-						{{ scene.name }}
+						{{ scene.showName }}
 					</h2>
 					<p
 						style="flex-grow: 0; font-weight: 900"
 						:style="{ color: scene.theme }"
 					>
-						{{ scene.showName }}
+						{{ scene.name }}
 					</p>
 				</div>
 			</div>
@@ -66,6 +72,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
 const scenes = ref([]);
@@ -77,7 +84,11 @@ onMounted(() => {
 const getAllScenes = async () => {
 	try {
 		const response = await apiClient.get("/catalogs");
-		scenes.value = response.data;
+		if (response.data.code === 200) {
+			scenes.value = response.data.data;
+		} else {
+			showToast({ message: response.data.message, type: "error" });
+		}
 	} catch (error) {
 		console.error("Failed to fetch scenes", error);
 	}

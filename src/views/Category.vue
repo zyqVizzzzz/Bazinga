@@ -3,24 +3,22 @@
 		class="w-full mx-auto flex flex-col items-center"
 		style="margin-top: -64px"
 	>
-		<!-- 剧集信息和详细信息的容器，带有背景图和渐变遮罩 -->
 		<div
 			class="relative w-full mb-8"
 			style="padding-top: 96px; padding-bottom: 64px"
 		>
-			<!-- 背景图片 -->
 			<div
 				v-if="infoData"
 				class="absolute inset-0 bg-cover bg-center opacity-50 filter-blur"
-				:style="{ backgroundImage: 'url(' + infoData.banner + ')' }"
+				:style="{
+					backgroundImage: 'url(' + infoData.banner + ')',
+					backgroundColor: infoData.theme,
+				}"
 			></div>
 
-			<!-- 渐变遮罩层 -->
 			<div
 				class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"
 			></div>
-
-			<!-- 剧集信息展示，放在遮罩层上 -->
 			<div
 				v-if="infoData"
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
@@ -140,6 +138,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import apiClient from "@/api";
 import { useAppStore } from "@/store";
+import { showToast } from "@/components/common/toast.js";
 const appStore = useAppStore();
 
 const router = useRouter();
@@ -156,7 +155,6 @@ const isChinese = ref(true); // 控制是否显示中文
 
 const goToLesson = (season, episode) => {
 	const episodeStr = `${episode.ep.toString()}`; // 格式化集数，如 E01
-	console.log(episode);
 	router.push({
 		path: `/category/${route.params.id}/${season}/${episodeStr}`,
 		query: {
@@ -172,11 +170,22 @@ const loadCategoryData = async () => {
 	try {
 		// const response = await fetch("/constants/Category.json");
 		const response = await apiClient.get(`/catalogs/${route.params.id}`);
-		infoData.value = response.data;
-		response.data.seasons.forEach((item) => {
-			seasons.value.push(item.seasonNumber);
-			episodes.value[item.seasonNumber] = item.episodes;
-		});
+		if (response.data.code === 200) {
+			infoData.value = response.data.data;
+			infoData.value.seasons.forEach((item) => {
+				seasons.value.push(item.seasonNumber);
+				episodes.value[item.seasonNumber] = item.episodes;
+			});
+		} else {
+			showToast({
+				message: response.data.message,
+				type: "error",
+				duration: 3000,
+			});
+			infoData.value = null;
+			seasons.value = [];
+			episodes.value = {};
+		}
 	} catch (error) {
 		console.error("Error loading JSON:", error);
 		infoData.value = null;
@@ -193,15 +202,21 @@ const currentProgress = ref({});
 const getUserProfile = async () => {
 	try {
 		const response = await apiClient.get("/users/me");
-		console.log(response.data);
+		if (response.data.code === 200) {
+			appStore.initProgress(response.data.data.learningProgress);
+			const foundProgress = response.data.data.learningProgress.find(
+				(p) => p.course === route.params.id
+			);
 
-		appStore.initProgress(response.data.learningProgress);
-		const foundProgress = response.data.learningProgress.find(
-			(p) => p.course === route.params.id
-		);
-
-		if (foundProgress) {
-			currentProgress.value = foundProgress;
+			if (foundProgress) {
+				currentProgress.value = foundProgress;
+			}
+		} else {
+			showToast({
+				message: response.data.message,
+				type: "error",
+				duration: 3000,
+			});
 		}
 	} catch (error) {
 		console.log(error);
@@ -211,9 +226,15 @@ const formatEpisode = (episode) => {
 	return episode < 10 ? `0${episode}` : episode.toString();
 };
 const linkToProgress = () => {
-	router.push(
-		`/category/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}?progress=true`
-	);
+	router.push({
+		path: `/category/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
+		query: {
+			mode: "preview",
+			script: currentProgress.value.scriptUrl,
+			sign: currentProgress.value.sign,
+			progress: true,
+		},
+	});
 };
 
 // 获取当前季的集数

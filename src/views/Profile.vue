@@ -182,6 +182,7 @@ import StoryProgressDetail from "@/components/profile/detail-story.vue";
 import WordProgressDetail from "@/components/profile/detail-word.vue";
 import FragmentProgressDetail from "@/components/profile/detail-fragment.vue";
 import SignatureCard from "@/components/profile/signature.vue";
+import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
 const isEditingAccount = ref(false); // 控制编辑区域显示状态
@@ -232,16 +233,18 @@ const validateAndSavePassword = async () => {
 			newPassword: passwordForm.value.newPassword,
 		});
 
-		if (response.status === 201) {
+		if (response.data.code === 200) {
 			errorMessage.value = "密码更新成功, 3秒后返回登录页面";
 			setTimeout(() => {
 				router.push("/login");
 			}, 3000);
 		} else {
 			errorMessage.value = response.data.message || "密码更新失败";
+			showToast({ message: "密码更新失败", type: "error" });
 		}
 	} catch (error) {
-		errorMessage.value = error.response?.data?.message || "密码更新失败";
+		showToast({ message: "密码更新失败", type: "error" });
+		errorMessage.value = "密码更新失败";
 	}
 };
 
@@ -264,9 +267,13 @@ const user = ref({
 const getUserProfile = async () => {
 	try {
 		const response = await apiClient.get("/users/me");
-		user.value = Object.assign(user.value, response.data);
+		if (response.data.code === 200) {
+			user.value = Object.assign(user.value, response.data.data);
+		} else {
+			showToast({ message: response.data.message, type: "error" });
+		}
 	} catch (error) {
-		console.log(error);
+		showToast({ message: response.data.message, type: "error" });
 	}
 };
 
@@ -276,8 +283,12 @@ const onSaveNickname = async (inputNickname) => {
 		await apiClient.post("/users/me/update", {
 			nickname: user.value.nickname,
 		});
+		if (response.data.code === 200) {
+		} else {
+			showToast({ message: "昵称修改失败", type: "error" });
+		}
 	} catch (error) {
-		throw error;
+		showToast({ message: "昵称修改失败", type: "error" });
 	}
 };
 
@@ -293,8 +304,12 @@ const onSaveSignature = async (newSignature) => {
 		await apiClient.post("/users/me/update", {
 			signature: user.value.signature,
 		});
+		if (response.data.code === 200) {
+		} else {
+			showToast({ message: "签名修改失败", type: "error" });
+		}
 	} catch (error) {
-		console.error(error);
+		showToast({ message: "签名修改失败", type: "error" });
 	}
 };
 

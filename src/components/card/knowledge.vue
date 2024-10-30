@@ -153,6 +153,7 @@ import { Pagination } from "swiper/modules";
 import BookmarkIcon from "../icons/Bookmark.vue";
 import LightIcon from "../icons/Light.vue";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 const mySwiper = ref(null); // Swiper 实例
 const pagination = {
@@ -189,12 +190,19 @@ const toggleBookmark = async (point) => {
 				resourceId: props.resourceId,
 				word: point.word,
 			});
-			if (response.status === 201) {
+
+			if (response.data.code === 200) {
 				point.marked = false;
 				emit("update-note", {
 					word: point.word,
 					action: "remove",
 					scene: point.scene,
+				});
+			} else {
+				showToast({
+					message: response.data.message,
+					type: "error",
+					duration: 3000,
 				});
 			}
 		} else {
@@ -203,12 +211,23 @@ const toggleBookmark = async (point) => {
 				`/lesson-notes/${props.resourceId}`,
 				point
 			);
-			if (response.status === 200) {
+			if (response.data.code === 200) {
 				point.marked = true;
-				emit("update-note", { note: point, action: "add", scene: point.scene }); // 通知父组件更新笔记（添加）
+				emit("update-note", { note: point, action: "add", scene: point.scene });
+			} else {
+				showToast({
+					message: response.data.message,
+					type: "error",
+					duration: 3000,
+				});
 			}
 		}
 	} catch (error) {
+		showToast({
+			message: error,
+			type: "error",
+			duration: 3000,
+		});
 		console.error("Error updating bookmark:", error);
 	}
 };

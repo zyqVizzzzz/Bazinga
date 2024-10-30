@@ -1,7 +1,7 @@
 <template>
 	<div class="flex justify-center items-center my-20">
 		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<h1 class="text-2xl font-semibold text-center mb-4">新增合集</h1>
+			<h1 class="text-2xl font-semibold text-center mb-4">新增卡片合集</h1>
 			<form @submit.prevent="submitNote" class="space-y-4">
 				<!-- 中文名 -->
 				<div class="form-control">
@@ -147,11 +147,7 @@
 
 				<!-- 提交按钮 -->
 				<div class="flex justify-center">
-					<button
-						type="submit"
-						class="btn w-full mt-6"
-						:style="{ backgroundColor: noteForm.theme, color: '#fff' }"
-					>
+					<button type="submit" class="btn w-full mt-6 btn-primary text-white">
 						提交
 					</button>
 				</div>
@@ -164,6 +160,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
 
@@ -199,11 +196,6 @@ const handleFileUpload = (event) => {
 	}
 };
 
-// 方法：更新封面图预览
-const updateBannerPreview = () => {
-	bannerPreview.value = noteForm.value.banner;
-};
-
 // 方法：更新主题色预览
 const updateThemePreview = () => {
 	// 在选择主题色时更新按钮的颜色
@@ -213,23 +205,36 @@ const updateThemePreview = () => {
 const submitNote = async () => {
 	// 检查必填项是否填写
 	showError.value = !noteForm.value.showName;
-	if (showError.value) return;
+	if (showError.value) {
+		showToast({
+			message: "提交失败！请填写合集名",
+			type: "error",
+			duration: 3000,
+		});
+
+		return;
+	}
 
 	if (noteForm.value.bannerFile) {
 		// 上传封面图
 		const bannerUrl = await uploadBanner(noteForm.value.bannerFile);
+		if (!bannerUrl) return;
 		noteForm.value.banner = bannerUrl; // 将封面图 URL 添加到表单数据中
 	}
 
-	console.log(noteForm.value);
-
 	try {
-		await apiClient.post("/catalogs", noteForm.value);
-		alert("笔记新增成功！");
-		router.push("/all-collections"); // 提交成功后跳转到笔记列表页
+		const res = await apiClient.post("/catalogs", noteForm.value);
+		if (res.data.code === 200) {
+			showToast({ message: "新增合集成功", type: "success" });
+			setTimeout(() => {
+				router.push("/all-collections"); // 提交成功后跳转到笔记列表页
+			}, 2000);
+		} else {
+			showToast({ message: "合集新增失败，请重试！", type: "error" });
+		}
 	} catch (error) {
+		showToast({ message: "合集新增失败，请重试！", type: "error" });
 		console.error("Failed to create note:", error);
-		alert("笔记新增失败，请重试！");
 	}
 };
 
@@ -241,8 +246,14 @@ const uploadBanner = async (file) => {
 		const response = await apiClient.post("/catalogs/upload-banner", formData, {
 			headers: { "Content-Type": "multipart/form-data" },
 		});
-		return response.data.url; // 返回文件的URL
+		if (response.data.code === 200) {
+			return response.data.data.url; // 返回文件的URL
+		} else {
+			showToast({ message: "头像上传失败，请重试！", type: "error" });
+			return;
+		}
 	} catch (error) {
+		showToast({ message: "头像上传失败，请重试！", type: "error" });
 		console.error("Failed to upload banner:", error);
 	}
 };

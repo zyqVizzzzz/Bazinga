@@ -35,7 +35,7 @@ mark.pink {
 }
 
 .editorjs-container {
-	min-height: 300px;
+	min-height: 100%;
 	padding: 10px;
 	text-align: left; /* 让编辑器内容默认居左 */
 }
@@ -57,7 +57,7 @@ mark.pink {
 }
 .editorjs-container .ce-block i {
 	font-style: italic;
-	color: gray;
+	color: var(--primary-color);
 }
 
 .editorjs-container .ce-block mark {

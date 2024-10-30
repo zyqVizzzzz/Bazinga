@@ -1,7 +1,67 @@
 <template>
 	<!-- 动态编辑区域 -->
+
 	<div class="flex editor-box">
-		<div class="editor-container p-4 text-sm -mt-4">
+		<div class="editor-container p-4 text-sm mt-4 relative">
+			<div
+				class="option-group flex justify-between space-x-4 absolute"
+				style="left: 20px; top: -40px"
+			>
+				<button
+					@click="backToPreview"
+					class="btn btn-sm text-white btn-primary"
+				>
+					返回预览
+				</button>
+			</div>
+
+			<div
+				class="option-group flex justify-between space-x-4 absolute"
+				style="right: 20px; top: -40px"
+			>
+				<div class="tooltip" data-tip="新增空白卡片">
+					<button
+						@click="createNewCard"
+						class="btn btn-sm text-white btn-primary border-none"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="size-4"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M12 4.5v15m7.5-7.5h-15"
+							/>
+						</svg>
+					</button>
+				</div>
+				<div class="tooltip" data-tip="删除当前卡片">
+					<button
+						@click="deleteCurrentCard"
+						class="btn btn-sm text-white border-none bg-red-500 hover:bg-red-600"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="size-4"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+							/>
+						</svg>
+					</button>
+				</div>
+			</div>
 			<div
 				class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
 				style="height: 540px; overflow-y: auto"
@@ -20,16 +80,10 @@
 				</button>
 				<div class="space-x-4">
 					<button
-						@click="saveDialogue"
+						@click="saveDialogue(true)"
 						class="btn btn-sm text-white btn-primary"
 					>
-						生成卡片
-					</button>
-					<button
-						@click="backToPreview"
-						class="btn btn-sm text-white btn-primary"
-					>
-						返回预览
+						保存更改
 					</button>
 				</div>
 				<button
@@ -42,7 +96,7 @@
 			</div>
 		</div>
 
-		<div class="toolbox-container w-2/5 -mt-4">
+		<div class="toolbox-container w-2/5 mt-4">
 			<div
 				class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
 			>
@@ -277,19 +331,26 @@
 						</button>
 					</div>
 				</div>
-				<div
-					v-else
-					v-for="(item, index) in knowledges"
-					:key="index"
-					class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
-				>
-					{{ index + 1 }}. <span>{{ item.word }}</span>
-					<span
-						class="edit-icon text-secondary text-xs absolute right-0"
-						@click="startEditing(index, item)"
+				<div v-if="!isEditing">
+					<div
+						v-for="(item, index) in knowledges"
+						:key="index"
+						class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
 					>
-						编辑
-					</span>
+						{{ index + 1 }}. <span>{{ item.word }}</span>
+						<span
+							class="edit-icon text-secondary text-xs absolute right-0"
+							@click="startEditing(item)"
+						>
+							编辑
+						</span>
+					</div>
+					<div
+						v-if="!knowledges.length"
+						class="text-gray-800 text-sm my-8 text-center cursor-pointer relative group"
+					>
+						暂无词汇
+					</div>
 				</div>
 			</div>
 		</div>
@@ -302,77 +363,217 @@ import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import EditorJS from "@editorjs/editorjs";
 import { getDefinitions } from "@/utils/decompose.js";
-
-const handleTranslate = async () => {
-	const result = await apiClient.post("/translation", { text: "hello world" });
-	if (result.statusCode === 200) {
-		console.log("Translated text:", result.translatedText);
-	} else {
-		console.error(result.errorMessage);
-	}
-};
+import {
+	initEditorBlocks,
+	boldKnowledgeWords,
+	checkBoldText,
+	existingBoldWords,
+	processDialogueData,
+} from "@/utils/editor.js";
+import { exampleText, exampleTextZh } from "@/constants/Example.js";
+import { showToast } from "@/components/common/toast.js";
 
 const route = useRoute();
 const router = useRouter();
-
-const editor = ref(null);
-const currentDialogueIndex = ref(0); // 当前对话索引
-const totalDialogues = ref(0); // 总对话数
-const knowledges = ref([]); // 知识点列表
-const existingBoldWords = new Set(); // 保存已存在的加粗单词
+const season = route.params.season;
+const episode = route.params.episode;
 
 const defaultJson = ref({
 	scenes: [
 		{
-			id: `${route.params.season}-${route.params.episode}`,
-			title: route.params.episode,
+			id: `${season}-${episode}`,
+			title: episode,
 			dialogues: [
 				{
 					id: "Scene1",
-					season: route.params.season,
-					episode: route.params.episode,
-					title: "示例标题",
+					season: season,
+					episode: episode,
+					title: "使用说明",
 					img: "",
-					text: [
-						[
-							"narration",
-							"The Simpsons are rushing to the school auditorium...",
-						],
-						["Marge", "Ooh! Careful, Homer!"],
-						["Homer", "There's no time. We're late."],
-					],
-					text_zh: [
-						["narration", "辛普森一家匆忙赶往学校礼堂观看孩子们的表演..."],
-						["", "哦！小心点，荷马！"],
-						["", "没时间了，我们迟到了。"],
-					],
-					knowledge: [
-						{
-							from: "knowledges",
-							book: "cet-4",
-							type: "vocabulary",
-							word: "rushing",
-							definition: "Moving or doing something quickly due to urgency.",
-						},
-					],
+					text: exampleText,
+					text_zh: exampleTextZh,
+					knowledge: [],
 				},
 			],
 		},
 	],
 });
-const editFieldsInit = {
-	word: "",
-	pos: "",
-	word_zh: "",
-	example: "",
-	example_zh: "",
-	type: "",
-	definition_zh: "",
-};
-const isEditing = ref(false); // 当前正在编辑的索引
-const editedFields = ref(editFieldsInit);
 
-const startEditing = (index, item) => {
+const editor = ref(null);
+const currentDialogueIndex = ref(0); // 当前对话索引
+const totalDialogues = ref(0); // 总对话数
+const knowledges = ref([]); // 知识点列表
+const isEditing = ref(false); // 当前正在编辑的索引
+const editedFields = ref({});
+// 当前对话内容
+const currentDialogue = computed(
+	() => defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value]
+);
+
+// 加载默认 JSON 并更新对话数
+const fetchDefaultJson = async () => {
+	if (route.query.script) {
+		const scriptUrl = route.query.script;
+		const response = await fetch(scriptUrl);
+		if (response.ok) {
+			const res = await response.json();
+			return res.scriptData;
+		} else {
+			throw new Error("课程信息不完整或未找到");
+		}
+	}
+};
+
+// 初始化 editorjs 实例
+const initEditorJS = async () => {
+	const blocks = await initEditorWithDialogueData();
+	editor.value = new EditorJS({
+		holder: "editorjs",
+		placeholder: "",
+		data: { blocks },
+		inlineToolbar: ["bold", "italic"],
+		onReady: () => boldKnowledgeWords(knowledges.value, editor.value), // 将知识点中的单词加粗
+		onChange: async () => {
+			const content = await editor.value.save();
+			checkBoldText(content, knowledges.value);
+		},
+	});
+};
+
+// 初始化编辑器中的对话数据
+const initEditorWithDialogueData = async () => {
+	console.log(currentDialogue.value);
+	const dialogueData = currentDialogue.value;
+	if (!dialogueData) {
+		return [];
+	}
+	// 同步初始化知识点数据
+	initKnowledgesData();
+	return initEditorBlocks(dialogueData);
+};
+
+// 初始化知识点数据，同时初始化默认加粗项
+const initKnowledgesData = () => {
+	knowledges.value = currentDialogue.value.knowledge;
+	knowledges.value.forEach((item) => {
+		existingBoldWords.add(item.word.toLowerCase());
+	});
+};
+
+onMounted(async () => {
+	const scriptData = await fetchDefaultJson();
+	if (scriptData) {
+		defaultJson.value = scriptData;
+		totalDialogues.value = scriptData.scenes[0].dialogues.length;
+	}
+
+	initEditorJS();
+});
+
+onBeforeUnmount(() => editor.value && editor.value.destroy());
+
+// 切换对话
+const switchDialogue = async (direction) => {
+	if (
+		(direction === "next" &&
+			currentDialogueIndex.value < totalDialogues.value - 1) ||
+		(direction === "previous" && currentDialogueIndex.value > 0)
+	) {
+		currentDialogueIndex.value += direction === "next" ? 1 : -1;
+		// 销毁当前 EditorJS 实例
+		if (editor.value) {
+			await editor.value.destroy();
+			editor.value = null; // 确保实例完全销毁
+		}
+		initEditorJS();
+	}
+};
+
+// 上传脚本数据
+const scriptUrl = ref("");
+const saveDialogue = async (isCustom = false) => {
+	const savedData = await editor.value.save();
+	const outputDialogue = processDialogueData(
+		savedData,
+		knowledges.value,
+		route,
+		currentDialogueIndex.value
+	);
+	defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value] =
+		outputDialogue;
+
+	uploadScripts(defaultJson.value, isCustom);
+};
+
+const uploadScripts = async (jsonData, isCustom = false) => {
+	const catalogId = route.params.id;
+	const season = route.params.season;
+	const episode = route.params.episode;
+	try {
+		const response = await apiClient.post(
+			`/scripts/${catalogId}/${season}/${episode}`,
+			{
+				scriptData: jsonData,
+			}
+		);
+		if (response.data.code === 200) {
+			scriptUrl.value = response.data.data.message;
+			if (isCustom) {
+				showToast({ message: "保存成功", type: "success" });
+			}
+		} else {
+			showToast({ message: "保存失败", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: error, type: "error" });
+		console.error("Error uploading script:", error);
+	}
+};
+
+// 添加一张空白卡片
+const createNewCard = async () => {
+	await saveDialogue();
+	const newCard = {
+		id: `Scene${defaultJson.value.scenes[0].dialogues.length + 1}`,
+		season: route.params.season,
+		episode: route.params.episode,
+		title: "新对白卡片",
+		img: "",
+		text: [],
+		text_zh: [],
+		knowledge: [],
+	};
+
+	// 将新卡片添加到 dialogues 列表中
+	defaultJson.value.scenes[0].dialogues.push(newCard);
+	totalDialogues.value += 1;
+	currentDialogueIndex.value = totalDialogues.value - 1;
+
+	// 重新初始化编辑器内容
+	const blocks = await initEditorWithDialogueData();
+	editor.value.render({ blocks }); // 使用新数据渲染编辑器
+};
+
+// 删除当前对话卡片
+const deleteCurrentCard = async () => {
+	if (totalDialogues.value <= 1) {
+		showToast({ message: "至少需要保留一张对话卡片，无法删除", type: "error" });
+		return;
+	}
+	defaultJson.value.scenes[0].dialogues.splice(currentDialogueIndex.value, 1);
+	totalDialogues.value -= 1;
+
+	if (currentDialogueIndex.value >= totalDialogues.value) {
+		currentDialogueIndex.value = totalDialogues.value - 1;
+	}
+	uploadScripts(defaultJson.value);
+
+	const blocks = await initEditorWithDialogueData();
+	editor.value.render({ blocks });
+};
+
+// 编辑区域
+const startEditing = (item) => {
 	isEditing.value = true;
 	editedFields.value = {
 		word: item.word,
@@ -408,7 +609,6 @@ const saveKnowledge = (index) => {
 		...knowledges.value[index],
 		...editedFields.value,
 	};
-	console.log(knowledges.value[index]);
 	cancelEdit();
 };
 
@@ -417,324 +617,16 @@ const cancelEdit = () => {
 	editedFields.value = editFieldsInit;
 };
 
-// 当前对话内容
-const currentDialogue = computed(
-	() => defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value]
-);
-
-// 加载默认 JSON 并更新对话数
-const fetchDefaultJson = async () => {
-	if (route.query.script) {
-		const scriptUrl = route.query.script;
-		const response = await fetch(scriptUrl);
-		if (response.ok) {
-			const res = await response.json();
-			defaultJson.value = res.scriptData;
-			totalDialogues.value = defaultJson.value.scenes[0].dialogues.length;
-		} else {
-			throw new Error("课程信息不完整或未找到");
-		}
-	}
-};
-
-// 初始化编辑器中的对话数据
-const initEditorWithDialogueData = async () => {
-	const blocks = [];
-	const dialogueData = currentDialogue.value;
-	initKnowledgesData();
-
-	// 添加标题
-	blocks.push({ type: "paragraph", data: { text: `# ${dialogueData.title}` } });
-	blocks.push({ type: "paragraph", data: { text: "\u200B" } }); // 空行
-
-	// 添加 text 和 text_zh 内容
-	dialogueData.text.forEach((textItem, index) => {
-		const [character, dialogue] = textItem;
-		blocks.push({
-			type: "paragraph",
-			data: {
-				text: character ? `[${character}] ${dialogue}` : dialogue,
-			},
-		});
-		const textZhItem = dialogueData.text_zh[index];
-		if (textZhItem) {
-			const [characterZh, dialogueZh] = textZhItem;
-			blocks.push({
-				type: "paragraph",
-				data: {
-					text: characterZh ? `[${characterZh}] ${dialogueZh}` : dialogueZh,
-				},
-			});
-		}
-		blocks.push({ type: "paragraph", data: { text: "\u200B" } }); // 空行
-	});
-	return blocks;
-};
-
-// 初始化知识点数据
-const initKnowledgesData = () => {
-	knowledges.value = currentDialogue.value.knowledge;
-	initializeDefaultBoldWords();
-};
-
-// 将知识点中的单词加粗
-const boldKnowledgeWords = async (editorInstance) => {
-	const content = await editorInstance.save();
-	const newBlocks = content.blocks.map((block) => {
-		if (block.type === "paragraph" && block.data.text.trim()) {
-			knowledges.value.forEach(({ word }) => {
-				const regExp = new RegExp(`(${word})`, "gi");
-				block.data.text = block.data.text.replace(regExp, `<b>${word}</b>`);
-			});
-		}
-		return block;
-	});
-	editorInstance.render({ blocks: newBlocks });
-};
-
-// 初始化默认加粗项
-const initializeDefaultBoldWords = () => {
-	currentDialogue.value.knowledge.forEach((item) => {
-		existingBoldWords.add(item.word.toLowerCase());
-	});
-};
-
-// 检查新增加粗的单词并更新
-const checkBoldText = (content) => {
-	let hasBoldText = false;
-	let latestBoldText = "";
-	const currentBoldWords = new Set(); // 存储当前文本中的加粗项
-
-	content.blocks.forEach((block) => {
-		if (block.type === "paragraph") {
-			// 提取所有 <b> 标签内容并排除其他标签的影响
-			const boldMatches = block.data.text.match(/<b>(.*?)<\/b>/g);
-			if (boldMatches) {
-				const cleanBoldWords = boldMatches
-					.map((boldTag) =>
-						// 移除所有标签，保留纯净的文本
-						boldTag.replace(/<\/?[^>]+(>|$)/g, "")
-					)
-					.filter(
-						(word) => !existingBoldWords.has(word.toLowerCase()) // 过滤已存在的加粗项
-					);
-
-				// 添加新加粗项
-				if (cleanBoldWords.length) {
-					hasBoldText = true;
-					latestBoldText = cleanBoldWords.join(" ");
-					cleanBoldWords.forEach((boldText) => {
-						knowledges.value.push({
-							from: "knowledges",
-							word: boldText,
-							book: "",
-							definition: "",
-							definition_zh: "",
-							example: "",
-							example_zh: "",
-							pos: "",
-							symbols: "",
-							system: {
-								affixAnalysis: {
-									suffix: "",
-									suffixMeaning: "",
-									suffixMeaning_zh: "",
-									prefix: "",
-									prefixMeaning: "",
-									prefixMeaning_zh: "",
-								},
-								rootAnalysis: { root: "watch", meaning: "", meaning_zh: "" },
-								wordInflections: {
-									baseForm: "",
-									baseForm_zh: "原型",
-									presentParticiple: "",
-									pastParticiple_zh: "过去分词",
-									pastTense: "",
-									pastTense_zh: "过去式",
-									presentParticiple: "",
-									presentParticiple_zh: "现在分词",
-								},
-							},
-							type: "vocabulary",
-							word_zh: "",
-						});
-						existingBoldWords.add(boldText.toLowerCase());
-					});
-				}
-
-				// 将当前块的加粗项添加到 currentBoldWords 中
-				boldMatches.forEach((boldTag) => {
-					const cleanWord = boldTag
-						.replace(/<\/?[^>]+(>|$)/g, "")
-						.toLowerCase();
-					currentBoldWords.add(cleanWord);
-				});
-			}
-		}
-	});
-
-	// 检查哪些加粗项被移除
-	existingBoldWords.forEach((word) => {
-		if (!currentBoldWords.has(word)) {
-			// 从 knowledges 列表中移除取消加粗的项
-			const index = knowledges.value.findIndex(
-				(item) => item.word.toLowerCase() === word
-			);
-			if (index !== -1) {
-				knowledges.value.splice(index, 1);
-			}
-			// 从 existingBoldWords 中移除
-			existingBoldWords.delete(word);
-		}
-	});
-
-	if (hasBoldText) {
-		console.log("新增加粗文本:", latestBoldText);
-	}
-};
-
-// 切换对话
-const switchDialogue = async (direction) => {
-	if (
-		(direction === "next" &&
-			currentDialogueIndex.value < totalDialogues.value - 1) ||
-		(direction === "previous" && currentDialogueIndex.value > 0)
-	) {
-		currentDialogueIndex.value += direction === "next" ? 1 : -1;
-
-		// 销毁当前 EditorJS 实例
-		if (editor.value) {
-			await editor.value.destroy();
-			editor.value = null; // 确保实例完全销毁
-		}
-
-		// 初始化新的 EditorJS 实例
-		const blocks = await initEditorWithDialogueData();
-		editor.value = new EditorJS({
-			holder: "editorjs",
-			placeholder: "",
-			data: {
-				blocks,
-			},
-			inlineToolbar: ["bold", "italic"], // 只允许加粗和倾斜
-			onReady: () => {
-				boldKnowledgeWords(editor.value); // 每次重新初始化时标记知识点单词
-			},
-			onChange: async () => {
-				const content = await editor.value.save();
-				checkBoldText(content);
-			},
-		});
-	}
-};
-
-const saveDialogue = async () => {
-	const savedData = await editor.value.save();
-	const outputJson = {
-		scenes: [
-			{
-				id: `${route.params.season}-${route.params.episode}`,
-				title: route.params.episode,
-				dialogues: [
-					{
-						id: "scene" + currentDialogueIndex.value,
-						season: route.params.season,
-						episode: route.params.episode,
-						title: savedData.blocks
-							.find((block) => block.data.text.startsWith("#"))
-							.data.text.replace(/^#/, "")
-							.trim(),
-						img: currentDialogue.value.img,
-						text: [],
-						text_zh: [],
-						knowledge: knowledges.value,
-					},
-				],
-			},
-		],
-	};
-
-	let isEnglishLine = true;
-	let tempText = [];
-	let tempTextZh = [];
-
-	savedData.blocks.forEach((block) => {
-		let lineText = block.data.text.trim().replace(/<\/?b>/g, "");
-		if (!lineText.startsWith("#") && lineText !== "\u200B") {
-			const match = lineText.match(/^\[(.*?)\]\s*(.*)/);
-			const character = match ? match[1] : "";
-			const dialogue = match ? match[2] : lineText;
-
-			if (isEnglishLine) {
-				tempText = [character, dialogue];
-			} else {
-				tempTextZh = [character, dialogue];
-				outputJson.scenes[0].dialogues[0].text.push(tempText);
-				outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
-				tempText = [];
-				tempTextZh = [];
-			}
-			isEnglishLine = !isEnglishLine;
-		}
-	});
-
-	// 如果剩余未成对的行，填充空项
-	if (tempText.length && !tempTextZh.length)
-		outputJson.scenes[0].dialogues[0].text.push(tempText);
-	if (tempTextZh.length && !tempText.length)
-		outputJson.scenes[0].dialogues[0].text_zh.push(tempTextZh);
-
-	submitSceneData(outputJson);
-};
-
-// 提交数据
-const submitSceneData = (jsonData) => {
-	const catalogId = route.params.id;
-	const season = route.params.season;
-	const episode = route.params.episode;
-	uploadScript(catalogId, season, episode, jsonData);
-};
-
-// 上传脚本数据
-const uploadScript = async (catalogId, season, episode, jsonData) => {
-	try {
-		const response = await apiClient.post(
-			`/scripts/${catalogId}/${season}/${episode}`,
-			{
-				scriptData: jsonData,
-			}
-		);
-		if (response.status === 200) {
-		}
-	} catch (error) {
-		console.error("Error uploading script:", error);
-	}
-};
-
 const backToPreview = () => {
 	router.replace({
 		path: route.path,
-		query: { ...route.query, mode: "preview" },
+		query: {
+			...route.query,
+			mode: "preview",
+			script: route.query.script || scriptUrl.value,
+		},
 	});
 };
-
-onMounted(async () => {
-	handleTranslate();
-
-	await fetchDefaultJson();
-	const blocks = await initEditorWithDialogueData();
-
-	editor.value = new EditorJS({
-		holder: "editorjs",
-		placeholder: "",
-		data: { blocks },
-		inlineToolbar: ["bold", "italic"],
-		onReady: () => boldKnowledgeWords(editor.value),
-		onChange: async () => checkBoldText(await editor.value.save()),
-	});
-});
-
-onBeforeUnmount(() => editor.value && editor.value.destroy());
 </script>
 
 <style scoped>

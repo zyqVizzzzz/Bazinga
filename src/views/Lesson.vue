@@ -1,13 +1,5 @@
 <template>
 	<div v-if="!isEditMode" class="container mx-auto my-10 p-6">
-		<div
-			v-if="isSaveProgressToast"
-			class="toast toast-top toast-center mt-5 opacity-70"
-		>
-			<div class="alert alert-info bg-black text-white">
-				<span>进度保存成功！</span>
-			</div>
-		</div>
 		<transition
 			:name="
 				!isFirstLoad
@@ -201,6 +193,7 @@ import PracticeCard from "@/components/card/practice.vue";
 import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
 import CardEdit from "./CardEdit.vue";
+import { showToast } from "@/components/common/toast.js";
 
 import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
@@ -262,7 +255,7 @@ const editCard = () => {
 	const episode = route.params.episode;
 	const sign = route.query.sign;
 	const script = route.query.script;
-	router.push({
+	router.replace({
 		path: `/category/${courseId}/${season}/${episode}`,
 		query: {
 			mode: "edit",
@@ -335,21 +328,27 @@ const customNotes = ref({});
 const getVocabulary = async () => {
 	try {
 		const res = await apiClient.get(`/lesson-notes/${episodeId.value}`);
-		const notes = res.data.notes;
-		const categorizedNotes = {};
-		if (res.data.statusCode === 404) {
-			return;
-		}
-		// 根据 scene 进行分类
-		notes.forEach((note) => {
-			const scene = note.scene;
-			if (!categorizedNotes[scene]) {
-				categorizedNotes[scene] = [];
-			}
-			categorizedNotes[scene].push(note);
-		});
+		if (res.data.code === 200) {
+			if (res.data.data.statusCode === 404) return;
+			const notes = res.data.data.notes;
+			const categorizedNotes = {};
+			// 根据 scene 进行分类
+			notes.forEach((note) => {
+				const scene = note.scene;
+				if (!categorizedNotes[scene]) {
+					categorizedNotes[scene] = [];
+				}
+				categorizedNotes[scene].push(note);
+			});
 
-		customNotes.value = categorizedNotes;
+			customNotes.value = categorizedNotes;
+		} else {
+			showToast({
+				message: res.data.message,
+				type: "error",
+				duration: 3000,
+			});
+		}
 	} catch (error) {
 		console.error("Error fetching vocabulary:", error);
 	}
@@ -528,22 +527,29 @@ const handleSlideChange = (data) => {
 	dialogueCard.value.scrollToWord(currentWord); // 调用子组件方法
 };
 
-const isSaveProgressToast = ref(false);
 const saveProgress = async () => {
 	const course = route.params.id;
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const page = currentPage.value;
-	appStore.saveProgress(course, season, episode, page);
+	const scriptUrl = route.query.script;
+	const sign = route.query.sign;
+
+	appStore.saveProgress(course, season, episode, page, scriptUrl, sign);
 	try {
 		const response = await apiClient.post("/users/me/update", {
 			learningProgress: appStore.progressList,
 		});
-		if ((response.status = 200)) {
-			isSaveProgressToast.value = true;
-			setTimeout(() => {
-				isSaveProgressToast.value = false;
-			}, 2000);
+		if (response.data.code === 200) {
+			showToast({
+				message: "进度保存成功",
+				type: "success",
+			});
+		} else {
+			showToast({
+				message: response.data.message,
+				type: "error",
+			});
 		}
 	} catch (error) {
 		console.error(error);

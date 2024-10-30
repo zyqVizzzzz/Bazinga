@@ -57,10 +57,11 @@
 </template>
 
 <script setup>
-import { ref, watch, toRefs, computed } from "vue";
+import { ref, watch, toRefs } from "vue";
 import FlashIcon from "../icons/Flash.vue";
 import { useNotebookStore } from "@/store/index";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 const notebookStore = useNotebookStore();
 const { toggleBlinkBox } = notebookStore;
 
@@ -106,11 +107,14 @@ const onInputWord = debounce(async () => {
 			const response = await apiClient.get(
 				`/lesson-notes/user/suggest?term=${searchQuery.value.trim()}`
 			);
-
-			// 获取联想结果
-			suggestions.value = response.data;
-			console.log("Suggestions:", suggestions.value);
+			if (response.data.code === 200) {
+				// 获取联想结果
+				suggestions.value = response.data.data;
+			} else {
+				showToast({ message: res.data.message, type: "error" });
+			}
 		} catch (error) {
+			showToast({ message: error, type: "error" });
 			console.error("Error fetching suggestions:", error);
 		}
 	} else {

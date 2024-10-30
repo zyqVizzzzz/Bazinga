@@ -43,6 +43,7 @@ import BookCard from "@/components/notes/book.vue";
 import EditCard from "@/components/notes/edit.vue";
 import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
+import { showToast } from "@/components/common/toast.js";
 
 const notebookStore = useNotebookStore();
 const selectedNote = ref(null);
@@ -55,14 +56,14 @@ const minusPoint = ref(0);
 const onSearchWord = async (word) => {
 	try {
 		const res = await apiClient(`/lesson-notes/user/search?word=${word}`);
-		if (res.status === 200) {
-			searchNote.value = res.data.note;
-			searchIndex.value = res.data.index;
+		if (res.data.code === 200) {
+			searchNote.value = res.data.data.note;
+			searchIndex.value = res.data.data.index;
 		} else {
-			console.log("未查到单词");
+			showToast({ message: "未查到单词", type: "error" });
 		}
 	} catch (error) {
-		console.error("API 请求出错", error);
+		showToast({ message: error, type: "error" });
 	}
 };
 

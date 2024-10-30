@@ -62,6 +62,7 @@
 import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
+import { showToast } from "@/components/common/toast.js";
 
 const emit = defineEmits(["on-select-note"]);
 const props = defineProps({
@@ -103,11 +104,13 @@ const getNotebook = async (page = 1, limit = 20) => {
 	const response = await apiClient.get(
 		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}&isImportant=${isImportantMode.value}`
 	);
-	if (response.status === 200) {
-		const { notes, total } = response.data;
+	if (response.data.code === 200) {
+		const { notes, total } = response.data.data;
 		vocabularyNotes.value = notes;
 		totalCounts.value = total;
 		selectNote(vocabularyNotes.value[0]);
+	} else {
+		showToast({ message: "未查到单词", type: "error" });
 	}
 };
 

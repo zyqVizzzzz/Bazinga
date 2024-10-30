@@ -171,6 +171,7 @@ import { ref, toRefs, computed, watch } from "vue";
 import VolumeIcon from "../icons/Volume.vue";
 import BookmarkIcon from "../icons/Bookmark.vue";
 import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 const props = defineProps({
 	selectedNote: Object,
@@ -208,8 +209,11 @@ const updateComment = async () => {
 		`/lesson-notes/${selectedNote.value.resourceId}`,
 		commitObj
 	);
-	console.log(res.data);
-	return res.data;
+	if (res.data.code === 200) {
+		return res.data.data;
+	} else {
+		showToast({ message: res.data.message, type: "error" });
+	}
 };
 
 const isFill = ref(false);
@@ -221,17 +225,24 @@ const toggleImportantBadge = async () => {
 			`/lesson-notes/${selectedNote.value.resourceId}`,
 			importantObj
 		);
-		console.log(res.data);
-		selectedNote.value.isImportant = true;
-		emit("on-add-point");
+		if (res.data.code === 200) {
+			selectedNote.value.isImportant = true;
+			emit("on-add-point");
+		} else {
+			showToast({ message: res.data.message, type: "error" });
+		}
 	} else {
 		const importantObj = { ...selectedNote.value, isImportant: false };
 		const res = await apiClient.put(
 			`/lesson-notes/${selectedNote.value.resourceId}`,
 			importantObj
 		);
-		selectedNote.value.isImportant = false;
-		emit("on-minus-point");
+		if (res.data.code === 200) {
+			selectedNote.value.isImportant = false;
+			emit("on-minus-point");
+		} else {
+			showToast({ message: res.data.message, type: "error" });
+		}
 	}
 };
 
