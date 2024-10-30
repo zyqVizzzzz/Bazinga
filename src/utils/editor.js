@@ -46,19 +46,32 @@ export const initEditorBlocks = (dialogueData) => {
 	return blocks;
 };
 
-// 标记知识点单词
+// 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
 export const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
 	const content = await editorInstance.save();
+	// 创建一个对象来跟踪每个知识点单词的匹配状态
+	const matchedWords = new Set();
 	const newBlocks = content.blocks.map((block) => {
 		if (block.type === "paragraph" && block.data.text.trim()) {
+			// 遍历每个知识点，并在整个文本范围内仅加粗首次出现
 			knowledges.forEach(({ word }) => {
-				const regExp = new RegExp(`(${word})`, "gi");
-				block.data.text = block.data.text.replace(regExp, `<b>${word}</b>`);
+				// 如果该单词已经加粗过，则跳过
+				if (matchedWords.has(word)) return;
+
+				const regExp = new RegExp(`(${word})`, "i"); // 匹配第一个出现的单词（忽略大小写）
+
+				// 替换第一个匹配项后停止
+				block.data.text = block.data.text.replace(regExp, (match) => {
+					matchedWords.add(word); // 标记该单词已加粗
+					return `<b>${match}</b>`; // 仅加粗第一个匹配项
+				});
 			});
 		}
 		return block;
 	});
-	editorInstance.render({ blocks: newBlocks });
+
+	// 渲染编辑器内容
+	await editorInstance.render({ blocks: newBlocks });
 };
 
 /**
@@ -102,7 +115,7 @@ export function addBoldWordsToKnowledge(newBoldWords, knowledges) {
 					prefixMeaning: "",
 					prefixMeaning_zh: "",
 				},
-				rootAnalysis: { root: "watch", meaning: "", meaning_zh: "" },
+				rootAnalysis: { root: "", meaning: "", meaning_zh: "" },
 				wordInflections: {
 					baseForm: "",
 					baseForm_zh: "原型",
@@ -132,6 +145,12 @@ export function checkBoldText(content, knowledges) {
 	const currentBoldWords = new Set();
 
 	content.blocks.forEach((block) => {
+		// 判断是否为中文行：含有中文字符即认为是中文行
+		if (/[^\x00-\x7F]/.test(block.data.text)) {
+			// 如果是中文行，跳过处理
+			return;
+		}
+
 		if (block.type === "paragraph") {
 			const cleanBoldWords = extractBoldWords(block.data.text).filter(
 				(word) => !existingBoldWords.has(word)
@@ -194,7 +213,6 @@ export function processDialogueData(
 
 	let titleFound = false;
 	const lines = [];
-
 	// 处理标题和内容行
 	savedData.blocks.forEach((block) => {
 		let lineText = block.data.text;
@@ -242,19 +260,23 @@ export function processDialogueData(
 			let chineseLine = group[i + 1] || "";
 
 			// 处理英文行
-			let { speaker: englishSpeaker, text: englishText } =
-				parseDialogueLine(englishLine);
+			let { speaker: englishSpeaker, text: englishText } = parseDialogueLine(
+				englishLine,
+				"en"
+			);
 
 			// 处理中文行
-			let { speaker: chineseSpeaker, text: chineseText } =
-				parseDialogueLine(chineseLine);
+			let { speaker: chineseSpeaker, text: chineseText } = parseDialogueLine(
+				chineseLine,
+				"zh"
+			);
 
 			// 添加到输出数组
 			outputDialogue.text.push([englishSpeaker, englishText]);
 			outputDialogue.text_zh.push([chineseSpeaker, chineseText]);
 		}
 	});
-
+	console.log(outputDialogue);
 	return outputDialogue;
 }
 
@@ -263,30 +285,25 @@ export function processDialogueData(
  * @param {string} line - 单行对话文本
  * @returns {Object} - 包含角色名和对话文本的对象
  */
-function parseDialogueLine(line) {
+function parseDialogueLine(line, tag) {
 	let speaker = "";
-	let text = line;
+	let text = line.replace(/\u200B/g, "").trim();
 
-	// 移除零宽空格和 <i> 标签
-	text = text
-		.replace(/\u200B/g, "")
-		.replace(/<\/?i>/g, "")
-		.trim();
-
-	// 检查是否整行被 <i> 标签包裹
-	if (
-		text.startsWith("<i>") &&
-		text.endsWith("</i>") &&
-		text.indexOf("<i>", 1) === -1
-	) {
-		text = text.substring(3, text.length - 4).trim();
-		speaker = "narration";
+	// 如果是 "zh" 标记，则去除所有标签
+	if (tag === "zh") {
+		text = text.replace(/<\/?[^>]+(>|$)/g, ""); // 移除所有 HTML 标签
 	} else {
-		// 检查是否有角色名
-		const match = text.match(/^\[(.*?)\]\s*(.*)/);
-		if (match) {
-			speaker = match[1];
-			text = match[2];
+		// 检查是否整行被 <i> 标签包裹
+		if (/^<i>.*<\/i>$/.test(text)) {
+			text = text.slice(3, -4).trim(); // 去掉开头的 <i> 和结尾的 </i>
+			speaker = "narration";
+		} else {
+			// 检查是否有角色名，使用正则表达式匹配最外层的 `[]` 并忽略内层 `[]`
+			const match = text.match(/^\[([^\[\]]*)\]\s*(.*)/);
+			if (match) {
+				speaker = match[1].replace(/\[.*?\]/g, "").trim(); // 移除内部 `[]`
+				text = match[2].trim();
+			}
 		}
 	}
 

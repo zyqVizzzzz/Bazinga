@@ -302,9 +302,8 @@ const getLesson = async () => {
 		}
 
 		const res = await scriptRes.json();
-		console.log(res);
 		dialoguesData.value = res.scriptData;
-
+		console.log(dialoguesData.value);
 		// 检查 JSON 数据结构是否正确
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
 			scene.value = dialoguesData.value.scenes[0];
@@ -439,6 +438,7 @@ const resetKnowledgeIndex = () => {
 
 // 获取当前台词
 const currentDialogue = computed(() => {
+	console.log("out");
 	// 检查 dialogues 是否有内容
 	return dialogues.value.length > 0
 		? dialogues.value[currentDialogueIndex.value]

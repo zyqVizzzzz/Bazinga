@@ -1,6 +1,6 @@
-import { prefixes } from "./prefixes";
-import { suffixes } from "./suffixes";
-import { roots } from "./roots";
+import { prefixes } from "@/constants/prefixes";
+import { suffixes } from "@/constants/suffixes";
+import { roots } from "@/constants/roots";
 
 export function getDefinitions(word) {
 	// 初始拆解结果

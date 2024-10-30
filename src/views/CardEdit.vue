@@ -370,7 +370,7 @@ import {
 	existingBoldWords,
 	processDialogueData,
 } from "@/utils/editor.js";
-import { exampleText, exampleTextZh } from "@/constants/Example.js";
+import { exampleText, exampleTextZh } from "@/constants/example.js";
 import { showToast } from "@/components/common/toast.js";
 
 const route = useRoute();
@@ -442,7 +442,6 @@ const initEditorJS = async () => {
 
 // 初始化编辑器中的对话数据
 const initEditorWithDialogueData = async () => {
-	console.log(currentDialogue.value);
 	const dialogueData = currentDialogue.value;
 	if (!dialogueData) {
 		return [];
@@ -614,7 +613,7 @@ const saveKnowledge = (index) => {
 
 const cancelEdit = () => {
 	isEditing.value = false;
-	editedFields.value = editFieldsInit;
+	editedFields.value = {};
 };
 
 const backToPreview = () => {
