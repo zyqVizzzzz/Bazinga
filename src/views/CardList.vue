@@ -62,7 +62,7 @@
 						/>
 					</svg>
 				</div>
-				<span class="text-gray-500 text-base font-semibold">制作笔记</span>
+				<span class="text-gray-500 text-base font-semibold">制作卡片合集</span>
 			</div>
 		</div>
 	</div>
@@ -100,7 +100,7 @@ const goToCollection = (id) => {
 
 const addNewScene = () => {
 	// 导航到新增笔记页面
-	router.push("/create-collection");
+	router.push("/setup-collection");
 };
 </script>
 
@@ -108,6 +108,7 @@ const addNewScene = () => {
 .all-collections {
 	width: 100%;
 	margin-top: 80px;
+	margin-bottom: 100px;
 	min-height: 500px;
 	padding: 20px;
 }

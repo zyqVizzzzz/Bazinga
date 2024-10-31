@@ -4,6 +4,7 @@
 	>
 		<span>{{ title }}</span>
 		<div
+			v-if="props.currentPractice.length"
 			class="flex items-center text-base font-normal title-jam"
 			@click="onTogglePractice"
 			@mouseenter="isHoveredJ = true"

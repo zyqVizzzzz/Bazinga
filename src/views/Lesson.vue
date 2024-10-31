@@ -38,12 +38,6 @@
 								<!-- 卡片内容部分 -->
 								<div class="card-content flex items-stretch relative">
 									<!-- 听力胶囊 -->
-									<div
-										class="w-2/6 flex flex-col items-center p-4"
-										v-if="!showHints"
-									>
-										<SpeakingCapsule :thumbnail="currentDialogue.img" />
-									</div>
 									<!-- 台词 -->
 									<div
 										:class="{
@@ -96,6 +90,7 @@
 								/>
 								<!-- Practice 部分 -->
 								<PracticeCard
+									v-if="currentPractice.length"
 									:currentPractice="currentPractice"
 									:showHints="showHints"
 									:currentKnowledgePoints="currentKnowledgePoints"
@@ -124,15 +119,22 @@
 				</div>
 				<div
 					v-if="!isFlipped"
+					@click="openListenMode"
+					class="text-xs text-center mt-2 speaker-capsule shadow-md absolute text-gray-600"
+				>
+					<span class="cursor-pointer font-bold">语音模式</span>
+				</div>
+				<div
+					v-if="!isFlipped"
 					@click="saveProgress"
 					class="text-xs text-center mt-2 save-capsule shadow-md absolute text-gray-600"
 				>
 					<span class="cursor-pointer font-bold">保存进度</span>
 				</div>
 				<div
-					v-if="!isFlipped"
+					v-if="!isFlipped && !isDefault"
 					@click="editCard"
-					class="text-primary text-xs text-center mt-2 product-capsule shadow-md absolute"
+					class="text-primary text-xs text-center mt-2 product-capsule shadow-lg absolute"
 				>
 					<span class="cursor-pointer font-bold">编辑卡片</span>
 				</div>
@@ -187,9 +189,10 @@ import TitleBar from "@/components/card/title.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
-import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
 import { showToast } from "@/components/common/toast.js";
+
+import { getVoicesList } from "@/utils/speechSynthesisHelper";
 
 import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
@@ -215,7 +218,7 @@ const isFirstLoad = ref(true); // 只有在第一次点击箭头的时候才会�
 const isFlipped = ref(false); // 是否翻转卡片
 
 // 控制子卡片显示状态
-const showHints = ref(false);
+const showHints = ref(true);
 const showPractice = ref(false);
 const showTrans = ref(false);
 
@@ -227,6 +230,8 @@ const currentPage = ref(1);
 const totalPages = ref(0);
 const isEditPage = ref(false);
 const editPageRef = ref(null);
+
+const isDefault = ref(true);
 
 const editCurrentPage = ref(0);
 const editPage = (isTrue) => {
@@ -349,6 +354,16 @@ const getVocabulary = async () => {
 	}
 };
 
+const isFocusP = ref(false);
+const openListenMode = async () => {
+	if (!lessonStore.voicesList.length) {
+		const voicesList = await getVoicesList();
+		lessonStore.setVoicesList(voicesList);
+	}
+	lessonStore.setListenMode();
+	lessonStore.isListenMode ? (isFocusP.value = true) : (isFocusP.value = false);
+};
+
 const handleUpdateNote = ({ note, word, action, scene }) => {
 	// 检查 customNotes.value 是否存在该 scene 的数组，如果不存在则初始化为一个空数组
 	if (!customNotes.value[scene]) {
@@ -368,6 +383,9 @@ const handleUpdateNote = ({ note, word, action, scene }) => {
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
+	if (route.params.id !== "67230dee6fc3d389ea1ffedf") {
+		isDefault.value = false;
+	}
 	await getLesson();
 });
 
@@ -395,7 +413,14 @@ watch(
 
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
-	showHints.value = !showHints.value;
+	if (currentKnowledgePoints.value.length) {
+		showHints.value = !showHints.value;
+	} else {
+		showToast({
+			message: "暂无单词，请在卡片编辑器中添加知识点单词",
+			type: "warning",
+		});
+	}
 };
 
 const toggleTrans = () => {
@@ -680,6 +705,23 @@ watch(currentDialogueIndex, (newIndex) => {
 	bottom: -50px;
 	right: 1rem;
 }
+.speaker-capsule {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 12px; /* 等效于 py-4 */
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+	width: 90px;
+	height: 30px;
+	margin: 0px auto 0;
+	border-radius: 20px;
+	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
+	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
+	bottom: -50px;
+	right: 15rem;
+}
 .product-capsule {
 	display: flex;
 	align-items: center;
@@ -692,8 +734,8 @@ watch(currentDialogueIndex, (newIndex) => {
 	height: 30px;
 	margin: 0px auto 0;
 	border-radius: 20px;
-	border: 2px solid rgba(var(--primary-color-rgb), 0.3);
-	box-shadow: 0 2px 4px rgba(var(--primary-color-rgb), 0.3);
+	/* border: 2px solid rgba(var(--primary-color-rgb), 0.3); */
+	box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.5);
 	bottom: -50px;
 	left: 1rem;
 }

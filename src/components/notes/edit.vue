@@ -1,5 +1,5 @@
 <template>
-	<div class="card relative rounded-lg p-4 pt-5 mb-4 h-full bg-grid-paper">
+	<div class="card relative rounded-lg p-4 pt-5 mb-4 h-full">
 		<!-- 词汇 -->
 		<h2
 			class="text-2xl pb-2 font-medium text-gray-800 text-left pl-4 flex justify-between items-center"
@@ -301,15 +301,5 @@ watch(
 	box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 	border: none;
 	background: white;
-}
-.bg-grid-paper {
-	background-color: transparent;
-	background-image: linear-gradient(
-			90deg,
-			rgba(0, 0, 0, 0.03) 1px,
-			transparent 1px
-		),
-		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-	background-size: 15px 15px; /* 网格间距 */
 }
 </style>

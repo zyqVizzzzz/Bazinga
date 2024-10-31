@@ -9,7 +9,7 @@
 			<div
 				v-for="scene in scenes.slice(0, 3)"
 				:key="scene.id"
-				class="card w-80 bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+				class="card w-80 bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer transition-all duration-300"
 				@click="goToCollection(scene._id)"
 			>
 				<div class="w-full" style="height: 150px" v-if="scene.banner">
@@ -48,7 +48,10 @@
 			</div>
 		</div>
 		<div class="text-center mb-16 font-bold">
-			<span class="text-primary cursor-pointer" @click="goToAllScenes">
+			<span
+				class="common-capsule text-sm text-center mt-2 mx-auto w-40 text-gray-600 transition-all duration-300"
+				@click="goToAllScenes"
+			>
 				查看更多...
 			</span>
 		</div>
@@ -129,10 +132,11 @@ const goToCollection = (id) => {
 	router.push("/collections/" + id);
 };
 </script>
-<style>
+<style scoped>
 .home {
 	width: 100%;
 	margin-top: 100px;
+	margin-bottom: 100px;
 }
 .bg-custom {
 	background-color: rgba(255, 255, 255, 1);
@@ -141,8 +145,10 @@ const goToCollection = (id) => {
 	background-position: right center; /* 图片定位在右侧中央 */
 	background-size: 16%; /* 根据需要调整图片的大小 */
 }
-
-/* .shadow-md {
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-} */
+.card {
+	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.card:hover {
+	transform: translateY(-5px);
+}
 </style>

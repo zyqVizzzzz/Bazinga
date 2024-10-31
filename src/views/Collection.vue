@@ -5,7 +5,8 @@
 	>
 		<div
 			class="relative w-full mb-8"
-			style="padding-top: 96px; padding-bottom: 64px"
+			style="padding-top: 96px"
+			:style="isDefault ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
 		>
 			<div
 				v-if="infoData"
@@ -23,15 +24,9 @@
 				v-if="infoData"
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
 			>
-				<h1 class="text-4xl font-semibold mb-4">
+				<h1 class="text-4xl font-semibold mb-4 relative">
 					{{ isChinese ? infoData.showName : infoData.name }}
 				</h1>
-				<!-- <button
-					@click="toggleLanguage"
-					class="text-sm py-2 px-6 bg-gray-200 text-gray-600 opacity-80 hover:bg-gray-300 rounded-full transition duration-300 mb-4"
-				>
-					{{ isChinese ? "English" : "中文" }}
-				</button> -->
 				<h2 class="text-xl font-semibold mb-2 text-gray-200 w-4/5">
 					{{ infoData.description }}
 				</h2>
@@ -40,13 +35,57 @@
 					class="bg-white bg-opacity-70 mt-4 p-4 rounded-lg shadow-md text-black w-3/5"
 				>
 					<p class="font-semibold">
-						{{ isChinese ? "难度等级" : "Level" }}:
+						难度等级:
 						{{ infoData.difficulty }}
 					</p>
 					<p class="text-sm my-2 text-left">
 						{{ infoData.difficultyDetails }}
 					</p>
 				</div>
+				<button
+					v-if="!isDefault"
+					class="text-sm mt-6 py-2 px-6 bg-gray-200 text-gray-600 opacity-50 flex space-x-6 text-sm hover:opacity-70 rounded-full transition duration-300"
+				>
+					<div class="tooltip" data-tip="设置合集信息">
+						<div class="hover:text-gray-800" @click="goToCollectionEdit">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-5"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+								/>
+							</svg>
+						</div>
+					</div>
+
+					<dialog id="collection_delete_modal" v-if="!isDefault" class="modal">
+						<div class="modal-box">
+							<h3 class="text-lg my-4 mb-8 font-bold">
+								确认删除当前合集？此操作不可撤销！
+							</h3>
+							<div class="flex space-x-4 justify-center">
+								<!-- if there is a button in form, it will close the modal -->
+								<button
+									@click="confirmDelete"
+									class="btn bg-red-400 px-4 text-white hover:bg-red-500 transition duration-300"
+								>
+									确认
+								</button>
+								<button class="btn px-4" @click="closeDeleteModal">取消</button>
+							</div>
+						</div>
+						<form method="dialog" class="modal-backdrop">
+							<button>close</button>
+						</form>
+					</dialog>
+				</button>
 			</div>
 		</div>
 
@@ -92,10 +131,13 @@
 			<!-- 卡片样式的课程列表 -->
 			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
 				<div
-					v-for="episode in currentSeasonEpisodes"
-					:key="episode"
+					v-for="(episode, index) in currentSeasonEpisodes"
+					:key="index"
 					@click="goToLesson(currentSeason, episode)"
 					class="card shadow-lg px-6 py-4 text-center cursor-pointer hover:shadow-xl transition-all duration-300"
+					:style="{
+						boxShadow: '0 4px 12px ' + hexToRgba(infoData.theme, 0.3),
+					}"
 				>
 					<p class="text-sm font-bold">
 						{{ `第 ${episode.ep} 集` }}
@@ -120,15 +162,6 @@
 					{{ isChinese ? "下一季" : "Next Season" }}
 				</button>
 			</div>
-		</div>
-
-		<!-- 如果没有找到对应的季数据 -->
-		<div v-else class="text-center">
-			<p>
-				没有找到数据，<span class="text-primary cursor-pointer" @click="addData"
-					>添加第一集卡片笔记</span
-				>
-			</p>
 		</div>
 	</div>
 </template>
@@ -174,6 +207,14 @@ const goToLesson = (season, episode) => {
 		  });
 };
 
+const hexToRgba = (hex, alpha) => {
+	let r = parseInt(hex.slice(1, 3), 16);
+	let g = parseInt(hex.slice(3, 5), 16);
+	let b = parseInt(hex.slice(5, 7), 16);
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const isDefault = ref(true);
 // 异步加载 JSON 数据
 const loadCategoryData = async () => {
 	try {
@@ -185,12 +226,11 @@ const loadCategoryData = async () => {
 				seasons.value.push(item.seasonNumber);
 				episodes.value[item.seasonNumber] = item.episodes;
 			});
+			if (infoData.value.userId && infoData.value.isCustom) {
+				isDefault.value = false;
+			}
 		} else {
-			showToast({
-				message: response.data.message,
-				type: "error",
-				duration: 3000,
-			});
+			showToast({ message: response.data.message, type: "error" });
 			infoData.value = null;
 			seasons.value = [];
 			episodes.value = {};
@@ -204,8 +244,6 @@ const loadCategoryData = async () => {
 		loading.value = false;
 	}
 };
-
-const addData = async () => {};
 
 const currentProgress = ref({});
 const getUserProfile = async () => {
@@ -266,6 +304,39 @@ const nextSeason = () => {
 	}
 };
 
+const goToCollectionEdit = () => {
+	router.push({
+		path: "/setup-collection",
+		query: {
+			resource: route.params.id,
+		},
+	});
+};
+
+const deleteCollection = () => {
+	document.getElementById("collection_delete_modal").showModal();
+};
+
+const confirmDelete = async () => {
+	try {
+		const res = await apiClient.delete("/catalogs/" + route.params.id);
+		if ((res.data.code = 200)) {
+			showToast({ message: "删除合集成功", type: "success" });
+			router.replace({
+				path: "/collections",
+			});
+		} else {
+			showToast({ message: "删除合集失败", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: "删除合集失败", type: "error" });
+	}
+};
+
+const closeDeleteModal = () => {
+	document.getElementById("collection_delete_modal").close();
+};
+
 // 页面加载时调用
 onMounted(() => {
 	loadCategoryData();
@@ -298,6 +369,14 @@ button[disabled] {
 .filter-blur {
 	filter: blur(5px) brightness(100%);
 	backdrop-filter: blur(10px);
+}
+.tooltip:before {
+	margin-bottom: 4px;
+	background-color: rgba(0, 0, 0, 0.7);
+	letter-spacing: 1px;
+}
+.tooltip:after {
+	margin-bottom: 4px;
 }
 </style>
 <!-- bg-gradient-to-b from-transparent to-black opacity-90 -->

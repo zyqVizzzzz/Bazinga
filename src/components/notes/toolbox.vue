@@ -29,12 +29,12 @@
 				v-if="suggestions.length"
 				class="absolute top-full -left-2 w-full text-left max-w-xs bg-white border border-gray-300 rounded-lg mt-1 shadow-lg z-10"
 			>
-				<ul>
+				<ul class="rounded-lg overflow-hidden">
 					<li
 						v-for="(suggestion, index) in suggestions"
 						:key="index"
 						@click="selectSuggestion(suggestion)"
-						class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+						class="px-4 py-2 hover:bg-gray-100 hover:round-lg cursor-pointer text-sm text-gray-700"
 					>
 						{{ suggestion }}
 					</li>

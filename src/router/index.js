@@ -39,7 +39,7 @@ const routes = [
 		component: CardEdit,
 	},
 	{
-		path: "/create-collection",
+		path: "/setup-collection",
 		name: "CardCreate",
 		component: CardCreate,
 	},

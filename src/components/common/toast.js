@@ -18,5 +18,5 @@ export function showToast({ message, type = "info", duration = 3000 }) {
 		toastInstance.unmount();
 		document.body.removeChild(container);
 		toastInstance = null;
-	}, duration + 300); // 多加 300ms 以确保淡出动画完成
+	}, duration + 300);
 }

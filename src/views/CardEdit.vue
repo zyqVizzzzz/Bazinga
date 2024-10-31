@@ -393,11 +393,11 @@ const defaultJson = ref({
 					id: "Scene1",
 					season: season,
 					episode: episode,
-					title: "使用说明",
+					title: "卡片编辑器使用说明",
 					img: "",
 					text: exampleText,
 					text_zh: exampleTextZh,
-					knowledge: [],
+					knowledge: [{ word: "bold" }],
 				},
 			],
 		},
@@ -622,6 +622,10 @@ const cancelEdit = () => {
 };
 
 const backToPreview = () => {
+	if (!route.query.script && !scriptUrl.value) {
+		showToast({ message: "请保存更改后进入卡片预览模式", type: "warning" });
+		return;
+	}
 	const courseId = route.params.id;
 	const season = route.params.season;
 	const episode = route.params.episode;

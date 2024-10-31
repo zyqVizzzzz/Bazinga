@@ -20,11 +20,9 @@
 					@on-select-note="selectNote"
 				/>
 			</div>
-			<div
-				class="w-1/2 border-2 border-gray-500 edit-content"
-				v-if="selectedNote"
-			>
+			<div class="w-1/2 border-2 border-gray-500 edit-content bg-grid-paper">
 				<EditCard
+					v-if="selectedNote"
 					:selectedNote="selectedNote"
 					@on-add-point="onAddPoint"
 					@on-minus-point="onMinusPoint"
@@ -96,5 +94,15 @@ watch(showBlinkbox, (newValue) => {
 	height: calc(100vh - 280px);
 	min-height: 730px;
 	border-radius: 8px;
+}
+.bg-grid-paper {
+	background-color: transparent;
+	background-image: linear-gradient(
+			90deg,
+			rgba(0, 0, 0, 0.03) 1px,
+			transparent 1px
+		),
+		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+	background-size: 15px 15px; /* 网格间距 */
 }
 </style>

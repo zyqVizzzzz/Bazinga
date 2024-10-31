@@ -1,13 +1,17 @@
 <template>
-	<div class="flex justify-center items-center my-20">
+	<h1 class="text-2xl my-10 font-semibold text-center mb-4">
+		{{ resourceId ? "编辑" : "新增" }}卡片合集
+	</h1>
+	<div
+		class="grid my-10 justify-items-center items-center grid-cols-2 gap-1 gap-y-8"
+		style="padding: 0 40px"
+	>
 		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<h1 class="text-2xl font-semibold text-center mb-4">新增卡片合集</h1>
-			<form @submit.prevent="submitNote" class="space-y-4">
-				<!-- 中文名 -->
+			<form class="space-y-4">
 				<div class="form-control">
 					<label for="showName" class="label">
 						<span class="label-text"
-							>合集名<span class="text-red-500">*</span></span
+							>合集名<span class="text-red-500">（必填项）</span></span
 						>
 					</label>
 					<input
@@ -34,6 +38,22 @@
 					/>
 				</div>
 
+				<!-- 描述 -->
+				<div class="form-control">
+					<label for="description" class="label">
+						<span class="label-text">合集描述</span>
+					</label>
+					<textarea
+						v-model="noteForm.description"
+						id="description"
+						class="textarea textarea-bordered w-full"
+						placeholder="请输入合集描述"
+					></textarea>
+				</div>
+			</form>
+		</div>
+		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
+			<form class="space-y-4">
 				<!-- 封面图上传 -->
 				<div class="form-control">
 					<label for="banner" class="label">
@@ -87,19 +107,23 @@
 					/>
 				</div>
 
-				<!-- 描述 -->
+				<!-- 主题色 -->
 				<div class="form-control">
-					<label for="description" class="label">
-						<span class="label-text">描述</span>
+					<label for="theme" class="label">
+						<span class="label-text">主题色</span>
 					</label>
-					<textarea
-						v-model="noteForm.description"
-						id="description"
-						class="textarea textarea-bordered w-full"
-						placeholder="请输入描述"
-					></textarea>
+					<input
+						v-model="noteForm.theme"
+						@input="updateThemePreview"
+						type="color"
+						id="theme"
+						class="input input-bordered w-full color-picker"
+					/>
 				</div>
-
+			</form>
+		</div>
+		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
+			<form class="space-y-4">
 				<!-- 难度 -->
 				<div class="form-control">
 					<label for="difficulty" class="label">
@@ -120,9 +144,6 @@
 
 				<!-- 难度描述 -->
 				<div class="form-control">
-					<label for="difficultyDetails" class="label">
-						<span class="label-text">难度描述</span>
-					</label>
 					<textarea
 						v-model="noteForm.difficultyDetails"
 						id="difficultyDetails"
@@ -130,39 +151,109 @@
 						placeholder="请输入难度描述"
 					></textarea>
 				</div>
-
-				<!-- 主题色 -->
+			</form>
+		</div>
+		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
+			<form class="space-y-4">
+				<!-- 设置 seasons -->
 				<div class="form-control">
-					<label for="theme" class="label">
-						<span class="label-text">主题色</span>
+					<label class="label">
+						<span class="label-text">设置 Seasons</span>
 					</label>
-					<input
-						v-model="noteForm.theme"
-						@input="updateThemePreview"
-						type="color"
-						id="theme"
-						class="input input-bordered w-full color-picker"
-					/>
+					<div class="flex space-x-2">
+						<select
+							v-model="selectedSeasonIndex"
+							class="select select-bordered w-full"
+						>
+							<option
+								v-for="(season, index) in noteForm.seasons"
+								:key="index"
+								:value="index"
+							>
+								{{ season.seasonNumber }}
+							</option>
+						</select>
+						<!-- 添加和删除季按钮 -->
+						<button
+							type="button"
+							class="btn btn-primary text-white"
+							@click="addSeason"
+						>
+							新增
+						</button>
+						<button
+							type="button"
+							class="btn btn-error text-white"
+							@click="removeSeason"
+							:disabled="!noteForm.seasons.length"
+						>
+							删除
+						</button>
+					</div>
 				</div>
 
-				<!-- 提交按钮 -->
-				<div class="flex justify-center">
-					<button type="submit" class="btn w-full mt-6 btn-primary text-white">
-						提交
-					</button>
+				<!-- 设置 episodes -->
+				<div class="form-control" v-if="selectedSeason">
+					<label class="label">
+						<span class="label-text">设置 Episodes</span>
+					</label>
+					<div class="episode-group grid grid-cols-5 gap-4">
+						<div
+							v-for="(episode, episodeIndex) in selectedSeason.episodes"
+							:key="episodeIndex"
+							class="card card-compact bg-base-100 shadow-md"
+						>
+							<div class="card-body">
+								{{ episode.ep }}
+							</div>
+							<button
+								type="button"
+								class="btn btn-error btn-sm mt-2"
+								@click="removeEpisode(episodeIndex)"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="size-4"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+									/>
+								</svg>
+							</button>
+						</div>
+						<div
+							class="card card-compact bg-base-100 shadow-md"
+							@click="addEpisode"
+						>
+							<div class="card-body">新增集</div>
+						</div>
+					</div>
 				</div>
 			</form>
 		</div>
 	</div>
+	<!-- 提交按钮 -->
+	<div class="flex justify-center mb-20">
+		<button @click="submitNote" class="btn w-40 mt-6 btn-primary text-white">
+			提交
+		</button>
+	</div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
+const route = useRoute();
 
 // 表单数据
 const noteForm = ref({
@@ -173,12 +264,75 @@ const noteForm = ref({
 	banner: "",
 	name: "",
 	theme: "#7a81d5",
+	seasons: [],
 });
 
 // 即时预览数据
 const bannerPreview = ref("");
 const showError = ref(false);
 const fileInput = ref(null);
+const selectedSeasonIndex = ref(null);
+const resourceId = ref(route.query.resource);
+
+onMounted(async () => {
+	if (route.query.resource) {
+		getCollection();
+	}
+});
+
+// 获取选择的季
+const selectedSeason = computed(() => {
+	return noteForm.value.seasons[selectedSeasonIndex.value] || null;
+});
+
+const getCollection = async () => {
+	try {
+		const res = await apiClient.get("catalogs/" + route.query.resource);
+		if (res.data.code === 200) {
+			noteForm.value = res.data.data;
+			bannerPreview.value = res.data.data.banner;
+			selectedSeasonIndex.value = 0; // 默认选择第一季
+		} else {
+			showToast({ message: "合集获取失败，请重试！", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: "合集获取失败，请重试！", type: "error" });
+		console.error("Failed to create note:", error);
+	}
+};
+
+const addSeason = () => {
+	const newSeasonNumber = noteForm.value.seasons.length + 1;
+	const formattedSeasonNumber = `S${String(newSeasonNumber).padStart(2, "0")}`;
+	noteForm.value.seasons.push({
+		seasonNumber: formattedSeasonNumber,
+		episodes: [],
+	});
+	selectedSeasonIndex.value = noteForm.value.seasons.length - 1; // 自动选择新添加的季
+};
+
+// 删除当前选择的季
+const removeSeason = () => {
+	if (selectedSeasonIndex.value !== null) {
+		noteForm.value.seasons.splice(selectedSeasonIndex.value, 1);
+		selectedSeasonIndex.value = noteForm.value.seasons.length ? 0 : null; // 更新选择的索引
+	}
+};
+
+// 添加新集
+const addEpisode = () => {
+	if (selectedSeason.value) {
+		selectedSeason.value.episodes.push({
+			ep: String(selectedSeason.value.episodes.length + 1),
+			scriptUrl: "",
+		});
+	}
+};
+
+// 删除指定集
+const removeEpisode = (episodeIndex) => {
+	selectedSeason.value.episodes.splice(episodeIndex, 1);
+};
 
 // 打开文件上传对话框
 const triggerFileInput = () => {
@@ -201,40 +355,41 @@ const updateThemePreview = () => {
 	// 在选择主题色时更新按钮的颜色
 };
 
+const submitNoteTest = () => {
+	console.log(noteForm.value);
+};
+
 // 提交表单
 const submitNote = async () => {
-	// 检查必填项是否填写
 	showError.value = !noteForm.value.showName;
 	if (showError.value) {
-		showToast({
-			message: "提交失败！请填写合集名",
-			type: "error",
-			duration: 3000,
-		});
-
+		showToast({ message: "提交失败！请填写合集名", type: "error" });
 		return;
 	}
-
 	if (noteForm.value.bannerFile) {
 		// 上传封面图
 		const bannerUrl = await uploadBanner(noteForm.value.bannerFile);
 		if (!bannerUrl) return;
-		noteForm.value.banner = bannerUrl; // 将封面图 URL 添加到表单数据中
+		noteForm.value.banner = bannerUrl;
 	}
-
 	try {
-		const res = await apiClient.post("/catalogs", noteForm.value);
+		// 判断是新增还是编辑操作
+		const res = resourceId.value
+			? await apiClient.post(`/catalogs/${resourceId.value}`, noteForm.value) // 编辑接口
+			: await apiClient.post("/catalogs", noteForm.value); // 新增接口
+
 		if (res.data.code === 200) {
-			showToast({ message: "新增合集成功", type: "success" });
+			const successMessage = resourceId.value ? "合集更新成功" : "新增合集成功";
+			showToast({ message: successMessage, type: "success" });
 			setTimeout(() => {
 				router.push("/collections"); // 提交成功后跳转到笔记列表页
 			}, 2000);
 		} else {
-			showToast({ message: "合集新增失败，请重试！", type: "error" });
+			showToast({ message: "操作失败，请重试！", type: "error" });
 		}
 	} catch (error) {
-		showToast({ message: "合集新增失败，请重试！", type: "error" });
-		console.error("Failed to create note:", error);
+		showToast({ message: "操作失败，请重试！", type: "error" });
+		console.error("Failed to create or update note:", error);
 	}
 };
 
@@ -243,7 +398,7 @@ const uploadBanner = async (file) => {
 	formData.append("file", file);
 
 	try {
-		const response = await apiClient.post("/catalogs/upload-banner", formData, {
+		const response = await apiClient.post("/catalogs/banner/upload", formData, {
 			headers: { "Content-Type": "multipart/form-data" },
 		});
 		if (response.data.code === 200) {
@@ -359,5 +514,10 @@ const uploadBanner = async (file) => {
 
 .upload-area:hover {
 	background-color: #e2e8f0; /* 鼠标悬停时的背景色 */
+}
+.episode-group {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr); /* 每排 5 列 */
+	gap: 1rem; /* 卡片之间的间距 */
 }
 </style>

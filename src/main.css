@@ -72,3 +72,21 @@ mark.pink {
 	margin-right: 0;
 	max-width: 100%;
 }
+
+.common-capsule {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 12px; /* 等效于 py-4 */
+	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
+	cursor: pointer;
+	border-color: transparent; /* 初始状态下隐藏边框 */
+	margin: 0px auto 0;
+	border-radius: 30px;
+	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
+	box-shadow: 0 4px 10px rgba(0, 0, 255, 0.1);
+	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.common-capsule:hover {
+	box-shadow: 0 8px 16px rgba(0, 0, 255, 0.2); /* 悬停时蓝色阴影增强 */
+}
