@@ -155,14 +155,23 @@ const isChinese = ref(true); // 控制是否显示中文
 
 const goToLesson = (season, episode) => {
 	const episodeStr = `${episode.ep.toString()}`; // 格式化集数，如 E01
-	router.push({
-		path: `/category/${route.params.id}/${season}/${episodeStr}`,
-		query: {
-			mode: episode.scriptUrl ? "preview" : "edit",
-			script: episode.scriptUrl,
-			sign: episode._id,
-		},
-	});
+	episode.scriptUrl
+		? router.push({
+				path: `/category/${route.params.id}/${season}/${episodeStr}`,
+				query: {
+					mode: "preview",
+					script: episode.scriptUrl,
+					sign: episode._id,
+				},
+		  })
+		: router.push({
+				path: `/card-edit/${route.params.id}/${season}/${episodeStr}`,
+				query: {
+					mode: "edit",
+					script: episode.scriptUrl,
+					sign: episode._id,
+				},
+		  });
 };
 
 // 异步加载 JSON 数据

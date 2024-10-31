@@ -8,6 +8,7 @@ import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
 import Membership from "@/views/Membership.vue";
 import CardList from "@/views/CardList.vue";
+import CardEdit from "@/views/CardEdit.vue";
 import CardCreate from "@/views/CardCreate.vue";
 import Test from "@/views/Test.vue";
 
@@ -31,6 +32,11 @@ const routes = [
 		path: "/all-collections",
 		name: "CardList",
 		component: CardList,
+	},
+	{
+		path: "/card-edit/:id/:season/:episode",
+		name: "CardEdit",
+		component: CardEdit,
 	},
 	{
 		path: "/create-collection",

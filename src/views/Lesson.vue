@@ -1,5 +1,5 @@
 <template>
-	<div v-if="!isEditMode" class="container mx-auto my-10 p-6">
+	<div class="container mx-auto my-10 p-6">
 		<transition
 			:name="
 				!isFirstLoad
@@ -174,9 +174,6 @@
 			</button>
 		</div>
 	</div>
-	<div v-else class="container mx-auto my-10 p-6">
-		<CardEdit />
-	</div>
 </template>
 
 <script setup>
@@ -192,7 +189,6 @@ import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import SpeakingCapsule from "@/components/capsule/Speaking.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
-import CardEdit from "./CardEdit.vue";
 import { showToast } from "@/components/common/toast.js";
 
 import { useLessonStore, useAppStore } from "@/store";
@@ -256,7 +252,7 @@ const editCard = () => {
 	const sign = route.query.sign;
 	const script = route.query.script;
 	router.replace({
-		path: `/category/${courseId}/${season}/${episode}`,
+		path: `/card-edit/${courseId}/${season}/${episode}`,
 		query: {
 			mode: "edit",
 			script: script,

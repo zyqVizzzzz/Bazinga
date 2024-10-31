@@ -1,355 +1,360 @@
 <template>
 	<!-- 动态编辑区域 -->
-
-	<div class="flex editor-box">
-		<div class="editor-container p-4 text-sm mt-4 relative">
-			<div
-				class="option-group flex justify-between space-x-4 absolute"
-				style="left: 20px; top: -40px"
-			>
-				<button
-					@click="backToPreview"
-					class="btn btn-sm text-white btn-primary"
+	<div class="container mx-auto my-10 p-6">
+		<div class="flex editor-box">
+			<div class="editor-container p-4 text-sm mt-4 relative">
+				<div
+					class="option-group flex justify-between space-x-4 absolute"
+					style="left: 20px; top: -40px"
 				>
-					返回预览
-				</button>
-			</div>
-
-			<div
-				class="option-group flex justify-between space-x-4 absolute"
-				style="right: 20px; top: -40px"
-			>
-				<div class="tooltip" data-tip="新增空白卡片">
 					<button
-						@click="createNewCard"
-						class="btn btn-sm text-white btn-primary border-none"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="size-4"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M12 4.5v15m7.5-7.5h-15"
-							/>
-						</svg>
-					</button>
-				</div>
-				<div class="tooltip" data-tip="删除当前卡片">
-					<button
-						@click="deleteCurrentCard"
-						class="btn btn-sm text-white border-none bg-red-500 hover:bg-red-600"
-					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="size-4"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-							/>
-						</svg>
-					</button>
-				</div>
-			</div>
-			<div
-				class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
-				style="height: 540px; overflow-y: auto"
-			>
-				<!-- Markdown 编辑器 -->
-				<div id="editorjs" class="editorjs-container"></div>
-			</div>
-			<!-- 分页按钮 -->
-			<div class="flex justify-between mt-4">
-				<button
-					@click="switchDialogue('previous')"
-					:disabled="currentDialogueIndex === 0"
-					class="btn btn-primary btn-sm text-white"
-				>
-					上一页
-				</button>
-				<div class="space-x-4">
-					<button
-						@click="saveDialogue(true)"
+						@click="backToPreview"
 						class="btn btn-sm text-white btn-primary"
 					>
-						保存更改
+						返回预览
 					</button>
 				</div>
-				<button
-					@click="switchDialogue('next')"
-					:disabled="currentDialogueIndex === totalDialogues - 1"
-					class="btn btn-primary btn-sm text-white"
-				>
-					下一页
-				</button>
-			</div>
-		</div>
 
-		<div class="toolbox-container w-2/5 mt-4">
-			<div
-				class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
-			>
-				<h3 v-if="!isEditing" class="text-lg font-semibold">知识点</h3>
-				<!-- 检查当前项是否处于编辑状态 -->
 				<div
-					v-if="isEditing"
-					class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
+					class="option-group flex justify-between space-x-4 absolute"
+					style="right: 20px; top: -40px"
 				>
-					<!-- 编辑表单 -->
-					<div class="text-center mb-2 font-bold text-base">
-						{{ editedFields.word }}
+					<div class="tooltip" data-tip="新增空白卡片">
+						<button
+							@click="createNewCard"
+							class="btn btn-sm text-white btn-primary border-none"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M12 4.5v15m7.5-7.5h-15"
+								/>
+							</svg>
+						</button>
 					</div>
-					<!-- 词性选择 -->
-					<!-- 中文释义输入 -->
-					<div class="flex items-center justify-between space-x-2 mb-2">
-						<div>
+					<div class="tooltip" data-tip="删除当前卡片">
+						<button
+							@click="deleteCurrentCard"
+							class="btn btn-sm text-white border-none bg-red-500 hover:bg-red-600"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+								/>
+							</svg>
+						</button>
+					</div>
+				</div>
+				<div
+					class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
+					style="height: 540px; overflow-y: auto"
+				>
+					<!-- Markdown 编辑器 -->
+					<div id="editorjs" class="editorjs-container"></div>
+				</div>
+				<!-- 分页按钮 -->
+				<div class="flex justify-between mt-4">
+					<button
+						@click="switchDialogue('previous')"
+						:disabled="currentDialogueIndex === 0"
+						class="btn btn-primary btn-sm text-white"
+					>
+						上一页
+					</button>
+					<div class="space-x-4">
+						<button
+							@click="saveDialogue(true)"
+							class="btn btn-sm text-white btn-primary"
+						>
+							保存更改
+						</button>
+					</div>
+					<button
+						@click="switchDialogue('next')"
+						:disabled="currentDialogueIndex === totalDialogues - 1"
+						class="btn btn-primary btn-sm text-white"
+					>
+						下一页
+					</button>
+				</div>
+			</div>
+
+			<div class="toolbox-container w-2/5 mt-4">
+				<div
+					class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
+				>
+					<h3 v-if="!isEditing" class="text-lg font-semibold">知识点</h3>
+					<!-- 检查当前项是否处于编辑状态 -->
+					<div
+						v-if="isEditing"
+						class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
+					>
+						<!-- 编辑表单 -->
+						<div class="text-center mb-2 font-bold text-base">
+							{{ editedFields.word }}
+						</div>
+						<!-- 词性选择 -->
+						<!-- 中文释义输入 -->
+						<div class="flex items-center justify-between space-x-2 mb-2">
+							<div>
+								<select
+									v-model="editedFields.pos"
+									id="pos"
+									class="select select-bordered select-sm w-full max-w-xs"
+								>
+									<option value="">词性</option>
+									<option value="n.">n.</option>
+									<option value="v.">v.</option>
+									<option value="adj.">adj.</option>
+									<option value="adv.">adv.</option>
+									<option value="excl.">excl.</option>
+									<option value="phr.">phr.</option>
+									<!-- 根据需要添加更多词性选项 -->
+								</select>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.word_zh"
+									id="word_zh"
+									placeholder="请输入中文释义"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="mb-2">
+							<input
+								type="text"
+								v-model="editedFields.definition_zh"
+								id="definition_zh"
+								placeholder="请输入详细释义"
+								class="input input-bordered input-sm w-full max-w-xs"
+							/>
+						</div>
+						<div class="mb-2">
 							<select
-								v-model="editedFields.pos"
-								id="pos"
+								v-model="editedFields.type"
+								id="type"
 								class="select select-bordered select-sm w-full max-w-xs"
 							>
-								<option value="">词性</option>
-								<option value="n.">n.</option>
-								<option value="v.">v.</option>
-								<option value="adj.">adj.</option>
-								<option value="adv.">adv.</option>
-								<option value="excl.">excl.</option>
-								<option value="phr.">phr.</option>
+								<option value="">请选择类型</option>
+								<option value="vocabulary">词汇</option>
+								<option value="phrase">短语</option>
+								<option value="daily expression">日常用语</option>
 								<!-- 根据需要添加更多词性选项 -->
 							</select>
 						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.word_zh"
-								id="word_zh"
-								placeholder="请输入中文释义"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
+						<div class="flex items-center space-x-2 mb-2">
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.affixAnalysis.prefix"
+									id="prefix"
+									placeholder="前缀"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.rootAnalysis.root"
+									id="root"
+									placeholder="词根"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.affixAnalysis.suffix"
+									id="suffix"
+									placeholder="后缀"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="flex items-center space-x-2 mb-2">
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.affixAnalysis.prefixMeaning"
+									id="prefixMeaning"
+									placeholder="前缀"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.rootAnalysis.rootMeaning"
+									id="rootMeaning"
+									placeholder="词根"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.affixAnalysis.suffixMeaning"
+									id="suffixMeaning"
+									placeholder="后缀"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="mb-2">
+							<textarea
+								v-model="editedFields.example"
+								id="example"
+								placeholder="请输入例句"
+								class="textarea textarea-bordered w-full max-w-xs p-2"
+							></textarea>
+						</div>
+						<div class="mb-2">
+							<textarea
+								v-model="editedFields.example_zh"
+								id="example_zh"
+								placeholder="请输入例句释义"
+								class="textarea textarea-bordered w-full p-2"
+							></textarea>
+						</div>
+						<div class="flex items-center space-x-2 mb-2">
+							<div class="w-1/3">
+								<input
+									type="text"
+									v-model="editedFields.system.wordInflections.baseForm_zh"
+									id="baseForm_zh"
+									placeholder="原型"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.wordInflections.baseForm"
+									id="baseForm"
+									placeholder="原型"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="flex items-center space-x-2 mb-2">
+							<div class="w-1/3">
+								<input
+									type="text"
+									v-model="
+										editedFields.system.wordInflections.presentParticiple_zh
+									"
+									id="presentParticiple_zh"
+									placeholder="现在分词"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="
+										editedFields.system.wordInflections.presentParticiple
+									"
+									id="presentParticiple"
+									placeholder="现在分词"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="flex items-center space-x-2 mb-2">
+							<div class="w-1/3">
+								<input
+									type="text"
+									v-model="editedFields.system.wordInflections.pastTense_zh"
+									id="pastTense_zh"
+									placeholder="过去式"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="editedFields.system.wordInflections.pastTense"
+									id="pastTense"
+									placeholder="过去式"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="flex items-center space-x-2 mb-2">
+							<div class="w-1/3">
+								<input
+									type="text"
+									v-model="
+										editedFields.system.wordInflections.presentParticiple_zh
+									"
+									id="presentParticiple_zh"
+									placeholder="现在分词"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+							<div>
+								<input
+									type="text"
+									v-model="
+										editedFields.system.wordInflections.presentParticiple
+									"
+									id="presentParticiple"
+									placeholder="现在分词"
+									class="input input-bordered input-sm w-full max-w-xs"
+								/>
+							</div>
+						</div>
+						<div class="flex justify-end mt-4 space-x-2">
+							<button
+								@click="saveKnowledge(index)"
+								class="text-secondary text-sm"
+							>
+								保存
+							</button>
+							<button @click="cancelEdit" class="text-gray-500 text-sm">
+								取消
+							</button>
 						</div>
 					</div>
-					<div class="mb-2">
-						<input
-							type="text"
-							v-model="editedFields.definition_zh"
-							id="definition_zh"
-							placeholder="请输入详细释义"
-							class="input input-bordered input-sm w-full max-w-xs"
-						/>
-					</div>
-					<div class="mb-2">
-						<select
-							v-model="editedFields.type"
-							id="type"
-							class="select select-bordered select-sm w-full max-w-xs"
+					<div v-if="!isEditing">
+						<div
+							v-for="(item, index) in knowledges"
+							:key="index"
+							class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
 						>
-							<option value="">请选择类型</option>
-							<option value="vocabulary">词汇</option>
-							<option value="phrase">短语</option>
-							<option value="daily expression">日常用语</option>
-							<!-- 根据需要添加更多词性选项 -->
-						</select>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.affixAnalysis.prefix"
-								id="prefix"
-								placeholder="前缀"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
+							{{ index + 1 }}. <span>{{ item.word }}</span>
+							<span
+								class="edit-icon text-secondary text-xs absolute right-0"
+								@click="startEditing(item)"
+							>
+								编辑
+							</span>
 						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.rootAnalysis.root"
-								id="root"
-								placeholder="词根"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.affixAnalysis.suffix"
-								id="suffix"
-								placeholder="后缀"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.affixAnalysis.prefixMeaning"
-								id="prefixMeaning"
-								placeholder="前缀"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.rootAnalysis.rootMeaning"
-								id="rootMeaning"
-								placeholder="词根"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.affixAnalysis.suffixMeaning"
-								id="suffixMeaning"
-								placeholder="后缀"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="mb-2">
-						<textarea
-							v-model="editedFields.example"
-							id="example"
-							placeholder="请输入例句"
-							class="textarea textarea-bordered w-full max-w-xs p-2"
-						></textarea>
-					</div>
-					<div class="mb-2">
-						<textarea
-							v-model="editedFields.example_zh"
-							id="example_zh"
-							placeholder="请输入例句释义"
-							class="textarea textarea-bordered w-full p-2"
-						></textarea>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div class="w-1/3">
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.baseForm_zh"
-								id="baseForm_zh"
-								placeholder="原型"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.baseForm"
-								id="baseForm"
-								placeholder="原型"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div class="w-1/3">
-							<input
-								type="text"
-								v-model="
-									editedFields.system.wordInflections.presentParticiple_zh
-								"
-								id="presentParticiple_zh"
-								placeholder="现在分词"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.presentParticiple"
-								id="presentParticiple"
-								placeholder="现在分词"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div class="w-1/3">
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.pastTense_zh"
-								id="pastTense_zh"
-								placeholder="过去式"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.pastTense"
-								id="pastTense"
-								placeholder="过去式"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="flex items-center space-x-2 mb-2">
-						<div class="w-1/3">
-							<input
-								type="text"
-								v-model="
-									editedFields.system.wordInflections.presentParticiple_zh
-								"
-								id="presentParticiple_zh"
-								placeholder="现在分词"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div>
-							<input
-								type="text"
-								v-model="editedFields.system.wordInflections.presentParticiple"
-								id="presentParticiple"
-								placeholder="现在分词"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-					</div>
-					<div class="flex justify-end mt-4 space-x-2">
-						<button
-							@click="saveKnowledge(index)"
-							class="text-secondary text-sm"
+						<div
+							v-if="!knowledges.length"
+							class="text-gray-800 text-sm my-8 text-center cursor-pointer relative group"
 						>
-							保存
-						</button>
-						<button @click="cancelEdit" class="text-gray-500 text-sm">
-							取消
-						</button>
-					</div>
-				</div>
-				<div v-if="!isEditing">
-					<div
-						v-for="(item, index) in knowledges"
-						:key="index"
-						class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
-					>
-						{{ index + 1 }}. <span>{{ item.word }}</span>
-						<span
-							class="edit-icon text-secondary text-xs absolute right-0"
-							@click="startEditing(item)"
-						>
-							编辑
-						</span>
-					</div>
-					<div
-						v-if="!knowledges.length"
-						class="text-gray-800 text-sm my-8 text-center cursor-pointer relative group"
-					>
-						暂无词汇
+							暂无词汇
+						</div>
 					</div>
 				</div>
 			</div>
@@ -617,12 +622,17 @@ const cancelEdit = () => {
 };
 
 const backToPreview = () => {
+	const courseId = route.params.id;
+	const season = route.params.season;
+	const episode = route.params.episode;
+	const sign = route.query.sign;
+	const script = route.query.script;
 	router.replace({
-		path: route.path,
+		path: `/category/${courseId}/${season}/${episode}`,
 		query: {
-			...route.query,
 			mode: "preview",
-			script: route.query.script || scriptUrl.value,
+			script: script || scriptUrl.value,
+			sign: sign,
 		},
 	});
 };
