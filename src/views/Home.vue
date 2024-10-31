@@ -7,10 +7,10 @@
 		<div class="flex flex-wrap justify-center mb-10 gap-12">
 			<!-- 循环渲染关卡 -->
 			<div
-				v-for="scene in scenes"
+				v-for="scene in scenes.slice(0, 3)"
 				:key="scene.id"
 				class="card w-80 bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-				@click="goToLesson(scene._id)"
+				@click="goToCollection(scene._id)"
 			>
 				<div class="w-full" style="height: 150px" v-if="scene.banner">
 					<img
@@ -113,7 +113,7 @@ const getCatalogs = async () => {
 };
 
 const goToAllScenes = () => {
-	router.push("/all-collections");
+	router.push("/collections");
 };
 
 // 文章列表数据
@@ -125,8 +125,8 @@ const articles = ref([
 	},
 ]);
 
-const goToLesson = (id) => {
-	router.push("/category/" + id);
+const goToCollection = (id) => {
+	router.push("/collections/" + id);
 };
 </script>
 <style>

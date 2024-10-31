@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
 import Notebook from "@/views/Notebook.vue";
-import Category from "@/views/Category.vue";
+import Collection from "@/views/Collection.vue";
 import Lesson from "@/views/Lesson.vue";
 import Profile from "@/views/Profile.vue";
 import Login from "@/views/Login.vue";
@@ -19,19 +19,19 @@ const routes = [
 		component: Home,
 	},
 	{
-		path: "/category/:id",
-		name: "Category",
-		component: Category,
-	},
-	{
-		path: "/category/:id/:season/:episode", // 根据季和集进入具体课程内容
-		name: "Lesson",
-		component: Lesson,
-	},
-	{
-		path: "/all-collections",
+		path: "/collections",
 		name: "CardList",
 		component: CardList,
+	},
+	{
+		path: "/collections/:id",
+		name: "Collection",
+		component: Collection,
+	},
+	{
+		path: "/collections/:id/:season/:episode", // 根据季和集进入具体课程内容
+		name: "Lesson",
+		component: Lesson,
 	},
 	{
 		path: "/card-edit/:id/:season/:episode",

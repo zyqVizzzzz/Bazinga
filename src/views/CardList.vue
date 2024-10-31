@@ -1,13 +1,13 @@
 <template>
 	<div class="all-collections">
-		<h1 class="text-2xl font-bold mb-10 text-center">笔记列表</h1>
+		<h1 class="text-2xl font-bold mb-10 text-center">卡片合集</h1>
 		<div class="grid-container">
 			<!-- 循环渲染所有卡片 -->
 			<div
 				v-for="scene in scenes"
 				:key="scene.id"
 				class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-				@click="goToLesson(scene._id)"
+				@click="goToCollection(scene._id)"
 			>
 				<div class="w-full" style="height: 150px" v-if="scene.banner">
 					<img
@@ -94,8 +94,8 @@ const getAllScenes = async () => {
 	}
 };
 
-const goToLesson = (id) => {
-	router.push("/category/" + id);
+const goToCollection = (id) => {
+	router.push("/collections/" + id);
 };
 
 const addNewScene = () => {

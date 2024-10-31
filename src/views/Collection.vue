@@ -157,7 +157,7 @@ const goToLesson = (season, episode) => {
 	const episodeStr = `${episode.ep.toString()}`; // 格式化集数，如 E01
 	episode.scriptUrl
 		? router.push({
-				path: `/category/${route.params.id}/${season}/${episodeStr}`,
+				path: `/collections/${route.params.id}/${season}/${episodeStr}`,
 				query: {
 					mode: "preview",
 					script: episode.scriptUrl,
@@ -236,7 +236,7 @@ const formatEpisode = (episode) => {
 };
 const linkToProgress = () => {
 	router.push({
-		path: `/category/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
+		path: `/collections/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
 		query: {
 			mode: "preview",
 			script: currentProgress.value.scriptUrl,

@@ -628,7 +628,7 @@ const backToPreview = () => {
 	const sign = route.query.sign;
 	const script = route.query.script;
 	router.replace({
-		path: `/category/${courseId}/${season}/${episode}`,
+		path: `/collections/${courseId}/${season}/${episode}`,
 		query: {
 			mode: "preview",
 			script: script || scriptUrl.value,

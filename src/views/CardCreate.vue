@@ -227,7 +227,7 @@ const submitNote = async () => {
 		if (res.data.code === 200) {
 			showToast({ message: "新增合集成功", type: "success" });
 			setTimeout(() => {
-				router.push("/all-collections"); // 提交成功后跳转到笔记列表页
+				router.push("/collections"); // 提交成功后跳转到笔记列表页
 			}, 2000);
 		} else {
 			showToast({ message: "合集新增失败，请重试！", type: "error" });

@@ -26,8 +26,15 @@
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
+						@click="goToLink('collections')"
+						>合集</a
+					>
+				</li>
+				<li v-if="isLogin">
+					<a
+						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('notebook')"
-						>笔记</a
+						>单词本</a
 					>
 				</li>
 				<li v-if="isLogin">
@@ -112,7 +119,7 @@ onMounted(() => {
 watch(
 	() => route.path,
 	(newPath, oldPath) => {
-		if (newPath.includes("category")) {
+		if (newPath.includes("collections")) {
 			isCategory.value = true;
 		} else {
 			isCategory.value = false;
