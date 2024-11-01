@@ -201,14 +201,15 @@
 						<div
 							v-for="(episode, episodeIndex) in selectedSeason.episodes"
 							:key="episodeIndex"
-							class="card card-compact bg-base-100 shadow-md"
+							class="card card-compact bg-base-100 shadow-md relative mb-10"
 						>
 							<div class="card-body">
 								{{ episode.ep }}
 							</div>
 							<button
 								type="button"
-								class="btn btn-error btn-sm mt-2"
+								class="btn btn-error btn-sm mt-2 absolute w-full text-white"
+								style="bottom: -40px"
 								@click="removeEpisode(episodeIndex)"
 							>
 								<svg
@@ -228,10 +229,27 @@
 							</button>
 						</div>
 						<div
-							class="card card-compact bg-base-100 shadow-md"
+							class="card card-compact bg-base-100 shadow-md mb-10 mx-2 cursor-pointer bg-primary text-white"
 							@click="addEpisode"
 						>
-							<div class="card-body">新增集</div>
+							<div
+								class="card-body flex justify-center items-center text-center"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="size-5"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M12 4.5v15m7.5-7.5h-15"
+									/>
+								</svg>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -239,11 +257,38 @@
 		</div>
 	</div>
 	<!-- 提交按钮 -->
-	<div class="flex justify-center mb-20">
-		<button @click="submitNote" class="btn w-40 mt-6 btn-primary text-white">
+	<div class="flex justify-center mb-20 space-x-6">
+		<button @click="submitNote" class="btn w-60 mt-6 btn-primary text-white">
 			提交
 		</button>
+		<button
+			v-if="resourceId"
+			@click="deleteCollection"
+			class="btn w-60 mt-6 text-gray-500 hover:btn-error hover:text-white"
+		>
+			删除合集
+		</button>
 	</div>
+	<dialog id="collection_delete_modal" class="modal">
+		<div class="modal-box">
+			<h3 class="text-lg my-4 mb-8 font-bold">
+				确认删除当前合集？此操作不可撤销！
+			</h3>
+			<div class="flex space-x-4 justify-center">
+				<!-- if there is a button in form, it will close the modal -->
+				<button
+					@click="confirmDelete"
+					class="btn bg-error px-4 text-white hover:bg-red-500 transition duration-300"
+				>
+					确认
+				</button>
+				<button class="btn px-4" @click="closeDeleteModal">取消</button>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
 </template>
 
 <script setup>
@@ -264,7 +309,12 @@ const noteForm = ref({
 	banner: "",
 	name: "",
 	theme: "#7a81d5",
-	seasons: [],
+	seasons: [
+		{
+			seasonNumber: "S01",
+			episodes: [{ ep: "1", scriptUrl: "" }],
+		},
+	],
 });
 
 // 即时预览数据
@@ -277,6 +327,8 @@ const resourceId = ref(route.query.resource);
 onMounted(async () => {
 	if (route.query.resource) {
 		getCollection();
+	} else {
+		selectedSeasonIndex.value = 0; // 默认选择第一季
 	}
 });
 
@@ -355,8 +407,28 @@ const updateThemePreview = () => {
 	// 在选择主题色时更新按钮的颜色
 };
 
-const submitNoteTest = () => {
-	console.log(noteForm.value);
+const deleteCollection = () => {
+	document.getElementById("collection_delete_modal").showModal();
+};
+
+const confirmDelete = async () => {
+	try {
+		const res = await apiClient.delete("/catalogs/" + resourceId.value);
+		if ((res.data.code = 200)) {
+			showToast({ message: "删除合集成功", type: "success" });
+			router.replace({
+				path: "/collections",
+			});
+		} else {
+			showToast({ message: "删除合集失败", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: "删除合集失败", type: "error" });
+	}
+};
+
+const closeDeleteModal = () => {
+	document.getElementById("collection_delete_modal").close();
 };
 
 // 提交表单
@@ -382,8 +454,10 @@ const submitNote = async () => {
 			const successMessage = resourceId.value ? "合集更新成功" : "新增合集成功";
 			showToast({ message: successMessage, type: "success" });
 			setTimeout(() => {
-				router.push("/collections"); // 提交成功后跳转到笔记列表页
-			}, 2000);
+				resourceId.value
+					? router.push("/collections/" + resourceId.value)
+					: router.push("/collections");
+			}, 1000);
 		} else {
 			showToast({ message: "操作失败，请重试！", type: "error" });
 		}

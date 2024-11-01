@@ -2,7 +2,6 @@
 	<div class="all-collections">
 		<h1 class="text-2xl font-bold mb-10 text-center">卡片合集</h1>
 		<div class="grid-container">
-			<!-- 循环渲染所有卡片 -->
 			<div
 				v-for="scene in scenes"
 				:key="scene.id"
@@ -83,11 +82,11 @@ onMounted(() => {
 
 const getAllScenes = async () => {
 	try {
-		const response = await apiClient.get("/catalogs");
-		if (response.data.code === 200) {
-			scenes.value = response.data.data;
+		const res = await apiClient.get("/catalogs");
+		if (res.data.code === 200) {
+			scenes.value = res.data.data;
 		} else {
-			showToast({ message: response.data.message, type: "error" });
+			showToast({ message: res.data.message, type: "error" });
 		}
 	} catch (error) {
 		console.error("Failed to fetch scenes", error);
@@ -99,7 +98,6 @@ const goToCollection = (id) => {
 };
 
 const addNewScene = () => {
-	// 导航到新增笔记页面
 	router.push("/setup-collection");
 };
 </script>
@@ -123,5 +121,11 @@ const addNewScene = () => {
 .card {
 	width: 100%;
 	max-width: 320px; /* 控制每个卡片的最大宽度 */
+}
+.card {
+	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.card:hover {
+	transform: translateY(-5px);
 }
 </style>

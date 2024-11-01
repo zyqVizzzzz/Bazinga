@@ -3,31 +3,6 @@
 		class="pl-6 pr-2 pb-3 card-title text-accent relative mb-5 w-full flex justify-between items-center border-b"
 	>
 		<span>{{ title }}</span>
-		<div
-			v-if="props.currentPractice.length"
-			class="flex items-center text-base font-normal title-jam"
-			@click="onTogglePractice"
-			@mouseenter="isHoveredJ = true"
-			@mouseleave="isHoveredJ = false"
-			:class="{ expanded: isHoveredJ }"
-		>
-			<div class="jam-text-wrapper">
-				<!-- 旧文字 -->
-				<span
-					class="text-slide text-sm"
-					:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
-				>
-					练习模式
-				</span>
-				<!-- 新文字 -->
-				<span
-					class="text-slide"
-					:class="{ 'text-in': isHoveredJ, 'text-out': !isHoveredJ }"
-				>
-					Let's Jam!
-				</span>
-			</div>
-		</div>
 	</h2>
 </template>
 

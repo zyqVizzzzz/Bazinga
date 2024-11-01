@@ -192,7 +192,7 @@ export function checkBoldText(content, knowledges) {
  * @param {Object} knowledges - 知识点数组
  * @param {Object} route - 路由信息
  * @param {Number} currentDialogueIndex - 当前对话索引
- * @returns {Object} - 生成的对话输出数据
+ * @returns {Object|null} - 生成的对话输出数据或返回 null 表示提交失败
  */
 export function processDialogueData(
 	savedData,
@@ -213,6 +213,7 @@ export function processDialogueData(
 
 	let titleFound = false;
 	const lines = [];
+	console.log(savedData.blocks);
 	// 处理标题和内容行
 	savedData.blocks.forEach((block) => {
 		let lineText = block.data.text;
@@ -278,6 +279,41 @@ export function processDialogueData(
 	});
 	console.log(outputDialogue);
 	return outputDialogue;
+}
+
+/**
+ * 验证格式是否符合两行段落 + 一行空行 或 一行段落 + 一行空行的结构
+ * @param {Array} lines - 处理后的行数据
+ * @returns {Boolean} - 是否符合格式
+ */
+function validateFormat(lines) {
+	let count = 0;
+	let started = false; // 用于标记是否已经遇到第一个有内容的段落
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i].trim();
+
+		if (line === "") {
+			// 如果当前行为空行，并且已经开始计数
+			if (started && count !== 1 && count !== 2) {
+				return false; // 不符合一行或两行段落 + 一行空行的结构
+			}
+			// 如果当前行为空且已开始计数，则重置计数器
+			if (started) {
+				count = 0;
+			}
+		} else {
+			// 如果是第一个有内容的段落，标记已开始
+			if (!started) {
+				started = true;
+			}
+			// 计数器加一
+			count++;
+		}
+	}
+
+	// 检查最后一组是否符合格式
+	return count === 0 || count === 1 || count === 2;
 }
 
 /**

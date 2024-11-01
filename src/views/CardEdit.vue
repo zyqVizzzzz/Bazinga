@@ -83,7 +83,13 @@
 							@click="saveDialogue(true)"
 							class="btn btn-sm text-white btn-primary"
 						>
-							保存更改
+							保存
+						</button>
+						<button
+							@click="transDialogue"
+							class="btn btn-sm text-white btn-primary"
+						>
+							翻译
 						</button>
 					</div>
 					<button
@@ -503,10 +509,121 @@ const saveDialogue = async (isCustom = false) => {
 		route,
 		currentDialogueIndex.value
 	);
-	defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value] =
-		outputDialogue;
+	if (outputDialogue) {
+		defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value] =
+			outputDialogue;
+		uploadScripts(defaultJson.value, isCustom);
+	}
+};
 
-	uploadScripts(defaultJson.value, isCustom);
+// 文本检测函数：中文字符比例小于 10% 则翻译
+const shouldTranslate = (text) => {
+	const totalChars = text.length;
+	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+	const chinesePercentage = (chineseChars / totalChars) * 100;
+	return chinesePercentage <= 10; // 中文比例低于10%
+};
+
+const editorContent = ref([]);
+// 从 EditorJS 获取内容并填充 editorContent
+const loadContentFromEditor = async () => {
+	const savedData = await editor.value.save();
+	editorContent.value = savedData.blocks.map((block) => ({
+		text: block.data.text,
+		isTranslation: false, // 标记是否为翻译段落
+	}));
+};
+
+const cleanText = (text) => {
+	// Remove HTML tags like <b> and <i>
+	let cleanedText = text.replace(/<\/?[^>]+(>|$)/g, "");
+
+	// Remove content inside square brackets, e.g., [Marge]
+	cleanedText = cleanedText.replace(/\[[^\]]*\]/g, "");
+
+	// Trim any extra whitespace from the start and end of the text
+	return cleanedText.trim();
+};
+
+const renderEditorContent = () => {
+	const blocks = [];
+	let lastWasEmpty = false; // 标记前一段是否为空行
+
+	editorContent.value.forEach((paragraph) => {
+		// 去除不可见字符并判断当前段落是否为空
+		const isEmpty =
+			paragraph.text.replace(/[\u200B-\u200D\uFEFF]/g, "").trim() === "";
+
+		if (isEmpty) {
+			// 如果当前段落为空，且前一段也为空，则跳过
+			if (lastWasEmpty) {
+				return;
+			}
+			// 标记当前段为空行
+			lastWasEmpty = true;
+		} else {
+			// 如果当前段不为空，重置空行标记
+			lastWasEmpty = false;
+		}
+
+		// 添加当前段落到 blocks 中
+		blocks.push({
+			type: "paragraph",
+			data: {
+				text: paragraph.text,
+			},
+		});
+	});
+
+	// 将处理后的 blocks 渲染到 EditorJS
+	editor.value.render({ blocks });
+};
+
+// 分段翻译
+const transDialogue = async () => {
+	const separator = " ||| ";
+	const paragraphsToTranslate = [];
+	const paragraphIndices = [];
+
+	await loadContentFromEditor();
+
+	// Prepare paragraphs for translation
+	editorContent.value.forEach((paragraph, index) => {
+		if (shouldTranslate(paragraph.text)) {
+			const cleanedParagraph = cleanText(paragraph.text);
+			paragraphsToTranslate.push(cleanedParagraph);
+			paragraphIndices.push(index); // Keep track of which paragraph to insert translation after
+		}
+	});
+
+	// Join paragraphs with separator and send to API
+	const textToTranslate = paragraphsToTranslate.join(separator);
+	console.log(textToTranslate);
+
+	try {
+		const response = await apiClient.post("/translation", {
+			text: textToTranslate,
+			source: "en",
+			target: "zh",
+		});
+		const translatedText = response.data.data.translatedText;
+
+		// Split translations back into individual paragraphs
+		const translations = translatedText.split(separator);
+		console.log(translations);
+		// 根据原始段落索引插入翻译内容
+		paragraphIndices.forEach((originalIndex, i) => {
+			editorContent.value.splice(originalIndex + 1 + i, 0, {
+				text: translations[i],
+				isTranslation: true, // 标记为翻译段落
+			});
+		});
+
+		// 重新渲染 EditorJS，仅添加翻译内容
+		renderEditorContent();
+	} catch (error) {
+		console.error("Translation failed:", error);
+	}
 };
 
 const uploadScripts = async (jsonData, isCustom = false) => {

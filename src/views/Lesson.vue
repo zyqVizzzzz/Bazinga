@@ -37,7 +37,6 @@
 
 								<!-- 卡片内容部分 -->
 								<div class="card-content flex items-stretch relative">
-									<!-- 听力胶囊 -->
 									<!-- 台词 -->
 									<div
 										:class="{
@@ -99,38 +98,62 @@
 						</div>
 					</div>
 				</div>
-				<div
-					v-if="!isFlipped"
-					class="text-xs text-center mt-2 trans-capsule shadow-md absolute"
-				>
-					<span
-						@click="toggleTrans"
-						class="cursor-pointer"
-						:class="showTrans ? 'text-gray-400' : 'font-bold'"
-						>英</span
+				<div class="lesson-options flex space-x-2">
+					<div
+						class="flex items-center text-xs title-jam shadow-md"
+						@click="togglePractice"
+						@mouseenter="isHoveredJ = true"
+						@mouseleave="isHoveredJ = false"
+						:class="{ expanded: isHoveredJ, 'shadow-primary': isFlipped }"
 					>
-					/
-					<span
-						@click="toggleTrans"
-						class="cursor-pointer"
-						:class="!showTrans ? 'text-gray-400' : 'font-bold'"
-						>译</span
+						<div class="jam-text-wrapper">
+							<!-- 旧文字 -->
+							<span
+								class="text-slide text-xs font-bold"
+								:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
+							>
+								练习模式
+							</span>
+							<!-- 新文字 -->
+							<span
+								class="text-slide font-bold"
+								:class="{ 'text-in': isHoveredJ, 'text-out': !isHoveredJ }"
+							>
+								Let's Jam!
+							</span>
+						</div>
+					</div>
+					<div
+						@click="openListenMode"
+						class="flex items-center text-xs title-jam shadow-md"
+						@mouseenter="isHoveredVoice = true"
+						@mouseleave="isHoveredVoice = false"
+						:class="{
+							expanded: isHoveredVoice,
+							'shadow-primary': lessonStore.isListenMode,
+						}"
 					>
+						<span class="cursor-pointer font-bold">语音模式</span>
+					</div>
+					<div
+						@click="toggleTrans"
+						class="flex items-center text-xs title-jam shadow-md"
+						@mouseenter="isHoveredTrans = true"
+						@mouseleave="isHoveredTrans = false"
+						:class="{ expanded: isHoveredTrans, 'shadow-primary': showTrans }"
+					>
+						<span class="cursor-pointer font-bold">翻译模式</span>
+					</div>
 				</div>
-				<div
-					v-if="!isFlipped"
-					@click="openListenMode"
-					class="text-xs text-center mt-2 speaker-capsule shadow-md absolute text-gray-600"
-				>
-					<span class="cursor-pointer font-bold">语音模式</span>
-				</div>
-				<div
+
+				<!-- <div
 					v-if="!isFlipped"
 					@click="saveProgress"
 					class="text-xs text-center mt-2 save-capsule shadow-md absolute text-gray-600"
 				>
 					<span class="cursor-pointer font-bold">保存进度</span>
-				</div>
+				</div> -->
+
 				<div
 					v-if="!isFlipped && !isDefault"
 					@click="editCard"
@@ -205,7 +228,6 @@ const appStore = useAppStore();
 const router = useRouter();
 const route = useRoute();
 
-const isHovered = ref(false);
 // 初始化 scene 和 dialogues
 const dialoguesData = ref(null);
 const scene = ref({});
@@ -249,6 +271,10 @@ const editPage = (isTrue) => {
 		}
 	}
 };
+
+const isHoveredJ = ref(false);
+const isHoveredVoice = ref(false);
+const isHoveredTrans = ref(false);
 
 const editCard = () => {
 	const courseId = route.params.id;
@@ -354,14 +380,12 @@ const getVocabulary = async () => {
 	}
 };
 
-const isFocusP = ref(false);
 const openListenMode = async () => {
 	if (!lessonStore.voicesList.length) {
 		const voicesList = await getVoicesList();
 		lessonStore.setVoicesList(voicesList);
 	}
 	lessonStore.setListenMode();
-	lessonStore.isListenMode ? (isFocusP.value = true) : (isFocusP.value = false);
 };
 
 const handleUpdateNote = ({ note, word, action, scene }) => {
@@ -676,7 +700,6 @@ watch(currentDialogueIndex, (newIndex) => {
 	align-items: center;
 	justify-content: space-around;
 	padding: 12px; /* 等效于 py-4 */
-	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
 	cursor: pointer;
 	border-color: transparent; /* 初始状态下隐藏边框 */
 	width: 90px;
@@ -686,7 +709,7 @@ watch(currentDialogueIndex, (newIndex) => {
 	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
 	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
 	bottom: -50px;
-	right: 8rem;
+	right: 1rem;
 }
 .save-capsule {
 	display: flex;
@@ -710,18 +733,21 @@ watch(currentDialogueIndex, (newIndex) => {
 	align-items: center;
 	justify-content: space-around;
 	padding: 12px; /* 等效于 py-4 */
-	transition: opacity 0.3s ease, border-radius 0.3s ease; /* 添加过渡效果 */
 	cursor: pointer;
 	border-color: transparent; /* 初始状态下隐藏边框 */
 	width: 90px;
 	height: 30px;
 	margin: 0px auto 0;
 	border-radius: 20px;
-	/* border: 2px solid rgba(var(--orange-color-rgb), 0.3); */
-	/* box-shadow: 0 2px 4px rgba(var(--orange-color-rgb), 0.3); */
 	bottom: -50px;
-	right: 15rem;
+	right: 7.5rem;
 }
+.shadow-primary {
+	box-shadow: 0 4px 6px 2px rgb(0 0 255 / 0.1),
+		0 2px 4px -2px rgb(0 0 255 / 0.1);
+	color: var(--primary-color);
+}
+
 .product-capsule {
 	display: flex;
 	align-items: center;
@@ -734,9 +760,64 @@ watch(currentDialogueIndex, (newIndex) => {
 	height: 30px;
 	margin: 0px auto 0;
 	border-radius: 20px;
-	/* border: 2px solid rgba(var(--primary-color-rgb), 0.3); */
 	box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.5);
 	bottom: -50px;
 	left: 1rem;
+}
+.title-jam {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	cursor: pointer;
+	padding: 12px; /* 等效于 py-4 */
+	height: 30px;
+	border-radius: 20px;
+	transition: opacity 0.3s ease, border-radius 0.3s ease, color 0.3s ease,
+		box-shadow 0.3s ease, width 0.3s ease;
+	background-color: white;
+	width: 90px;
+	bottom: -50px;
+	right: 14rem;
+}
+
+.title-jam.expanded {
+	width: 142px;
+}
+
+.title-jam:hover {
+	/* color: var(--accent-color); */
+}
+
+/* 保证容器高度和宽度 */
+.jam-text-wrapper {
+	position: relative;
+	display: inline-block;
+	height: 15px; /* 设置文字高度一致 */
+	overflow: hidden;
+}
+
+/* 文字滑动效果 */
+.text-slide {
+	display: inline-block;
+	transition: all 0.6s ease;
+	white-space: nowrap;
+}
+
+/* 文字被抹去的效果 */
+.text-out {
+	opacity: 0;
+	transform: translateX(-100%);
+}
+
+/* 文字被抹出的效果 */
+.text-in {
+	opacity: 1;
+	transform: translateX(0%);
+}
+
+.lesson-options {
+	position: absolute;
+	bottom: -50px;
+	right: 1rem;
 }
 </style>

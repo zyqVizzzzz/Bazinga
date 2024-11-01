@@ -2,7 +2,7 @@
 	<div class="home">
 		<h1 class="text-2xl font-bold mb-10 text-center">
 			Version 1.0.0
-			<span class="text-base block">美剧笔记本</span>
+			<span class="text-base block">美剧卡片合集</span>
 		</h1>
 		<div class="flex flex-wrap justify-center mb-10 gap-12">
 			<!-- 循环渲染关卡 -->
@@ -41,9 +41,6 @@
 					>
 						{{ scene.name }}
 					</p>
-					<!-- <p class="text-xs" style="flex-grow: 0; font-weight: 900">
-					{{ scene.level }}
-				</p> -->
 				</div>
 			</div>
 		</div>
@@ -60,9 +57,8 @@
 		<div class="w-full mt-10">
 			<h1 class="text-2xl font-bold mb-10 text-center">
 				Version 2.0.0
-				<span class="text-base block">AI同伴 & 笔记上传/分享</span>
+				<span class="text-base block">AI功能升级 & 合集上传/分享</span>
 			</h1>
-
 			<div
 				class="w-full max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 relative bg-custom"
 			>
@@ -86,13 +82,20 @@
 	</div>
 </template>
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, onMounted } from "vue";
+import { showToast } from "@/components/common/toast.js";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
-import { showToast } from "@/components/common/toast.js";
 
 const router = useRouter();
 const scenes = ref([]);
+const articles = ref([
+	{
+		title: "With math, 6900 simply cannot be contained by 500",
+		title_zh: "开发者留言",
+		progress: 0,
+	},
+]);
 
 onMounted(() => {
 	getCatalogs();
@@ -119,15 +122,6 @@ const goToAllScenes = () => {
 	router.push("/collections");
 };
 
-// 文章列表数据
-const articles = ref([
-	{
-		title: "With math, 6900 simply cannot be contained by 500",
-		title_zh: "开发者留言",
-		progress: 0,
-	},
-]);
-
 const goToCollection = (id) => {
 	router.push("/collections/" + id);
 };
@@ -140,10 +134,10 @@ const goToCollection = (id) => {
 }
 .bg-custom {
 	background-color: rgba(255, 255, 255, 1);
-	background-image: url("@/assets/cytus.jpg"); /* 背景图片路径 */
-	background-repeat: no-repeat; /* 不重复 */
-	background-position: right center; /* 图片定位在右侧中央 */
-	background-size: 16%; /* 根据需要调整图片的大小 */
+	background-image: url("@/assets/cytus.jpg");
+	background-repeat: no-repeat;
+	background-position: right center;
+	background-size: 16%;
 }
 .card {
 	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;

@@ -1,15 +1,17 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
-import Notebook from "@/views/Notebook.vue";
+import Collections from "@/views/Collections.vue";
 import Collection from "@/views/Collection.vue";
-import Lesson from "@/views/Lesson.vue";
+
+import Notebook from "@/views/Notebook.vue";
 import Profile from "@/views/Profile.vue";
+import Lesson from "@/views/Lesson.vue";
+
 import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
 import Membership from "@/views/Membership.vue";
-import CardList from "@/views/CardList.vue";
 import CardEdit from "@/views/CardEdit.vue";
-import CardCreate from "@/views/CardCreate.vue";
+import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 
 const routes = [
@@ -20,8 +22,8 @@ const routes = [
 	},
 	{
 		path: "/collections",
-		name: "CardList",
-		component: CardList,
+		name: "Collections",
+		component: Collections,
 	},
 	{
 		path: "/collections/:id",
@@ -34,14 +36,14 @@ const routes = [
 		component: Lesson,
 	},
 	{
+		path: "/setup-collection",
+		name: "CollectionSetup",
+		component: CollectionSetup,
+	},
+	{
 		path: "/card-edit/:id/:season/:episode",
 		name: "CardEdit",
 		component: CardEdit,
-	},
-	{
-		path: "/setup-collection",
-		name: "CardCreate",
-		component: CardCreate,
 	},
 	{
 		path: "/notebook",

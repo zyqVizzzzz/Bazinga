@@ -73,22 +73,27 @@ defineProps({
 
 const lessonStore = useLessonStore();
 
+const loading = ref(false);
 // 朗读台词
 const speakText = (text) => {
+	loading.value = true;
+	console.log(loading.value);
 	if (lessonStore.isListenMode) {
 		// 停止当前正在播放的语音
 		window.speechSynthesis.cancel();
 
 		const utterance = new SpeechSynthesisUtterance(text);
 		utterance.voice = lessonStore.voicesList[0];
+		console.log(utterance.voice);
 		utterance.lang = "en-US";
 
 		let hasStarted = false; // 标记语音是否已开始播放
 
 		// 播放开始时设置标志
 		utterance.onstart = () => {
+			loading.value = false;
+			console.log(loading.value);
 			hasStarted = true; // 语音播放已开始
-			console.log("Primary voice started.");
 		};
 
 		// 当语音播放出错时，切换到备用语音
@@ -103,9 +108,10 @@ const speakText = (text) => {
 				console.log(
 					"Primary voice did not start within timeout, switching to backup voice."
 				);
+				window.speechSynthesis.cancel();
 				switchToBackupVoice(text); // 超时未开始，切换到备用语音
 			}
-		}, 5000); // 3 秒超时
+		}, 3000);
 
 		window.speechSynthesis.speak(utterance);
 	} else {
@@ -115,15 +121,16 @@ const speakText = (text) => {
 
 // 切换到备用语音的函数
 const switchToBackupVoice = (text) => {
+	console.log(text);
 	if (lessonStore.voicesList[1]) {
 		// 停止当前正在播放的语音
 		window.speechSynthesis.cancel();
 
 		// 使用备用语音
 		const backupUtterance = new SpeechSynthesisUtterance(text);
-		backupUtterance.voice = lessonStore.voicesList[1]; // 使用备用语音
+		backupUtterance.voice = lessonStore.voicesList[2]; // 使用备用语音
 		backupUtterance.lang = "en-US";
-
+		console.log(loading.value);
 		// 开始播放备用语音
 		window.speechSynthesis.speak(backupUtterance);
 		console.log("Switched to backup voice.");

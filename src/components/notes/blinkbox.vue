@@ -243,7 +243,7 @@ const triggerFlashEffect = () => {
 	/* border: 4px solid #2c2c2c;  */
 	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3); /* 内外阴影 */
 	border-radius: 45px; /* 圆角设计 */
-	transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加按钮的交互反馈 */
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* 按钮点击时的缩放效果 */
