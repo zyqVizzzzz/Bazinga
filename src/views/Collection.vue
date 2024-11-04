@@ -40,7 +40,6 @@
 					</p>
 				</div>
 				<button
-					v-if="!isDefault"
 					@click="goToCollectionEdit"
 					class="text-sm mt-6 py-2 px-6 bg-gray-200 text-gray-600 opacity-50 flex space-x-6 text-sm hover:opacity-70 rounded-full transition duration-300"
 				>
@@ -54,9 +53,13 @@
 		</div>
 
 		<!-- 剧集列表 -->
-		<div v-if="currentProgress.course" class="w-2/3">
+		<div class="w-2/3">
 			<!-- 当前进度 -->
-			<div role="alert" class="mb-2 alert alert-primary text-sm">
+			<div
+				v-if="currentProgress.course"
+				role="alert"
+				class="mb-2 alert alert-primary text-sm"
+			>
 				<div class="relative" style="top: -2px">
 					当前进度：{{
 						`${currentProgress.season}-E${formatNumber(
@@ -180,6 +183,7 @@ const getUserProfile = async () => {
 onMounted(() => {
 	loadCategoryData();
 	getUserProfile();
+	console.log(currentProgress.value);
 });
 
 const goToLessonProgress = () => {
@@ -203,7 +207,7 @@ const goToLesson = (season, episode) => {
 	};
 	episode.scriptUrl
 		? router.push({ path: `/collections/${params}`, query })
-		: router.push({ path: `/card-edit/${params}`, query });
+		: router.push({ path: `/card-editor/${params}`, query });
 };
 
 const goToCollectionEdit = () => {

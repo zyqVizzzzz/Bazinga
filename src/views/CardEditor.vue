@@ -64,7 +64,7 @@
 				</div>
 				<div
 					class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
-					style="height: 540px; overflow-y: auto"
+					style="height: 642px; overflow-y: auto"
 				>
 					<!-- Markdown 编辑器 -->
 					<div id="editorjs" class="editorjs-container"></div>
@@ -105,6 +105,7 @@
 			<div class="toolbox-container w-2/5 mt-4">
 				<div
 					class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
+					style="min-height: 642px"
 				>
 					<h3 v-if="!isEditing" class="text-lg font-semibold">知识点</h3>
 					<!-- 检查当前项是否处于编辑状态 -->
@@ -241,99 +242,8 @@
 								class="textarea textarea-bordered w-full p-2"
 							></textarea>
 						</div>
-						<div class="flex items-center space-x-2 mb-2">
-							<div class="w-1/3">
-								<input
-									type="text"
-									v-model="editedFields.system.wordInflections.baseForm_zh"
-									id="baseForm_zh"
-									placeholder="原型"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-							<div>
-								<input
-									type="text"
-									v-model="editedFields.system.wordInflections.baseForm"
-									id="baseForm"
-									placeholder="原型"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-						</div>
-						<div class="flex items-center space-x-2 mb-2">
-							<div class="w-1/3">
-								<input
-									type="text"
-									v-model="
-										editedFields.system.wordInflections.presentParticiple_zh
-									"
-									id="presentParticiple_zh"
-									placeholder="现在分词"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-							<div>
-								<input
-									type="text"
-									v-model="
-										editedFields.system.wordInflections.presentParticiple
-									"
-									id="presentParticiple"
-									placeholder="现在分词"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-						</div>
-						<div class="flex items-center space-x-2 mb-2">
-							<div class="w-1/3">
-								<input
-									type="text"
-									v-model="editedFields.system.wordInflections.pastTense_zh"
-									id="pastTense_zh"
-									placeholder="过去式"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-							<div>
-								<input
-									type="text"
-									v-model="editedFields.system.wordInflections.pastTense"
-									id="pastTense"
-									placeholder="过去式"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-						</div>
-						<div class="flex items-center space-x-2 mb-2">
-							<div class="w-1/3">
-								<input
-									type="text"
-									v-model="
-										editedFields.system.wordInflections.presentParticiple_zh
-									"
-									id="presentParticiple_zh"
-									placeholder="现在分词"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-							<div>
-								<input
-									type="text"
-									v-model="
-										editedFields.system.wordInflections.presentParticiple
-									"
-									id="presentParticiple"
-									placeholder="现在分词"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-						</div>
 						<div class="flex justify-end mt-4 space-x-2">
-							<button
-								@click="saveKnowledge(index)"
-								class="text-secondary text-sm"
-							>
+							<button @click="saveKnowledge()" class="text-secondary text-sm">
 								保存
 							</button>
 							<button @click="cancelEdit" class="text-gray-500 text-sm">
@@ -381,7 +291,7 @@ import {
 	existingBoldWords,
 	processDialogueData,
 } from "@/utils/editor.js";
-import { exampleText, exampleTextZh } from "@/constants/example.js";
+import { exampleText, exampleTextZh, word } from "@/constants/example.js";
 import { showToast } from "@/components/common/toast.js";
 
 const route = useRoute();
@@ -403,7 +313,7 @@ const defaultJson = ref({
 					img: "",
 					text: exampleText,
 					text_zh: exampleTextZh,
-					knowledge: [{ word: "bold" }],
+					knowledge: [word],
 				},
 			],
 		},
@@ -509,6 +419,7 @@ const saveDialogue = async (isCustom = false) => {
 		route,
 		currentDialogueIndex.value
 	);
+
 	if (outputDialogue) {
 		defaultJson.value.scenes[0].dialogues[currentDialogueIndex.value] =
 			outputDialogue;
@@ -535,13 +446,8 @@ const loadContentFromEditor = async () => {
 };
 
 const cleanText = (text) => {
-	// Remove HTML tags like <b> and <i>
 	let cleanedText = text.replace(/<\/?[^>]+(>|$)/g, "");
-
-	// Remove content inside square brackets, e.g., [Marge]
 	cleanedText = cleanedText.replace(/\[[^\]]*\]/g, "");
-
-	// Trim any extra whitespace from the start and end of the text
 	return cleanedText.trim();
 };
 
@@ -550,23 +456,18 @@ const renderEditorContent = () => {
 	let lastWasEmpty = false; // 标记前一段是否为空行
 
 	editorContent.value.forEach((paragraph) => {
-		// 去除不可见字符并判断当前段落是否为空
 		const isEmpty =
 			paragraph.text.replace(/[\u200B-\u200D\uFEFF]/g, "").trim() === "";
 
 		if (isEmpty) {
-			// 如果当前段落为空，且前一段也为空，则跳过
 			if (lastWasEmpty) {
 				return;
 			}
-			// 标记当前段为空行
 			lastWasEmpty = true;
 		} else {
-			// 如果当前段不为空，重置空行标记
 			lastWasEmpty = false;
 		}
 
-		// 添加当前段落到 blocks 中
 		blocks.push({
 			type: "paragraph",
 			data: {
@@ -587,18 +488,15 @@ const transDialogue = async () => {
 
 	await loadContentFromEditor();
 
-	// Prepare paragraphs for translation
 	editorContent.value.forEach((paragraph, index) => {
 		if (shouldTranslate(paragraph.text)) {
 			const cleanedParagraph = cleanText(paragraph.text);
 			paragraphsToTranslate.push(cleanedParagraph);
-			paragraphIndices.push(index); // Keep track of which paragraph to insert translation after
+			paragraphIndices.push(index);
 		}
 	});
 
-	// Join paragraphs with separator and send to API
 	const textToTranslate = paragraphsToTranslate.join(separator);
-	console.log(textToTranslate);
 
 	try {
 		const response = await apiClient.post("/translation", {
@@ -607,10 +505,8 @@ const transDialogue = async () => {
 			target: "zh",
 		});
 		const translatedText = response.data.data.translatedText;
-
-		// Split translations back into individual paragraphs
 		const translations = translatedText.split(separator);
-		console.log(translations);
+
 		// 根据原始段落索引插入翻译内容
 		paragraphIndices.forEach((originalIndex, i) => {
 			editorContent.value.splice(originalIndex + 1 + i, 0, {
@@ -725,12 +621,23 @@ const startEditing = (item) => {
 	});
 };
 
-const saveKnowledge = (index) => {
-	knowledges.value[index] = {
-		...knowledges.value[index],
-		...editedFields.value,
-	};
-	cancelEdit();
+const saveKnowledge = () => {
+	// 找到数组中符合条件的条目索引
+	const index = knowledges.value.findIndex(
+		(item) => item.word === editedFields.value.word
+	);
+
+	// 如果找到了符合条件的条目，则进行更新
+	if (index !== -1) {
+		// 更新数组中的指定条目为 editedFields 的内容
+		knowledges.value[index] = { ...editedFields.value };
+
+		// 如果有需要，可以执行保存操作并取消编辑
+		saveDialogue(true);
+		cancelEdit();
+	} else {
+		console.warn("No matching knowledge entry found.");
+	}
 };
 
 const cancelEdit = () => {

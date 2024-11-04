@@ -5,12 +5,12 @@ import Collection from "@/views/Collection.vue";
 
 import Notebook from "@/views/Notebook.vue";
 import Profile from "@/views/Profile.vue";
-import Lesson from "@/views/Lesson.vue";
+import Card from "@/views/Card.vue";
 
 import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
 import Membership from "@/views/Membership.vue";
-import CardEdit from "@/views/CardEdit.vue";
+import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 
@@ -31,19 +31,19 @@ const routes = [
 		component: Collection,
 	},
 	{
-		path: "/collections/:id/:season/:episode", // 根据季和集进入具体课程内容
-		name: "Lesson",
-		component: Lesson,
-	},
-	{
 		path: "/setup-collection",
 		name: "CollectionSetup",
 		component: CollectionSetup,
 	},
 	{
-		path: "/card-edit/:id/:season/:episode",
-		name: "CardEdit",
-		component: CardEdit,
+		path: "/collections/:id/:season/:episode",
+		name: "Card",
+		component: Card,
+	},
+	{
+		path: "/card-editor/:id/:season/:episode",
+		name: "CardEditor",
+		component: CardEditor,
 	},
 	{
 		path: "/notebook",

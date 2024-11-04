@@ -1,7 +1,7 @@
 export const exampleText = [
 	["", "Please start the title with #"],
 	[
-		"",
+		"dev",
 		"Standard format: English paragraph + Chinese paragraph + blank line = a complete paragraph. The Chinese translation must be close to the English paragraph, otherwise the content of the generated card may be confusing.",
 	],
 	[
@@ -30,3 +30,35 @@ export const exampleTextZh = [
 	],
 	["", "3. 用'[]'标记说话者，标记该段落为对白。"],
 ];
+export const word = {
+	from: "knowledges",
+	book: "cet-4",
+	type: "vocabulary",
+	word: "bold",
+	definition:
+		"A style of text that is darker and thicker than the surrounding text.",
+	symbols: "/boʊld/",
+	pos: "n.",
+	example: "The title is in bold to make it stand out.",
+	word_zh: "粗体",
+	definition_zh: "一种比周围文本更深更粗的文本样式。",
+	example_zh: "标题使用粗体以使其更显眼。",
+	system: {
+		rootAnalysis: {
+			root: "bold",
+			meaning: "thick, strong text style",
+			meaning_zh: "粗厚的文本样式",
+		},
+		affixAnalysis: {
+			suffix: "",
+			suffixMeaning: "",
+			suffixMeaning_zh: "",
+		},
+		wordInflections: {
+			baseForm: "bold",
+			baseForm_zh: "原型",
+			plural: "bolds",
+			plural_zh: "复数",
+		},
+	},
+};

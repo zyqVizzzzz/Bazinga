@@ -149,10 +149,28 @@ const scrollToWord = (currentWord) => {
 		".dialogue-item span, .narration-item span"
 	);
 
-	// 遍历所有元素，查找包含当前单词的元素并滚动
 	allElements.forEach((el) => {
 		if (el.textContent.includes(currentWord)) {
-			el.scrollIntoView({ behavior: "smooth", block: "center" });
+			// 找到最近的可滚动祖先元素
+			const scrollableParent = el.closest(".overflow-y-auto");
+
+			// 获取目标元素在滚动容器中的相对位置
+			if (scrollableParent) {
+				const parentRect = scrollableParent.getBoundingClientRect();
+				const elRect = el.getBoundingClientRect();
+
+				const offsetTop =
+					elRect.top - parentRect.top + scrollableParent.scrollTop;
+				const offsetLeft =
+					elRect.left - parentRect.left + scrollableParent.scrollLeft;
+
+				// 平滑滚动到目标位置
+				scrollableParent.scrollTo({
+					top: offsetTop - parentRect.height / 2 + elRect.height / 2,
+					left: offsetLeft,
+					behavior: "smooth",
+				});
+			}
 		}
 	});
 };
