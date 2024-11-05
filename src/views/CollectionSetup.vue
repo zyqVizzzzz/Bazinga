@@ -1,9 +1,9 @@
 <template>
 	<h1 class="text-2xl my-10 font-semibold text-center mb-4">
-		{{ resourceId ? "编辑" : "新增" }}卡片合集
+		{{ resourceId ? "Update" : "Create" }} {1} Collection
 	</h1>
 	<div
-		class="grid my-10 justify-items-center items-center grid-cols-2 gap-1 gap-y-8"
+		class="grid my-10 justify-items-center grid-cols-2 gap-1 gap-y-8"
 		style="padding: 0 40px"
 	>
 		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
@@ -11,7 +11,7 @@
 				<div class="form-control">
 					<label for="showName" class="label">
 						<span class="label-text"
-							>合集名<span class="text-red-500">（必填项）</span></span
+							>Title<span class="text-red-500">（require）</span></span
 						>
 					</label>
 					<input
@@ -27,7 +27,7 @@
 				<!-- 英文名 -->
 				<div class="form-control">
 					<label for="name" class="label">
-						<span class="label-text">副标题</span>
+						<span class="label-text">Subtitle</span>
 					</label>
 					<input
 						v-model="noteForm.name"
@@ -41,7 +41,7 @@
 				<!-- 描述 -->
 				<div class="form-control">
 					<label for="description" class="label">
-						<span class="label-text">合集描述</span>
+						<span class="label-text">Discribe</span>
 					</label>
 					<textarea
 						v-model="noteForm.description"
@@ -57,7 +57,7 @@
 				<!-- 封面图上传 -->
 				<div class="form-control">
 					<label for="banner" class="label">
-						<span class="label-text">封面图上传</span>
+						<span class="label-text">Banner</span>
 					</label>
 					<!-- 预览和上传区域 -->
 					<div
@@ -82,7 +82,9 @@
 									/>
 								</svg>
 
-								<span class="text-gray-600 text-sm">点击上传封面图</span>
+								<span class="text-gray-600 text-sm"
+									>click to upload banner image</span
+								>
 							</div>
 						</template>
 
@@ -110,7 +112,7 @@
 				<!-- 主题色 -->
 				<div class="form-control">
 					<label for="theme" class="label">
-						<span class="label-text">主题色</span>
+						<span class="label-text">Theme Color</span>
 					</label>
 					<input
 						v-model="noteForm.theme"
@@ -127,7 +129,7 @@
 				<!-- 难度 -->
 				<div class="form-control">
 					<label for="difficulty" class="label">
-						<span class="label-text">难度 (1-5)</span>
+						<span class="label-text">Level (1-5)</span>
 					</label>
 					<input
 						v-model="noteForm.difficulty"
@@ -138,7 +140,7 @@
 						max="5"
 					/>
 					<div class="text-center mt-2 text-sm">
-						难度: {{ noteForm.difficulty }}
+						Level: {{ noteForm.difficulty }}
 					</div>
 				</div>
 
@@ -158,7 +160,7 @@
 				<!-- 设置 seasons -->
 				<div class="form-control">
 					<label class="label">
-						<span class="label-text">设置 Seasons</span>
+						<span class="label-text">Seasons</span>
 					</label>
 					<div class="flex space-x-2">
 						<select
@@ -179,7 +181,20 @@
 							class="btn btn-primary text-white"
 							@click="addSeason"
 						>
-							新增
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-5"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M12 4.5v15m7.5-7.5h-15"
+								/>
+							</svg>
 						</button>
 						<button
 							type="button"
@@ -187,7 +202,20 @@
 							@click="removeSeason"
 							:disabled="!noteForm.seasons.length"
 						>
-							删除
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="size-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+								/>
+							</svg>
 						</button>
 					</div>
 				</div>
@@ -195,7 +223,7 @@
 				<!-- 设置 episodes -->
 				<div class="form-control" v-if="selectedSeason">
 					<label class="label">
-						<span class="label-text">设置 Episodes</span>
+						<span class="label-text">Episodes</span>
 					</label>
 					<div class="episode-group grid grid-cols-5 gap-4">
 						<div
@@ -259,14 +287,14 @@
 	<!-- 提交按钮 -->
 	<div class="flex justify-center mb-20 space-x-6">
 		<button @click="submitNote" class="btn w-60 mt-6 btn-primary text-white">
-			提交
+			Submit
 		</button>
 		<button
 			v-if="resourceId"
 			@click="deleteCollection"
 			class="btn w-60 mt-6 text-gray-500 hover:btn-error hover:text-white"
 		>
-			删除合集
+			Delete Collection
 		</button>
 	</div>
 	<dialog id="collection_delete_modal" class="modal">

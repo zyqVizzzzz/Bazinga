@@ -16,6 +16,7 @@
     "@heroicons/vue": "^2.1.5",
     "axios": "^1.7.7",
     "crypto-js": "^4.2.0",
+    "md5": "^2.3.0",
     "pinia": "^2.2.4",
     "pinia-plugin-persistedstate": "^4.1.1",
     "swiper": "^11.1.14",

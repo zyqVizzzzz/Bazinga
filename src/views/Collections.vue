@@ -1,6 +1,11 @@
 <template>
 	<div class="all-collections">
-		<h1 class="text-2xl font-bold mb-10 text-center">卡片合集</h1>
+		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
+			<span>Collections <mark class="pink"> Gallery </mark></span>
+			<span class="text-gray-400 text-sm mt-2 font-normal"
+				>n. 画廊 - /ˈɡæləri/</span
+			>
+		</h1>
 		<div class="grid-container">
 			<div
 				v-for="scene in scenes"
@@ -61,7 +66,7 @@
 						/>
 					</svg>
 				</div>
-				<span class="text-gray-500 text-base font-semibold">制作卡片合集</span>
+				<span class="text-gray-500 text-base font-semibold">Create</span>
 			</div>
 		</div>
 	</div>

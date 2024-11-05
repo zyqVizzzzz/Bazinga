@@ -77,7 +77,7 @@
 
 						<div class="border-gray-300 border-b"></div>
 						<div
-							class="py-2 border-gray-300"
+							class="py-2 border-gray-300 border-b"
 							v-if="
 								point.system?.rootAnalysis?.root ||
 								point.system?.affixAnalysis?.suffix ||
@@ -140,27 +140,13 @@
 
 						<!-- 例句 -->
 						<p
-							v-if="
-								point.example &&
-								!(
-									point.system?.rootAnalysis?.root ||
-									point.system?.affixAnalysis?.suffix ||
-									point.system?.affixAnalysis?.prefix
-								)
-							"
+							v-if="point.example"
 							class="text-left text-sm font-extralight mt-2"
 						>
 							<strong></strong> {{ point.example }}
 						</p>
 						<p
-							v-if="
-								point.example_zh &&
-								!(
-									point.system?.rootAnalysis?.root ||
-									point.system?.affixAnalysis?.suffix ||
-									point.system?.affixAnalysis?.prefix
-								)
-							"
+							v-if="point.example_zh"
 							class="china-font text-left text-xs mt-1"
 						>
 							<strong></strong> {{ point.example_zh }}

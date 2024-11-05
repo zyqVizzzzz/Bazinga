@@ -62,6 +62,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useLessonStore } from "@/store";
+import { useRoute } from "vue-router";
+import apiClient from "@/api";
+import { generateTextHash } from "@/utils";
+
+const route = useRoute();
 
 defineProps({
 	highlightedText: Object,
@@ -73,75 +78,104 @@ defineProps({
 
 const lessonStore = useLessonStore();
 
-const loading = ref(false);
-// 朗读台词
-const speakText = (text) => {
-	loading.value = true;
-	console.log(loading.value);
-	if (lessonStore.isListenMode) {
-		// 停止当前正在播放的语音
-		window.speechSynthesis.cancel();
+// 转换文本为语音
+const speakText = async (text) => {
+	if (!text.trim()) {
+		alert("请输入要转换的文本");
+		return;
+	}
 
-		const utterance = new SpeechSynthesisUtterance(text);
-		utterance.voice = lessonStore.voicesList[0];
-		console.log(utterance.voice);
-		utterance.lang = "en-US";
+	try {
+		// 先查询是否存在相同文本的记录
+		const textHash = generateTextHash(text);
+		const searchRes = await apiClient.get("/audio/search/text", {
+			params: { textHash },
+		});
 
-		let hasStarted = false; // 标记语音是否已开始播放
-
-		// 播放开始时设置标志
-		utterance.onstart = () => {
-			loading.value = false;
-			console.log(loading.value);
-			hasStarted = true; // 语音播放已开始
-		};
-
-		// 当语音播放出错时，切换到备用语音
-		utterance.onerror = () => {
-			console.error("Primary voice failed, switching to backup voice.");
-			switchToBackupVoice(text); // 切换到备用语音
-		};
-
-		// 设置超时机制（比如 3 秒）
-		const timeout = setTimeout(() => {
-			if (!hasStarted) {
-				console.log(
-					"Primary voice did not start within timeout, switching to backup voice."
-				);
-				window.speechSynthesis.cancel();
-				switchToBackupVoice(text); // 超时未开始，切换到备用语音
+		if (searchRes.data.code === 200 && searchRes.data.data.length > 0) {
+			const existingAudio = searchRes.data.data[0];
+			latestAudio.value = existingAudio.audioPath;
+			playAudio();
+		} else {
+			// 如果没找到记录，则进行新的转换
+			const res = await apiClient.post(`/text-to-speech`, { text });
+			if (res.data.code === 200) {
+				latestAudio.value = res.data.data.audioPath;
+				playAudio();
+				addAudioData(res.data.data);
 			}
-		}, 3000);
-
-		window.speechSynthesis.speak(utterance);
-	} else {
-		console.log("Listen mode is not active.");
+		}
+	} catch (error) {
+		console.error("转换失败:", error);
+		alert("转换失败，请稍后重试");
 	}
 };
 
-// 切换到备用语音的函数
-const switchToBackupVoice = (text) => {
-	console.log(text);
-	if (lessonStore.voicesList[1]) {
-		// 停止当前正在播放的语音
-		window.speechSynthesis.cancel();
+const addAudioData = async (data) => {
+	console.log(route.params);
+	const resourceId = route.params.id;
+	const currentDialogueId = route.params.season + "-" + route.params.episode;
+	const { audioPath, options, text } = data;
+	try {
+		const res = await apiClient.post(`/audio`, {
+			audioPath,
+			options,
+			text,
+			resourceId,
+			currentDialogueId,
+		});
 
-		// 使用备用语音
-		const backupUtterance = new SpeechSynthesisUtterance(text);
-		backupUtterance.voice = lessonStore.voicesList[2]; // 使用备用语音
-		backupUtterance.lang = "en-US";
-		console.log(loading.value);
-		// 开始播放备用语音
-		window.speechSynthesis.speak(backupUtterance);
-		console.log("Switched to backup voice.");
-	} else {
-		console.error("No backup voice available.");
+		if (res.data.code === 200) {
+			console.log("音频保存成功");
+		}
+	} catch (error) {
+		console.error("转换失败:", error);
+		alert("转换失败，请稍后重试");
+	} finally {
 	}
 };
 
-// 中断播放的函数
-const stopSpeech = () => {
-	window.speechSynthesis.cancel(); // 取消所有正在播放的语音
+// 音频对象（用于自定义播放器）
+let audioObj = null;
+const latestAudio = ref("");
+const isPlaying = ref(false);
+// 自定义播放器方法
+const playAudio = () => {
+	if (!latestAudio.value) return;
+
+	audioObj = new Audio(latestAudio.value);
+	audioObj.onended = () => {
+		isPlaying.value = false;
+	};
+
+	audioObj.play();
+	isPlaying.value = true;
+};
+
+const pauseAudio = () => {
+	if (audioObj) {
+		audioObj.pause();
+		isPlaying.value = false;
+	}
+};
+
+const stopAudio = () => {
+	if (audioObj) {
+		audioObj.pause();
+		audioObj.currentTime = 0;
+		isPlaying.value = false;
+	}
+};
+
+const downloadAudio = () => {
+	if (latestAudio.value) {
+		const link = document.createElement("a");
+		link.href = latestAudio.value;
+		link.download = `speech_${Date.now()}.mp3`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
 };
 
 const scrollToWord = (currentWord) => {

@@ -1,8 +1,12 @@
 <template>
 	<div class="home">
-		<h1 class="text-2xl font-bold mb-10 text-center">
-			Version 1.0.0
-			<span class="text-base block">美剧卡片合集</span>
+		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
+			Collections
+			<div class="flex mx-auto flex-col mt-2">
+				<span class="text-gray-400 text-sm font-normal">
+					n. 合集(复数) - /kəˈlɛkʃənz/
+				</span>
+			</div>
 		</h1>
 		<div class="flex flex-wrap justify-center mb-10 gap-12">
 			<!-- 循环渲染关卡 -->
@@ -46,18 +50,42 @@
 		</div>
 		<div class="text-center mb-16 font-bold">
 			<span
-				class="common-capsule text-sm text-center mt-2 mx-auto w-40 text-gray-600 transition-all duration-300"
+				class="common-capsule text-sm text-center mt-2 mx-auto w-60 text-gray-600 transition-all duration-300"
 				@click="goToAllScenes"
 			>
-				查看更多...
+				<- More Collections ->
 			</span>
 		</div>
 
 		<!-- 第二部分: Version 1.1.0 文章目录 -->
 		<div class="w-full mt-10">
 			<h1 class="text-2xl font-bold mb-10 text-center">
-				Version 2.0.0
-				<span class="text-base block">AI功能升级 & 合集上传/分享</span>
+				Ver.2
+				<div
+					class="text-gray-400 text-sm font-normal mt-2 mx-auto flex justify-between relative"
+					style="width: 11rem; left: 5px"
+				>
+					<div>
+						<mark class="pink">Artificial</mark>
+						<div class="mt-1 relative">
+							/ˌɑːrtɪˈfɪʃəl/<span
+								class="absolute"
+								style="left: -120px; top: -0.5rem"
+								>{ adj. 人工的 }</span
+							>
+						</div>
+					</div>
+					<div>
+						<mark class="pink">Intelligence</mark>
+						<div class="mt-1 relative">
+							/ɪnˈtɛlɪdʒəns/<span
+								class="absolute"
+								style="right: -100px; top: -0.5rem"
+								>{ n. 智能 }</span
+							>
+						</div>
+					</div>
+				</div>
 			</h1>
 			<div
 				class="w-full max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 relative bg-custom"

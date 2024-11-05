@@ -20,28 +20,28 @@
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToHome()"
-						>首页</a
+						>Home</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('collections')"
-						>合集</a
+						>Collections</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('notebook')"
-						>单词本</a
+						>Notes</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('profile')"
-						>个人主页</a
+						>Profile</a
 					>
 				</li>
 				<li v-if="isLogin">
