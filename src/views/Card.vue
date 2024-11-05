@@ -262,12 +262,18 @@ const getLesson = async () => {
 	const scriptUrl = route.query.script;
 	try {
 		// 获取课程的元数据
-		const scriptRes = await fetch(scriptUrl);
-		if (!scriptRes.ok) {
+		// const scriptRes = await apiClient.get("/scripts/url", {
+		// 	params: { scriptUrl },
+		// });
+		const scriptRes = await apiClient.get(
+			`/scripts/episode/${route.query.sign}`
+		);
+		// const scriptRes = await fetch(scriptUrl);
+		if (!scriptRes.data.code === 200) {
 			throw new Error("课程信息不完整或未找到");
 		}
 
-		const res = await scriptRes.json();
+		const res = await scriptRes.data.data;
 
 		dialoguesData.value = res.scriptData;
 		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
@@ -349,12 +355,10 @@ const editCard = () => {
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const sign = route.query.sign;
-	const script = route.query.script;
 	router.replace({
 		path: `/card-editor/${courseId}/${season}/${episode}`,
 		query: {
 			mode: "edit",
-			script: script,
 			sign: sign,
 		},
 	});

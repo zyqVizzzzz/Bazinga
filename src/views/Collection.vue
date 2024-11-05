@@ -191,7 +191,6 @@ const goToLessonProgress = () => {
 		path: `/collections/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
 		query: {
 			mode: "preview",
-			script: currentProgress.value.scriptUrl,
 			sign: currentProgress.value.sign,
 			progress: true,
 		},
@@ -201,8 +200,7 @@ const goToLessonProgress = () => {
 const goToLesson = (season, episode) => {
 	const params = `${route.params.id}/${season}/${episode.ep.toString()}`; // 格式化集数，如 E01
 	const query = {
-		mode: episode.scriptUrl ? "preview" : "edit",
-		script: episode.scriptUrl,
+		mode: "preview",
 		sign: episode._id,
 	};
 	episode.scriptUrl

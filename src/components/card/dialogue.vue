@@ -112,7 +112,6 @@ const speakText = async (text) => {
 };
 
 const addAudioData = async (data) => {
-	console.log(route.params);
 	const resourceId = route.params.id;
 	const currentDialogueId = route.params.season + "-" + route.params.episode;
 	const { audioPath, options, text } = data;
