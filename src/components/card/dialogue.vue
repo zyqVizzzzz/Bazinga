@@ -80,14 +80,21 @@ const lessonStore = useLessonStore();
 
 // 转换文本为语音
 const speakText = async (text) => {
-	if (!text.trim()) {
+	if (!lessonStore.isListenMode) {
+		return;
+	}
+
+	// 清理输入文本，移除HTML标签
+	const cleanText = removeHtmlTags(text).trim();
+
+	if (!cleanText) {
 		alert("请输入要转换的文本");
 		return;
 	}
 
 	try {
 		// 先查询是否存在相同文本的记录
-		const textHash = generateTextHash(text);
+		const textHash = generateTextHash(cleanText);
 		const searchRes = await apiClient.get("/audio/search/text", {
 			params: { textHash },
 		});
@@ -98,11 +105,25 @@ const speakText = async (text) => {
 			playAudio();
 		} else {
 			// 如果没找到记录，则进行新的转换
-			const res = await apiClient.post(`/text-to-speech`, { text });
-			if (res.data.code === 200) {
-				latestAudio.value = res.data.data.audioPath;
-				playAudio();
-				addAudioData(res.data.data);
+			// const res = await apiClient.post(`/text-to-speech`, { text: cleanText });
+			const resourceId = route.params.id;
+			const currentDialogueId =
+				route.params.season + "-" + route.params.episode;
+			try {
+				const res = await apiClient.post(`/audio`, {
+					text: cleanText,
+					resourceId,
+					currentDialogueId,
+				});
+
+				if (res.data.code === 200) {
+					latestAudio.value = res.data.data.audioPath;
+					playAudio();
+				}
+			} catch (error) {
+				console.error("转换失败:", error);
+				alert("转换失败，请稍后重试");
+			} finally {
 			}
 		}
 	} catch (error) {
@@ -111,27 +132,9 @@ const speakText = async (text) => {
 	}
 };
 
-const addAudioData = async (data) => {
-	const resourceId = route.params.id;
-	const currentDialogueId = route.params.season + "-" + route.params.episode;
-	const { audioPath, options, text } = data;
-	try {
-		const res = await apiClient.post(`/audio`, {
-			audioPath,
-			options,
-			text,
-			resourceId,
-			currentDialogueId,
-		});
-
-		if (res.data.code === 200) {
-			console.log("音频保存成功");
-		}
-	} catch (error) {
-		console.error("转换失败:", error);
-		alert("转换失败，请稍后重试");
-	} finally {
-	}
+// 去除HTML标签的辅助函数
+const removeHtmlTags = (text) => {
+	return text.replace(/<[^>]*>/g, "");
 };
 
 // 音频对象（用于自定义播放器）

@@ -79,9 +79,10 @@
 						<div
 							class="py-2 border-gray-300 border-b"
 							v-if="
-								point.system?.rootAnalysis?.root ||
-								point.system?.affixAnalysis?.suffix ||
-								point.system?.affixAnalysis?.prefix
+								point.type !== 'vocabulary' &&
+								(point.system?.rootAnalysis?.root ||
+									point.system?.affixAnalysis?.suffix ||
+									point.system?.affixAnalysis?.prefix)
 							"
 						>
 							<div>

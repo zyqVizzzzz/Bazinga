@@ -48,6 +48,7 @@ export const initEditorBlocks = (dialogueData) => {
 
 // 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
 export const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
+	console.log(knowledges, editorInstance);
 	const content = await editorInstance.save();
 	// 创建一个对象来跟踪每个知识点单词的匹配状态
 	const matchedWords = new Set();
@@ -95,8 +96,14 @@ export function extractBoldWords(text) {
  * @param {Array<Object>} knowledges - 知识点列表
  */
 export function addBoldWordsToKnowledge(newBoldWords, knowledges) {
+	console.log("addBoldWordsToKnowledge called with:", {
+		newBoldWords,
+		knowledges,
+	});
+
 	newBoldWords.forEach((boldText) => {
 		knowledges.push({
+			origin: boldText,
 			from: "knowledges",
 			word: boldText,
 			book: "",
@@ -140,22 +147,24 @@ export function addBoldWordsToKnowledge(newBoldWords, knowledges) {
  * @param {Array<Object>} knowledges - 知识点列表
  */
 export function checkBoldText(content, knowledges) {
+	console.log("checkBoldText called:", { content, knowledges });
 	let hasBoldText = false;
 	let latestBoldText = "";
 	const currentBoldWords = new Set();
 
 	content.blocks.forEach((block) => {
 		// 判断是否为中文行：含有中文字符即认为是中文行
-		if (/[^\x00-\x7F]/.test(block.data.text)) {
-			// 如果是中文行，跳过处理
-			return;
-		}
+		// if (/[^\x00-\x7F]/.test(block.data.text)) {
+		// 	// 如果是中文行，跳过处理
+		// 	console.log("zwh");
+		// 	return;
+		// }
 
 		if (block.type === "paragraph") {
 			const cleanBoldWords = extractBoldWords(block.data.text).filter(
 				(word) => !existingBoldWords.has(word)
 			);
-
+			console.log(cleanBoldWords);
 			// 添加新加粗项到 knowledges
 			if (cleanBoldWords.length) {
 				hasBoldText = true;
@@ -194,26 +203,19 @@ export function checkBoldText(content, knowledges) {
  * @param {Number} currentDialogueIndex - 当前对话索引
  * @returns {Object|null} - 生成的对话输出数据或返回 null 表示提交失败
  */
-export function processDialogueData(
-	savedData,
-	knowledges,
-	route,
-	currentDialogueIndex
-) {
+export function processDialogueData(savedData, route, currentDialogueIndex) {
 	const outputDialogue = {
-		id: "scene" + currentDialogueIndex,
+		id: "Scene" + parseInt(currentDialogueIndex + 1),
 		season: route.params.season,
 		episode: route.params.episode,
 		title: "",
 		img: "",
 		text: [],
 		text_zh: [],
-		knowledge: knowledges,
 	};
 
 	let titleFound = false;
 	const lines = [];
-	console.log(savedData.blocks);
 	// 处理标题和内容行
 	savedData.blocks.forEach((block) => {
 		let lineText = block.data.text;

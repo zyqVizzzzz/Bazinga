@@ -1,7 +1,7 @@
 <template>
 	<div class="home">
 		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
-			Collections
+			Ver.1 Collections
 			<div class="flex mx-auto flex-col mt-2">
 				<span class="text-gray-400 text-sm font-normal">
 					n. 合集(复数) - /kəˈlɛkʃənz/
@@ -60,7 +60,7 @@
 		<!-- 第二部分: Version 1.1.0 文章目录 -->
 		<div class="w-full mt-10">
 			<h1 class="text-2xl font-bold mb-10 text-center">
-				Ver.2
+				Ver.2 AI Show
 				<div
 					class="text-gray-400 text-sm font-normal mt-2 mx-auto flex justify-between relative"
 					style="width: 11rem; left: 5px"

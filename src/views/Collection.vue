@@ -189,23 +189,19 @@ onMounted(() => {
 const goToLessonProgress = () => {
 	router.push({
 		path: `/collections/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
-		query: {
-			mode: "preview",
-			sign: currentProgress.value.sign,
-			progress: true,
-		},
+		query: { sign: currentProgress.value.sign, progress: true },
 	});
 };
 
 const goToLesson = (season, episode) => {
 	const params = `${route.params.id}/${season}/${episode.ep.toString()}`; // 格式化集数，如 E01
-	const query = {
-		mode: "preview",
-		sign: episode._id,
-	};
+	const query = { sign: episode._id };
 	episode.scriptUrl
 		? router.push({ path: `/collections/${params}`, query })
-		: router.push({ path: `/card-editor/${params}`, query });
+		: router.push({
+				path: `/card-editor/${params}`,
+				query: { mode: "edit", sign: episode._id },
+		  });
 };
 
 const goToCollectionEdit = () => {

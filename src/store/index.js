@@ -5,7 +5,7 @@ export const useAppStore = defineStore("app", {
 		progressList: [],
 	}),
 	actions: {
-		saveProgress(course, season, episode, page, scriptUrl, sign) {
+		saveProgress(course, season, episode, page, sign) {
 			const existingProgress = this.progressList.find(
 				(p) => p.course === course
 			);
@@ -14,7 +14,6 @@ export const useAppStore = defineStore("app", {
 				existingProgress.season = season;
 				existingProgress.episode = episode;
 				existingProgress.page = page;
-				existingProgress.scriptUrl = scriptUrl;
 				existingProgress.sign = sign;
 			} else {
 				this.progressList.push({
@@ -22,7 +21,6 @@ export const useAppStore = defineStore("app", {
 					season,
 					episode,
 					page,
-					scriptUrl,
 					sign,
 				});
 			}

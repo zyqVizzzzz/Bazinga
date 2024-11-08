@@ -35,6 +35,7 @@ export const word = {
 	book: "cet-4",
 	type: "vocabulary",
 	word: "bold",
+	origin: "bold",
 	definition:
 		"A style of text that is darker and thicker than the surrounding text.",
 	symbols: "/boʊld/",

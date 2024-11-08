@@ -61,6 +61,7 @@
 									</div>
 									<!-- 知识点卡片 -->
 									<KnowledgeCard
+										v-if="isKnowledgeReady"
 										:showHints="showHints"
 										:currentKnowledgePoints="currentKnowledgePoints"
 										:currentCustomNotes="
@@ -143,7 +144,7 @@
 				</div>
 				<div class="lesson-options-left flex space-x-2">
 					<div
-						v-if="!isFlipped && !isDefault"
+						v-if="!isFlipped"
 						@click="editCard"
 						class="text-primary text-xs text-center mt-2 product-capsule shadow-lg"
 					>
@@ -257,43 +258,56 @@ const isHoveredJ = ref(false);
 const isHoveredVoice = ref(false);
 const isHoveredTrans = ref(false);
 
+const isLoading = ref(true);
+const hasError = ref(false);
+const errorMessage = ref("");
+
 // 获取课程
 const getLesson = async () => {
-	const scriptUrl = route.query.script;
 	try {
-		// 获取课程的元数据
-		// const scriptRes = await apiClient.get("/scripts/url", {
-		// 	params: { scriptUrl },
-		// });
 		const scriptRes = await apiClient.get(
 			`/scripts/episode/${route.query.sign}`
 		);
-		// const scriptRes = await fetch(scriptUrl);
-		if (!scriptRes.data.code === 200) {
-			throw new Error("课程信息不完整或未找到");
-		}
 
-		const res = await scriptRes.data.data;
+		if (scriptRes.data.code === 200) {
+			const res = await scriptRes.data.data;
+			dialoguesData.value = res.scriptData;
 
-		dialoguesData.value = res.scriptData;
-		if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
-			scene.value = dialoguesData.value.scenes[0];
-			dialogues.value = scene.value.dialogues || [];
-			episodeId.value = route.query.sign;
-			totalPages.value = dialogues.value.length;
+			if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
+				scene.value = dialoguesData.value.scenes[0];
+				dialogues.value = scene.value.dialogues || [];
+				episodeId.value = route.query.sign;
+				totalPages.value = dialogues.value.length;
 
-			await getVocabulary();
-			route.query.progress && progressJumpToPage();
+				// 使用 Promise.all 等待所有数据加载完成
+				const [knowledgeSuccess] = await Promise.all([
+					getKnowledge(),
+					getVocabulary(),
+				]);
+
+				if (!knowledgeSuccess) {
+					throw new Error("Failed to load knowledge data");
+				}
+
+				if (route.query.progress) {
+					progressJumpToPage();
+				}
+			} else {
+				throw new Error("No scenes found in script");
+			}
 		} else {
-			throw new Error("剧本中没有场景数据");
+			throw new Error(scriptRes.data.message || "Invalid lesson data");
 		}
 	} catch (error) {
 		console.error("Error loading lesson:", error);
-	} finally {
+		showToast({
+			message: "加载失败，请刷新页面重试",
+			type: "error",
+		});
 	}
 };
 
-// 获取单词库 & 匹配用户单词本里的单词
+// 获取用户的词库 & 匹配用户单词本里的单词
 const getVocabulary = async () => {
 	try {
 		const res = await apiClient.get(`/lesson-notes/${episodeId.value}`);
@@ -315,13 +329,44 @@ const getVocabulary = async () => {
 			showToast({
 				message: res.data.message,
 				type: "error",
-				duration: 3000,
 			});
 		}
 	} catch (error) {
 		console.error("Error fetching vocabulary:", error);
 	}
 };
+
+const knowledges = ref([]);
+// 获取知识点
+const getKnowledge = async () => {
+	try {
+		const res = await apiClient.get(`/knowledge`, {
+			params: { lessonId: route.query.sign },
+		});
+
+		if (res.data.code === 200 && Array.isArray(res.data.data)) {
+			knowledges.value = res.data.data;
+			return true;
+		} else {
+			throw new Error("Knowledge data is invalid");
+		}
+	} catch (error) {
+		console.error("Error fetching knowledge:", error);
+		knowledges.value = [];
+		return false;
+	}
+};
+
+// 追踪知识点数据是否准备就绪
+const isKnowledgeReady = computed(() => {
+	return (
+		knowledges.value &&
+		Array.isArray(knowledges.value) &&
+		knowledges.value.length > 0 &&
+		currentDialogueIndex.value < knowledges.value.length &&
+		knowledges.value[currentDialogueIndex.value]?.knowledge
+	);
+});
 
 // 获取当前台词
 const currentDialogue = computed(() => {
@@ -330,14 +375,28 @@ const currentDialogue = computed(() => {
 		: {};
 });
 
-// 动态获取当前台词的知识点
+// 获取当前台词的知识点
 const currentKnowledgePoints = computed(() => {
-	return currentDialogue.value.knowledge || [];
+	if (
+		!knowledges.value ||
+		!knowledges.value.length ||
+		currentDialogueIndex.value >= knowledges.value.length
+	) {
+		return [];
+	}
+	return knowledges.value[currentDialogueIndex.value]?.knowledge || [];
 });
 
 // 动态获取当前台词的练习题
 const currentPractice = computed(() => {
-	return currentDialogue.value.practice || [];
+	if (
+		!knowledges.value ||
+		!knowledges.value.length ||
+		currentDialogueIndex.value >= knowledges.value.length
+	) {
+		return [];
+	}
+	return knowledges.value[currentDialogueIndex.value]?.practice || [];
 });
 
 // 从已保存进度开始
@@ -358,7 +417,6 @@ const editCard = () => {
 	router.replace({
 		path: `/card-editor/${courseId}/${season}/${episode}`,
 		query: {
-			mode: "edit",
 			sign: sign,
 		},
 	});
@@ -374,6 +432,22 @@ onMounted(async () => {
 
 // 切换显示 Tabs 的状态
 const toggleHints = () => {
+	if (isLoading.value) {
+		showToast({
+			message: "数据加载中，请稍候",
+			type: "info",
+		});
+		return;
+	}
+
+	if (!knowledges.value || !knowledges.value.length) {
+		showToast({
+			message: "知识点数据不可用，请刷新页面重试",
+			type: "warning",
+		});
+		return;
+	}
+
 	if (currentKnowledgePoints.value.length) {
 		showHints.value = !showHints.value;
 	} else {
@@ -405,10 +479,9 @@ const saveProgress = async () => {
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const page = currentPage.value;
-	const scriptUrl = route.query.script;
 	const sign = route.query.sign;
 
-	appStore.saveProgress(course, season, episode, page, scriptUrl, sign);
+	appStore.saveProgress(course, season, episode, page, sign);
 	try {
 		const response = await apiClient.post("/users/me/update", {
 			learningProgress: appStore.progressList,
@@ -524,6 +597,17 @@ watch(
 			console.log("Listen mode is deactivated");
 		}
 	}
+);
+
+// 监听 knowledges 的变化
+watch(
+	knowledges,
+	(newValue) => {
+		if (!newValue || newValue.length === 0) {
+			console.warn("Knowledge data is empty or invalid");
+		}
+	},
+	{ deep: true }
 );
 
 // 下一页
