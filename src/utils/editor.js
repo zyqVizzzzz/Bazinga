@@ -1,5 +1,3 @@
-export const existingBoldWords = new Set();
-
 export const initEditorBlocks = (dialogueData) => {
 	const blocks = [];
 
@@ -44,35 +42,6 @@ export const initEditorBlocks = (dialogueData) => {
 		blocks.push({ type: "paragraph", data: { text: "\u200B" } }); // 空行
 	});
 	return blocks;
-};
-
-// 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
-export const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
-	console.log(knowledges, editorInstance);
-	const content = await editorInstance.save();
-	// 创建一个对象来跟踪每个知识点单词的匹配状态
-	const matchedWords = new Set();
-	const newBlocks = content.blocks.map((block) => {
-		if (block.type === "paragraph" && block.data.text.trim()) {
-			// 遍历每个知识点，并在整个文本范围内仅加粗首次出现
-			knowledges.forEach(({ word }) => {
-				// 如果该单词已经加粗过，则跳过
-				if (matchedWords.has(word)) return;
-
-				const regExp = new RegExp(`(${word})`, "i"); // 匹配第一个出现的单词（忽略大小写）
-
-				// 替换第一个匹配项后停止
-				block.data.text = block.data.text.replace(regExp, (match) => {
-					matchedWords.add(word); // 标记该单词已加粗
-					return `<b>${match}</b>`; // 仅加粗第一个匹配项
-				});
-			});
-		}
-		return block;
-	});
-
-	// 渲染编辑器内容
-	await editorInstance.render({ blocks: newBlocks });
 };
 
 /**

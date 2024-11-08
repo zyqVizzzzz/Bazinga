@@ -341,7 +341,7 @@ const knowledges = ref([]);
 const getKnowledge = async () => {
 	try {
 		const res = await apiClient.get(`/knowledge`, {
-			params: { lessonId: route.query.sign },
+			params: { catalogId: route.params.id, lessonId: route.query.sign },
 		});
 
 		if (res.data.code === 200 && Array.isArray(res.data.data)) {

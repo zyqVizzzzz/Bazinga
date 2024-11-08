@@ -314,9 +314,11 @@ const initEditorJS = async () => {
 
 // 初始化知识点
 const initKnowledges = async () => {
+	console.log(route.params);
 	try {
 		const response = await apiClient.get(`/knowledge`, {
 			params: {
+				catalogId: route.params.id,
 				lessonId: route.query.sign,
 			},
 		});
@@ -731,6 +733,7 @@ const saveAllKnowledge = async () => {
 
 		// 准备批量保存的数据
 		const bulkData = {
+			catalogId: route.params.id,
 			lessonId: route.query.sign,
 			items: scriptJson.value.scenes[0].dialogues.map((dialogue) => ({
 				sceneId: dialogue.id,
