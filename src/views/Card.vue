@@ -22,20 +22,16 @@
 							: 'box-shadow: 0px 8px 10px rgba(var(--primary-color-rgb), 0.2);'
 					"
 				>
-					<div class="card w-full h-full">
+					<div class="card w-full h-full" v-if="!isLoading">
 						<div class="front">
 							<div class="card-body relative">
-								<!-- 卡片标题 -->
 								<TitleBar
 									:isFlipped="isFlipped"
 									:title="currentDialogue.title"
 									:id="currentDialogue.id"
 									:currentPractice="currentPractice"
 								/>
-
-								<!-- 卡片内容部分 -->
 								<div class="card-content flex items-stretch relative">
-									<!-- 台词 -->
 									<div
 										:class="{
 											'w-4/6': showHints,
@@ -62,7 +58,6 @@
 										"
 										:currentDialogueIndex="currentDialogueIndex"
 										:resourceId="episodeId"
-										@on-toggle-hints="toggleHints"
 										@on-slide-change="handleSlideChange"
 										@update-note="handleUpdateNote"
 									/>
@@ -87,73 +82,81 @@
 							</div>
 						</div>
 					</div>
-				</div>
-				<div class="lesson-options flex space-x-2">
 					<div
-						class="flex items-center text-xs title-jam shadow-md"
-						@click="togglePracticeMode"
-						@mouseenter="isHoveredJ = true"
-						@mouseleave="isHoveredJ = false"
-						:class="{ expanded: isHoveredJ, 'shadow-primary': isFlipped }"
+						v-if="isLoading"
+						class="card w-full h-full items-center my-auto pb-4"
 					>
-						<div class="jam-text-wrapper">
-							<!-- 旧文字 -->
-							<span
-								class="text-slide text-xs font-bold"
-								:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
-							>
-								练习模式
-							</span>
-							<!-- 新文字 -->
-							<span
-								class="text-slide font-bold"
-								:class="{ 'text-in': isHoveredJ, 'text-out': !isHoveredJ }"
-							>
-								Let's Jam!
-							</span>
+						<span class="loading loading-ring loading-lg"></span>
+					</div>
+				</div>
+				<div v-if="!isLoading">
+					<div class="lesson-options flex space-x-2">
+						<div
+							class="flex items-center text-xs title-jam shadow-md"
+							@click="togglePracticeMode"
+							@mouseenter="isHoveredJ = true"
+							@mouseleave="isHoveredJ = false"
+							:class="{ expanded: isHoveredJ, 'shadow-primary': isFlipped }"
+						>
+							<div class="jam-text-wrapper">
+								<!-- 旧文字 -->
+								<span
+									class="text-slide text-xs font-bold"
+									:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
+								>
+									练习模式
+								</span>
+								<!-- 新文字 -->
+								<span
+									class="text-slide font-bold"
+									:class="{ 'text-in': isHoveredJ, 'text-out': !isHoveredJ }"
+								>
+									Let's Jam!
+								</span>
+							</div>
+						</div>
+						<div
+							@click="toggleListenMode"
+							class="flex items-center text-xs title-jam shadow-md"
+							@mouseenter="isHoveredVoice = true"
+							@mouseleave="isHoveredVoice = false"
+							:class="{
+								expanded: isHoveredVoice,
+								'shadow-primary': lessonStore.isListenMode,
+							}"
+						>
+							<span class="cursor-pointer font-bold">语音模式</span>
+						</div>
+						<div
+							@click="toggleTransMode"
+							class="flex items-center text-xs title-jam shadow-md"
+							@mouseenter="isHoveredTrans = true"
+							@mouseleave="isHoveredTrans = false"
+							:class="{ expanded: isHoveredTrans, 'shadow-primary': showTrans }"
+						>
+							<span class="cursor-pointer font-bold">双语模式</span>
 						</div>
 					</div>
-					<div
-						@click="toggleListenMode"
-						class="flex items-center text-xs title-jam shadow-md"
-						@mouseenter="isHoveredVoice = true"
-						@mouseleave="isHoveredVoice = false"
-						:class="{
-							expanded: isHoveredVoice,
-							'shadow-primary': lessonStore.isListenMode,
-						}"
-					>
-						<span class="cursor-pointer font-bold">语音模式</span>
-					</div>
-					<div
-						@click="toggleTransMode"
-						class="flex items-center text-xs title-jam shadow-md"
-						@mouseenter="isHoveredTrans = true"
-						@mouseleave="isHoveredTrans = false"
-						:class="{ expanded: isHoveredTrans, 'shadow-primary': showTrans }"
-					>
-						<span class="cursor-pointer font-bold">双语模式</span>
-					</div>
-				</div>
-				<div class="lesson-options-left flex space-x-2">
-					<div
-						v-if="!isFlipped"
-						@click="editCard"
-						class="text-primary text-xs text-center mt-2 product-capsule shadow-lg"
-					>
-						<span class="cursor-pointer font-bold">编辑卡片</span>
-					</div>
-				</div>
-				<div class="lesson-options-right flex space-x-2">
-					<div class="tooltip" data-tip="保存进度">
+					<div class="lesson-options-left flex space-x-2">
 						<div
 							v-if="!isFlipped"
-							@click="saveProgress"
-							class="text-xs text-center mt-2 save-capsule shadow-md text-gray-600"
+							@click="editCard"
+							class="text-primary text-xs text-center mt-2 product-capsule shadow-lg"
 						>
-							<span class="cursor-pointer font-bold">
-								<i class="bi bi-floppy text-xl"></i>
-							</span>
+							<span class="cursor-pointer font-bold">编辑卡片</span>
+						</div>
+					</div>
+					<div class="lesson-options-right flex space-x-2">
+						<div class="tooltip" data-tip="保存进度">
+							<div
+								v-if="!isFlipped"
+								@click="saveProgress"
+								class="text-xs text-center mt-2 save-capsule shadow-md text-gray-600"
+							>
+								<span class="cursor-pointer font-bold">
+									<i class="bi bi-floppy text-xl"></i>
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -161,7 +164,7 @@
 		</transition>
 		<!-- 左右箭头按钮 -->
 		<div
-			v-if="!isFlipped"
+			v-if="!isFlipped && !isLoading"
 			class="card-actions justify-between mt-4 w-1/4 mx-auto items-center"
 		>
 			<button
@@ -204,7 +207,6 @@ import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
 
 import TitleBar from "@/components/card/title.vue";
-import ReadingCapsule from "@/components/capsule/Reading.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
@@ -247,8 +249,6 @@ const isHoveredVoice = ref(false);
 const isHoveredTrans = ref(false);
 
 const isLoading = ref(true);
-const hasError = ref(false);
-const errorMessage = ref("");
 
 // 获取课程
 const getLesson = async () => {
@@ -272,6 +272,10 @@ const getLesson = async () => {
 					getKnowledge(),
 					getVocabulary(),
 				]);
+
+				setTimeout(() => {
+					isLoading.value = false;
+				}, 1000);
 
 				if (!knowledgeSuccess) {
 					throw new Error("Failed to load knowledge data");
@@ -415,36 +419,9 @@ onMounted(async () => {
 	if (route.params.id !== "67230dee6fc3d389ea1ffedf") {
 		isDefault.value = false;
 	}
+	isLoading.value = true;
 	await getLesson();
 });
-
-// 切换显示 Tabs 的状态
-const toggleHints = () => {
-	if (isLoading.value) {
-		showToast({
-			message: "数据加载中，请稍候",
-			type: "info",
-		});
-		return;
-	}
-
-	if (!knowledges.value || !knowledges.value.length) {
-		showToast({
-			message: "知识点数据不可用，请刷新页面重试",
-			type: "warning",
-		});
-		return;
-	}
-
-	if (currentKnowledgePoints.value.length) {
-		showHints.value = !showHints.value;
-	} else {
-		showToast({
-			message: "暂无单词，请在卡片编辑器中添加知识点单词",
-			type: "warning",
-		});
-	}
-};
 
 const toggleTransMode = () => {
 	showTrans.value = !showTrans.value;
