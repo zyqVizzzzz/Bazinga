@@ -220,8 +220,6 @@ import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import { showToast } from "@/components/common/toast.js";
 
-import { getVoicesList } from "@/utils/speechSynthesisHelper";
-
 const lessonStore = useLessonStore();
 const appStore = useAppStore();
 const router = useRouter();
@@ -467,10 +465,6 @@ const togglePracticeMode = () => {
 };
 
 const toggleListenMode = async () => {
-	if (!lessonStore.voicesList.length) {
-		const voicesList = await getVoicesList();
-		lessonStore.setVoicesList(voicesList);
-	}
 	lessonStore.setListenMode();
 };
 
