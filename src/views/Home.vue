@@ -1,7 +1,9 @@
 <template>
 	<div class="home">
 		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
-			Ver.1 Collections
+			<div>
+				Ver.1 <span><mark class="pink">Collections</mark></span>
+			</div>
 			<div class="flex mx-auto flex-col mt-2">
 				<span class="text-gray-400 text-sm font-normal">
 					n. 合集(复数) - /kəˈlɛkʃənz/
@@ -58,9 +60,10 @@
 		</div>
 
 		<!-- 第二部分: Version 1.1.0 文章目录 -->
-		<div class="w-full mt-10">
-			<h1 class="text-2xl font-bold mb-10 text-center">
-				Ver.2 AI Show
+		<div class="w-full mt-40">
+			<h1 class="text-2xl font-bold mb-5 text-center">Next</h1>
+			<!-- <h1 class="text-2xl font-bold mb-10 text-center">
+				Ver.2 AI
 				<div
 					class="text-gray-400 text-sm font-normal mt-2 mx-auto flex justify-between relative"
 					style="width: 11rem; left: 5px"
@@ -86,7 +89,7 @@
 						</div>
 					</div>
 				</div>
-			</h1>
+			</h1> -->
 			<div
 				class="w-full max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 relative bg-custom"
 			>

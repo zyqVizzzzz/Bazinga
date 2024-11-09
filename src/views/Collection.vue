@@ -183,7 +183,6 @@ const getUserProfile = async () => {
 onMounted(() => {
 	loadCategoryData();
 	getUserProfile();
-	console.log(currentProgress.value);
 });
 
 const goToLessonProgress = () => {

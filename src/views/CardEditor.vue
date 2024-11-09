@@ -1,6 +1,5 @@
 <template>
-	<!-- 动态编辑区域 -->
-	<div class="container mx-auto my-10 p-6">
+	<div class="container w-full mx-auto my-10 p-6">
 		<div class="flex editor-box">
 			<div class="editor-container p-4 text-sm mt-4 relative">
 				<div
@@ -33,211 +32,244 @@
 					</button>
 				</div>
 				<div
-					class="option-group flex justify-between space-x-4 absolute"
-					style="right: 20px; top: -40px"
-				></div>
-				<div
-					class="editor-container p-4 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
-					style="min-height: 642px; overflow-y: auto"
+					class="editor-container py-4 px-2 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
+					style="min-height: 650px; overflow-y: auto"
 				>
-					<!-- Markdown 编辑器 -->
 					<div id="editor" class="editorjs-container"></div>
 				</div>
 			</div>
-			<div class="toolbox-container w-2/5 mt-4">
+			<div
+				class="toolbox-container w-2/5 mt-4 border border-gray-100 shadow-xl rounded-xl"
+			>
+				<!-- 顶部装饰条 -->
 				<div
-					class="card w-full bg-white rounded p-4 text-center shadow-lg shadow-knowledge"
-					style="min-height: 642px"
-				>
-					<h3 v-if="!isEditing" class="text-lg font-semibold">知识点</h3>
-					<!-- 检查当前项是否处于编辑状态 -->
-					<div
-						v-if="isEditing"
-						class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
-					>
-						<!-- 编辑表单 -->
-						<div class="text-center mb-2 font-bold text-base">
-							{{ editedFields.origin }}
-						</div>
-						<div class="mb-2">
-							<label for="word" class="text-xs pb-1 ml-1 block">知识点:</label>
-							<input
-								type="text"
-								v-model="editedFields.word"
-								id="word"
-								placeholder="请输入知识点"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<!-- 词性选择 -->
-						<div class="flex items-center justify-between space-x-2 mb-2">
-							<div>
-								<label for="pos" class="text-xs pb-1 ml-1 block">词性:</label>
-								<select
-									v-model="editedFields.pos"
-									id="pos"
-									class="select select-bordered select-sm w-full max-w-xs"
+					class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20"
+				></div>
+
+				<div class="relative w-full max-w-2xl mx-auto">
+					<div class="relative">
+						<div class="decorated-card p-6">
+							<div
+								class="flex items-center justify-between mb-2"
+								v-if="!isEditing"
+							>
+								<div class="flex items-center space-x-2">
+									<i
+										class="bi bi-book text-primary text-lg relative"
+										style="top: 2px"
+									></i>
+									<h3
+										class="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+									>
+										知识点
+									</h3>
+								</div>
+							</div>
+
+							<!-- 编辑表单 -->
+							<div
+								v-if="isEditing"
+								class="text-gray-800 text-sm mb-2 text-left relative group"
+							>
+								<div
+									class="mb-4 font-bold text-base text-left flex justify-between pl-1"
 								>
-									<option value="">词性</option>
-									<option value="n.">n.</option>
-									<option value="v.">v.</option>
-									<option value="adj.">adj.</option>
-									<option value="adv.">adv.</option>
-									<option value="excl.">excl.</option>
-									<option value="phr.">phr.</option>
-									<!-- 根据需要添加更多词性选项 -->
-								</select>
-							</div>
-							<div>
-								<label for="word_zh" class="text-xs pb-1 ml-1 block"
-									>释义:</label
+									{{ editedFields.origin }}
+									<span class="transition-opacity duration-200">
+										<button
+											@click="generateKnowledge(editedFields.origin)"
+											class="btn btn-ghost btn-xs text-secondary"
+										>
+											自动生成知识点
+										</button>
+									</span>
+								</div>
+								<div class="mb-2">
+									<label for="word" class="text-xs pb-1 ml-1 block"
+										>知识点:</label
+									>
+									<input
+										type="text"
+										v-model="editedFields.word"
+										id="word"
+										placeholder="请输入知识点"
+										class="input input-bordered input-sm w-full max-w-xs"
+									/>
+								</div>
+								<div class="mb-2">
+									<label for="type" class="text-xs pb-1 ml-1 block"
+										>类型:</label
+									>
+									<select
+										v-model="editedFields.type"
+										id="type"
+										class="select select-bordered select-sm w-full max-w-xs"
+									>
+										<option value="">请选择类型</option>
+										<option value="vocabulary">词汇</option>
+										<option value="phrase">短语</option>
+										<option value="daily expression">日常用语</option>
+									</select>
+								</div>
+								<div
+									class="flex items-center justify-between space-x-2 mb-2"
+									v-if="editedFields.type === 'vocabulary'"
 								>
-								<input
-									type="text"
-									v-model="editedFields.word_zh"
-									id="word_zh"
-									placeholder="请输入中文释义"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
+									<div>
+										<label for="pos" class="text-xs pb-1 ml-1 block"
+											>词性:</label
+										>
+										<select
+											v-model="editedFields.pos"
+											id="pos"
+											class="select select-bordered select-sm w-full max-w-xs"
+										>
+											<option value="">词性</option>
+											<option value="n.">n.</option>
+											<option value="v.">v.</option>
+											<option value="vt.">vt.</option>
+											<option value="vi.">vi.</option>
+											<option value="adj.">adj.</option>
+											<option value="adv.">adv.</option>
+											<option value="prep.">prep.</option>
+											<option value="conj.">conj.</option>
+											<option value="pron.">pron.</option>
+											<option value="art.">art.</option>
+											<option value="int.">int.</option>
+											<!-- 根据需要添加更多词性选项 -->
+										</select>
+									</div>
+									<div>
+										<label for="word_zh" class="text-xs pb-1 ml-1 block"
+											>释义:</label
+										>
+										<input
+											type="text"
+											v-model="editedFields.word_zh"
+											id="word_zh"
+											placeholder="请输入中文释义"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+									</div>
+								</div>
+								<div class="mb-2" v-if="editedFields.type !== 'vocabulary'">
+									<label for="definition_zh" class="text-xs pb-1 ml-1 block"
+										>详细释义:</label
+									>
+									<input
+										type="text"
+										v-model="editedFields.definition_zh"
+										id="definition_zh"
+										placeholder="请输入详细释义"
+										class="input input-bordered input-sm w-full max-w-xs"
+									/>
+								</div>
+
+								<div
+									class="flex flex-col mb-2"
+									v-if="editedFields.type === 'vocabulary'"
+								>
+									<label for="prefix" class="text-xs pb-1 ml-1 block"
+										>词根 & 词缀:</label
+									>
+									<div class="flex items-center space-x-2">
+										<input
+											type="text"
+											v-model="editedFields.system.affixAnalysis.prefix"
+											id="prefix"
+											placeholder="前缀"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+										<input
+											type="text"
+											v-model="editedFields.system.rootAnalysis.root"
+											id="root"
+											placeholder="词根"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+										<input
+											type="text"
+											v-model="editedFields.system.affixAnalysis.suffix"
+											id="suffix"
+											placeholder="后缀"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+									</div>
+								</div>
+								<div class="mb-2">
+									<label for="type" class="text-xs pb-1 ml-1 block"
+										>例句:</label
+									>
+									<textarea
+										v-model="editedFields.example"
+										id="example"
+										placeholder="请输入例句"
+										class="textarea textarea-bordered w-full max-w-xs p-2"
+									></textarea>
+								</div>
+								<div class="mb-2">
+									<label for="type" class="text-xs pb-1 ml-1 block"
+										>例句释义:</label
+									>
+									<textarea
+										v-model="editedFields.example_zh"
+										id="example_zh"
+										placeholder="请输入例句释义"
+										class="textarea textarea-bordered w-full p-2"
+									></textarea>
+								</div>
+
+								<div class="flex justify-end space-x-2 mt-6">
+									<button
+										@click="saveKnowledge"
+										class="btn btn-sm btn-secondary text-white"
+									>
+										保存
+									</button>
+									<button @click="cancelEdit" class="btn btn-sm btn-ghost">
+										取消
+									</button>
+								</div>
 							</div>
-						</div>
-						<div class="mb-2">
-							<label for="definition_zh" class="text-xs pb-1 ml-1 block"
-								>详细释义:</label
-							>
-							<input
-								type="text"
-								v-model="editedFields.definition_zh"
-								id="definition_zh"
-								placeholder="请输入详细释义"
-								class="input input-bordered input-sm w-full max-w-xs"
-							/>
-						</div>
-						<div class="mb-2">
-							<label for="type" class="text-xs pb-1 ml-1 block">类型:</label>
-							<select
-								v-model="editedFields.type"
-								id="type"
-								class="select select-bordered select-sm w-full max-w-xs"
-							>
-								<option value="">请选择类型</option>
-								<option value="vocabulary">词汇</option>
-								<option value="phrase">短语</option>
-								<option value="daily expression">日常用语</option>
-								<!-- 根据需要添加更多词性选项 -->
-							</select>
-						</div>
-						<div
-							class="flex flex-col mb-2"
-							v-if="editedFields.type === 'vocabulary'"
-						>
-							<label for="prefix" class="text-xs pb-1 ml-1 block"
-								>词根 & 词缀:
-								<span class="text-secondary cursor-pointer">生成</span></label
-							>
-							<div class="flex items-center space-x-2">
-								<input
-									type="text"
-									v-model="editedFields.system.affixAnalysis.prefix"
-									id="prefix"
-									placeholder="前缀"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-								<input
-									type="text"
-									v-model="editedFields.system.rootAnalysis.root"
-									id="root"
-									placeholder="词根"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-								<input
-									type="text"
-									v-model="editedFields.system.affixAnalysis.suffix"
-									id="suffix"
-									placeholder="后缀"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
+
+							<!-- 知识点列表 -->
+							<div v-else>
+								<div
+									v-for="(item, index) in Array.from(currentKnowledge.values())"
+									:key="item.word"
+									class="group relative p-2 py-1 rounded-lg hover:bg-gray-50/70 transition-all duration-200"
+								>
+									<div
+										class="flex items-center justify-between cursor-pointer"
+										@click="startEditing(item)"
+									>
+										<div class="flex items-center space-x-3">
+											<span class="font-medium text-sm">{{ item.word }}</span>
+										</div>
+
+										<!-- 操作按钮 -->
+										<div class="transition-opacity duration-200">
+											<button
+												@click="startEditing(item)"
+												class="btn btn-ghost btn-xs"
+											>
+												<i
+													class="bi bi-pencil-square text-secondary text-sm"
+												></i>
+											</button>
+										</div>
+									</div>
+								</div>
+
+								<!-- 空状态 -->
+								<div
+									v-if="currentKnowledge.size === 0"
+									class="text-gray-500 text-sm my-8 text-center flex flex-col items-center space-y-2"
+								>
+									<i class="bi bi-inbox text-3xl text-gray-300"></i>
+									<span>暂无词汇</span>
+								</div>
 							</div>
-						</div>
-						<div
-							class="flex flex-col mb-2"
-							v-if="editedFields.type === 'vocabulary'"
-						>
-							<label for="prefix" class="text-xs pb-1 ml-1 block"
-								>词根 & 词缀解释:</label
-							>
-							<div class="flex items-center space-x-2">
-								<input
-									type="text"
-									v-model="editedFields.system.affixAnalysis.prefixMeaning"
-									id="prefixMeaning"
-									placeholder="前缀"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-								<input
-									type="text"
-									v-model="editedFields.system.rootAnalysis.rootMeaning"
-									id="rootMeaning"
-									placeholder="词根"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-								<input
-									type="text"
-									v-model="editedFields.system.affixAnalysis.suffixMeaning"
-									id="suffixMeaning"
-									placeholder="后缀"
-									class="input input-bordered input-sm w-full max-w-xs"
-								/>
-							</div>
-						</div>
-						<div class="mb-2">
-							<label for="type" class="text-xs pb-1 ml-1 block">例句:</label>
-							<textarea
-								v-model="editedFields.example"
-								id="example"
-								placeholder="请输入例句"
-								class="textarea textarea-bordered w-full max-w-xs p-2"
-							></textarea>
-						</div>
-						<div class="mb-2">
-							<label for="type" class="text-xs pb-1 ml-1 block"
-								>例句释义:</label
-							>
-							<textarea
-								v-model="editedFields.example_zh"
-								id="example_zh"
-								placeholder="请输入例句释义"
-								class="textarea textarea-bordered w-full p-2"
-							></textarea>
-						</div>
-						<div class="flex justify-end mt-4 space-x-2">
-							<button @click="saveKnowledge()" class="text-secondary text-sm">
-								保存
-							</button>
-							<button @click="cancelEdit" class="text-gray-500 text-sm">
-								取消
-							</button>
-						</div>
-					</div>
-					<div v-if="!isEditing">
-						<div
-							v-for="(item, index) in Array.from(currentKnowledge.values())"
-							:key="item.word"
-							class="text-gray-800 text-sm my-2 text-left cursor-pointer relative group"
-						>
-							{{ index + 1 }}. <span>{{ item.word }}</span>
-							<span
-								class="edit-icon text-secondary text-xs absolute right-0"
-								@click="startEditing(item)"
-							>
-								编辑
-							</span>
-						</div>
-						<div
-							v-if="currentKnowledge.size === 0"
-							class="text-gray-800 text-sm my-8 text-center cursor-pointer relative group"
-						>
-							暂无词汇
 						</div>
 					</div>
 				</div>
@@ -263,7 +295,7 @@ const editedFields = ref({});
 
 const currentDialogueIndex = ref(0); // 当前对话索引
 const currentDialogue = ref({}); // 当前对话
-const currentKnowledge = ref([]); // 当前知识点
+const currentKnowledge = ref(new Map()); // 当前知识点
 const scriptJson = ref(null);
 
 const existingBoldWords = new Set();
@@ -314,7 +346,6 @@ const initEditorJS = async () => {
 
 // 初始化知识点
 const initKnowledges = async () => {
-	console.log(route.params);
 	try {
 		const response = await apiClient.get(`/knowledge`, {
 			params: {
@@ -364,6 +395,24 @@ const initDialogues = async () => {
 	} catch (err) {}
 };
 
+const generateKnowledge = async (word) => {
+	const res = await apiClient.get(`/dictionary/${word}`);
+	if (res.data.code === 200) {
+		console.log(res.data.data);
+		const knowledgeData = {
+			pos: res.data.data.pos[0].type,
+			word_zh: res.data.data.pos[0].explanation.split("\\")[0],
+			example: res.data.data.examples[0].text,
+			example_zh: res.data.data.examples[0].translate,
+		};
+		editedFields.value.pos = res.data.data.pos[0].type;
+		editedFields.value.word_zh =
+			res.data.data.pos[0].explanation.split("\\")[0];
+		editedFields.value.example = res.data.data.examples[0].text;
+		editedFields.value.example_zh = res.data.data.examples[0].translation;
+	}
+};
+
 onMounted(async () => {
 	const editorElement = document.getElementById("editor");
 	if (editorElement) {
@@ -390,6 +439,93 @@ onBeforeUnmount(() => {
 		});
 	}
 });
+
+// 分段翻译
+const transDialogue = async () => {
+	const separator = " ||| ";
+	const paragraphsToTranslate = [];
+	const paragraphIndices = [];
+
+	// 获取编辑器内容
+	const savedData = await editor.value.save();
+	const blocks = savedData.blocks;
+
+	// 找出需要翻译的段落
+	blocks.forEach((block, index) => {
+		if (shouldTranslate(block.data.text)) {
+			const cleanedParagraph = cleanText(block.data.text);
+			paragraphsToTranslate.push(cleanedParagraph);
+			paragraphIndices.push(index);
+		}
+	});
+
+	const textToTranslate = paragraphsToTranslate.join(separator);
+
+	try {
+		const response = await apiClient.post("/translation", {
+			text: textToTranslate,
+			source: "en",
+			target: "zh",
+		});
+		const translatedText = response.data.data.translatedText;
+		const translations = translatedText.split(separator);
+
+		// 构建新的 blocks 数组
+		let newBlocks = [...blocks];
+		// 根据原始段落索引插入翻译内容
+		paragraphIndices.forEach((originalIndex, i) => {
+			newBlocks.splice(originalIndex + 1 + i, 0, {
+				type: "paragraph",
+				data: {
+					text: translations[i],
+				},
+			});
+		});
+
+		// 处理连续空行
+		newBlocks = removeConsecutiveEmptyLines(newBlocks);
+
+		// 使用 EditorJS render 方法更新内容
+		await editor.value.render({
+			blocks: newBlocks,
+		});
+	} catch (error) {
+		console.error("Translation failed:", error);
+	}
+};
+
+// 文本检测函数：中文字符比例小于 10% 则翻译
+const shouldTranslate = (text) => {
+	const totalChars = text.length;
+	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+	const chinesePercentage = (chineseChars / totalChars) * 100;
+	return chinesePercentage <= 10; // 中文比例低于10%
+};
+
+const cleanText = (text) => {
+	let cleanedText = text.replace(/<\/?[^>]+(>|$)/g, "");
+	cleanedText = cleanedText.replace(/\[[^\]]*\]/g, "");
+	return cleanedText.trim();
+};
+
+const removeConsecutiveEmptyLines = (blocks) => {
+	return blocks.filter((block, index, arr) => {
+		const currentIsEmpty = !block.data.text
+			.replace(/[\u200B-\u200D\uFEFF]/g, "")
+			.trim();
+		const prevIsEmpty =
+			index > 0 &&
+			!arr[index - 1].data.text.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+
+		// 保留非空行，或者是第一个空行
+		return !currentIsEmpty || !prevIsEmpty;
+	});
+};
+
+const cancelEdit = () => {
+	isEditing.value = false;
+	editedFields.value = {};
+};
 
 const saveDialogue = async (isCustom = false) => {
 	const savedData = await editor.value.save();
@@ -479,12 +615,11 @@ const getDefaultJson = () => {
 	totalDialogues.value = defaultData[0].length;
 };
 const getDefaultKnowledge = () => {
-	currentKnowledge.value = [];
+	currentKnowledge.value = new Map();
 };
 
 // 编辑区域
 const startEditing = (item) => {
-	console.log(item);
 	isEditing.value = true;
 	// 由于 item 仍然包含所有必要的字段，只是多了一个 scenes 字段
 	// 创建一个新对象，排除 scenes 字段
@@ -523,11 +658,6 @@ const startEditing = (item) => {
 };
 
 function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
-	console.log("addBoldWordsToKnowledge called with:", {
-		newBoldWords,
-		currentSceneId,
-	});
-
 	newBoldWords.forEach((boldText) => {
 		const existingKnowledge = currentKnowledge.value.get(boldText);
 
@@ -844,7 +974,6 @@ function processDialogueData(savedData, route) {
 
 		return true; // 保留所有其他行
 	});
-	console.log(cleanedBlocks);
 	// 处理清理后的块
 	cleanedBlocks.forEach((block) => {
 		const line = block.data.text;
@@ -902,7 +1031,6 @@ function processDialogueData(savedData, route) {
 	if (currentDialogue) {
 		outputDialogues.push(currentDialogue);
 	}
-	console.log(outputDialogues);
 	return outputDialogues;
 }
 
@@ -923,7 +1051,6 @@ function processPair(pair, dialogue) {
 
 // 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
 const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
-	console.log(knowledges, editorInstance);
 	const content = await editorInstance.save();
 	// 创建一个对象来跟踪每个知识点单词的匹配状态
 	const matchedWords = new Set();
@@ -1069,5 +1196,14 @@ function parseDialogueLine(line, tag) {
 /* 悬停时显示编辑图标 */
 .edit-icon {
 	right: 0px;
+}
+.toolbox-container {
+	position: sticky;
+	top: 10%;
+	right: 0;
+	min-height: 500px;
+	height: 70vh;
+	max-height: 70vh;
+	overflow: scroll;
 }
 </style>

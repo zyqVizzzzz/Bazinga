@@ -36,7 +36,7 @@ mark.pink {
 
 .editorjs-container {
 	min-height: 100%;
-	padding: 10px;
+	padding: 20px 10px;
 	text-align: left; /* 让编辑器内容默认居左 */
 }
 
@@ -68,9 +68,8 @@ mark.pink {
 }
 
 .container:has(.editor-box) {
-	margin-left: 0;
-	margin-right: 0;
-	max-width: 100%;
+	margin: 2.5rem auto;
+	max-width: 98%;
 }
 
 .common-capsule {
@@ -89,4 +88,7 @@ mark.pink {
 }
 .common-capsule:hover {
 	box-shadow: 0 8px 16px rgba(0, 0, 255, 0.2); /* 悬停时蓝色阴影增强 */
+}
+.ce-toolbar__settings-btn {
+	margin-left: 0;
 }
