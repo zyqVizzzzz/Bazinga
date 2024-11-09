@@ -1,45 +1,29 @@
 <template>
-	<div class="container w-full mx-auto my-10 p-6">
+	<div class="container w-full mx-auto my-10 p-4">
 		<div class="flex editor-box">
+			<div
+				class="optionbox-container option-group flex-col justify-between space-y-4"
+			>
+				<button @click="backToPreview" class="btn btn-sm text-gray-800">
+					<i class="bi bi-box-arrow-left"></i>
+				</button>
+				<button
+					@click="saveDialogue(true)"
+					class="btn btn-sm text-white btn-primary"
+				>
+					<i class="bi bi-save"></i>
+				</button>
+			</div>
 			<div class="editor-container p-4 text-sm mt-4 relative">
 				<div
-					class="option-group flex justify-between space-x-4 absolute"
-					style="left: 20px; top: -40px"
-				>
-					<button
-						@click="backToPreview"
-						class="btn btn-sm text-white btn-primary"
-					>
-						返回
-					</button>
-					<button
-						@click="transDialogue"
-						class="btn btn-sm text-white btn-primary"
-					>
-						翻译
-					</button>
-				</div>
-
-				<div
-					class="option-group flex justify-between space-x-4 absolute"
-					style="right: 20px; top: -40px"
-				>
-					<button
-						@click="saveDialogue(true)"
-						class="btn btn-sm text-white btn-primary"
-					>
-						保存
-					</button>
-				</div>
-				<div
-					class="editor-container py-4 px-2 w-3/5 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
-					style="min-height: 650px; overflow-y: auto"
+					class="py-4 px-2 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
+					style="overflow-y: auto"
 				>
 					<div id="editor" class="editorjs-container"></div>
 				</div>
 			</div>
 			<div
-				class="toolbox-container w-2/5 mt-4 border border-gray-100 shadow-xl rounded-xl"
+				class="toolbox-container w-2/5 mt-4 border border-gray-100 shadow-xl rounded-xl shadow-knowledge"
 			>
 				<!-- 顶部装饰条 -->
 				<div
@@ -285,6 +269,7 @@ import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import { exampleText, exampleTextZh, word } from "@/constants/example.js";
 import { getDefinitions } from "@/utils/decompose.js";
+import { TranslateTool } from "../utils/translateTool";
 
 const route = useRoute();
 const router = useRouter();
@@ -314,7 +299,6 @@ const preventDefaultEnter = (event) => {
 };
 
 // 初始化 editorjs
-// EditorJS 配置
 const initEditorJS = async () => {
 	if (!scriptJson.value) return;
 	console.log("Initializing EditorJS...");
@@ -324,7 +308,16 @@ const initEditorJS = async () => {
 		holder: "editor",
 		placeholder: "",
 		data: { blocks },
-		inlineToolbar: ["bold", "italic"],
+		tools: {
+			translate: {
+				class: TranslateTool,
+				config: {
+					onAction: handleInlineToolAction,
+				},
+				inlineToolbar: true,
+			},
+		},
+		inlineToolbar: ["bold", "italic", "translate"],
 		onReady: () => {
 			boldKnowledgeWords(currentKnowledge.value, editor.value);
 			const editorElement = document.getElementById("editor");
@@ -342,6 +335,51 @@ const initEditorJS = async () => {
 		defaultBlock: "paragraph",
 		minHeight: 0,
 	});
+};
+
+const handleInlineToolAction = async ({ type, text, blockIndex }) => {
+	if (type !== "translate") return;
+
+	// 使用你现有的翻译逻辑
+	const separator = " ||| ";
+
+	try {
+		// 获取编辑器内容
+		const savedData = await editor.value.save();
+		const blocks = savedData.blocks;
+
+		// 只翻译选中的文本
+		if (shouldTranslate(text)) {
+			const cleanedText = cleanText(text);
+
+			const response = await apiClient.post("/translation", {
+				text: cleanedText,
+				source: "en",
+				target: "zh",
+			});
+
+			const translatedText = response.data.data.translatedText;
+
+			// 在当前块后插入翻译
+			const newBlocks = [...blocks];
+			newBlocks.splice(blockIndex + 1, 0, {
+				type: "paragraph",
+				data: {
+					text: translatedText,
+				},
+			});
+
+			// 处理连续空行
+			const processedBlocks = removeConsecutiveEmptyLines(newBlocks);
+
+			// 更新编辑器内容
+			await editor.value.render({
+				blocks: processedBlocks,
+			});
+		}
+	} catch (error) {
+		console.error("Translation failed:", error);
+	}
 };
 
 // 初始化知识点
@@ -439,60 +477,6 @@ onBeforeUnmount(() => {
 		});
 	}
 });
-
-// 分段翻译
-const transDialogue = async () => {
-	const separator = " ||| ";
-	const paragraphsToTranslate = [];
-	const paragraphIndices = [];
-
-	// 获取编辑器内容
-	const savedData = await editor.value.save();
-	const blocks = savedData.blocks;
-
-	// 找出需要翻译的段落
-	blocks.forEach((block, index) => {
-		if (shouldTranslate(block.data.text)) {
-			const cleanedParagraph = cleanText(block.data.text);
-			paragraphsToTranslate.push(cleanedParagraph);
-			paragraphIndices.push(index);
-		}
-	});
-
-	const textToTranslate = paragraphsToTranslate.join(separator);
-
-	try {
-		const response = await apiClient.post("/translation", {
-			text: textToTranslate,
-			source: "en",
-			target: "zh",
-		});
-		const translatedText = response.data.data.translatedText;
-		const translations = translatedText.split(separator);
-
-		// 构建新的 blocks 数组
-		let newBlocks = [...blocks];
-		// 根据原始段落索引插入翻译内容
-		paragraphIndices.forEach((originalIndex, i) => {
-			newBlocks.splice(originalIndex + 1 + i, 0, {
-				type: "paragraph",
-				data: {
-					text: translations[i],
-				},
-			});
-		});
-
-		// 处理连续空行
-		newBlocks = removeConsecutiveEmptyLines(newBlocks);
-
-		// 使用 EditorJS render 方法更新内容
-		await editor.value.render({
-			blocks: newBlocks,
-		});
-	} catch (error) {
-		console.error("Translation failed:", error);
-	}
-};
 
 // 文本检测函数：中文字符比例小于 10% 则翻译
 const shouldTranslate = (text) => {
@@ -1188,10 +1172,10 @@ function parseDialogueLine(line, tag) {
 	min-height: 500px;
 }
 .shadow-editor {
-	box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3); /* 红色阴影 */
+	box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.1); /* 红色阴影 */
 }
 .shadow-knowledge {
-	box-shadow: 0 4px 8px rgba(var(--secondary-color-rgb), 0.3); /* 红色阴影 */
+	box-shadow: 0 4px 8px rgba(var(--secondary-color-rgb), 0.1); /* 红色阴影 */
 }
 /* 悬停时显示编辑图标 */
 .edit-icon {
@@ -1199,10 +1183,18 @@ function parseDialogueLine(line, tag) {
 }
 .toolbox-container {
 	position: sticky;
+	top: 5%;
+	right: 0;
+	height: 50vh;
+	max-height: 70vh;
+	overflow: scroll;
+}
+.optionbox-container {
+	margin-top: 5%;
+	position: sticky;
 	top: 10%;
 	right: 0;
-	min-height: 500px;
-	height: 70vh;
+	min-height: 50vh;
 	max-height: 70vh;
 	overflow: scroll;
 }
