@@ -6,19 +6,24 @@
 		>
 			<span class="flex items-center"
 				>{{ selectedNote.word
-				}}<span class="ml-4 relative cursor-pointer" style="top: 3px"
-					><VolumeIcon /></span
+				}}<span class="ml-4 relative cursor-pointer" style="top: 2px"
+					><i class="bi bi-volume-down text-3xl"></i> </span
 			></span>
 			<span class="flex items-center">
 				<span
 					class="text-secondary cursor-pointer transition-all mr-1 duration-300 relative"
 					@click="toggleImportantBadge"
-					style="top: 1px"
-					><BookmarkIcon
-						:solid="true"
-						:fill="selectedNote.isImportant"
-						size="5"
-				/></span>
+					style="top: -3px"
+				>
+					<i
+						v-if="!selectedNote.isImportant"
+						class="bi bi-bookmark text-lg"
+					></i>
+					<i
+						v-if="selectedNote.isImportant"
+						class="bi bi-bookmark-fill text-lg"
+					></i>
+				</span>
 			</span>
 		</h2>
 		<!-- 释义 -->
@@ -168,10 +173,8 @@
 </template>
 <script setup>
 import { ref, toRefs, computed, watch } from "vue";
-import VolumeIcon from "../icons/Volume.vue";
-import BookmarkIcon from "../icons/Bookmark.vue";
-import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import apiClient from "@/api";
 
 const props = defineProps({
 	selectedNote: Object,

@@ -41,11 +41,11 @@
 				</div>
 				<button
 					@click="goToCollectionEdit"
-					class="text-sm mt-6 py-2 px-6 bg-gray-200 text-gray-600 opacity-50 flex space-x-6 text-sm hover:opacity-70 rounded-full transition duration-300"
+					class="text-sm mt-6 py-1 px-6 bg-gray-200 text-gray-600 opacity-50 flex space-x-6 text-sm hover:opacity-70 rounded-full transition duration-300"
 				>
 					<div class="tooltip" data-tip="设置合集信息">
 						<div class="hover:text-gray-800">
-							<SetupIcon size="5" />
+							<i class="bi bi-gear-fill text-lg"></i>
 						</div>
 					</div>
 				</button>
@@ -92,14 +92,14 @@
 			<!-- 分页按钮 -->
 			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
 				<button
-					class="btn btn-primary"
+					class="btn btn-primary text-white"
 					:disabled="currentSeasonIndex === 0"
 					@click="previousSeason"
 				>
 					上一季
 				</button>
 				<button
-					class="btn btn-primary"
+					class="btn btn-primary text-white"
 					:disabled="currentSeasonIndex === seasons.length - 1"
 					@click="nextSeason"
 				>
@@ -112,7 +112,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import SetupIcon from "@/components/icons/setup.vue";
 import { showToast } from "@/components/common/toast.js";
 
 import apiClient from "@/api";

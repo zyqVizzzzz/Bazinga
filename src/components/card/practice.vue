@@ -23,14 +23,14 @@
 						v-if="feedbackClass === 'input-success'"
 						class="absolute inset-y-0 right-0 flex items-center pr-3"
 					>
-						<YesIcon />
+						<i class="bi bi-clipboard-check text-lg text-accent"></i>
 					</div>
 					<div
 						v-if="feedbackClass === 'input-error'"
 						class="absolute inset-y-0 right-0 flex items-center pr-3"
 						@click="resetInputs"
 					>
-						<NoIcon />
+						<i class="bi bi-clipboard-x text-lg text-red-500"></i>
 					</div>
 				</div>
 			</div>
@@ -80,8 +80,6 @@
 <script setup>
 import { ref } from "vue";
 import FlashIcon from "../icons/Flash.vue";
-import YesIcon from "../icons/Yes.vue";
-import NoIcon from "../icons/No.vue";
 
 // 使用 defineProps 解构 props
 const props = defineProps({

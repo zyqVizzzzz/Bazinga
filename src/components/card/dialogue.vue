@@ -60,7 +60,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useLessonStore } from "@/store";
 import { useRoute } from "vue-router";
 import apiClient from "@/api";
@@ -152,32 +152,6 @@ const playAudio = () => {
 
 	audioObj.play();
 	isPlaying.value = true;
-};
-
-const pauseAudio = () => {
-	if (audioObj) {
-		audioObj.pause();
-		isPlaying.value = false;
-	}
-};
-
-const stopAudio = () => {
-	if (audioObj) {
-		audioObj.pause();
-		audioObj.currentTime = 0;
-		isPlaying.value = false;
-	}
-};
-
-const downloadAudio = () => {
-	if (latestAudio.value) {
-		const link = document.createElement("a");
-		link.href = latestAudio.value;
-		link.download = `speech_${Date.now()}.mp3`;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-	}
 };
 
 const scrollToWord = (currentWord) => {

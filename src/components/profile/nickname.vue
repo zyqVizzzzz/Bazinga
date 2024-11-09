@@ -31,7 +31,7 @@
 			class="absolute -right-3 top-1/2 transform -translate-y-1/2 translate-x-full"
 			@click="toggleEditing"
 		>
-			<EditIcon />
+			<i class="bi bi-pencil-square text-xl"></i>
 		</button>
 
 		<!-- 保存按钮 -->
@@ -41,14 +41,12 @@
 			style="z-index: 99"
 			@mousedown="saveEditing"
 		>
-			<LeftCircleIcon />
+			<i class="bi bi-arrow-right-circle"></i>
 		</button>
 	</div>
 </template>
 <script setup>
 import { ref, nextTick } from "vue";
-import LeftCircleIcon from "../icons/LeftCircle.vue";
-import EditIcon from "../icons/Edit.vue";
 
 const { nickname } = defineProps({
 	nickname: String,

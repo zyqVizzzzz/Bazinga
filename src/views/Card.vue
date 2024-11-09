@@ -52,13 +52,6 @@
 											:highlightedTextZh="highlightedTextZh"
 										/>
 									</div>
-									<!-- 知识点胶囊 -->
-									<div
-										v-if="!showHints"
-										class="w-1/6 flex flex-col items-center px-4 py-2"
-									>
-										<ReadingCapsule @toggleHints="toggleHints" />
-									</div>
 									<!-- 知识点卡片 -->
 									<KnowledgeCard
 										v-if="isKnowledgeReady"
@@ -159,7 +152,7 @@
 							class="text-xs text-center mt-2 save-capsule shadow-md text-gray-600"
 						>
 							<span class="cursor-pointer font-bold">
-								<DocumentUploadIcon />
+								<i class="bi bi-floppy text-xl"></i>
 							</span>
 						</div>
 					</div>
@@ -176,7 +169,7 @@
 				@click="prevDialogue"
 				:disabled="isFlipped || currentDialogueIndex === 0"
 			>
-				<LeftArrowIcon class="w-6 h-6" />
+				<i class="bi bi-chevron-left text-xl"></i>
 			</button>
 			<input
 				type="text"
@@ -198,7 +191,7 @@
 				@click="nextDialogue"
 				:disabled="isFlipped || currentDialogueIndex === dialogues.length - 1"
 			>
-				<RightArrowIcon class="w-6 h-6" />
+				<i class="bi bi-chevron-right text-xl"></i>
 			</button>
 		</div>
 	</div>
@@ -210,9 +203,6 @@ import { useRouter, useRoute } from "vue-router";
 import { useLessonStore, useAppStore } from "@/store";
 import apiClient from "@/api";
 
-import LeftArrowIcon from "@/components/icons/LeftArrow.vue";
-import RightArrowIcon from "@/components/icons/RightArrow.vue";
-import DocumentUploadIcon from "@/components/icons/DocumentUpload.vue";
 import TitleBar from "@/components/card/title.vue";
 import ReadingCapsule from "@/components/capsule/Reading.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";

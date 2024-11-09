@@ -11,12 +11,12 @@
 					@click="saveDialogue(true)"
 					class="btn btn-sm text-white btn-primary"
 				>
-					<i class="bi bi-save"></i>
+					<i class="bi bi-floppy"></i>
 				</button>
 			</div>
 			<div class="editor-container p-4 text-sm mt-4 relative">
 				<div
-					class="py-4 px-2 text-sm -mt-4 bg-white rounded shadow-lg shadow-editor"
+					class="py-4 text-sm -mt-4 bg-white rounded shadow-editor"
 					style="overflow-y: auto"
 				>
 					<div id="editor" class="editorjs-container"></div>
@@ -265,6 +265,7 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
+import Header from "@editorjs/header";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import { exampleText, exampleTextZh, word } from "@/constants/example.js";
@@ -1172,21 +1173,20 @@ function parseDialogueLine(line, tag) {
 	min-height: 500px;
 }
 .shadow-editor {
-	box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.1); /* 红色阴影 */
+	/* box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.1);  */
 }
 .shadow-knowledge {
 	box-shadow: 0 4px 8px rgba(var(--secondary-color-rgb), 0.1); /* 红色阴影 */
 }
-/* 悬停时显示编辑图标 */
 .edit-icon {
 	right: 0px;
 }
 .toolbox-container {
+	margin-top: 20px;
 	position: sticky;
 	top: 5%;
 	right: 0;
-	height: 50vh;
-	max-height: 70vh;
+	height: calc(100vh - 200px);
 	overflow: scroll;
 }
 .optionbox-container {

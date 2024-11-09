@@ -10,7 +10,6 @@
 				transform: translateY(-50%) translateX(-50%);
 				z-index: 9999;
 			"
-			@click="onToggleHints"
 		>
 			<LightIcon />
 		</button>
@@ -160,7 +159,10 @@
 						:class="{ clicked: point.marked }"
 						@click="toggleBookmark(point)"
 					>
-						<BookmarkIcon :solid="isBookmarked" />
+						<i
+							class="bi bi-bookmark text-2xl"
+							:class="{ 'text-secondary': point.marked }"
+						></i>
 					</div>
 				</div>
 			</SwiperSlide>
@@ -173,7 +175,6 @@ import { onMounted, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper-bundle.css";
 import { Pagination } from "swiper/modules";
-import BookmarkIcon from "../icons/Bookmark.vue";
 import LightIcon from "../icons/Light.vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
@@ -255,10 +256,6 @@ const toggleBookmark = async (point) => {
 	}
 };
 
-const onToggleHints = () => {
-	emit("on-toggle-hints");
-};
-
 // 比对两个数组的 word 属性
 const compareCustomNotesWithKnowledgePoints = () => {
 	localKnowledgePoints.value.forEach((point) => {
@@ -285,7 +282,7 @@ onMounted(() => {
 <style scoped>
 .knowledge-card-star {
 	position: absolute;
-	top: -24px;
+	top: -30px;
 	right: 0;
 	margin: 16px;
 	opacity: 0;
@@ -300,7 +297,7 @@ onMounted(() => {
 
 .clicked {
 	opacity: 1;
-	transform: translateY(3px) !important;
+	transform: translateY(6px) !important;
 }
 
 .knowledge-capsule {
