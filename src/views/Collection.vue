@@ -1,113 +1,136 @@
 <template>
 	<div class="collection w-full mx-auto flex flex-col items-center">
+		<!-- Banner 区域 -->
 		<div
-			class="collection-content relative w-full mb-8"
+			class="collection-content relative w-full mb-8 retro-banner"
 			:style="isDefault ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
 		>
-			<!-- Banner -->
+			<!-- Banner 背景 -->
 			<div
 				v-if="infoData"
-				class="absolute inset-0 bg-cover bg-center opacity-50 filter-blur"
+				class="absolute inset-0 bg-cover bg-center opacity-50"
 				:style="{
 					backgroundImage: 'url(' + infoData.banner + ')',
 					backgroundColor: infoData.theme,
 				}"
 			></div>
-			<!-- Banner 遮罩层 -->
-			<div
-				class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"
-			></div>
+
+			<!-- 复古纹理遮罩 -->
+			<div class="absolute inset-0 retro-overlay"></div>
+
+			<!-- 内容区域 -->
 			<div
 				v-if="infoData"
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
 			>
-				<h1 class="text-4xl font-semibold mb-4 relative">
-					{{ infoData.showName }}
-				</h1>
-				<h2 class="text-xl font-semibold mb-2 text-gray-200 w-4/5">
+				<!-- 标题区域 -->
+				<div class="manga-title-box">
+					<h1 class="text-4xl font-bold relative text-shadow-retro">
+						{{ infoData.showName }}
+					</h1>
+				</div>
+
+				<!-- 描述文本 -->
+				<h2
+					class="text-xl font-semibold mb-2 text-gray-200 w-4/5 retro-text-shadow"
+				>
 					{{ infoData.description }}
 				</h2>
-				<div
-					class="bg-white bg-opacity-70 mt-4 p-4 rounded-lg shadow-md text-black w-3/5"
-				>
-					<div
-						class="font-semibold flex items-center justify-center text-gray-600"
-					>
-						Level：
-						<div
-							class="rating rating-sm"
-							v-for="item in parseInt(infoData.difficulty)"
-						>
-							<input type="radio" class="mask mask-star-2 bg-gray-600" />
+
+				<!-- 难度等级显示 -->
+				<div class="retro-display-box w-3/5 mt-4">
+					<div class="display-shadow">
+						<div class="display-edge">
+							<div class="display-face p-4">
+								<div
+									class="font-semibold flex items-center justify-center text-gray-800 mb-2"
+								>
+									<div
+										class="rating rating-sm ml-2"
+										v-for="item in parseInt(infoData.difficulty)"
+									>
+										<div class="retro-star"></div>
+									</div>
+								</div>
+								<p class="text-sm text-left text-gray-700">
+									{{ infoData.difficultyDetails }}
+								</p>
+							</div>
 						</div>
 					</div>
-					<p class="text-sm my-2 text-left">
-						{{ infoData.difficultyDetails }}
-					</p>
 				</div>
-				<button
-					@click="goToCollectionEdit"
-					class="text-sm mt-6 py-1 px-6 bg-gray-200 text-gray-600 opacity-50 flex space-x-6 text-sm hover:opacity-70 rounded-full transition duration-300"
-				>
-					<div class="tooltip" data-tip="设置合集信息">
-						<div class="hover:text-gray-800">
-							<i class="bi bi-gear-fill text-lg"></i>
-						</div>
+
+				<!-- 设置按钮 -->
+				<button @click="goToCollectionEdit" class="retro-btn-small mt-6">
+					<div class="btn-face">
+						<i class="bi bi-gear-fill text-lg"></i>
 					</div>
 				</button>
 			</div>
 		</div>
 
+		<!-- 内容区域 -->
 		<div class="w-2/3">
-			<div
-				v-if="currentProgress.course"
-				role="alert"
-				class="mb-2 alert alert-primary text-sm"
-			>
-				<div class="relative" style="top: -2px">
-					当前进度：{{
-						`${currentProgress.season}-E${formatNumber(
-							currentProgress.episode
-						)}`
-					}}，<span
-						@click="goToLessonProgress"
-						class="text-primary font-bold cursor-pointer"
-						>继续学习</span
-					>
+			<!-- 季数标题 -->
+			<div class="manga-subtitle-box mb-4">
+				<h2 class="text-xl font-bold text-shadow-retro">
+					Season {{ currentSeasonIndex + 1 }}
+				</h2>
+			</div>
+
+			<!-- 进度提示 -->
+			<div v-if="currentProgress.course" class="retro-alert mb-6">
+				<div class="alert-content">
+					<span @click="goToLessonProgress" class="retro-link">
+						继续上次进度
+					</span>
 				</div>
 			</div>
-			<h2 class="text-xl font-semibold mt-4 mb-6">
-				Season {{ currentSeasonIndex + 1 }}
-			</h2>
+
+			<!-- 剧集网格 -->
 			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
 				<div
 					v-for="(episode, index) in currentSeasonEpisodes"
 					:key="index"
 					@click="goToLesson(currentSeason, episode)"
-					class="card shadow-lg px-6 py-4 text-center cursor-pointer hover:shadow-xl transition-all duration-300"
-					:style="{
-						boxShadow: '0 4px 12px ' + hexToRgba(infoData.theme, 0.3),
-					}"
+					class="retro-episode-card"
 				>
-					<p class="text-sm font-bold">
-						{{ `episode ${episode.ep}` }}
-					</p>
+					<div class="card-shadow">
+						<div class="card-edge">
+							<div class="card-face">
+								<p class="text-sm font-bold">
+									{{ `episode ${episode.ep}` }}
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
+
+			<!-- 季数切换按钮 -->
 			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
 				<button
-					class="btn btn-primary text-white"
+					class="retro-nav-btn"
 					:disabled="currentSeasonIndex === 0"
 					@click="previousSeason"
 				>
-					上一季
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">上一季</div>
+						</div>
+					</div>
 				</button>
+
 				<button
-					class="btn btn-primary text-white"
+					class="retro-nav-btn"
 					:disabled="currentSeasonIndex === seasons.length - 1"
 					@click="nextSeason"
 				>
-					下一季
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">下一季</div>
+						</div>
+					</div>
 				</button>
 			</div>
 		</div>
@@ -232,40 +255,267 @@ const nextSeason = () => {
 .collection {
 	margin-top: -64px;
 }
+
 .collection-content {
 	padding-top: 96px;
 }
-.bg-cover {
-	background-size: cover;
-	background-position: center;
+
+/* 复古纹理遮罩 */
+.retro-overlay {
+	background-image: repeating-linear-gradient(
+		45deg,
+		rgba(0, 0, 0, 0.1) 0px,
+		rgba(0, 0, 0, 0.1) 1px,
+		transparent 1px,
+		transparent 4px
+	);
+	backdrop-filter: blur(5px);
+	background-color: rgba(0, 0, 0, 0.4);
 }
 
-.card {
-	background-color: white;
+.manga-title-box {
+	position: relative;
+	padding: 0.5rem 2rem;
+	margin-bottom: 1rem;
+}
+
+.title-decoration {
+	position: absolute;
+	width: 30px;
+	height: 30px;
+	border: 4px solid white;
+}
+
+.title-decoration.left {
+	left: -15px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.title-decoration.right {
+	right: -15px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+/* 复古显示框 */
+.retro-display-box {
+	position: relative;
+}
+
+.display-shadow {
+	background-color: #666;
+	border-radius: 12px;
+	transform: translateY(3px);
+}
+
+.display-edge {
+	background-color: #888;
+	border-radius: 12px;
+	transform: translateY(-3px);
+}
+
+.display-face {
+	background-color: #f0f0f0;
+	border: 3px solid #333;
+	border-radius: 12px;
+	transform: translateY(-3px);
+}
+
+/* 复古星星 */
+.retro-star {
+	width: 20px;
+	height: 20px;
+	background-color: #333;
+	clip-path: polygon(
+		50% 0%,
+		61% 35%,
+		98% 35%,
+		68% 57%,
+		79% 91%,
+		50% 70%,
+		21% 91%,
+		32% 57%,
+		2% 35%,
+		39% 35%
+	);
+	margin: 0 2px;
+}
+
+/* 复古按钮 */
+.retro-btn-small {
+	position: relative;
+	width: 4rem;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.retro-nav-btn {
+	position: relative;
+	width: 6rem;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
 	border-radius: 8px;
-	box-shadow: 0 4px 10px rgba(0, 0, 255, 0.1); /* 蓝色阴影 */
-	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+	transform: translateY(2px);
 }
 
-.card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 8px 16px rgba(0, 0, 255, 0.2); /* 悬停时蓝色阴影增强 */
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
 }
 
-button[disabled] {
-	opacity: 0.5;
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 3px solid #333;
+	border-radius: 8px;
+	color: #333;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+}
+
+/* 剧集卡片 */
+.retro-episode-card {
+	position: relative;
+	height: 3rem;
+	cursor: pointer;
+	transition: transform 0.3s;
+}
+
+.card-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: 12px;
+	transform: translateY(4px);
+}
+
+.card-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(var(--primary-color-rgb), 0.5);
+	border-radius: 12px;
+	transform: translateY(-4px);
+	transition: transform 0.1s;
+}
+
+.card-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	border: 3px solid #333;
+	border-radius: 12px;
+	transform: translateY(-4px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 交互效果 */
+.retro-episode-card:hover {
+	transform: translateY(-2px);
+}
+
+.retro-episode-card:active .card-edge,
+.retro-episode-card:active .card-face {
+	transform: translateY(-2px);
+}
+
+button:hover .btn-face {
+	background-color: white;
+}
+
+button:active .btn-edge,
+button:active .btn-face {
+	transform: translateY(0);
+}
+
+button:disabled {
+	opacity: 0.6;
 	cursor: not-allowed;
 }
-.filter-blur {
-	filter: blur(5px) brightness(100%);
-	backdrop-filter: blur(10px);
+
+/* 复古提示框 */
+.retro-alert {
+	position: relative;
+	border: 3px solid #333;
+	border-radius: 8px;
+	background-color: rgba(var(--primary-color-rgb), 0.1);
+	padding: 0.75rem 1rem;
+	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
 }
-.tooltip:before {
-	margin-bottom: 4px;
-	background-color: rgba(0, 0, 0, 0.7);
-	letter-spacing: 1px;
+
+.retro-link {
+	color: var(--primary-color);
+	font-weight: bold;
+	cursor: pointer;
+	position: relative;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-underline-offset: 4px;
 }
-.tooltip:after {
-	margin-bottom: 4px;
+
+/* 字幕框装饰 */
+.manga-subtitle-box {
+	position: relative;
+	display: inline-block;
+	padding: 0.5rem 2rem;
+}
+
+.manga-subtitle-box::before,
+.manga-subtitle-box::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	width: 20px;
+	height: 3px;
+	background-color: currentColor;
+}
+
+.manga-subtitle-box::before {
+	left: 0;
+	transform: translateY(-50%);
+}
+
+.manga-subtitle-box::after {
+	right: 0;
+	transform: translateY(-50%);
 }
 </style>
