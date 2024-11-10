@@ -1,6 +1,6 @@
 @font-face {
 	font-family: "SJFQS"; /* 给字体命名 */
-	src: url("/fonts/SJFQS.ttf") format("truetype"); /* 引入字体文件路径 */
+	src: url("/fonts/Exo2-Regular.otf"); /* 引入字体文件路径 */
 	font-weight: normal;
 	font-style: normal;
 	unicode-range: U+4E00-9FFF;
@@ -20,20 +20,20 @@
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 
-	--primary-color: #7a81d5; /* 进一步提高饱和度的蓝色 */
-	--secondary-color: #e64b94; /* 进一步提高饱和度的粉色 */
-	--accent-color: #5cc6bb; /* 进一步提高饱和度的绿色 */
-	--neutral-color: #505665; /* 进一步提高饱和度的灰色 */
-	--base-100-color: #f2f2f2; /* 浅灰白背景 */
-	--orange-color: #e36a32; /* 进一步提高饱和度的橙色 */
+	--primary-color: rgb(63, 81, 181);
+	--secondary-color: rgb(232, 68, 122);
+	--accent-color: #5cc6bb;
+	--neutral-color: #505665;
+	--base-100-color: #f2f2f2;
+	--milk-color: rgb(252, 251, 242);
 
 	/* RGB values for reference */
-	--primary-color-rgb: 122, 129, 213;
-	--secondary-color-rgb: 230, 75, 148;
+	--primary-color-rgb: 63, 81, 181;
+	--secondary-color-rgb: 232, 68, 122;
 	--accent-color-rgb: 92, 198, 187;
 	--neutral-color-rgb: 80, 86, 101;
 	--base-100-color-rgb: 242, 242, 242;
-	--orange-color-rgb: 227, 106, 50;
+	--milk-color-rgb: 252, 251, 242;
 }
 
 a {

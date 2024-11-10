@@ -18,9 +18,9 @@
 						v-model="noteForm.showName"
 						type="text"
 						id="showName"
-						class="input input-bordered w-full"
+						class="input input-bordered w-full text-sm"
 						:class="{ 'border-red-500': showError && !noteForm.showName }"
-						placeholder="请输入合集名"
+						placeholder="Please enter collection name"
 					/>
 				</div>
 
@@ -33,8 +33,8 @@
 						v-model="noteForm.name"
 						type="text"
 						id="name"
-						class="input input-bordered w-full"
-						placeholder="请输入副标题"
+						class="input input-bordered w-full text-sm"
+						placeholder="Please enter subtitle"
 					/>
 				</div>
 
@@ -47,7 +47,7 @@
 						v-model="noteForm.description"
 						id="description"
 						class="textarea textarea-bordered w-full"
-						placeholder="请输入合集描述"
+						placeholder="Please enter collection description"
 					></textarea>
 				</div>
 			</form>
@@ -139,7 +139,7 @@
 						v-model="noteForm.difficultyDetails"
 						id="difficultyDetails"
 						class="textarea textarea-bordered w-full"
-						placeholder="请输入难度描述"
+						placeholder="Please enter difficulty description"
 					></textarea>
 				</div>
 			</form>
@@ -237,7 +237,9 @@
 	<dialog id="collection_delete_modal" class="modal">
 		<div class="modal-box">
 			<h3 class="text-lg my-4 mb-8 font-bold">
-				确认删除当前合集？此操作不可撤销！
+				Confirm deletion of the current collection?
+				<div><mark class="pink">This action cannot be undone.</mark></div>
+				<div class="text-sm mt-2 text-gray-500">{ 此操作不可撤销 }</div>
 			</h3>
 			<div class="flex space-x-4 justify-center">
 				<!-- if there is a button in form, it will close the modal -->
@@ -245,9 +247,9 @@
 					@click="confirmDelete"
 					class="btn bg-error px-4 text-white hover:bg-red-500 transition duration-300"
 				>
-					确认
+					Confirm
 				</button>
-				<button class="btn px-4" @click="closeDeleteModal">取消</button>
+				<button class="btn px-4" @click="closeDeleteModal">Cancel</button>
 			</div>
 		</div>
 		<form method="dialog" class="modal-backdrop">
@@ -273,7 +275,7 @@ const noteForm = ref({
 	difficultyDetails: "",
 	banner: "",
 	name: "",
-	theme: "#7a81d5",
+	theme: "#3f51b5",
 	seasons: [
 		{
 			seasonNumber: "S01",
@@ -558,5 +560,13 @@ const uploadBanner = async (file) => {
 	display: grid;
 	grid-template-columns: repeat(5, 1fr); /* 每排 5 列 */
 	gap: 1rem; /* 卡片之间的间距 */
+}
+.card-compact {
+	margin-top: 1rem;
+}
+.card-compact .card-body {
+	padding: 0.1rem;
+	align-items: center;
+	justify-content: center;
 }
 </style>

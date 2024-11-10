@@ -3,16 +3,6 @@
 		v-show="showHints && localKnowledgePoints.length > 0"
 		class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 	>
-		<button
-			class="absolute left-0 transform -translate-x-1/2 bg-white text-white p-2 rounded-full"
-			style="
-				top: 50%;
-				transform: translateY(-50%) translateX(-50%);
-				z-index: 9999;
-			"
-		>
-			<LightIcon />
-		</button>
 		<!-- Swiper 轮播 -->
 		<Swiper
 			ref="mySwiper"
@@ -29,10 +19,7 @@
 				:key="index"
 				class="flex justify-center items-center h-full"
 			>
-				<div
-					class="knowledge-card overflow-hidden card w-4/5 bg-base-100 knowledge-capsule mb-4 h-full mx-auto relative"
-					style="height: 85%; width: 85%"
-				>
+				<div class="knowledge-card overflow-hidden w-full h-full relative">
 					<div class="card-body block py-4 px-6">
 						<!-- 单词及音标 -->
 						<h3
@@ -160,7 +147,7 @@
 						@click="toggleBookmark(point)"
 					>
 						<i
-							class="bi bi-bookmark text-2xl"
+							class="bi bi-bookmark text-xl"
 							:class="{ 'text-secondary': point.marked }"
 						></i>
 					</div>

@@ -10,8 +10,9 @@
 			<a
 				@click="goToHome"
 				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
-				>Bazinga!!!</a
 			>
+				<img src="../assets/banner2.png" style="width: 144px" alt="" />
+			</a>
 		</div>
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1">

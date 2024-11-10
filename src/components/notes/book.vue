@@ -5,7 +5,7 @@
 		class="relative notebook bg-white shadow-md rounded-lg px-6 py-5 w-full bg-grid-paper"
 	>
 		<h2 class="text-2xl font-medium text-gray-800 text-left mb-4 pl-2">
-			{{ isImportantMode ? "重点词表" : "生词表" }}
+			{{ isImportantMode ? "Star-List" : "Vocabulary" }}
 		</h2>
 		<ul
 			class="list-disc list-inside text-gray-700 text-left mb-6 flex flex-wrap"

@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto my-10 p-6">
+	<div class="container mx-auto my-10 py-6">
 		<transition
 			:name="
 				!isFirstLoad
@@ -12,52 +12,58 @@
 		>
 			<!-- key 用于触发动画，确保每次对话内容变化时都会有动画效果 -->
 			<div :key="currentDialogue.id" class="relative">
-				<div
-					class="card w-full bg-base-100 shadow-lg mb-6 h-100 overflow-y-auto flip-container"
-					:class="{ flipped: isFlipped }"
-					style="min-height: 500px; height: auto"
-					:style="
-						!isListenMode
-							? 'box-shadow: 0px 8px 10px rgba(0,0,0, 0.2)'
-							: 'box-shadow: 0px 8px 10px rgba(var(--primary-color-rgb), 0.2);'
-					"
-				>
+				<!-- 主卡片容器 -->
+				<div class="scene">
 					<div
-						class="absolute top-0 right-0 w-16 h-16 bg-primary/10 transform rotate-45 translate-x-8 -translate-y-8"
-					></div>
-					<div
-						class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 transform -rotate-45 -translate-x-8 translate-y-8"
-					></div>
-					<div class="card w-full h-full" v-if="!isLoading">
+						class="card w-full bg-base-100 border-4 border-black manga-card"
+						:class="{ flipped: isFlipped }"
+					>
+						<!-- 正面内容 -->
 						<div class="front">
+							<!-- 漫画风格装饰元素 -->
+							<div
+								class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
+							></div>
+							<div
+								class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 -rotate-45 -translate-x-8 translate-y-8"
+							></div>
 							<div class="card-body relative">
-								<TitleBar
-									:isFlipped="isFlipped"
-									:title="currentDialogue.title"
-									:id="currentDialogue.id"
-									:currentPractice="currentPractice"
-									@on-save-progress="saveProgress"
-								/>
-								<div class="card-content flex items-stretch relative">
-									<div
-										:class="{
-											'w-4/6': showHints,
-											'w-full': !showHints,
-										}"
-										class="transition-all duration-500"
+								<!-- 标题栏 -->
+								<div class="flex justify-between items-center mb-4">
+									<h2
+										class="card-title font-bold -skew-x-6 text-2xl text-shadow"
 									>
-										<DialogueCard
-											ref="dialogueCard"
-											:showHints="showHints"
-											:showTrans="showTrans"
-											:currentKnowledgePoints="currentKnowledgePoints"
-											:highlightedText="highlightedText"
-											:highlightedTextZh="highlightedTextZh"
-										/>
+										{{ currentDialogue.title }}
+									</h2>
+									<div class="flex items-center gap-2">
+										<span class="badge badge-primary badge-outline rotate-2">
+											Episode {{ currentPage }}
+										</span>
 									</div>
+								</div>
+
+								<!-- 主要内容区域 -->
+								<div class="card-content flex items-stretch relative">
+									<div class="w-4/6 transition-all duration-500">
+										<div
+											class="p-4 bg-white border-2 border-black rounded-lg relative dialogue-box"
+										>
+											<DialogueCard
+												ref="dialogueCard"
+												:showHints="showHints"
+												:showTrans="showTrans"
+												:currentKnowledgePoints="currentKnowledgePoints"
+												:highlightedText="highlightedText"
+												:highlightedTextZh="highlightedTextZh"
+											/>
+										</div>
+									</div>
+
 									<!-- 知识点卡片 -->
 									<KnowledgeCard
 										v-if="isKnowledgeReady"
+										class="w-2/6 border-2 border-black rounded-lg knowledge-box"
+										style="background-color: var(--milk-color)"
 										:showHints="showHints"
 										:currentKnowledgePoints="currentKnowledgePoints"
 										:currentCustomNotes="
@@ -71,126 +77,164 @@
 								</div>
 							</div>
 						</div>
-						<div class="back" style="min-height: 500px">
-							<!-- 背面：练习题 -->
-							<div class="card-body flex flex-col h-full">
-								<TitleBar
-									:isFlipped="isFlipped"
-									:title="currentDialogue.title"
-									:currentPractice="currentPractice"
-								/>
-								<!-- Practice 部分 -->
+
+						<!-- 背面内容 -->
+						<div class="back">
+							<div
+								class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
+							></div>
+							<div
+								class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 -rotate-45 -translate-x-8 translate-y-8"
+							></div>
+							<div class="card-body h-full">
+								<!-- 标题栏 -->
+								<div class="flex justify-between items-center mb-4">
+									<h2
+										class="card-title font-bold -skew-x-6 text-2xl text-shadow"
+									>
+										{{ currentDialogue.title }}
+									</h2>
+									<div class="flex items-center gap-2">
+										<span class="badge badge-primary badge-outline rotate-2">
+											Episode {{ currentPage }}
+										</span>
+									</div>
+								</div>
 								<PracticeCard
 									v-if="currentPractice.length"
 									:currentPractice="currentPractice"
 									:showHints="showHints"
 									:currentKnowledgePoints="currentKnowledgePoints"
+									class="h-full border-2 border-black rounded-lg py-10 practice-box"
 								/>
 							</div>
 						</div>
 					</div>
-					<div
-						v-if="isLoading"
-						class="card w-full h-full items-center my-auto pb-4"
-					>
-						<span class="loading loading-ring loading-lg"></span>
-					</div>
 				</div>
-				<div v-if="!isLoading">
-					<div class="lesson-options flex space-x-2">
-						<div
-							class="flex items-center text-xs title-jam shadow-md"
-							@click="togglePracticeMode"
-							@mouseenter="isHoveredJ = true"
-							@mouseleave="isHoveredJ = false"
-							:class="{ expanded: isHoveredJ, 'shadow-primary': isFlipped }"
+
+				<div class="flex justify-between items-center">
+					<!-- 控制按钮组 -->
+					<div class="flex justify-center gap-6 mt-6">
+						<button
+							class="retro-btn option"
+							:class="{ 'btn-active': isListenMode }"
+							@click="toggleListenMode"
 						>
-							<div class="jam-text-wrapper">
-								<!-- 旧文字 -->
-								<span
-									class="text-slide text-xs font-bold"
-									:class="{ 'text-out': isHoveredJ, 'text-in': !isHoveredJ }"
-								>
-									练习模式
-								</span>
-								<!-- 新文字 -->
-								<span
-									class="text-slide font-bold"
-									:class="{ 'text-in': isHoveredJ, 'text-out': !isHoveredJ }"
-								>
-									Let's Jam!
-								</span>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i class="bi bi-headphones text-xl"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<button
+							class="retro-btn option"
+							:class="{ 'btn-active': showTrans }"
+							@click="toggleTransMode"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i class="bi bi-translate text-xl"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<button
+							class="retro-btn option"
+							:class="{ 'btn-active': isFlipped }"
+							@click="togglePracticeMode"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i class="bi bi-joystick text-xl"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<button class="retro-btn option" @click="editCard">
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i class="bi bi-pencil-square text-xl"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
+
+					<!-- 翻页控制器 -->
+					<div class="flex justify-center items-center gap-6 mt-4">
+						<!-- 上一页按钮 -->
+						<button
+							class="retro-btn"
+							@click="prevDialogue"
+							:disabled="currentDialogueIndex === 0"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<span class="text-2xl transform -translate-y-0.5"
+											>&#x27E8;</span
+										>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<!-- 页码显示/输入 -->
+						<div class="retro-display">
+							<div class="display-shadow">
+								<div class="display-edge">
+									<div class="display-face">
+										<input
+											v-if="isEditPage"
+											type="text"
+											ref="editPageRef"
+											v-model.number="currentPage"
+											class="retro-input"
+											@blur="jumpToPageBlur(false)"
+											@keydown.enter="jumpToPage"
+											:min="1"
+											:max="totalPages"
+										/>
+										<span
+											v-else
+											@click="jumpToPageBlur(true)"
+											class="retro-text"
+										>
+											{{ currentPage }} / {{ totalPages }}
+										</span>
+									</div>
+								</div>
 							</div>
 						</div>
-						<div
-							@click="toggleListenMode"
-							class="flex items-center text-xs title-jam shadow-md"
-							@mouseenter="isHoveredVoice = true"
-							@mouseleave="isHoveredVoice = false"
-							:class="{
-								expanded: isHoveredVoice,
-								'shadow-primary': lessonStore.isListenMode,
-							}"
+
+						<!-- 下一页按钮 -->
+						<button
+							class="retro-btn"
+							@click="nextDialogue"
+							:disabled="currentDialogueIndex === dialogues.length - 1"
 						>
-							<span class="cursor-pointer font-bold">语音模式</span>
-						</div>
-						<div
-							@click="toggleTransMode"
-							class="flex items-center text-xs title-jam shadow-md"
-							@mouseenter="isHoveredTrans = true"
-							@mouseleave="isHoveredTrans = false"
-							:class="{ expanded: isHoveredTrans, 'shadow-primary': showTrans }"
-						>
-							<span class="cursor-pointer font-bold">双语模式</span>
-						</div>
-					</div>
-					<div class="lesson-options-left flex space-x-2">
-						<div
-							v-if="!isFlipped"
-							@click="editCard"
-							class="text-primary text-xs text-center mt-2 product-capsule shadow-lg"
-						>
-							<span class="cursor-pointer font-bold">编辑卡片</span>
-						</div>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<span class="text-2xl transform -translate-y-0.5"
+											>&#x27E9;</span
+										>
+									</div>
+								</div>
+							</div>
+						</button>
 					</div>
 				</div>
 			</div>
 		</transition>
-		<!-- 左右箭头按钮 -->
-		<div
-			v-if="!isFlipped && !isLoading"
-			class="card-actions justify-between mt-4 w-1/4 mx-auto items-center"
-		>
-			<button
-				class="transform btn btn-primary btn-ghost px-4"
-				@click="prevDialogue"
-				:disabled="isFlipped || currentDialogueIndex === 0"
-			>
-				<i class="bi bi-chevron-left text-xl"></i>
-			</button>
-			<input
-				type="text"
-				ref="editPageRef"
-				v-model.number="currentPage"
-				class="border rounded-md w-12 text-center mx-2"
-				style="height: 3rem"
-				@blur="jumpToPageBlur(false)"
-				@keydown.enter="jumpToPage"
-				v-if="isEditPage"
-				:min="1"
-				:max="totalPages"
-			/>
-			<div @click="jumpToPageBlur(true)" v-if="!isEditPage">
-				{{ currentPage }} / {{ totalPages }}
-			</div>
-			<button
-				class="transform btn btn-primary btn-ghost px-4"
-				@click="nextDialogue"
-				:disabled="isFlipped || currentDialogueIndex === dialogues.length - 1"
-			>
-				<i class="bi bi-chevron-right text-xl"></i>
-			</button>
-		</div>
 	</div>
 </template>
 
@@ -616,46 +660,95 @@ const jumpToPageBlur = (isTrue) => {
 };
 </script>
 <style scoped>
-.flip-container {
+/* 设置3D场景 */
+.scene {
 	perspective: 1000px;
+	min-height: 540px;
 }
 
-.card {
+/* 卡片容器 */
+.manga-card {
+	position: relative;
 	width: 100%;
 	height: 100%;
-	position: relative;
+	min-height: 550px;
+	border-radius: 5px;
+	transition: transform 0.8s;
 	transform-style: preserve-3d;
-	transition: transform 0.8s ease-in-out;
+	box-shadow: 6px 4px 0 0 rgba(var(--primary-color-rgb), 0.4);
 }
 
-.flip-container.flipped .card {
-	transform: rotateY(180deg);
+/* 翻转状态 */
+.manga-card.flipped {
+	transform: rotateY(-180deg);
 }
 
+/* 正反面共同样式 */
 .front,
 .back {
-	backface-visibility: hidden;
 	position: absolute;
 	width: 100%;
 	height: 100%;
-	top: 0;
-	left: 0;
+	min-height: 540px;
+	backface-visibility: hidden;
+	overflow: hidden;
+	background: white;
 }
 
+/* 正面默认 */
 .front {
 	transform: rotateY(0deg);
-	z-index: 2;
 }
 
+/* 背面默认旋转180度 */
 .back {
 	transform: rotateY(180deg);
-	z-index: 1;
 }
 
-/* 右箭头 - 当前卡片向左滑出，下一张渐显 */
+/* 其他样式保持不变 */
+.dialogue-box {
+	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
+}
+
+.dialogue-box::before {
+	content: "";
+	position: absolute;
+	bottom: -12px;
+	left: 24px;
+	width: 16px;
+	height: 16px;
+	background-color: white;
+	border-right: 2px solid black;
+	border-bottom: 2px solid black;
+	transform: rotate(45deg);
+}
+
+.knowledge-box {
+	box-shadow: -4px 4px 0 rgba(var(--secondary-color-rgb), 0.3);
+}
+
+.knowledge-box::before {
+	content: "";
+	position: absolute;
+	bottom: -12px;
+	right: 24px;
+	width: 16px;
+	height: 16px;
+	background-color: var(--milk-color);
+	border-right: 2px solid black;
+	border-bottom: 2px solid black;
+	transform: rotate(45deg);
+}
+
+.text-shadow {
+	text-shadow: 2px 2px 0 rgba(var(--primary-color-rgb), 0.3);
+}
+
 .fade-slide-right-enter-active,
-.fade-slide-right-leave-active {
-	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+.fade-slide-right-leave-active,
+.fade-slide-left-enter-active,
+.fade-slide-left-leave-active {
+	transition: all 500ms ease-in-out;
 }
 
 .fade-slide-right-enter-from {
@@ -663,25 +756,9 @@ const jumpToPageBlur = (isTrue) => {
 	opacity: 0;
 }
 
-.fade-slide-right-enter-to {
-	transform: translateX(0);
-	opacity: 1;
-}
-
-.fade-slide-right-leave-from {
-	transform: translateX(0);
-	opacity: 1;
-}
-
 .fade-slide-right-leave-to {
 	transform: translateX(-30%);
 	opacity: 0;
-}
-
-/* 左箭头 - 当前卡片从左侧滑入，下一张渐隐 */
-.fade-slide-left-enter-active,
-.fade-slide-left-leave-active {
-	transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 .fade-slide-left-enter-from {
@@ -689,106 +766,249 @@ const jumpToPageBlur = (isTrue) => {
 	opacity: 0;
 }
 
-.fade-slide-left-enter-to {
-	transform: translateX(0);
-	opacity: 1;
-}
-
-.fade-slide-left-leave-from {
-	transform: translateX(0);
-	opacity: 1;
-}
-
 .fade-slide-left-leave-to {
 	transform: translateX(30%);
 	opacity: 0;
 }
 
-.shadow-primary {
-	box-shadow: 0 4px 6px 2px rgb(0 0 255 / 0.1),
-		0 2px 4px -2px rgb(0 0 255 / 0.1);
-	color: var(--primary-color);
+.font-comic {
+	font-family: "Comic Sans MS", cursive;
 }
 
-.product-capsule {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	padding: 12px; /* 等效于 py-4 */
-	transition: opacity 0.3s ease, border-radius 0.3s ease, color 0.3s ease,
-		box-shadow 0.3s ease, width 0.3s ease;
-	cursor: pointer;
-	border-color: transparent; /* 初始状态下隐藏边框 */
-	width: 120px;
-	height: 30px;
-	margin: 0px auto 0;
-	border-radius: 20px;
-	box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
-	bottom: -50px;
-	left: 1rem;
-}
-.product-capsule:hover {
-	box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.5);
-}
-.title-jam {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	cursor: pointer;
-	padding: 12px; /* 等效于 py-4 */
-	height: 30px;
-	border-radius: 20px;
-	transition: opacity 0.3s ease, border-radius 0.3s ease, color 0.3s ease,
-		box-shadow 0.3s ease, width 0.3s ease;
-	background-color: white;
-	width: 90px;
-	bottom: -50px;
-	right: 14rem;
+/* 添加纹理效果 */
+.btn-face::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.03) 2px,
+		rgba(0, 0, 0, 0.03) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
 }
 
-.title-jam.expanded {
-	width: 142px;
+/* 光泽效果 */
+.btn-face::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 50%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	border-radius: 9px 9px 0 0;
+	pointer-events: none;
 }
 
-.title-jam:hover {
-	/* color: var(--accent-color); */
+/* 禁用状态 */
+.retro-btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
 }
 
-/* 保证容器高度和宽度 */
-.jam-text-wrapper {
+.retro-btn:disabled .btn-face {
+	background-color: #ddd;
+	border-color: #999;
+	color: #999;
+}
+
+/* 翻页按钮样式 */
+.retro-btn {
 	position: relative;
-	display: inline-block;
-	height: 15px; /* 设置文字高度一致 */
+	width: 3rem;
+	height: 3rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+	transition: transform 0.1s;
+}
+
+.retro-btn.option {
+	width: 4rem;
+	height: 2.2rem;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 12px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 12px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 3px solid #333;
+	border-radius: 12px;
+	color: #333;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+/* 页码显示器样式 */
+.retro-display {
+	position: relative;
+	width: 6rem;
+	height: 3rem;
+}
+
+.display-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.display-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+}
+
+.display-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #e8e8e8;
+	border: 3px solid #333;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: "Comic Sans MS", cursive;
+	font-weight: bold;
+	cursor: pointer;
 	overflow: hidden;
 }
 
-/* 文字滑动效果 */
-.text-slide {
-	display: inline-block;
-	transition: all 0.6s ease;
-	white-space: nowrap;
-}
-
-/* 文字被抹去的效果 */
-.text-out {
-	opacity: 0;
-	transform: translateX(-100%);
-}
-
-/* 文字被抹出的效果 */
-.text-in {
-	opacity: 1;
-	transform: translateX(0%);
-}
-
-.lesson-options {
+/* 显示屏发光效果 */
+.display-face::before {
+	content: "";
 	position: absolute;
-	bottom: -50px;
-	right: 1rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+	pointer-events: none;
 }
-.lesson-options-left {
+
+/* 显示屏反光效果 */
+.display-face::after {
+	content: "";
 	position: absolute;
-	bottom: -50px;
-	left: 1rem;
+	top: 0;
+	left: -50%;
+	width: 200%;
+	height: 100%;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.2),
+		transparent
+	);
+	transform: rotate(-45deg);
+	animation: shine 4s infinite linear;
+	pointer-events: none;
+}
+
+/* 输入框样式 */
+.retro-input {
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	border: none;
+	text-align: center;
+	font-family: inherit;
+	font-weight: bold;
+	font-size: 1rem;
+	color: #333;
+	padding: 0 0.5rem;
+}
+
+.retro-input:focus {
+	outline: none;
+}
+
+.retro-text {
+	font-size: 1rem;
+	color: #333;
+}
+
+/* 按钮交互效果 */
+.retro-btn:hover .btn-face {
+	background-color: #fff;
+}
+
+.retro-btn:active .btn-edge,
+.retro-btn:active .btn-face {
+	transform: translateY(0);
+}
+
+/* 禁用状态 */
+.retro-btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.retro-btn:disabled .btn-face {
+	background-color: #ddd;
+	border-color: #999;
+	color: #999;
+}
+
+/* 显示屏反光动画 */
+@keyframes shine {
+	from {
+		transform: translateX(-200%) rotate(-45deg);
+	}
+	to {
+		transform: translateX(200%) rotate(-45deg);
+	}
 }
 </style>

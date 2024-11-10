@@ -9,16 +9,16 @@ export default {
 		themes: [
 			{
 				mytheme: {
-					primary: "#7A81D5", // 进一步提高饱和度的蓝色
-					secondary: "#E64B94", // 进一步提高饱和度的粉色
-					accent: "#5CC6BB", // 进一步提高饱和度的绿色
-					neutral: "#505665", // 进一步提高饱和度的灰色
-					"base-100": "#ffffff", // 浅灰白背景（保持不变）
-					orange: "#E36A32", // 进一步提高饱和度的橙色
+					primary: "#3f51b5",
+					secondary: "#e8447a",
+					accent: "#5CC6BB",
+					neutral: "#505665",
+					"base-100": "#ffffff",
+					milk: "#faf9cd",
 				},
 				extend: {
 					boxShadow: {
-						secondary: "0 4px 12px rgba(230, 75, 148, 0.3)", // 使用你的 secondary 颜色
+						secondary: "0 4px 12px rgba(248, 82, 122, 0.3)", // 使用你的 secondary 颜色
 					},
 					zIndex: {
 						100: "100",

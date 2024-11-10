@@ -5,7 +5,7 @@
 				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white"
 				@click="openBlinkBox"
 			>
-				单词盲盒
+				Blind-Box
 			</button>
 		</div>
 
@@ -16,13 +16,13 @@
 				class="input input-bordered w-full max-w-xs h-8 text-xs"
 				@input="onInputWord"
 				@keydown.enter="searchWord"
-				placeholder="输入单词"
+				placeholder="Quick search..."
 			/>
 			<button
-				class="btn btn-sm bg-white h-8 text-xs px-4 border-2 border-none text-secondary hover:border-secondary hover:bg-secondary hover:text-white"
+				class="btn btn-sm btn-primary text-white h-8 text-xs px-4 border-none"
 				@click="searchWord"
 			>
-				搜索
+				<i class="bi bi-search text-based"></i>
 			</button>
 			<!-- 联想框 -->
 			<div
@@ -47,7 +47,7 @@
 				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
 				@click="startReviewMode"
 			>
-				{{ isImportantMode ? "全部词汇" : "重点词汇" }}
+				{{ isImportantMode ? "Vocabulary" : "Star-List" }}
 				<div v-if="showLightning" class="lightning-animation absolute flex">
 					<FlashIcon :size="'4'" class="mr-2" />+1
 				</div>
@@ -147,8 +147,13 @@ watch(flashState, (newVal, oldVal) => {
 <style scoped>
 .toolbox {
 	height: 50px; /* 调整工具箱栏的高度 */
-	background: linear-gradient(155deg, #222222, #1b1b1b);
-	box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.3);
+	background: linear-gradient(
+		155deg,
+		rgba(var(--secondary-color-rgb), 0.2),
+		rgba(var(--primary-color-rgb), 0.2),
+		rgba(var(--secondary-color-rgb), 0.2)
+	);
+	box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
 }
 /* 闪电图标的动画效果 */
 @keyframes lightningMove {

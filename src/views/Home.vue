@@ -2,7 +2,7 @@
 	<div class="home">
 		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
 			<div>
-				Ver.1 <span><mark class="pink">Collections</mark></span>
+				<span><mark class="pink">Collections</mark></span>
 			</div>
 			<div class="flex mx-auto flex-col mt-2">
 				<span class="text-gray-400 text-sm font-normal">
@@ -52,10 +52,10 @@
 		</div>
 		<div class="text-center mb-16 font-bold">
 			<span
-				class="common-capsule text-sm text-center mt-2 mx-auto w-60 text-gray-600 transition-all duration-300"
+				class="common-capsule text-sm text-center mt-2 mx-auto w-40 text-gray-600 transition-all duration-300"
 				@click="goToAllScenes"
 			>
-				<- More Collections ->
+				<- More ->
 			</span>
 		</div>
 

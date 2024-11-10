@@ -4,7 +4,7 @@
 			class="collection-content relative w-full mb-8"
 			:style="isDefault ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
 		>
-			<!-- Banner 图片 -->
+			<!-- Banner -->
 			<div
 				v-if="infoData"
 				class="absolute inset-0 bg-cover bg-center opacity-50 filter-blur"
@@ -17,7 +17,6 @@
 			<div
 				class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"
 			></div>
-			<!-- Collection 信息 -->
 			<div
 				v-if="infoData"
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
@@ -31,10 +30,17 @@
 				<div
 					class="bg-white bg-opacity-70 mt-4 p-4 rounded-lg shadow-md text-black w-3/5"
 				>
-					<p class="font-semibold">
-						难度等级:
-						{{ infoData.difficulty }}
-					</p>
+					<div
+						class="font-semibold flex items-center justify-center text-gray-600"
+					>
+						Level：
+						<div
+							class="rating rating-sm"
+							v-for="item in parseInt(infoData.difficulty)"
+						>
+							<input type="radio" class="mask mask-star-2 bg-gray-600" />
+						</div>
+					</div>
 					<p class="text-sm my-2 text-left">
 						{{ infoData.difficultyDetails }}
 					</p>
@@ -52,9 +58,7 @@
 			</div>
 		</div>
 
-		<!-- 剧集列表 -->
 		<div class="w-2/3">
-			<!-- 当前进度 -->
 			<div
 				v-if="currentProgress.course"
 				role="alert"
@@ -72,8 +76,9 @@
 					>
 				</div>
 			</div>
-			<!-- 剧集列表 -->
-			<h2 class="text-xl font-semibold my-4">{{ currentSeason }}</h2>
+			<h2 class="text-xl font-semibold mt-4 mb-6">
+				Season {{ currentSeasonIndex + 1 }}
+			</h2>
 			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
 				<div
 					v-for="(episode, index) in currentSeasonEpisodes"
@@ -85,11 +90,10 @@
 					}"
 				>
 					<p class="text-sm font-bold">
-						{{ `第 ${episode.ep} 集` }}
+						{{ `episode ${episode.ep}` }}
 					</p>
 				</div>
 			</div>
-			<!-- 分页按钮 -->
 			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
 				<button
 					class="btn btn-primary text-white"
