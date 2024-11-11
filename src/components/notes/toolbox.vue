@@ -1,58 +1,76 @@
 <template>
-	<div class="toolbox w-full flex items-center justify-between p-2 rounded-lg">
-		<div class="action-buttons flex items-center space-x-2">
-			<button
-				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white"
-				@click="openBlinkBox"
-			>
-				Blind-Box
-			</button>
-		</div>
+	<div class="retro-toolbox w-full flex items-center justify-between px-4">
+		<!-- Blind-Box 按钮 -->
+		<button class="retro-btn" @click="openBlinkBox">
+			<div class="btn-shadow">
+				<div class="btn-edge">
+					<div class="btn-face">
+						<span>Blind-Box</span>
+					</div>
+				</div>
+			</div>
+		</button>
 
+		<!-- 搜索框 -->
 		<div class="search-box flex items-center space-x-2 relative">
-			<input
-				v-model="searchQuery"
-				type="text"
-				class="input input-bordered w-full max-w-xs h-8 text-xs"
-				@input="onInputWord"
-				@keydown.enter="searchWord"
-				placeholder="Quick search..."
-			/>
-			<button
-				class="btn btn-sm btn-primary text-white h-8 text-xs px-4 border-none"
-				@click="searchWord"
-			>
-				<i class="bi bi-search text-based"></i>
+			<div class="retro-input-wrapper">
+				<input
+					v-model="searchQuery"
+					type="text"
+					class="retro-input"
+					@input="onInputWord"
+					@keydown.enter="searchWord"
+					placeholder="Quick search..."
+				/>
+			</div>
+			<button class="retro-btn-small" @click="searchWord">
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">
+							<i class="bi bi-search text-lg"></i>
+						</div>
+					</div>
+				</div>
 			</button>
+
 			<!-- 联想框 -->
 			<div
 				v-if="suggestions.length"
-				class="absolute top-full -left-2 w-full text-left max-w-xs bg-white border border-gray-300 rounded-lg mt-1 shadow-lg z-10"
+				class="suggestions-box"
+				style="margin-left: 0; margin-top: 8px"
 			>
-				<ul class="rounded-lg overflow-hidden">
-					<li
-						v-for="(suggestion, index) in suggestions"
-						:key="index"
-						@click="selectSuggestion(suggestion)"
-						class="px-4 py-2 hover:bg-gray-100 hover:round-lg cursor-pointer text-sm text-gray-700"
-					>
-						{{ suggestion }}
-					</li>
-				</ul>
+				<div class="suggestions-shadow">
+					<div class="suggestions-edge">
+						<div class="suggestions-face">
+							<ul>
+								<li
+									v-for="(suggestion, index) in suggestions"
+									:key="index"
+									@click="selectSuggestion(suggestion)"
+									class="suggestion-item"
+								>
+									{{ suggestion }}
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
-		<div>
-			<button
-				class="btn btn-secondary btn-sm h-8 text-xs px-4 border-none text-white relative"
-				@click="startReviewMode"
-			>
-				{{ isImportantMode ? "Vocabulary" : "Star-List" }}
-				<div v-if="showLightning" class="lightning-animation absolute flex">
-					<FlashIcon :size="'4'" class="mr-2" />+1
+		<!-- 模式切换按钮 -->
+		<button class="retro-btn" @click="startReviewMode">
+			<div class="btn-shadow">
+				<div class="btn-edge">
+					<div class="btn-face">
+						<span>{{ isImportantMode ? "Vocabulary" : "Star-List" }}</span>
+						<div v-if="showLightning" class="lightning-animation">
+							<FlashIcon :size="'4'" class="mr-2" />+1
+						</div>
+					</div>
 				</div>
-			</button>
-		</div>
+			</div>
+		</button>
 	</div>
 </template>
 
@@ -145,17 +163,158 @@ watch(flashState, (newVal, oldVal) => {
 </script>
 
 <style scoped>
-.toolbox {
-	height: 50px; /* 调整工具箱栏的高度 */
-	background: linear-gradient(
-		155deg,
-		rgba(var(--secondary-color-rgb), 0.2),
-		rgba(var(--primary-color-rgb), 0.2),
-		rgba(var(--secondary-color-rgb), 0.2)
+/* 工具箱容器 */
+.retro-toolbox {
+	background: repeating-linear-gradient(
+		45deg,
+		#f0f0f0,
+		#f0f0f0 10px,
+		#f8f8f8 10px,
+		#f8f8f8 20px
 	);
-	box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.2);
+	height: 100%;
 }
-/* 闪电图标的动画效果 */
+
+/* 复古按钮样式 */
+.retro-btn {
+	position: relative;
+	min-width: 120px;
+	height: 40px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	font-size: 0.875rem;
+	font-weight: bold;
+}
+
+.retro-btn-small {
+	position: relative;
+	width: 40px;
+	height: 40px;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 8px;
+	color: #333;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 复古输入框 */
+.retro-input-wrapper {
+	position: relative;
+	width: 240px;
+}
+
+.retro-input {
+	width: 100%;
+	height: 40px;
+	padding: 0 1rem;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-input:focus {
+	outline: none;
+	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* 联想框样式 */
+.suggestions-box {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+.suggestions-shadow {
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.suggestions-edge {
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+}
+
+.suggestions-face {
+	background-color: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	overflow: hidden;
+}
+
+.suggestion-item {
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	cursor: pointer;
+	border-bottom: 1px solid #eee;
+	transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+	background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* 按钮交互效果 */
+.retro-btn:hover .btn-face,
+.retro-btn-small:hover .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active .btn-edge,
+.retro-btn:active .btn-face,
+.retro-btn-small:active .btn-edge,
+.retro-btn-small:active .btn-face {
+	transform: translateY(0);
+}
+
+/* 闪电动画优化 */
 @keyframes lightningMove {
 	0% {
 		transform: translateY(30px) scale(0.5);
@@ -175,13 +334,31 @@ watch(flashState, (newVal, oldVal) => {
 	}
 }
 
-/* 定义闪电图标的动画 */
 .lightning-animation {
 	color: var(--secondary-color);
 	font-size: 14px;
 	animation: lightningMove 3s ease-in-out forwards;
 	position: absolute;
-	left: -60px; /* 控制闪电图标在按钮右侧 */
-	z-index: 9999;
+	left: -60px;
+	z-index: 20;
+}
+
+/* 装饰效果 */
+.retro-toolbox::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
 }
 </style>

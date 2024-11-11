@@ -1,11 +1,11 @@
 <template>
 	<div class="profile-page relative w-full">
 		<div
-			class="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/3 z-10"
+			class="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
 			style="top: 353px; padding-bottom: 64px"
 		>
 			<div
-				class="personal-card bg-white shadow-lg rounded-lg p-6 text-center w-72 h-auto"
+				class="personal-card bg-white shadow-lg rounded-lg p-6 pb-10 text-center w-72 h-auto"
 			>
 				<img
 					class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-neutral"
@@ -37,16 +37,16 @@
 					</div>
 
 					<!-- 数据碎片收集进度 -->
-					<div class="progress-bar relative">
+					<!-- <div class="progress-bar relative">
 						<p class="text-xs text-gray-700 mb-1">数据碎片收集进度</p>
 						<div class="barcode-progress bg-accent accent-progress"></div>
 						<FragmentProgressDetail />
-					</div>
+					</div> -->
 				</div>
 			</div>
 
 			<div class="edit-module absolute">
-				<div class="arrow-base arrow-2"></div>
+				<div class="arrow-base arrow-2" style="z-index: 999"></div>
 				<button
 					@click="linkToMembership"
 					class="edit-button w-40 h-10 bg-white pl-2 shadow-lg text-center text-bold"
@@ -340,11 +340,10 @@ onMounted(() => {
 	background-size: 100% 100%;
 	transform: scaleX(-1) rotate(-40deg);
 	position: absolute;
-	top: 25px;
-	right: -125px;
+	top: 35px;
+	right: -90px;
 }
 .edit-button {
-	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.2); /* 蓝色阴影 */
 	border: none; /* 无边框 */
 	border-radius: 0px; /* 圆角 */
 	font-size: 14px;
@@ -353,13 +352,10 @@ onMounted(() => {
 	transition: box-shadow 0.3s ease;
 	transform: rotate(-10deg);
 }
-.edit-button:hover {
-	box-shadow: 0 6px 16px rgba(0, 0, 255, 0.3); /* 更深的蓝色阴影 */
-}
 
 .account-module {
-	top: -150px;
-	right: -420px;
+	top: -80px;
+	right: -440px;
 }
 .arrow-6 {
 	width: 120px;
@@ -374,17 +370,11 @@ onMounted(() => {
 	z-index: 0;
 }
 .account-button {
-	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.2); /* 蓝色阴影 */
-	border: none; /* 无边框 */
-	border-radius: 0px; /* 圆角 */
 	font-size: 14px;
 	font-weight: 900;
 	width: 130px;
 	transition: box-shadow 0.3s ease;
 	transform: rotate(10deg);
-}
-.account-button:hover {
-	box-shadow: 0 6px 16px rgba(0, 0, 255, 0.3); /* 更深的蓝色阴影 */
 }
 
 /* 条形码样式 */
@@ -430,7 +420,7 @@ onMounted(() => {
 	font-size: 0.875rem;
 	position: absolute;
 	left: 50%;
-	top: -120px;
+	top: 520px;
 	border-width: 2px;
 	padding: 0.5rem;
 	border-color: #000;
@@ -441,6 +431,7 @@ onMounted(() => {
 	justify-content: center;
 	height: auto;
 }
+
 .edit-description {
 	transform: rotate(-3deg);
 	bottom: -20px;
@@ -453,5 +444,179 @@ onMounted(() => {
 	top: -10px;
 	transform: rotate(-2deg);
 	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.2); /* 蓝色阴影 */
+}
+.profile-page {
+	height: calc(100vh - 128px);
+	min-height: 770px;
+}
+
+/* 个人信息卡片改造 */
+.personal-card {
+	width: 18rem;
+	z-index: 999;
+	border: 3px solid #333;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	background: repeating-linear-gradient(
+			90deg,
+			transparent,
+			transparent 20px,
+			rgba(0, 0, 0, 0.02) 20px,
+			rgba(0, 0, 0, 0.02) 40px
+		),
+		white;
+	position: relative;
+}
+
+/* 头像样式 */
+.personal-card img {
+	border: 3px solid #333;
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+	transition: transform 0.3s;
+}
+
+.personal-card img:hover {
+	transform: scale(1.05);
+}
+
+/* 进度条改造 */
+.progress-bar {
+	margin: 1rem 0;
+}
+
+.barcode-progress {
+	height: 16px;
+	border: 2px solid #333;
+	border-radius: 4px;
+	background: white;
+	position: relative;
+	overflow: hidden;
+}
+
+/* 进度条动画效果 */
+.primary-progress::before {
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(var(--primary-color-rgb), 0.3),
+		rgba(var(--primary-color-rgb), 0.3) 10px,
+		rgba(var(--primary-color-rgb), 0.1) 10px,
+		rgba(var(--primary-color-rgb), 0.1) 20px
+	);
+}
+
+.secondary-progress::before {
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(var(--secondary-color-rgb), 0.3),
+		rgba(var(--secondary-color-rgb), 0.3) 10px,
+		rgba(var(--secondary-color-rgb), 0.1) 10px,
+		rgba(var(--secondary-color-rgb), 0.1) 20px
+	);
+}
+
+.accent-progress::before {
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(var(--accent-color-rgb), 0.3),
+		rgba(var(--accent-color-rgb), 0.3) 10px,
+		rgba(var(--accent-color-rgb), 0.1) 10px,
+		rgba(var(--accent-color-rgb), 0.1) 20px
+	);
+}
+
+/* 按钮样式改造 */
+.edit-button,
+.account-button {
+	position: relative;
+	border: 2px solid #333;
+	background: white;
+	font-weight: bold;
+	transform-style: preserve-3d;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.edit-button:hover,
+.account-button:hover {
+	transform: translate(2px, 2px);
+}
+
+.edit-button:hover::after,
+.account-button:hover::after {
+	transform: translate(-2px, -2px);
+}
+
+/* 箭头装饰改造 */
+.arrow-2,
+.arrow-6 {
+	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
+}
+
+/* 账户编辑卡片改造 */
+.account-edit-card {
+	border: 3px solid #333;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	background: white;
+}
+
+/* 输入框样式 */
+.input {
+	border: 2px solid #333;
+	background: rgba(255, 255, 255, 0.9);
+	box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+	transition: box-shadow 0.3s;
+}
+
+.input:focus {
+	outline: none;
+	box-shadow: inset 2px 2px 0 rgba(var(--primary-color-rgb), 0.2);
+}
+
+.personal-card::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 20px;
+	height: 20px;
+	background: linear-gradient(-135deg, #333 0%, #333 40%, transparent 40%);
+	border-top-left-radius: 100%;
+}
+
+/* 分隔线样式 */
+.border-b {
+	border-bottom: 2px dashed #333;
+}
+
+/* 签名卡片样式 */
+.sign-container {
+	border: 3px solid #333;
+	background: white;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	transform: translate(-50%, -33%) rotate(-2deg);
+}
+
+/* 错误消息样式 */
+.text-red-500 {
+	color: #dc2626;
+	font-family: "Comic Sans MS", cursive;
+	font-size: 0.75rem;
+}
+
+/* 按钮动画效果 */
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.05);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.edit-button:active,
+.account-button:active {
+	transform: translate(4px, 4px);
+	box-shadow: none;
 }
 </style>

@@ -1,172 +1,137 @@
 <template>
-	<div class="card relative rounded-lg p-4 pt-5 mb-4 h-full">
-		<!-- 词汇 -->
-		<h2
-			class="text-2xl pb-2 font-medium text-gray-800 text-left pl-4 flex justify-between items-center"
-		>
-			<span class="flex items-center"
-				>{{ selectedNote.word
-				}}<span class="ml-4 relative cursor-pointer" style="top: 2px"
-					><i class="bi bi-volume-down text-3xl"></i> </span
-			></span>
-			<span class="flex items-center">
-				<span
-					class="text-secondary cursor-pointer transition-all mr-1 duration-300 relative"
-					@click="toggleImportantBadge"
-					style="top: -3px"
-				>
-					<i
-						v-if="!selectedNote.isImportant"
-						class="bi bi-bookmark text-lg"
-					></i>
-					<i
-						v-if="selectedNote.isImportant"
-						class="bi bi-bookmark-fill text-lg"
-					></i>
-				</span>
-			</span>
-		</h2>
-		<!-- 释义 -->
-		<div class="border-b border-gray-300 px-4 pt-2 pb-4 text-left relative">
-			<p class="text-sm flex items-center">
-				<span class="mr-2" v-if="selectedNote.symbols"
-					>{{ selectedNote.symbols }}；</span
-				>{{ selectedNote.pos }} {{ selectedNote.word_zh }}；
+	<div class="retro-edit-card">
+		<!-- 词汇标题区 -->
+		<div class="word-header">
+			<div class="word-title">
+				<span class="word-text">{{ selectedNote.word }}</span>
+				<button class="pronunciation-btn">
+					<i class="bi bi-volume-down text-3xl"></i>
+				</button>
+			</div>
+			<button class="bookmark-btn" @click="toggleImportantBadge">
+				<i
+					class="text-xl"
+					:class="['bi', selectedNote.isImportant ? 'bi-star-fill' : 'bi-star']"
+				></i>
+			</button>
+		</div>
+
+		<!-- 基本释义 -->
+		<div class="content-section">
+			<p class="definition-text text-sm">
+				<span v-if="selectedNote.symbols">{{ selectedNote.symbols }}；</span>
+				{{ selectedNote.pos }} {{ selectedNote.word_zh }}；
 			</p>
 		</div>
-		<!-- 词根/词缀、解释 -->
-		<div class="py-4 px-4 border-b border-gray-300">
-			<p class="text-gray-600 mb-2 font-bold text-left">
-				<span class="font-normal text-sm">{{
-					selectedNote.definition_zh
-				}}</span>
-			</p>
-			<div
-				class="mb-2"
-				v-if="
-					selectedNote.system?.rootAnalysis.root ||
-					selectedNote.system?.affixAnalysis.suffix ||
-					selectedNote.system?.affixAnalysis.prefix
-				"
-			>
+
+		<!-- 详细解释 -->
+		<div class="content-section">
+			<p class="explanation-text text-sm">{{ selectedNote.definition_zh }}</p>
+
+			<!-- 词根词缀分析 -->
+			<div class="word-analysis" v-if="hasWordAnalysis">
 				<!-- 词根 -->
-				<div
-					v-if="selectedNote.system.rootAnalysis.root"
-					class="text-gray-600 mb-1 text-left"
-				>
-					<p class="font-bold text-sm">
-						<span>[词根] </span
-						>{{ selectedNote.system.rootAnalysis.root }}：<span
-							class="font-normal"
-							>{{ selectedNote.system.rootAnalysis.meaning_zh }}</span
-						>
-					</p>
+				<div v-if="selectedNote.system.rootAnalysis.root" class="analysis-item">
+					<span class="label">[词根]</span>
+					<span class="term"
+						>{{ selectedNote.system.rootAnalysis.root }}：</span
+					>
+					<span class="meaning">{{
+						selectedNote.system.rootAnalysis.meaning_zh
+					}}</span>
 				</div>
+
 				<!-- 前缀 -->
 				<div
 					v-if="selectedNote.system.affixAnalysis.prefix"
-					class="text-gray-600 mb-2 text-left"
+					class="analysis-item"
 				>
-					<p class="mb-1 font-bold">
-						<span class="text-sm">[前缀] </span
-						>{{ selectedNote.system.affixAnalysis.prefix }}-：<span
-							class="font-normal text-sm"
-							>{{ selectedNote.system.affixAnalysis.prefixMeaning_zh }}</span
-						>
-					</p>
+					<span class="label">[前缀]</span>
+					<span class="term"
+						>{{ selectedNote.system.affixAnalysis.prefix }}-：</span
+					>
+					<span class="meaning">{{
+						selectedNote.system.affixAnalysis.prefixMeaning_zh
+					}}</span>
 				</div>
 
 				<!-- 后缀 -->
 				<div
 					v-if="selectedNote.system.affixAnalysis.suffix"
-					class="text-gray-600 mb-2 text-left"
+					class="analysis-item"
 				>
-					<p class="mb-1 font-bold">
-						<span class="text-sm">[后缀] </span>-{{
-							selectedNote.system.affixAnalysis.suffix
-						}}：<span class="font-normal text-sm">{{
-							selectedNote.system.affixAnalysis.suffixMeaning_zh
-						}}</span>
-					</p>
+					<span class="label">[后缀]</span>
+					<span class="term"
+						>-{{ selectedNote.system.affixAnalysis.suffix }}：</span
+					>
+					<span class="meaning">{{
+						selectedNote.system.affixAnalysis.suffixMeaning_zh
+					}}</span>
 				</div>
 			</div>
 		</div>
+
 		<!-- 变形 -->
-		<div
-			class="border-b border-gray-300 px-4 py-4 text-left relative"
-			v-if="selectedNote.system && selectedNote.system.wordInflections"
-		>
-			<p class="text-gray-600 mb-2 text-sm text-left">
-				<span class="font-bold"
-					>{{ selectedNote.system?.wordInflections.baseForm_zh }} - </span
-				><span>{{ selectedNote.system?.wordInflections.baseForm }}</span>
-			</p>
-			<p class="text-gray-600 mb-2 text-sm text-left">
-				<span class="font-bold"
-					>{{
-						selectedNote.system?.wordInflections.presentParticiple_zh
-					}}
-					- </span
-				><span>{{
-					selectedNote.system?.wordInflections.presentParticiple
-				}}</span>
-			</p>
-			<p class="text-gray-600 mb-2 text-sm text-left">
-				<span class="font-bold"
-					>{{ selectedNote.system?.wordInflections.pastTense_zh }} - </span
-				><span>{{ selectedNote.system?.wordInflections.pastTense }}</span>
-			</p>
-			<p class="text-gray-600 mb-2 text-sm text-left">
-				<span class="font-bold"
-					>{{ selectedNote.system?.wordInflections.pastParticiple_zh }} - </span
-				><span>{{ selectedNote.system?.wordInflections.pastParticiple }}</span>
-			</p>
+		<div class="content-section" v-if="selectedNote.system?.wordInflections">
+			<div class="inflections-grid">
+				<div
+					class="inflection-item"
+					v-for="(inflection, key) in wordInflections"
+					:key="key"
+				>
+					<span class="label">{{ inflection.label }}:</span>
+					<span class="form">{{ inflection.form }}</span>
+				</div>
+			</div>
 		</div>
+
 		<!-- 例句 -->
-		<div class="p-4 border-b">
-			<p class="text-gray-600 mb-1 font-bold text-left">
-				<span class="font-black text-sm">[例句]：</span>
-			</p>
-			<p class="text-gray-600 mb-1 font-bold text-left">
-				<span class="font-normal text-sm">{{ selectedNote.example }}</span>
-			</p>
-			<p class="text-gray-600 mb-1 font-bold text-left">
-				<span class="font-normal text-sm">{{ selectedNote.example_zh }}</span>
-			</p>
+		<div class="content-section">
+			<div class="example-box">
+				<p class="example text-sm">{{ selectedNote.example }}</p>
+				<p class="translation text-sm">{{ selectedNote.example_zh }}</p>
+			</div>
 		</div>
-		<!-- 注释 -->
-		<div
-			class="border-b px-4 pt-4 mb-2 text-left relative"
-			v-if="selectedNote.comment || showEditModal"
-		>
-			<div v-if="showEditModal">
+
+		<!-- 注释编辑区 -->
+		<div class="content-section" v-if="selectedNote.comment || showEditModal">
+			<div v-if="showEditModal" class="note-edit-area">
 				<textarea
-					class="text-gray-600 text-sm mt-2 mb-4 text-left font-bold border border-gray-300 p-2 rounded w-full"
 					v-model="commentContent"
+					class="retro-textarea text-sm"
 					placeholder="请输入补充注释"
 					rows="4"
 				></textarea>
 			</div>
-			<div class="mb-4 text-sm text-gray-600" v-else>
-				<div v-html="formattedComment"></div>
-			</div>
+			<div v-else class="note-content" v-html="formattedComment"></div>
 		</div>
-		<!-- 补充注释 / 提交注释按钮 -->
-		<div class="flex justify-between w-full space-x-2">
+
+		<!-- 按钮区 -->
+		<div class="button-group">
 			<button
-				:class="showEditModal ? 'w-2/3' : 'w-full'"
-				class="edit-shadow mt-4 text-xs text-secondary rounded-lg px-4 py-2"
+				class="retro-btn primary"
+				:class="{ 'w-2/3': showEditModal, 'w-full': !showEditModal }"
 				@click="toggleEditModal"
 			>
-				{{ showEditModal ? "提交注释" : "补充注释" }}
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">
+							{{ showEditModal ? "提交注释" : "补充注释" }}
+						</div>
+					</div>
+				</div>
 			</button>
+
 			<button
 				v-if="showEditModal"
-				class="cancel-shadow mt-4 text-xs text-gray-600 rounded-lg px-4 py-2 w-1/3"
-				style="border: none; background: white"
+				class="retro-btn w-1/3"
 				@click="cancelEditModal"
 			>
-				取消编辑
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">取消编辑</div>
+					</div>
+				</div>
 			</button>
 		</div>
 	</div>
@@ -292,17 +257,218 @@ watch(
 );
 </script>
 <style scoped>
-.edit-shadow {
-	box-shadow: 0 6px 10px rgba(var(--secondary-color-rgb), 0.3);
-	border: none;
-	background: white;
+.retro-edit-card {
+	padding: 0.5rem 1rem;
+	height: 100%;
+	overflow-y: auto;
 }
-.edit-shadow:hover {
-	box-shadow: 0 6px 10px rgba(var(--secondary-color-rgb), 0.6);
+
+/* 单词标题区 */
+.word-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
-.cancel-shadow {
-	box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+
+.word-title {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.word-text {
+	font-size: 1.2rem;
+	font-weight: bold;
+	color: #333;
+}
+
+.pronunciation-btn,
+.bookmark-btn {
+	background: none;
 	border: none;
-	background: white;
+	cursor: pointer;
+	transition: transform 0.2s;
+}
+
+.pronunciation-btn:hover,
+.bookmark-btn:hover {
+	transform: scale(1.1);
+}
+
+/* 内容区域 */
+.content-section {
+	padding: 1rem 0;
+	border-bottom: 1px solid #ddd;
+	text-align: left;
+}
+
+/* 词根词缀分析 */
+.word-analysis {
+	margin-top: 1rem;
+}
+
+.analysis-item {
+	margin-bottom: 0.5rem;
+	font-size: 0.875rem;
+}
+
+.label {
+	color: #666;
+	font-weight: bold;
+	margin-right: 0.5rem;
+}
+
+.term {
+	color: var(--primary-color);
+	font-weight: bold;
+}
+
+/* 变形表格 */
+.inflections-grid {
+	display: grid;
+	gap: 0.5rem;
+}
+
+.inflection-item {
+	font-size: 0.875rem;
+	display: flex;
+	gap: 0.5rem;
+}
+
+/* 例句样式 */
+.example-box {
+	background: rgba(var(--primary-color-rgb), 0.05);
+	padding: 0.5rem 1rem 1rem;
+	border-radius: 8px;
+	border-left: 3px solid var(--primary-color);
+	margin-left: -1rem;
+}
+
+.example {
+	margin: 0.5rem 0;
+	color: #333;
+}
+
+.translation {
+	color: #666;
+	font-size: 0.875rem;
+}
+
+/* 注释编辑区 */
+.retro-textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 2px solid #333;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.8);
+	font-family: inherit;
+	resize: vertical;
+	box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-textarea:focus {
+	outline: none;
+	box-shadow: inset 2px 2px 0 rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* 按钮样式 */
+.button-group {
+	display: flex;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+.retro-btn {
+	position: relative;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.btn-shadow {
+	position: absolute;
+	inset: 0;
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	inset: 0;
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	inset: 0;
+	background-color: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	color: #333;
+	font-weight: bold;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.875rem;
+}
+
+.retro-btn:hover .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active .btn-edge,
+.retro-btn:active .btn-face {
+	transform: translateY(0);
+}
+
+/* 主按钮变体 */
+.retro-btn.primary .btn-face {
+	/* color: var(--secondary-color);
+	border-color: var(--secondary-color); */
+}
+
+/* 装饰效果 */
+.retro-edit-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+/* 滚动条样式 */
+.retro-edit-card::-webkit-scrollbar {
+	width: 8px;
+}
+
+.retro-edit-card::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+}
+
+.retro-edit-card::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+}
+
+.retro-edit-card::-webkit-scrollbar-thumb:hover {
+	background: rgba(0, 0, 0, 0.3);
 }
 </style>

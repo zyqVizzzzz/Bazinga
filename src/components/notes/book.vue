@@ -1,58 +1,64 @@
 <template>
-	<!-- 笔记容器，带有分页 -->
-	<div
-		ref="notebookRef"
-		class="relative notebook bg-white shadow-md rounded-lg px-6 py-5 w-full bg-grid-paper"
-	>
-		<h2 class="text-2xl font-medium text-gray-800 text-left mb-4 pl-2">
-			{{ isImportantMode ? "Star-List" : "Vocabulary" }}
-		</h2>
-		<ul
-			class="list-disc list-inside text-gray-700 text-left mb-6 flex flex-wrap"
-		>
-			<li
-				class="mt-2 w-1/2"
-				v-for="(note, index) in vocabularyNotes"
-				:key="index"
-			>
-				<div
-					class="pl-2 transition-shadow duration-300 ease-in-out cursor-pointer flex"
-					style="padding-top: 2px; padding-bottom: 2px"
-					@click="selectNote(note)"
+	<div class="retro-notebook">
+		<!-- 笔记本标题 -->
+		<div class="notebook-header">
+			<div class="paper-clip"></div>
+			<h2 class="text-2xl font-bold text-gray-800 text-left">
+				{{ isImportantMode ? "Star-List" : "Vocabulary" }}
+			</h2>
+		</div>
+
+		<!-- 笔记列表 -->
+		<div class="notebook-content">
+			<ul class="word-list">
+				<li
+					v-for="(note, index) in vocabularyNotes"
+					:key="index"
+					class="word-item"
 				>
-					<mark class="pink" v-if="activeNote.word === note.word"
-						>{{ note.word }}
-					</mark>
-					<div v-else>
-						<span class="text-base">{{ note.word }}</span>
+					<div class="word-content" @click="selectNote(note)">
+						<div class="word-section">
+							<template v-if="activeNote.word === note.word">
+								<span class="selected-word">{{ note.word }}</span>
+							</template>
+							<template v-else>
+								<span class="normal-word">{{ note.word }}</span>
+							</template>
+						</div>
+
+						<div class="translation-section">
+							<span v-if="note.pos" class="pos-tag">{{ note.pos }}</span>
+							<span class="chinese-meaning">{{ note.word_zh }}</span>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<!-- 复古分页器 -->
+		<div class="pagination-controls">
+			<button class="retro-btn" @click="prevPage" :disabled="currentPage === 1">
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">&lt;</div>
 					</div>
 				</div>
-				<div class="pl-2 text-sm">
-					<span class="text-gray-500 mr-2" v-if="note.pos">{{ note.pos }}</span>
-					<span class="text-gray-800">
-						<strong>{{ note.word_zh }}</strong>
-					</span>
-				</div>
-			</li>
-		</ul>
-		<!-- 分页器 -->
-		<div
-			class="absolute right-50 bottom-4 transform -translate-x-1/2 inline-flex items-center space-x-4"
-		>
-			<button
-				class="btn btn-sm px-4 text-white"
-				@click="prevPage"
-				:disabled="currentPage === 1"
-			>
-				<
 			</button>
-			<span class="text-gray-600">{{ currentPage }} / {{ totalPages }}</span>
+
+			<div class="page-indicator">
+				<div class="page-number">{{ currentPage }} / {{ totalPages }}</div>
+			</div>
+
 			<button
-				class="btn btn-sm px-4 text-white"
+				class="retro-btn"
 				@click="nextPage"
 				:disabled="currentPage === totalPages"
 			>
-				>
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">&gt;</div>
+					</div>
+				</div>
 			</button>
 		</div>
 	</div>
@@ -75,7 +81,7 @@ const props = defineProps({
 const notebookRef = ref(null);
 const vocabularyNotes = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = ref(20);
+const itemsPerPage = ref(18);
 const totalCounts = ref(0);
 const activeNote = ref({});
 const isImportantMode = ref(false);
@@ -100,7 +106,7 @@ const selectNote = (note) => {
 	emit("on-select-note", note);
 };
 
-const getNotebook = async (page = 1, limit = 20) => {
+const getNotebook = async (page = 1, limit = 18) => {
 	const response = await apiClient.get(
 		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}&isImportant=${isImportantMode.value}`
 	);
@@ -176,52 +182,195 @@ watch(
 </script>
 
 <style scoped>
-.hover\:shadow-red:hover {
-	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
-}
-.shadow-red {
-	box-shadow: 0px 2px 2px rgba(255, 0, 211, 0.4);
-}
-
-.transition-shadow {
-	transition: box-shadow 0.3s ease-in-out;
-}
-
-.bg-line-paper {
-	background-image: linear-gradient(
-		transparent 28px,
-		rgba(229, 229, 229, 0.2) 12px
-	);
-	background-size: 100% 29px;
-}
-
-.bg-grid-paper {
-	background-color: transparent;
-	background-image: linear-gradient(
-			90deg,
-			rgba(0, 0, 0, 0.03) 1px,
-			transparent 1px
-		),
-		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-	background-size: 15px 15px; /* 网格间距 */
-}
-
-.notebook {
+.retro-notebook {
 	position: relative;
 	height: 100%;
+	background-size: 100% 24px;
+	padding: 1rem 0;
 }
 
-.pagination-container {
+/* 笔记本标题区域 */
+.notebook-header {
+	position: relative;
+	margin-bottom: 1rem;
+	padding-left: 0.5rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid #333;
+}
+
+/* 回形针装饰 */
+.paper-clip {
+	position: absolute;
+	top: -8px;
+	right: 20px;
+	width: 25px;
+	height: 40px;
+	border: 3px solid #666;
+	border-radius: 8px 8px 0 0;
+	transform: rotate(-10deg);
+}
+
+.paper-clip::before {
+	content: "";
+	position: absolute;
+	top: 5px;
+	left: 3px;
+	width: 13px;
+	height: 25px;
+	border: 3px solid #666;
+	border-radius: 5px 5px 0 0;
+}
+
+/* 单词列表样式 */
+.word-list {
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 }
 
-.btn-secondary:disabled {
-	background-color: rgb(255, 230, 240);
+.word-item {
+	text-align: left;
+	padding-left: 10px;
+	margin-bottom: 5px;
+	width: calc(50% - 0.5rem);
+}
+
+.word-content {
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border-radius: 4px;
+}
+
+.word-content:hover {
+	background-color: rgba(var(--secondary-color-rgb), 0.05);
+}
+
+/* 单词显示样式 */
+.word-section {
+	margin-bottom: 0.25rem;
+}
+
+.selected-word {
+	background: linear-gradient(
+		transparent 60%,
+		rgba(var(--secondary-color-rgb), 0.2) 40%
+	);
+	padding: 0 0.25rem;
+	font-weight: bold;
+	color: var(--secondary-color);
+}
+
+.normal-word {
+	font-size: 1rem;
+	color: #333;
+}
+
+/* 翻译区域样式 */
+.translation-section {
+	font-size: 0.875rem;
+}
+
+.pos-tag {
+	color: #666;
+	margin-right: 0.5rem;
+	font-style: italic;
+}
+
+.chinese-meaning {
+	color: #333;
+	font-weight: 500;
+}
+
+/* 分页控制器 */
+.pagination-controls {
+	position: absolute;
+	bottom: 0.4rem;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.retro-btn {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.retro-btn:disabled {
+	opacity: 0.5;
 	cursor: not-allowed;
 }
-li {
-	list-style-type: none;
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 6px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 6px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 6px;
+	color: #333;
+	font-weight: bold;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 页码显示器 */
+.page-indicator {
+	padding: 0.5rem 1rem;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 6px;
+	font-family: "Courier New", monospace;
+	font-weight: bold;
+	color: #333;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮交互效果 */
+.retro-btn:hover:not(:disabled) .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active:not(:disabled) .btn-edge,
+.retro-btn:active:not(:disabled) .btn-face {
+	transform: translateY(0);
+}
+
+/* 页面装订效果 */
+.notebook-content {
+	position: relative;
 }
 </style>
