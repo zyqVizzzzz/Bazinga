@@ -1,261 +1,325 @@
 <template>
-	<h1 class="text-2xl my-10 font-semibold text-center mb-4">
-		{{ resourceId ? "Update" : "Create" }} {1} Collection
-	</h1>
-	<div
-		class="grid my-10 justify-items-center grid-cols-2 gap-1 gap-y-8"
-		style="padding: 0 40px"
-	>
-		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<form class="space-y-4">
-				<div class="form-control">
-					<label for="showName" class="label">
-						<span class="label-text"
-							>Title<span class="text-red-500">（require）</span></span
-						>
-					</label>
-					<input
-						v-model="noteForm.showName"
-						type="text"
-						id="showName"
-						class="input input-bordered w-full text-sm"
-						:class="{ 'border-red-500': showError && !noteForm.showName }"
-						placeholder="Please enter collection name"
-					/>
-				</div>
-
-				<!-- 英文名 -->
-				<div class="form-control">
-					<label for="name" class="label">
-						<span class="label-text">Subtitle</span>
-					</label>
-					<input
-						v-model="noteForm.name"
-						type="text"
-						id="name"
-						class="input input-bordered w-full text-sm"
-						placeholder="Please enter subtitle"
-					/>
-				</div>
-
-				<!-- 描述 -->
-				<div class="form-control">
-					<label for="description" class="label">
-						<span class="label-text">Discribe</span>
-					</label>
-					<textarea
-						v-model="noteForm.description"
-						id="description"
-						class="textarea textarea-bordered w-full"
-						placeholder="Please enter collection description"
-					></textarea>
-				</div>
-			</form>
+	<div class="w-full mx-auto px-4">
+		<!-- 标题 -->
+		<div class="retro-title-box my-10 text-center">
+			<h1 class="text-2xl font-bold text-shadow-retro">
+				{{ resourceId ? "Update" : "Create" }} Collection
+			</h1>
 		</div>
-		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<form class="space-y-4">
-				<!-- 封面图上传 -->
-				<div class="form-control">
-					<label for="banner" class="label">
-						<span class="label-text">Banner</span>
-					</label>
-					<!-- 预览和上传区域 -->
-					<div
-						class="upload-area bg-gray-200 flex items-center justify-center rounded-lg cursor-pointer relative"
-						@click="triggerFileInput"
-					>
-						<!-- 如果没有选择图片，显示上传图标和提示文本 -->
-						<template v-if="!bannerPreview">
-							<div class="text-center">
-								<div>
-									<i class="bi bi-upload text-xl text-gray-600"></i>
+
+		<!-- 表单网格 -->
+		<div
+			class="grid mb-10 justify-items-center grid-cols-2 gap-8 px-10 auto-rows-fr"
+		>
+			<!-- 基本信息卡片 -->
+			<div class="retro-card h-full w-full max-w-lg">
+				<div class="card-shadow h-full">
+					<div class="card-edge h-full">
+						<div class="card-face h-full">
+							<form class="space-y-6">
+								<!-- 标题输入 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text"
+											>Title
+											<span class="text-red-500">（require）</span>
+										</span>
+									</label>
+									<div class="retro-input-wrapper">
+										<input
+											v-model="noteForm.showName"
+											type="text"
+											class="retro-input"
+											:class="{
+												'border-red-500': showError && !noteForm.showName,
+											}"
+											placeholder="Please enter collection name"
+										/>
+									</div>
 								</div>
 
-								<span class="text-gray-600 text-sm"
-									>click to upload banner image</span
-								>
-							</div>
-						</template>
+								<!-- 副标题输入 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Subtitle</span>
+									</label>
+									<div class="retro-input-wrapper">
+										<input
+											v-model="noteForm.name"
+											type="text"
+											class="retro-input"
+											placeholder="Please enter subtitle"
+										/>
+									</div>
+								</div>
 
-						<!-- 如果已经选择图片，显示封面图预览 -->
-						<template v-else>
-							<img
-								:src="bannerPreview"
-								alt="封面图预览"
-								class="absolute inset-0 w-full h-full object-cover rounded-lg"
-							/>
-						</template>
-					</div>
-
-					<!-- 隐藏原始 input 文件上传控件 -->
-					<input
-						ref="fileInput"
-						@change="handleFileUpload"
-						type="file"
-						id="banner"
-						class="hidden"
-						accept="image/*"
-					/>
-				</div>
-
-				<!-- 主题色 -->
-				<div class="form-control">
-					<label for="theme" class="label">
-						<span class="label-text">Theme Color</span>
-					</label>
-					<input
-						v-model="noteForm.theme"
-						@input="updateThemePreview"
-						type="color"
-						id="theme"
-						class="input input-bordered w-full color-picker"
-					/>
-				</div>
-			</form>
-		</div>
-		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<form class="space-y-4">
-				<!-- 难度 -->
-				<div class="form-control">
-					<label for="difficulty" class="label">
-						<span class="label-text">Level (1-5)</span>
-					</label>
-					<input
-						v-model="noteForm.difficulty"
-						type="range"
-						id="difficulty"
-						class="range range-primary w-full custom-range"
-						min="1"
-						max="5"
-					/>
-					<div class="text-center mt-2 text-sm">
-						Level: {{ noteForm.difficulty }}
-					</div>
-				</div>
-
-				<!-- 难度描述 -->
-				<div class="form-control">
-					<textarea
-						v-model="noteForm.difficultyDetails"
-						id="difficultyDetails"
-						class="textarea textarea-bordered w-full"
-						placeholder="Please enter difficulty description"
-					></textarea>
-				</div>
-			</form>
-		</div>
-		<div class="card w-full max-w-lg shadow-lg bg-white rounded-lg p-6">
-			<form class="space-y-4">
-				<!-- 设置 seasons -->
-				<div class="form-control">
-					<label class="label">
-						<span class="label-text">Seasons</span>
-					</label>
-					<div class="flex space-x-2">
-						<select
-							v-model="selectedSeasonIndex"
-							class="select select-bordered w-full"
-						>
-							<option
-								v-for="(season, index) in noteForm.seasons"
-								:key="index"
-								:value="index"
-							>
-								{{ season.seasonNumber }}
-							</option>
-						</select>
-						<!-- 添加和删除季按钮 -->
-						<button
-							type="button"
-							class="btn btn-primary text-white"
-							@click="addSeason"
-						>
-							<i class="bi bi-plus text-xl"></i>
-						</button>
-						<button
-							type="button"
-							class="btn btn-error text-white"
-							@click="removeSeason"
-							:disabled="!noteForm.seasons.length"
-						>
-							<i class="bi bi-trash text-lg"></i>
-						</button>
-					</div>
-				</div>
-
-				<!-- 设置 episodes -->
-				<div class="form-control" v-if="selectedSeason">
-					<label class="label">
-						<span class="label-text">Episodes</span>
-					</label>
-					<div class="episode-group grid grid-cols-5 gap-4">
-						<div
-							v-for="(episode, episodeIndex) in selectedSeason.episodes"
-							:key="episodeIndex"
-							class="card card-compact bg-base-100 shadow-md relative mb-10"
-						>
-							<div class="card-body">
-								{{ episode.ep }}
-							</div>
-							<button
-								type="button"
-								class="btn btn-error btn-sm mt-2 absolute w-full text-white"
-								style="bottom: -40px"
-								@click="removeEpisode(episodeIndex)"
-							>
-								<i class="bi bi-trash"></i>
-							</button>
-						</div>
-						<div
-							class="card card-compact bg-base-100 shadow-md mb-10 mx-2 cursor-pointer bg-primary text-white"
-							@click="addEpisode"
-						>
-							<div
-								class="card-body flex justify-center items-center text-center"
-							>
-								<i class="bi bi-plus text-2xl"></i>
-							</div>
+								<!-- 描述文本框 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Description</span>
+									</label>
+									<div class="retro-textarea-wrapper">
+										<textarea
+											v-model="noteForm.description"
+											class="retro-textarea"
+											placeholder="Please enter collection description"
+										></textarea>
+									</div>
+								</div>
+							</form>
 						</div>
 					</div>
 				</div>
-			</form>
-		</div>
-	</div>
-	<!-- 提交按钮 -->
-	<div class="flex justify-center mb-20 space-x-6">
-		<button @click="submitNote" class="btn w-60 mt-6 btn-primary text-white">
-			Submit
-		</button>
-		<button
-			v-if="resourceId"
-			@click="deleteCollection"
-			class="btn w-60 mt-6 text-gray-500 hover:btn-error hover:text-white"
-		>
-			Delete Collection
-		</button>
-	</div>
-	<dialog id="collection_delete_modal" class="modal">
-		<div class="modal-box">
-			<h3 class="text-lg my-4 mb-8 font-bold">
-				Confirm deletion of the current collection?
-				<div><mark class="pink">This action cannot be undone.</mark></div>
-				<div class="text-sm mt-2 text-gray-500">{ 此操作不可撤销 }</div>
-			</h3>
-			<div class="flex space-x-4 justify-center">
-				<!-- if there is a button in form, it will close the modal -->
-				<button
-					@click="confirmDelete"
-					class="btn bg-error px-4 text-white hover:bg-red-500 transition duration-300"
-				>
-					Confirm
-				</button>
-				<button class="btn px-4" @click="closeDeleteModal">Cancel</button>
+			</div>
+
+			<!-- 上传和主题卡片 -->
+			<div class="retro-card h-full w-full max-w-lg">
+				<div class="card-shadow h-full">
+					<div class="card-edge h-full">
+						<div class="card-face h-full">
+							<form class="space-y-6">
+								<!-- Banner上传区域 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Banner</span>
+									</label>
+									<div class="retro-upload-area" @click="triggerFileInput">
+										<template v-if="!bannerPreview">
+											<div class="upload-content">
+												<i class="bi bi-upload text-2xl"></i>
+												<span class="mt-2">click to upload banner image</span>
+											</div>
+										</template>
+										<template v-else>
+											<img
+												:src="bannerPreview"
+												alt="Preview"
+												class="preview-image"
+											/>
+										</template>
+									</div>
+									<input
+										ref="fileInput"
+										@change="handleFileUpload"
+										type="file"
+										class="hidden"
+										accept="image/*"
+									/>
+								</div>
+
+								<!-- 主题色选择器 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Theme Color</span>
+									</label>
+									<div class="retro-color-picker">
+										<input
+											v-model="noteForm.theme"
+											@input="updateThemePreview"
+											type="color"
+											class="w-full h-8 flex"
+										/>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 难度设置卡片 -->
+			<div class="retro-card h-full w-full max-w-lg">
+				<div class="card-shadow h-full">
+					<div class="card-edge h-full">
+						<div class="card-face h-full">
+							<form class="space-y-6">
+								<!-- 难度滑块 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Level (1-5)</span>
+									</label>
+									<div class="retro-range-wrapper">
+										<input
+											v-model="noteForm.difficulty"
+											type="range"
+											class="retro-range"
+											min="1"
+											max="5"
+										/>
+										<div class="text-center mt-2">
+											Level: {{ noteForm.difficulty }}
+										</div>
+									</div>
+								</div>
+
+								<!-- 难度描述 -->
+								<div class="retro-textarea-wrapper">
+									<textarea
+										v-model="noteForm.difficultyDetails"
+										class="retro-textarea"
+										placeholder="Please enter difficulty description"
+									></textarea>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 季节设置卡片 -->
+			<div class="retro-card h-full w-full max-w-lg">
+				<div class="card-shadow h-full">
+					<div class="card-edge h-full">
+						<div class="card-face h-full">
+							<form class="space-y-6">
+								<!-- Seasons选择器 -->
+								<div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">Seasons</span>
+									</label>
+									<div class="flex space-x-4 items-center">
+										<div class="retro-select-wrapper flex-1">
+											<select
+												v-model="selectedSeasonIndex"
+												class="retro-select"
+											>
+												<option
+													v-for="(season, index) in noteForm.seasons"
+													:key="index"
+													:value="index"
+												>
+													{{ season.seasonNumber }}
+												</option>
+											</select>
+										</div>
+										<button
+											type="button"
+											class="retro-btn-small"
+											@click="addSeason"
+										>
+											<div class="btn-shadow">
+												<div class="btn-edge">
+													<div class="btn-face">
+														<i class="bi bi-plus text-xl"></i>
+													</div>
+												</div>
+											</div>
+										</button>
+										<button
+											type="button"
+											class="retro-btn-small"
+											@click="removeSeason"
+											:disabled="!noteForm.seasons.length"
+										>
+											<div class="btn-shadow">
+												<div class="btn-edge">
+													<div class="btn-face">
+														<i class="bi bi-trash text-lg"></i>
+													</div>
+												</div>
+											</div>
+										</button>
+									</div>
+								</div>
+
+								<!-- Episodes网格 -->
+								<div class="form-control" v-if="selectedSeason">
+									<label class="retro-label">
+										<span class="label-text">Episodes</span>
+									</label>
+									<div class="episode-group grid grid-cols-5 gap-4">
+										<div
+											v-for="(episode, episodeIndex) in selectedSeason.episodes"
+											:key="episodeIndex"
+											class="card card-compact bg-base-100 shadow-md relative mb-10"
+										>
+											<div class="card-body justify-center items-center">
+												{{ episode.ep }}
+											</div>
+											<button
+												type="button"
+												class="btn btn-error btn-sm mt-2 absolute w-full text-white"
+												style="bottom: -40px"
+												@click="removeEpisode(episodeIndex)"
+											>
+												<i class="bi bi-trash"></i>
+											</button>
+										</div>
+										<div
+											class="card card-compact bg-base-100 shadow-md mb-10 mx-2 cursor-pointer bg-primary text-white"
+											@click="addEpisode"
+										>
+											<div
+												class="card-body flex justify-center items-center text-center"
+											>
+												<i class="bi bi-plus text-2xl"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
-		<form method="dialog" class="modal-backdrop">
-			<button>close</button>
-		</form>
-	</dialog>
+
+		<!-- 操作按钮 -->
+		<div class="flex justify-center mb-20 space-x-6">
+			<button class="retro-btn-large" @click="submitNote">
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">Submit</div>
+					</div>
+				</div>
+			</button>
+			<button
+				v-if="resourceId"
+				class="retro-btn-large danger"
+				@click="deleteCollection"
+			>
+				<div class="btn-shadow">
+					<div class="btn-edge">
+						<div class="btn-face">Delete Collection</div>
+					</div>
+				</div>
+			</button>
+		</div>
+
+		<!-- 删除确认对话框 -->
+		<dialog id="collection_delete_modal" class="modal">
+			<div class="retro-modal">
+				<div class="modal-content">
+					<h3 class="text-lg font-bold mb-6">
+						Confirm deletion of the current collection?
+						<div>
+							<mark class="text-red-500">This action cannot be undone.</mark>
+						</div>
+						<div class="text-sm mt-2 text-gray-500">{ 此操作不可撤销 }</div>
+					</h3>
+					<div class="flex space-x-4 justify-center">
+						<button
+							@click="confirmDelete"
+							class="retro-btn-small danger modal-btn"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">Confirm</div>
+								</div>
+							</div>
+						</button>
+						<button class="retro-btn-small modal-btn" @click="closeDeleteModal">
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">Cancel</div>
+								</div>
+							</div>
+						</button>
+					</div>
+				</div>
+			</div>
+		</dialog>
+	</div>
 </template>
 
 <script setup>
@@ -456,117 +520,452 @@ const uploadBanner = async (file) => {
 </script>
 
 <style scoped>
-/* 主要样式调整通过 DaisyUI 和 Tailwind CSS 完成 */
-/* 自定义滑块样式 */
-.custom-range {
-	-webkit-appearance: none; /* 清除默认样式 */
-	appearance: none;
-	height: 16px;
-	background-color: #fff; /* 滑轨颜色 */
-	border-radius: 10px;
-}
-
-/* 滑块填充部分的颜色 */
-.custom-range::-webkit-slider-runnable-track {
-	height: 6px;
-	background-color: #ddd;
-	border-radius: 4px;
-}
-
-.custom-range::-moz-range-track {
-	height: 6px;
-	background-color: #ddd;
-	border-radius: 4px;
-}
-
-.custom-range::-ms-track {
-	height: 6px;
-	background-color: #ddd;
-	border-radius: 4px;
-}
-
-/* 滑块圆点样式 */
-.custom-range::-webkit-slider-thumb {
-	-webkit-appearance: none; /* 清除默认样式 */
-	appearance: none;
-	width: 16px;
-	height: 16px;
-	background-color: #fff; /* 滑块颜色 */
-	border-radius: 50%;
-	cursor: pointer;
-	transition: background-color 0.2s ease; /* 平滑过渡 */
-}
-
-.custom-range::-moz-range-thumb {
-	width: 16px;
-	height: 16px;
-	background-color: #fff;
-	border-radius: 50%;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-}
-
-.custom-range::-ms-thumb {
-	width: 16px;
-	height: 16px;
-	background-color: #fff;
-	border-radius: 50%;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-}
-
-/* 悬停和聚焦时滑块圆点的样式 */
-.custom-range:hover::-webkit-slider-thumb,
-.custom-range:focus::-webkit-slider-thumb {
-	background-color: #fff; /* 悬停和聚焦的颜色 */
-}
-
-.custom-range:hover::-moz-range-thumb,
-.custom-range:focus::-moz-range-thumb {
-	background-color: #fff;
-}
-
-.custom-range:hover::-ms-thumb,
-.custom-range:focus::-ms-thumb {
-	background-color: #fff;
-}
-/* 自定义颜色选择器样式 */
-.color-picker {
-	appearance: none; /* 移除默认样式 */
-	padding: 8px; /* 控制内部的颜色块大小 */
-	height: 2.5rem; /* 控制整体高度 */
-	border-radius: 6px; /* 圆角样式 */
-}
-
-/* 调整颜色块的大小 */
-.color-picker::-webkit-color-swatch-wrapper {
-	padding: 2px; /* 调整颜色块的内边距，减少颜色块的大小 */
-}
-
-.color-picker::-webkit-color-swatch {
-	border-radius: 4px; /* 颜色块圆角 */
-}
-.upload-area {
-	width: 100%;
-	height: 10rem;
-	border: 2px dashed #ddd;
+/* 基础复古卡片样式 */
+.retro-card {
 	position: relative;
+	width: 100%;
+	text-align: left;
 }
 
-.upload-area:hover {
-	background-color: #e2e8f0; /* 鼠标悬停时的背景色 */
+.card-shadow {
+	background-color: #666;
+	border-radius: 12px;
+	transform: translateY(4px);
 }
-.episode-group {
-	display: grid;
-	grid-template-columns: repeat(5, 1fr); /* 每排 5 列 */
-	gap: 1rem; /* 卡片之间的间距 */
+
+.card-edge {
+	background-color: #888;
+	border-radius: 12px;
+	transform: translateY(-4px);
 }
-.card-compact {
-	margin-top: 1rem;
+
+.card-face {
+	background-color: #f8f8f8;
+	border: 3px solid #333;
+	border-radius: 12px;
+	padding: 1.5rem;
+	transform: translateY(-4px);
 }
-.card-compact .card-body {
-	padding: 0.1rem;
+
+/* 复古标题样式 */
+.retro-title-box {
+	position: relative;
+	display: inline-block;
+	padding: 1rem 3rem;
+}
+
+.title-decoration {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	border: 4px solid currentColor;
+}
+
+.title-decoration.left {
+	left: -20px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.title-decoration.right {
+	right: -20px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.text-shadow-retro {
+	text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2),
+		-1px -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 复古输入框样式 */
+.retro-input-wrapper {
+	position: relative;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	padding: 2px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-input {
+	width: 100%;
+	padding: 0.5rem;
+	border: none;
+	background: transparent;
+	font-family: inherit;
+}
+
+.retro-input:focus {
+	outline: none;
+}
+
+/* 复古文本框样式 */
+.retro-textarea-wrapper {
+	position: relative;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	padding: 2px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-textarea {
+	width: 100%;
+	padding: 0.5rem;
+	border: none;
+	background: transparent;
+	resize: vertical;
+	min-height: 100px;
+}
+
+.retro-textarea:focus {
+	outline: none;
+}
+
+/* 复古上传区域 */
+.retro-upload-area {
+	position: relative;
+	height: 160px;
+	background: white;
+	border: 2px dashed #333;
+	border-radius: 8px;
+	cursor: pointer;
+	overflow: hidden;
+	transition: all 0.3s;
+}
+
+.retro-upload-area:hover {
+	background: #f0f0f0;
+	border-style: solid;
+}
+
+.upload-content {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	color: #666;
+}
+
+.preview-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* 复古滑块样式 */
+.retro-range-wrapper {
+	padding: 1rem;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+}
+
+.retro-range {
+	width: 100%;
+	height: 20px;
+	-webkit-appearance: none;
+	background: transparent;
+}
+
+.retro-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 24px;
+	height: 24px;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 50%;
+	margin-top: -8px;
+}
+<style scoped>
+/* 接上文的样式继续 */
+
+.retro-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 24px;
+	height: 24px;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 50%;
+	margin-top: -8px;
+	cursor: pointer;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.retro-range::-webkit-slider-runnable-track {
+	width: 100%;
+	height: 8px;
+	background: #ddd;
+	border-radius: 4px;
+	border: 1px solid #333;
+}
+
+/* 复古选择器样式 */
+.retro-select-wrapper {
+	position: relative;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	padding: 2px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-select {
+	width: 100%;
+	padding: 0.5rem;
+	border: none;
+	background: transparent;
+	appearance: none;
+	cursor: pointer;
+	font-family: inherit;
+}
+
+.retro-select:focus {
+	outline: none;
+}
+
+/* 复古按钮样式 */
+.retro-btn-small {
+	position: relative;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.retro-btn-small.modal-btn {
+	width: 5rem;
+	height: 2.5rem;
+}
+
+.retro-btn-large {
+	position: relative;
+	width: 10rem;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 8px;
+	color: #333;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+}
+
+/* 按钮交互效果 */
+.retro-btn-small:hover .btn-face,
+.retro-btn-large:hover .btn-face {
+	background-color: white;
+}
+
+.retro-btn-small:active .btn-edge,
+.retro-btn-small:active .btn-face,
+.retro-btn-large:active .btn-edge,
+.retro-btn-large:active .btn-face {
+	transform: translateY(0);
+}
+
+/* 危险按钮样式 */
+.retro-btn-small.danger .btn-face,
+.retro-btn-large.danger .btn-face {
+	background-color: #fee2e2;
+	border-color: #dc2626;
+	color: #dc2626;
+}
+
+.retro-btn-small.danger:hover .btn-face,
+.retro-btn-large.danger:hover .btn-face {
+	background-color: #fecaca;
+}
+
+/* 禁用状态 */
+.retro-btn-small:disabled,
+.retro-btn-large:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+/* Episodes网格样式 */
+.retro-episode-grid {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 1rem;
+	padding: 1rem 0;
+}
+
+.episode-card {
+	position: relative;
+	padding-bottom: 100%;
+}
+
+.card-content {
+	position: absolute;
+	inset: 0;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.delete-btn {
+	position: absolute;
+	bottom: -2rem;
+	left: 0;
+	width: 100%;
+	padding: 0.25rem;
+	background: #fee2e2;
+	border: 2px solid #dc2626;
+	border-radius: 4px;
+	color: #dc2626;
+	font-size: 0.875rem;
+	transition: all 0.2s;
+}
+
+.delete-btn:hover {
+	background: #fecaca;
+}
+
+.add-episode-card {
+	position: relative;
+	padding-bottom: 100%;
+	cursor: pointer;
+}
+
+.add-episode-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(var(--primary-color-rgb), 0.1);
+	border: 2px solid var(--primary-color);
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--primary-color);
+	transition: all 0.2s;
+}
+
+.add-episode-card:hover::before {
+	background: rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* 复古颜色选择器 */
+.retro-color-picker {
+	position: relative;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	padding: 2px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+}
+
+.retro-color-picker input[type="color"] {
+	border: none;
+	padding: 0;
+	background: transparent;
+}
+
+.retro-color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+
+.retro-color-picker input[type="color"]::-webkit-color-swatch {
+	border: none;
+	border-radius: 4px;
+}
+
+/* 复古模态框样式 */
+.retro-modal {
+	background: white;
+	border: 3px solid #333;
+	border-radius: 12px;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	padding: 2rem;
+	max-width: 500px;
+	width: 90%;
+	margin: 2rem auto;
+}
+
+/* 标签样式 */
+.retro-label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: bold;
+	color: #333;
+}
+
+/* 新增装饰性细节 */
+.card-face::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+.card-face::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 50%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	border-radius: 9px 9px 0 0;
+	pointer-events: none;
 }
 </style>

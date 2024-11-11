@@ -43,7 +43,7 @@
 						<div class="display-edge">
 							<div class="display-face p-4">
 								<div
-									class="font-semibold flex items-center justify-center text-gray-800 mb-2"
+									class="font-semibold flex items-center justify-center text-gray-800"
 								>
 									<div
 										class="rating rating-sm ml-2"
@@ -52,7 +52,10 @@
 										<div class="retro-star"></div>
 									</div>
 								</div>
-								<p class="text-sm text-left text-gray-700">
+								<p
+									class="text-sm text-left text-gray-700 mt-2"
+									v-if="infoData.difficultyDetails"
+								>
 									{{ infoData.difficultyDetails }}
 								</p>
 							</div>
@@ -72,16 +75,16 @@
 		<!-- 内容区域 -->
 		<div class="w-2/3">
 			<!-- 季数标题 -->
-			<div class="manga-subtitle-box mb-4">
+			<div class="manga-subtitle-box">
 				<h2 class="text-xl font-bold text-shadow-retro">
 					Season {{ currentSeasonIndex + 1 }}
 				</h2>
 			</div>
 
 			<!-- 进度提示 -->
-			<div v-if="currentProgress.course" class="retro-alert mb-6">
+			<div v-if="currentProgress.course" class="mb-10">
 				<div class="alert-content">
-					<span @click="goToLessonProgress" class="retro-link">
+					<span @click="goToLessonProgress" class="retro-link text-sm">
 						继续上次进度
 					</span>
 				</div>
@@ -310,7 +313,7 @@ const nextSeason = () => {
 }
 
 .display-edge {
-	background-color: #888;
+	background-color: rgb(136, 136, 136);
 	border-radius: 12px;
 	transform: translateY(-3px);
 }

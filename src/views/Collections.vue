@@ -1,59 +1,63 @@
 <template>
 	<div class="all-collections">
-		<h1 class="text-2xl font-bold mb-10 text-center flex flex-col">
-			<span>Collections <mark class="pink"> Gallery </mark></span>
-			<span class="text-gray-400 text-sm mt-2 font-normal"
-				>n. 画廊 - /ˈɡæləri/</span
-			>
-		</h1>
-		<div class="grid-container">
+		<!-- 复古标题 -->
+		<div class="retro-title-box text-center mb-10">
+			<h1 class="text-2xl font-bold">
+				<span class="text-shadow-retro"
+					>Collections <mark class="retro-highlight">Gallery</mark></span
+				>
+				<span class="pronunciation mt-2">n. 画廊 - /ˈɡæləri/</span>
+			</h1>
+			<!-- <div class="title-decoration left"></div>
+			<div class="title-decoration right"></div> -->
+		</div>
+
+		<!-- 卡片网格 -->
+		<div class="grid-container justify-items-center">
+			<!-- 合集卡片 -->
 			<div
 				v-for="scene in scenes"
 				:key="scene.id"
-				class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+				class="retro-card"
 				@click="goToCollection(scene._id)"
 			>
-				<div class="w-full" style="height: 150px" v-if="scene.banner">
-					<img
-						:src="scene.banner"
-						alt="logo"
-						class="w-full h-full object-cover"
-						style="border-radius: 0.8rem 0.8rem 0 0"
-					/>
-				</div>
-				<div
-					class="w-full"
-					:style="{ background: scene.theme }"
-					style="height: 150px; border-radius: 0.8rem 0.8rem 0 0"
-					v-else
-				></div>
+				<div class="card-shadow">
+					<div class="card-edge">
+						<div class="card-face">
+							<!-- Banner图片 -->
+							<div class="banner-container">
+								<div v-if="scene.banner" class="banner-wrapper">
+									<img :src="scene.banner" alt="logo" class="banner-image" />
+								</div>
+								<div
+									v-else
+									class="banner-placeholder"
+									:style="{ backgroundColor: scene.theme }"
+								></div>
+							</div>
 
-				<div
-					class="card-body justify-center items-center"
-					style="height: 180px"
-					:style="{ color: scene.theme }"
-				>
-					<h2 class="card-title justify-center">
-						{{ scene.showName }}
-					</h2>
-					<p
-						style="flex-grow: 0; font-weight: 900"
-						:style="{ color: scene.theme }"
-					>
-						{{ scene.name }}
-					</p>
+							<!-- 内容区域 -->
+							<div class="content-container" :style="{ color: scene.theme }">
+								<h2 class="title text-lg">{{ scene.showName }}</h2>
+								<p class="subtitle">{{ scene.name }}</p>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<!-- 空白新增卡片 -->
-			<div
-				class="card bg-gray-100 shadow-lg hover:shadow-xl transition-shadow cursor-pointer flex items-center justify-center"
-				style="height: 330px; border: 2px dashed #ccc; border-radius: 0.8rem"
-				@click="addNewScene"
-			>
-				<div class="text-gray-500 text-xl font-semibold mb-2">
-					<i class="bi bi-folder-plus text-2xl"></i>
+
+			<!-- 新增卡片 -->
+			<div class="retro-card add-card" @click="addNewScene">
+				<div class="card-shadow">
+					<div class="card-edge">
+						<div class="card-face">
+							<div class="add-content">
+								<i class="bi bi-folder-plus text-3xl mb-2"></i>
+								<span class="text-lg font-bold">Create</span>
+							</div>
+						</div>
+					</div>
 				</div>
-				<span class="text-gray-500 text-base font-semibold">Create</span>
 			</div>
 		</div>
 	</div>
@@ -97,27 +101,189 @@ const addNewScene = () => {
 <style scoped>
 .all-collections {
 	width: 100%;
-	margin-top: 80px;
+	margin-top: 40px;
 	margin-bottom: 100px;
 	min-height: 500px;
 	padding: 20px;
 }
 
+/* 网格布局 */
 .grid-container {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr); /* 每行显示 3 个卡片 */
-	gap: 20px; /* 卡片之间的间距 */
-	justify-items: center;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2rem;
+	padding: 1rem;
 }
 
-.card {
+/* 复古标题样式 */
+.retro-title-box {
+	position: relative;
+	display: inline-block;
+	padding: 1rem 3rem;
+	margin: 0 auto;
+}
+
+.title-decoration {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	border: 4px solid currentColor;
+}
+
+.title-decoration.left {
+	left: -20px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.title-decoration.right {
+	right: -20px;
+	top: 50%;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+.text-shadow-retro {
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2),
+		-1px -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pronunciation {
+	display: block;
+	font-size: 0.875rem;
+	color: #666;
+	font-weight: normal;
+}
+
+.retro-highlight {
+	background: linear-gradient(
+		transparent 60%,
+		rgba(var(--secondary-color-rgb), 0.2) 40%
+	);
+	padding: 0 0.5rem;
+	border-radius: 4px;
+}
+
+/* 复古卡片样式 */
+.retro-card {
+	position: relative;
 	width: 100%;
-	max-width: 320px; /* 控制每个卡片的最大宽度 */
+	max-width: 320px;
+	cursor: pointer;
+	transition: transform 0.3s;
 }
-.card {
-	transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+.card-shadow {
+	background-color: #666;
+	border-radius: 12px;
+	transform: translateY(4px);
 }
-.card:hover {
+
+.card-edge {
+	background-color: #888;
+	border-radius: 12px;
+	transform: translateY(-4px);
+	transition: transform 0.2s;
+}
+
+.card-face {
+	background-color: white;
+	border: 3px solid #333;
+	border-radius: 12px;
+	transform: translateY(-4px);
+	transition: transform 0.2s;
+	overflow: hidden;
+}
+
+/* Banner 样式 */
+.banner-container {
+	height: 150px;
+	overflow: hidden;
+}
+
+.banner-wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.banner-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.banner-placeholder {
+	width: 100%;
+	height: 100%;
+}
+
+/* 内容区域样式 */
+.content-container {
+	height: 180px;
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+}
+
+.title {
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 0.5rem;
+}
+
+.subtitle {
+	font-weight: 900;
+	text-align: center;
+}
+
+/* 新增卡片样式 */
+.add-card .card-face {
+	background-color: #f8f8f8;
+	border: 3px solid #333;
+	height: 330px;
+}
+
+.add-content {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+}
+
+/* 交互效果 */
+.retro-card:hover {
 	transform: translateY(-5px);
+}
+
+.retro-card:hover .card-edge,
+.retro-card:hover .card-face {
+	transform: translateY(-6px);
+}
+
+.retro-card:active .card-edge,
+.retro-card:active .card-face {
+	transform: translateY(-2px);
+}
+
+/* 卡片装饰效果 */
+.card-face::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 40%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	pointer-events: none;
 }
 </style>

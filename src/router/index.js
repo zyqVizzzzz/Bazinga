@@ -5,8 +5,7 @@ import Collection from "@/views/Collection.vue";
 
 import Notebook from "@/views/Notebook.vue";
 import Profile from "@/views/Profile.vue";
-import Card from "@/views/Card.vue";
-import Card2 from "@/views/Card2.vue";
+import CardPreview from "@/views/CardPreview.vue";
 
 import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
@@ -38,8 +37,8 @@ const routes = [
 	},
 	{
 		path: "/collections/:id/:season/:episode",
-		name: "Card",
-		component: Card2,
+		name: "CardPreview",
+		component: CardPreview,
 	},
 	{
 		path: "/card-editor/:id/:season/:episode",
