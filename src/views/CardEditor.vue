@@ -4,21 +4,20 @@
 			<div
 				class="optionbox-container option-group flex-col justify-between space-y-4"
 			>
-				<button @click="backToPreview" class="btn btn-sm text-gray-800">
-					<i class="bi bi-box-arrow-left"></i>
-				</button>
-				<button
-					@click="saveDialogue(true)"
-					class="btn btn-sm text-white btn-primary"
-				>
-					<i class="bi bi-floppy"></i>
-				</button>
+				<div class="tooltip" data-tip="退出">
+					<button @click="backToPreview" class="btn btn-sm text-gray-800">
+						<i class="bi bi-box-arrow-left text-lg"></i>
+					</button>
+				</div>
+
+				<div class="tooltip" data-tip="保存">
+					<button @click="saveDialogue(true)" class="btn btn-sm text-gray-800">
+						<i class="bi bi-floppy text-lg"></i>
+					</button>
+				</div>
 			</div>
-			<div class="editor-container p-4 text-sm mt-4 relative">
-				<div
-					class="py-4 text-sm -mt-4 bg-white rounded shadow-editor"
-					style="overflow-y: auto"
-				>
+			<div class="editor-container text-sm mt-4 relative">
+				<div class="text-sm rounded shadow-editor" style="overflow-y: auto">
 					<div id="editor" class="editorjs-container"></div>
 				</div>
 			</div>
@@ -43,7 +42,7 @@
 										style="top: 2px"
 									></i>
 									<h3
-										class="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+										class="text-lg font-bold gradient-to-r from-primary to-secondary"
 									>
 										知识点
 									</h3>
@@ -215,7 +214,7 @@
 									</button>
 								</div>
 							</div>
-
+							<!-- 编辑表单结束 -->
 							<!-- 知识点列表 -->
 							<div v-else>
 								<div
@@ -1157,45 +1156,141 @@ function parseDialogueLine(line, tag) {
 }
 </script>
 <style scoped>
-.upload-placeholder {
-	border: 2px dashed #ddd;
-	height: 100%;
-	width: 100%;
+.editor-box {
+	position: relative;
+	gap: 2rem;
 }
 
-.upload-placeholder:hover {
-	background-color: #e2e8f0; /* 鼠标悬停时的背景色 */
+/* 选项按钮容器 */
+.optionbox-container {
+	margin-top: 5%;
+	position: sticky;
+	top: 10%;
+	right: 0;
+	height: 10vh;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
 }
 
+/* 复古按钮样式 */
+.optionbox-container button {
+	position: relative;
+	width: 3rem;
+	height: 3rem;
+	border: 2px solid #333;
+	background: white;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s;
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.optionbox-container button:hover {
+	transform: translate(2px, 2px);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.optionbox-container button:active {
+	transform: translate(4px, 4px);
+	box-shadow: none;
+}
+
+/* 编辑器容器 */
 .editor-container {
 	width: 100%;
 	text-align: left;
 	min-height: 500px;
+	border: 3px solid #333;
+	border-radius: 12px;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
 }
-.shadow-editor {
-	/* box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.1);  */
+
+.editorjs-container {
+	padding: 2rem;
+	min-height: 500px;
+	background-size: 100% 24px;
 }
-.shadow-knowledge {
-	box-shadow: 0 4px 8px rgba(var(--secondary-color-rgb), 0.1); /* 红色阴影 */
-}
-.edit-icon {
-	right: 0px;
-}
+
+/* 工具箱容器 */
 .toolbox-container {
 	margin-top: 20px;
 	position: sticky;
 	top: 5%;
 	right: 0;
 	height: calc(100vh - 200px);
-	overflow: scroll;
+	overflow-y: auto;
+	border: 3px solid #333;
+	border-radius: 12px;
+	background: white;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
 }
-.optionbox-container {
-	margin-top: 5%;
-	position: sticky;
-	top: 10%;
-	right: 0;
-	min-height: 50vh;
-	max-height: 70vh;
-	overflow: scroll;
+
+/* 工具箱装饰 */
+.decorated-card {
+	position: relative;
+	overflow: hidden;
+}
+
+/* 知识点列表样式 */
+.group {
+	border: 2px solid transparent;
+	transition: all 0.3s;
+}
+
+/* 滚动条样式 */
+.toolbox-container::-webkit-scrollbar {
+	width: 8px;
+}
+
+.toolbox-container::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+}
+
+.toolbox-container::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+}
+
+.toolbox-container::-webkit-scrollbar-thumb:hover {
+	background: rgba(0, 0, 0, 0.3);
+}
+
+/* 空状态样式 */
+.text-gray-500 {
+	position: relative;
+	padding: 2rem;
+	border: 2px dashed #ccc;
+	border-radius: 8px;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		rgba(0, 0, 0, 0.02) 10px,
+		rgba(0, 0, 0, 0.02) 20px
+	);
+}
+
+.text-gray-500 i {
+	font-size: 2.5rem;
+	margin-bottom: 0.5rem;
+}
+
+/* 顶部装饰条 */
+.bg-gradient-to-r {
+	height: 4px;
+	background: repeating-linear-gradient(
+		90deg,
+		rgba(var(--primary-color-rgb), 0.3),
+		rgba(var(--secondary-color-rgb), 0.3) 20px,
+		rgba(var(--primary-color-rgb), 0.3) 40px
+	);
+}
+
+/* 按钮悬停效果 */
+.btn-ghost:hover {
+	background: rgba(var(--secondary-color-rgb), 0.1);
+	transform: translateY(-1px);
 }
 </style>

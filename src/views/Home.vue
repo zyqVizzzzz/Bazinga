@@ -55,7 +55,7 @@
 			<button class="retro-btn-medium" @click="goToAllScenes">
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face"><- More -></div>
+						<div class="btn-face text-sm">查看更多</div>
 					</div>
 				</div>
 			</button>

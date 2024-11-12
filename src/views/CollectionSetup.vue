@@ -678,18 +678,6 @@ const uploadBanner = async (file) => {
 	border: 2px solid #333;
 	border-radius: 50%;
 	margin-top: -8px;
-}
-<style scoped>
-/* 接上文的样式继续 */
-
-.retro-range::-webkit-slider-thumb {
-	-webkit-appearance: none;
-	width: 24px;
-	height: 24px;
-	background: white;
-	border: 2px solid #333;
-	border-radius: 50%;
-	margin-top: -8px;
 	cursor: pointer;
 	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
 }

@@ -16,7 +16,7 @@
 				<div class="scene">
 					<div
 						class="card w-full bg-base-100 border-4 border-black manga-card"
-						:class="{ flipped: isFlipped }"
+						:class="{ flipped: isFlipped, 'box-shadow-back': isFlipped }"
 					>
 						<!-- 正面内容 -->
 						<div class="front">
@@ -80,33 +80,40 @@
 
 						<!-- 背面内容 -->
 						<div class="back">
-							<div
-								class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
-							></div>
-							<div
-								class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 -rotate-45 -translate-x-8 translate-y-8"
-							></div>
 							<div class="card-body h-full">
-								<!-- 标题栏 -->
-								<div class="flex justify-between items-center mb-4">
-									<h2
-										class="card-title font-bold -skew-x-6 text-2xl text-shadow"
-									>
-										{{ currentDialogue.title }}
-									</h2>
-									<div class="flex items-center gap-2">
-										<span class="badge badge-primary badge-outline rotate-2">
-											Episode {{ currentPage }}
-										</span>
+								<!-- 终端标题栏 -->
+								<div class="terminal-title text-left">
+									<div class="terminal-header">
+										<span class="terminal-dot red relative top-[2px]"></span>
+										<span class="terminal-dot yellow relative top-[2px]"></span>
+										<span class="terminal-dot green relative top-[2px]"></span>
+										<span class="terminal-title-text">trust_terminal.exe</span>
 									</div>
 								</div>
-								<PracticeCard
-									v-if="currentPractice.length"
-									:currentPractice="currentPractice"
-									:showHints="showHints"
-									:currentKnowledgePoints="currentKnowledgePoints"
-									class="h-full border-2 border-black rounded-lg py-10 practice-box"
-								/>
+								<!-- 主终端容器 -->
+								<div class="retro-terminal">
+									<div class="terminal-face">
+										<!-- 命令提示符 -->
+										<div class="terminal-prompt mb-6">
+											<span class="text-accent">student@PRATICE</span>
+											<span class="text-accent mr-2">:</span>
+											<span class="text-gray-400"
+												>~/episode/{{ currentPage }}</span
+											>
+											<span class="text-gray-400">$</span>
+											<span class="text-gray-200 ml-2"
+												>run {{ currentDialogue.title }}.sh</span
+											>
+										</div>
+										<PracticeCard
+											v-if="currentPractice.length"
+											:currentPractice="currentPractice"
+											:showHints="showHints"
+											:currentKnowledgePoints="currentKnowledgePoints"
+											class="h-full practice-box"
+										/>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -673,9 +680,13 @@ const jumpToPageBlur = (isTrue) => {
 	height: 100%;
 	min-height: 550px;
 	border-radius: 5px;
-	transition: transform 0.8s;
+	transition: transform 1.4s;
 	transform-style: preserve-3d;
-	box-shadow: 6px 4px 0 0 rgba(var(--primary-color-rgb), 0.4);
+	box-shadow: 6px 6px 0 0 rgba(var(--primary-color-rgb), 0.5);
+}
+
+.box-shadow-back {
+	box-shadow: -6px 6px 0 0 rgba(var(--accent-color-rgb), 0.8);
 }
 
 /* 翻转状态 */
@@ -695,17 +706,100 @@ const jumpToPageBlur = (isTrue) => {
 	background: white;
 }
 
-/* 正面默认 */
 .front {
 	transform: rotateY(0deg);
 }
-
-/* 背面默认旋转180度 */
-.back {
-	transform: rotateY(180deg);
+/* 纹理效果 */
+.front::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.1) 2px,
+		rgba(0, 0, 0, 0.03) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
 }
 
-/* 其他样式保持不变 */
+/* 光泽效果 */
+.front::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 50%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	border-radius: 9px 9px 0 0;
+	pointer-events: none;
+}
+
+/* 背面旋转180度 */
+.back {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	backface-visibility: hidden;
+	color: var(--accent-color);
+	background-color: rgba(12, 12, 12, 0.8);
+	animation: crt-flicker 0.15s infinite;
+	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
+	transform: rotateY(180deg);
+
+	/* background-color: rgba(12, 12, 12, 0.8);
+	border: 3px solid #333;
+	border-radius: 12px;
+	padding: 2rem;
+	transform: translateY(-4px);
+	color: var(--accent-color);
+	position: relative;
+	overflow: hidden;
+	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
+	animation: crt-flicker 0.15s infinite;
+	height: 100%; */
+}
+/* 新增装饰性细节 */
+.back::before {
+	content: " ";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background: linear-gradient(
+		to bottom,
+		rgba(18, 16, 16, 0) 50%,
+		rgba(0, 0, 0, 0.1) 50%
+	);
+	background-size: 100% 4px;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.terminal-dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 9999px;
+}
+
+.terminal-dot.red {
+	background-color: var(--secondary-color);
+}
+.terminal-dot.green {
+	background-color: var(--primary-color);
+}
+.terminal-dot.yellow {
+	background-color: var(--accent-color);
+}
+
 .dialogue-box {
 	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
 }
@@ -775,7 +869,7 @@ const jumpToPageBlur = (isTrue) => {
 	font-family: "Comic Sans MS", cursive;
 }
 
-/* 添加纹理效果 */
+/* 纹理效果 */
 .btn-face::before {
 	content: "";
 	position: absolute;
@@ -807,18 +901,6 @@ const jumpToPageBlur = (isTrue) => {
 	pointer-events: none;
 }
 
-/* 禁用状态 */
-.retro-btn:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-}
-
-.retro-btn:disabled .btn-face {
-	background-color: #ddd;
-	border-color: #999;
-	color: #999;
-}
-
 /* 翻页按钮样式 */
 .retro-btn {
 	position: relative;
@@ -833,6 +915,14 @@ const jumpToPageBlur = (isTrue) => {
 .retro-btn.option {
 	width: 4rem;
 	height: 2.2rem;
+}
+
+/* 按钮按下效果 */
+.retro-btn:active .btn-edge,
+.retro-btn:active .btn-face,
+.retro-btn.btn-active .btn-edge,
+.retro-btn.btn-active .btn-face {
+	transform: translateY(0);
 }
 
 .btn-shadow {
@@ -957,6 +1047,16 @@ const jumpToPageBlur = (isTrue) => {
 	pointer-events: none;
 }
 
+/* 显示屏反光动画 */
+@keyframes shine {
+	from {
+		transform: translateX(-200%) rotate(-45deg);
+	}
+	to {
+		transform: translateX(200%) rotate(-45deg);
+	}
+}
+
 /* 输入框样式 */
 .retro-input {
 	width: 100%;
@@ -1002,13 +1102,29 @@ const jumpToPageBlur = (isTrue) => {
 	color: #999;
 }
 
-/* 显示屏反光动画 */
-@keyframes shine {
-	from {
-		transform: translateX(-200%) rotate(-45deg);
-	}
-	to {
-		transform: translateX(200%) rotate(-45deg);
-	}
+.retro-terminal {
+	text-align: left;
+	align-items: center;
+	flex: 1 1 auto;
+}
+
+/* 终端标题样式 */
+.terminal-title {
+	position: relative;
+	display: inline-block;
+	padding: 0 1rem;
+	width: 100%;
+	flex: 0 0 30px;
+}
+
+.terminal-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+.terminal-title-text {
+	margin-left: 1rem;
+	color: #666;
 }
 </style>
