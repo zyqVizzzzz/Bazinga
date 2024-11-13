@@ -62,7 +62,7 @@
 		</div>
 
 		<!-- Next部分 -->
-		<div class="w-full" style="margin-top: 120px">
+		<div class="w-full" style="margin-top: 100px">
 			<!-- Terminal-style title -->
 			<div class="terminal-title text-center mb-6">
 				<div class="terminal-header">
@@ -428,13 +428,13 @@ const goToCollection = (id) => {
 }
 
 .terminal-dot.red {
-	background-color: #ff5f56;
-}
-.terminal-dot.yellow {
-	background-color: #ffbd2e;
+	background-color: var(--secondary-color);
 }
 .terminal-dot.green {
-	background-color: #27c93f;
+	background-color: var(--primary-color);
+}
+.terminal-dot.yellow {
+	background-color: var(--accent-color);
 }
 
 .terminal-title-text {

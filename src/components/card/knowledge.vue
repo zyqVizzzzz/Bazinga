@@ -20,7 +20,7 @@
 				class="flex justify-center items-center h-full"
 			>
 				<div class="knowledge-card overflow-hidden w-full h-full relative">
-					<div class="card-body block py-4 px-6">
+					<div class="card-body block py-8 px-6">
 						<!-- 单词及音标 -->
 						<h3
 							class="card-title text-secondary text-lg mb-1 text-left"

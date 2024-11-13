@@ -93,23 +93,6 @@
 	align-items: center;
 }
 
-.terminal-dot {
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	margin-right: 6px;
-}
-
-.terminal-dot.red {
-	background: #ff5f56;
-}
-.terminal-dot.yellow {
-	background: #ffbd2e;
-}
-.terminal-dot.green {
-	background: #27c93f;
-}
-
 .terminal-title {
 	margin-left: 8px;
 	color: #888;
