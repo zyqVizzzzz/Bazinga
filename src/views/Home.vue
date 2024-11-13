@@ -65,21 +65,18 @@
 		<!-- Roadmap -->
 		<div class="w-full" style="margin-top: 80px">
 			<!-- 标题 -->
-			<div class="terminal-title text-center mb-6">
+			<div class="terminal-title text-center" @click="showDevLog = !showDevLog">
 				<div class="terminal-header">
 					<span class="terminal-dot red"></span>
 					<span class="terminal-dot yellow"></span>
 					<span class="terminal-dot green"></span>
 					<span class="terminal-title-text">dev_log.md</span>
+					<span class="cursor text-xs">_</span>
 				</div>
-				<h1 class="text-2xl font-mono font-bold text-shadow-retro">
-					> {{ t("home.devLog") }}
-					<span class="cursor">_</span>
-				</h1>
 			</div>
 
 			<!-- Dev Log -->
-			<div class="retro-terminal max-w-3xl mx-auto">
+			<div class="retro-terminal max-w-3xl mx-auto" v-if="showDevLog">
 				<div class="terminal-shadow">
 					<div class="terminal-edge">
 						<div class="terminal-face">
@@ -144,6 +141,7 @@ import { useI18n } from "vue-i18n";
 
 const { t, locale } = useI18n();
 
+const showDevLog = ref(false);
 const router = useRouter();
 const scenes = ref([]);
 const articles = ref([
@@ -434,19 +432,14 @@ const goToCollection = (id) => {
 }
 
 .terminal-title-text {
-	margin-left: 1rem;
+	margin-left: 0.5rem;
 	color: #666;
 	font-family: monospace;
 }
 
 .cursor {
-	animation: blink 1s step-start infinite;
-}
-
-.terminal-title-text {
-	margin-left: 1rem;
 	color: #666;
-	font-family: monospace;
+	animation: blink 1s step-start infinite;
 }
 
 @keyframes blink {

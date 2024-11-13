@@ -7,10 +7,9 @@
 			<div
 				class="personal-card bg-white shadow-lg rounded-lg p-6 pb-10 text-center w-72 h-auto"
 			>
-				<img
-					class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-neutral"
-					:src="user.avatarUrl"
-					alt="Profile Avatar"
+				<AvatarUpload
+					:user="user"
+					@update:avatarUrl="(url) => (user.profilePic = url)"
 				/>
 
 				<NicknameCard
@@ -178,9 +177,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import apiClient from "@/api";
-import avatar from "@/assets/avatar.jpg";
 import NicknameCard from "@/components/profile/nickname.vue";
 import StoryProgressDetail from "@/components/profile/detail-story.vue";
 import WordProgressDetail from "@/components/profile/detail-word.vue";
@@ -188,6 +186,8 @@ import FragmentProgressDetail from "@/components/profile/detail-fragment.vue";
 import SignatureCard from "@/components/profile/signature.vue";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
+import AvatarUpload from "@/components/profile/avatar-upload.vue";
+import avatar from "@/assets/avatar.jpg";
 
 const { t, locale } = useI18n();
 
@@ -268,7 +268,7 @@ const cancelPasswordEdit = () => {
 };
 
 const user = ref({
-	avatarUrl: avatar,
+	// avatarUrl: avatar,
 });
 
 const getUserProfile = async () => {
