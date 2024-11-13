@@ -3,7 +3,11 @@
 		<!-- 标题 -->
 		<div class="retro-title-box my-10 text-center">
 			<h1 class="text-2xl font-bold text-shadow-retro">
-				{{ resourceId ? "Update" : "Create" }} Collection
+				{{
+					resourceId
+						? t("collectionSetup.updateTitle")
+						: t("collectionSetup.createTitle")
+				}}
 			</h1>
 		</div>
 
@@ -21,8 +25,10 @@
 								<div class="form-control">
 									<label class="retro-label">
 										<span class="label-text"
-											>Title
-											<span class="text-red-500">（require）</span>
+											>{{ t("collectionSetup.form.title") }}
+											<span class="text-red-500"
+												>({{ t("collectionSetup.form.titleDesc") }})</span
+											>
 										</span>
 									</label>
 									<div class="retro-input-wrapper">
@@ -33,7 +39,7 @@
 											:class="{
 												'border-red-500': showError && !noteForm.showName,
 											}"
-											placeholder="Please enter collection name"
+											:placeholder="t('collectionSetup.form.titleInput')"
 										/>
 									</div>
 								</div>
@@ -41,14 +47,16 @@
 								<!-- 副标题输入 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Subtitle</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.subTitle")
+										}}</span>
 									</label>
 									<div class="retro-input-wrapper">
 										<input
 											v-model="noteForm.name"
 											type="text"
 											class="retro-input"
-											placeholder="Please enter subtitle"
+											:placeholder="t('collectionSetup.form.subTitleInput')"
 										/>
 									</div>
 								</div>
@@ -56,13 +64,15 @@
 								<!-- 描述文本框 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Description</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.description")
+										}}</span>
 									</label>
 									<div class="retro-textarea-wrapper">
 										<textarea
 											v-model="noteForm.description"
 											class="retro-textarea"
-											placeholder="Please enter collection description"
+											:placeholder="t('collectionSetup.form.descriptionInput')"
 										></textarea>
 									</div>
 								</div>
@@ -81,13 +91,17 @@
 								<!-- Banner上传区域 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Banner</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.banner")
+										}}</span>
 									</label>
 									<div class="retro-upload-area" @click="triggerFileInput">
 										<template v-if="!bannerPreview">
 											<div class="upload-content">
 												<i class="bi bi-upload text-2xl"></i>
-												<span class="mt-2">click to upload banner image</span>
+												<span class="mt-2">{{
+													t("collectionSetup.form.bannerInput")
+												}}</span>
 											</div>
 										</template>
 										<template v-else>
@@ -110,7 +124,9 @@
 								<!-- 主题色选择器 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Theme Color</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.themeColor")
+										}}</span>
 									</label>
 									<div class="retro-color-picker">
 										<input
@@ -136,7 +152,9 @@
 								<!-- 难度滑块 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Level (1-5)</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.level")
+										}}</span>
 									</label>
 									<div class="retro-range-wrapper">
 										<input
@@ -147,7 +165,8 @@
 											max="5"
 										/>
 										<div class="text-center mt-2">
-											Level: {{ noteForm.difficulty }}
+											{{ t("collectionSetup.form.level") }}:
+											{{ noteForm.difficulty }}
 										</div>
 									</div>
 								</div>
@@ -157,7 +176,7 @@
 									<textarea
 										v-model="noteForm.difficultyDetails"
 										class="retro-textarea"
-										placeholder="Please enter difficulty description"
+										:placeholder="t('collectionSetup.form.levelInput')"
 									></textarea>
 								</div>
 							</form>
@@ -175,7 +194,9 @@
 								<!-- Seasons选择器 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">Seasons</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.seasons")
+										}}</span>
 									</label>
 									<div class="flex space-x-4 items-center">
 										<div class="retro-select-wrapper flex-1">
@@ -225,7 +246,9 @@
 								<!-- Episodes网格 -->
 								<div class="form-control" v-if="selectedSeason">
 									<label class="retro-label">
-										<span class="label-text">Episodes</span>
+										<span class="label-text">{{
+											t("collectionSetup.form.episodes")
+										}}</span>
 									</label>
 									<div class="episode-group grid grid-cols-5 gap-4">
 										<div
@@ -269,7 +292,7 @@
 			<button class="retro-btn-large" @click="submitNote">
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face">Submit</div>
+						<div class="btn-face">{{ t("collectionSetup.form.submit") }}</div>
 					</div>
 				</div>
 			</button>
@@ -280,7 +303,7 @@
 			>
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face">Delete Collection</div>
+						<div class="btn-face">{{ t("collectionSetup.form.delete") }}</div>
 					</div>
 				</div>
 			</button>
@@ -291,11 +314,12 @@
 			<div class="retro-modal">
 				<div class="modal-content">
 					<h3 class="text-lg font-bold mb-6">
-						Confirm deletion of the current collection?
-						<div>
-							<mark class="text-red-500">This action cannot be undone.</mark>
-						</div>
-						<div class="text-sm mt-2 text-gray-500">{ 此操作不可撤销 }</div>
+						{{ t("collectionSetup.form.deleteTips") }}
+						<!-- <div class="text-base"> -->
+						<mark class="text-red-500">{{
+							t("collectionSetup.form.deleteTips2")
+						}}</mark>
+						<!-- </div> -->
 					</h3>
 					<div class="flex space-x-4 justify-center">
 						<button
@@ -304,14 +328,18 @@
 						>
 							<div class="btn-shadow">
 								<div class="btn-edge">
-									<div class="btn-face">Confirm</div>
+									<div class="btn-face">
+										{{ t("collectionSetup.form.deleteConfirm") }}
+									</div>
 								</div>
 							</div>
 						</button>
 						<button class="retro-btn-small modal-btn" @click="closeDeleteModal">
 							<div class="btn-shadow">
 								<div class="btn-edge">
-									<div class="btn-face">Cancel</div>
+									<div class="btn-face">
+										{{ t("collectionSetup.form.deleteCancel") }}
+									</div>
 								</div>
 							</div>
 						</button>
@@ -327,6 +355,9 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
@@ -520,7 +551,6 @@ const uploadBanner = async (file) => {
 </script>
 
 <style scoped>
-/* 基础复古卡片样式 */
 .retro-card {
 	position: relative;
 	width: 100%;
@@ -574,11 +604,10 @@ const uploadBanner = async (file) => {
 }
 
 .text-shadow-retro {
-	text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2),
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2),
 		-1px -1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* 复古输入框样式 */
 .retro-input-wrapper {
 	position: relative;
 	background: white;
@@ -600,7 +629,6 @@ const uploadBanner = async (file) => {
 	outline: none;
 }
 
-/* 复古文本框样式 */
 .retro-textarea-wrapper {
 	position: relative;
 	background: white;
@@ -623,7 +651,6 @@ const uploadBanner = async (file) => {
 	outline: none;
 }
 
-/* 复古上传区域 */
 .retro-upload-area {
 	position: relative;
 	height: 160px;
@@ -655,7 +682,6 @@ const uploadBanner = async (file) => {
 	object-fit: cover;
 }
 
-/* 复古滑块样式 */
 .retro-range-wrapper {
 	padding: 1rem;
 	background: white;
@@ -690,7 +716,6 @@ const uploadBanner = async (file) => {
 	border: 1px solid #333;
 }
 
-/* 复古选择器样式 */
 .retro-select-wrapper {
 	position: relative;
 	background: white;
@@ -714,7 +739,6 @@ const uploadBanner = async (file) => {
 	outline: none;
 }
 
-/* 复古按钮样式 */
 .retro-btn-small {
 	position: relative;
 	width: 2.5rem;
@@ -779,7 +803,6 @@ const uploadBanner = async (file) => {
 	font-weight: bold;
 }
 
-/* 按钮交互效果 */
 .retro-btn-small:hover .btn-face,
 .retro-btn-large:hover .btn-face {
 	background-color: white;
@@ -792,7 +815,6 @@ const uploadBanner = async (file) => {
 	transform: translateY(0);
 }
 
-/* 危险按钮样式 */
 .retro-btn-small.danger .btn-face,
 .retro-btn-large.danger .btn-face {
 	background-color: #fee2e2;
@@ -805,14 +827,12 @@ const uploadBanner = async (file) => {
 	background-color: #fecaca;
 }
 
-/* 禁用状态 */
 .retro-btn-small:disabled,
 .retro-btn-large:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
 
-/* Episodes网格样式 */
 .retro-episode-grid {
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
@@ -880,7 +900,6 @@ const uploadBanner = async (file) => {
 	background: rgba(var(--primary-color-rgb), 0.2);
 }
 
-/* 复古颜色选择器 */
 .retro-color-picker {
 	position: relative;
 	background: white;
@@ -906,7 +925,6 @@ const uploadBanner = async (file) => {
 	border-radius: 4px;
 }
 
-/* 复古模态框样式 */
 .retro-modal {
 	background: white;
 	border: 3px solid #333;
@@ -918,7 +936,6 @@ const uploadBanner = async (file) => {
 	margin: 2rem auto;
 }
 
-/* 标签样式 */
 .retro-label {
 	display: block;
 	margin-bottom: 0.5rem;
@@ -926,7 +943,6 @@ const uploadBanner = async (file) => {
 	color: #333;
 }
 
-/* 新增装饰性细节 */
 .card-face::before {
 	content: "";
 	position: absolute;

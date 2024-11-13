@@ -24,14 +24,18 @@
 				<div class="progress-info mt-4 space-y-4">
 					<!-- 剧集进度 -->
 					<div class="progress-bar relative">
-						<p class="text-xs text-gray-700 mb-1">剧集进度</p>
+						<p class="text-xs text-gray-700 mb-1">
+							{{ t("profile.story_progress") }}
+						</p>
 						<div class="barcode-progress bg-primary primary-progress"></div>
 						<StoryProgressDetail />
 					</div>
 
 					<!-- 单词收集进度 -->
 					<div class="progress-bar relative">
-						<p class="text-xs text-gray-700 mb-1">单词进度</p>
+						<p class="text-xs text-gray-700 mb-1">
+							{{ t("profile.word_progress") }}
+						</p>
 						<div class="barcode-progress bg-secondary secondary-progress"></div>
 						<WordProgressDetail />
 					</div>
@@ -49,9 +53,9 @@
 				<div class="arrow-base arrow-2" style="z-index: 999"></div>
 				<button
 					@click="linkToMembership"
-					class="edit-button w-40 h-10 bg-white pl-2 shadow-lg text-center text-bold"
+					class="edit-button w-40 h-10 bg-white shadow-lg text-center text-bold"
 				>
-					加入社区！
+					{{ t("profile.button_community") }}
 				</button>
 			</div>
 
@@ -60,9 +64,9 @@
 				<button
 					v-if="!isEditingAccount"
 					@click="editAccount"
-					class="account-button w-40 h-10 bg-white pl-2 shadow-lg text-center text-bold"
+					class="account-button w-40 h-10 bg-white shadow-lg text-center text-bold"
 				>
-					账户设置
+					{{ t("profile.button_account") }}
 				</button>
 				<!-- 编辑区域卡片 -->
 				<div
@@ -77,7 +81,7 @@
 								id="email"
 								v-model="user.email"
 								class="input input-bordered w-full text-sm input-sm"
-								placeholder="输入新的邮箱地址"
+								:placeholder="t('profile.account_form.email_input')"
 							/>
 						</div>
 
@@ -87,13 +91,13 @@
 								class="text-sm w-full py-2 bg-primary hover:bg-primary-focus text-white rounded-lg font-semibold"
 								@click="saveAccountChanges"
 							>
-								保存更改
+								{{ t("profile.account_form.save_account") }}
 							</button>
 							<button
 								class="text-sm w-full py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold"
 								@click="cancelEdit"
 							>
-								取消
+								{{ t("profile.account_form.cancel_account") }}
 							</button>
 						</div>
 
@@ -102,7 +106,7 @@
 							class="text-xs text-blue-500 text-right mt-2 pr-2 cursor-pointer"
 							@click="togglePasswordEdit"
 						>
-							修改密码
+							{{ t("profile.change_password") }}
 						</p>
 					</div>
 
@@ -115,7 +119,7 @@
 								id="current-password"
 								v-model="passwordForm.currentPassword"
 								class="input input-bordered w-full text-sm input-sm"
-								placeholder="输入当前密码"
+								:placeholder="t('profile.account_form.password_input')"
 							/>
 						</div>
 
@@ -126,7 +130,7 @@
 								id="new-password"
 								v-model="passwordForm.newPassword"
 								class="input input-bordered w-full text-sm input-sm"
-								placeholder="输入新密码"
+								:placeholder="t('profile.account_form.password_new_input')"
 							/>
 						</div>
 
@@ -137,7 +141,7 @@
 								id="confirm-password"
 								v-model="passwordForm.confirmPassword"
 								class="input input-bordered w-full text-sm input-sm"
-								placeholder="确认新密码"
+								:placeholder="t('profile.account_form.password_confirm_input')"
 							/>
 						</div>
 						<!-- 错误消息显示 -->
@@ -151,13 +155,13 @@
 								class="w-full py-2 bg-primary hover:bg-primary-focus text-white rounded-lg font-semibold text-sm"
 								@click="validateAndSavePassword"
 							>
-								保存密码
+								{{ t("profile.account_form.save_password") }}
 							</button>
 							<button
 								class="w-full py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold text-sm"
 								@click="cancelPasswordEdit"
 							>
-								取消
+								{{ t("profile.account_form.cancel_password") }}
 							</button>
 						</div>
 					</div>
@@ -183,6 +187,9 @@ import WordProgressDetail from "@/components/profile/detail-word.vue";
 import FragmentProgressDetail from "@/components/profile/detail-fragment.vue";
 import SignatureCard from "@/components/profile/signature.vue";
 import { showToast } from "@/components/common/toast.js";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
 
 const router = useRouter();
 const isEditingAccount = ref(false); // 控制编辑区域显示状态
@@ -323,10 +330,31 @@ onMounted(() => {
 	height: calc(100vh - 128px);
 	min-height: 770px;
 }
-/* 个人信息卡片样式保持不变 */
+
 .personal-card {
 	width: 18rem;
 	z-index: 999;
+	border: 3px solid #333;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	background: repeating-linear-gradient(
+			90deg,
+			transparent,
+			transparent 20px,
+			rgba(0, 0, 0, 0.02) 20px,
+			rgba(0, 0, 0, 0.02) 40px
+		),
+		white;
+	position: relative;
+}
+
+.personal-card img {
+	border: 3px solid #333;
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+	transition: transform 0.3s;
+}
+
+.personal-card img:hover {
+	transform: scale(1.05);
 }
 
 .edit-module {
@@ -344,8 +372,8 @@ onMounted(() => {
 	right: -90px;
 }
 .edit-button {
-	border: none; /* 无边框 */
-	border-radius: 0px; /* 圆角 */
+	border: none;
+	border-radius: 0px;
 	font-size: 14px;
 	font-weight: 900;
 	width: 130px;
@@ -355,7 +383,7 @@ onMounted(() => {
 
 .account-module {
 	top: -80px;
-	right: -440px;
+	right: -390px;
 }
 .arrow-6 {
 	width: 120px;
@@ -377,22 +405,17 @@ onMounted(() => {
 	transform: rotate(10deg);
 }
 
-/* 条形码样式 */
+/* 条形码 */
 .barcode-progress {
-	width: 100%;
-	height: 12px;
-	background: repeating-linear-gradient(
-		to right,
-		transparent 0px,
-		transparent 2px,
-		rgba(0, 0, 0, 0.2) 2px,
-		rgba(0, 0, 0, 0.2) 4px
-	);
+	height: 16px;
+	border: 2px solid #333;
+	border-radius: 4px;
+	background: white;
 	position: relative;
 	overflow: hidden;
 }
 
-/* 动态进度条 */
+/* 进度条 */
 .barcode-progress::before {
 	content: "";
 	position: absolute;
@@ -403,96 +426,7 @@ onMounted(() => {
 	background-color: rgba(0, 0, 0, 0.1);
 }
 
-.primary-progress::before {
-	background-color: rgba(0, 0, 255, 0.2);
-}
-
-.secondary-progress::before {
-	background-color: rgba(255, 0, 211, 0.2);
-}
-
-.accent-progress::before {
-	background-color: rgba(0, 215, 192, 0.2);
-}
-
-.sign-container {
-	width: 150%;
-	font-size: 0.875rem;
-	position: absolute;
-	left: 50%;
-	top: 520px;
-	border-width: 2px;
-	padding: 0.5rem;
-	border-color: #000;
-	transform: translate(-50%, -33%);
-	z-index: 10;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: auto;
-}
-
-.edit-description {
-	transform: rotate(-3deg);
-	bottom: -20px;
-	left: -30px;
-}
-
-.account-edit-card {
-	position: absolute;
-	left: -250px;
-	top: -10px;
-	transform: rotate(-2deg);
-	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.2); /* 蓝色阴影 */
-}
-.profile-page {
-	height: calc(100vh - 128px);
-	min-height: 770px;
-}
-
-/* 个人信息卡片改造 */
-.personal-card {
-	width: 18rem;
-	z-index: 999;
-	border: 3px solid #333;
-	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
-	background: repeating-linear-gradient(
-			90deg,
-			transparent,
-			transparent 20px,
-			rgba(0, 0, 0, 0.02) 20px,
-			rgba(0, 0, 0, 0.02) 40px
-		),
-		white;
-	position: relative;
-}
-
-/* 头像样式 */
-.personal-card img {
-	border: 3px solid #333;
-	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
-	transition: transform 0.3s;
-}
-
-.personal-card img:hover {
-	transform: scale(1.05);
-}
-
-/* 进度条改造 */
-.progress-bar {
-	margin: 1rem 0;
-}
-
-.barcode-progress {
-	height: 16px;
-	border: 2px solid #333;
-	border-radius: 4px;
-	background: white;
-	position: relative;
-	overflow: hidden;
-}
-
-/* 进度条动画效果 */
+/* 进度条动画 */
 .primary-progress::before {
 	background: repeating-linear-gradient(
 		45deg,
@@ -523,7 +457,45 @@ onMounted(() => {
 	);
 }
 
-/* 按钮样式改造 */
+.sign-container {
+	width: 150%;
+	font-size: 0.875rem;
+	position: absolute;
+	left: 50%;
+	top: 520px;
+	border-width: 2px;
+	padding: 0.5rem;
+	border-color: #000;
+	transform: translate(-50%, -33%);
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: auto;
+}
+
+.edit-description {
+	transform: rotate(-3deg);
+	bottom: -20px;
+	left: -30px;
+}
+
+.account-edit-card {
+	position: absolute;
+	left: -250px;
+	top: -10px;
+	transform: rotate(-2deg);
+	box-shadow: 0 4px 12px rgba(0, 0, 255, 0.2);
+}
+.profile-page {
+	height: calc(100vh - 128px);
+	min-height: 770px;
+}
+
+.progress-bar {
+	margin: 1rem 0;
+}
+
 .edit-button,
 .account-button {
 	position: relative;
@@ -544,20 +516,17 @@ onMounted(() => {
 	transform: translate(-2px, -2px);
 }
 
-/* 箭头装饰改造 */
 .arrow-2,
 .arrow-6 {
 	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
 }
 
-/* 账户编辑卡片改造 */
 .account-edit-card {
 	border: 3px solid #333;
 	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
 	background: white;
 }
 
-/* 输入框样式 */
 .input {
 	border: 2px solid #333;
 	background: rgba(255, 255, 255, 0.9);
@@ -581,12 +550,10 @@ onMounted(() => {
 	border-top-left-radius: 100%;
 }
 
-/* 分隔线样式 */
 .border-b {
 	border-bottom: 2px dashed #333;
 }
 
-/* 签名卡片样式 */
 .sign-container {
 	border: 3px solid #333;
 	background: white;
@@ -594,14 +561,13 @@ onMounted(() => {
 	transform: translate(-50%, -33%) rotate(-2deg);
 }
 
-/* 错误消息样式 */
 .text-red-500 {
 	color: #dc2626;
 	font-family: "Comic Sans MS", cursive;
 	font-size: 0.75rem;
 }
 
-/* 按钮动画效果 */
+/* 按钮动画 */
 @keyframes pulse {
 	0% {
 		transform: scale(1);

@@ -18,14 +18,14 @@
 					<div class="output-block">
 						<div class="stat-line">
 							<span class="hex-prefix">0x01</span>
-							<span class="stat-text">词汇库数量:</span>
+							<span class="stat-text">{{ t("profile.vocabulary.v_01") }}:</span>
 							<span class="stat-value highlight-secondary">2</span>
 							<span class="loading-dots">...</span>
 						</div>
 
 						<div class="stat-line">
 							<span class="hex-prefix">0x02</span>
-							<span class="stat-text">词汇块处理:</span>
+							<span class="stat-text">{{ t("profile.vocabulary.v_02") }}:</span>
 							<span class="stat-value highlight-secondary">10</span>
 							<span class="loading-dots">...</span>
 						</div>
@@ -49,7 +49,11 @@
 		</div>
 	</div>
 </template>
-<script></script>
+<script setup>
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+</script>
 <style scoped>
 .word-module {
 	top: -140px;
@@ -80,7 +84,7 @@
 	background: #1a1a1a;
 	border: 3px solid #333;
 	border-radius: 8px;
-	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	box-shadow: 6px 6px 0 rgba(var(--secondary-color-rgb), 0.2);
 	overflow: hidden;
 	font-family: "Fira Code", monospace;
 }
@@ -100,7 +104,7 @@
 
 .terminal-content {
 	padding: 16px;
-	color: #00ff00;
+	color: var(--accent-color);
 }
 
 .command-line {
@@ -130,7 +134,7 @@
 }
 
 .stat-text {
-	color: #00ff00;
+	color: var(--accent-color);
 }
 
 .stat-value {

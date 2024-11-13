@@ -11,7 +11,7 @@
 				@click="goToHome"
 				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
 			>
-				<img src="../assets/banner2.png" style="width: 144px" alt="" />
+				<img src="../assets/banner2.png" class="w-[144px]" alt="" />
 			</a>
 		</div>
 		<div class="flex-none">
@@ -21,29 +21,37 @@
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToHome()"
-						>Home</a
+						>{{ t("nav.home") }}</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('collections')"
-						>Collections</a
+						>{{ t("nav.collections") }}</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('notebook')"
-						>Notes</a
+						>{{ t("nav.notes") }}</a
 					>
 				</li>
 				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('profile')"
-						>Profile</a
+						>{{ t("nav.profile") }}</a
 					>
+				</li>
+				<li>
+					<a
+						class="btn btn-white btn-ghost hover:text-inherit"
+						@click="changeLanguage"
+					>
+						<i class="bi bi-translate text-xl"></i>
+					</a>
 				</li>
 				<li v-if="isLogin">
 					<a class="btn btn-white btn-ghost hover:text-inherit" @click="logout">
@@ -56,7 +64,7 @@
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('login')"
-						>登录</a
+						>{{ t("nav.login") }}</a
 					>
 				</li>
 			</ul>
@@ -66,8 +74,11 @@
 <script setup>
 import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted, watch, computed } from "vue";
-
+import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
+
+const { t, locale } = useI18n();
+
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 const { setLoginState } = loginStore;
@@ -97,6 +108,16 @@ const logout = () => {
 		path: "/login",
 		query: { redirect: route.fullPath }, // 将当前路径作为 query 参数传递给登录页面
 	});
+};
+
+const changeLanguage = () => {
+	if (t("app.lang") === "zh-CN") {
+		locale.value = "en-US";
+		localStorage.setItem("language", "en-US");
+	} else {
+		locale.value = "zh-CN";
+		localStorage.setItem("language", "zh-CN");
+	}
 };
 
 // 在挂载时检查登录状态

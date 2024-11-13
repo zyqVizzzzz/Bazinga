@@ -5,7 +5,7 @@
 			<div class="btn-shadow">
 				<div class="btn-edge">
 					<div class="btn-face">
-						<span>Blind-Box</span>
+						<span>{{ t("notes.blindbox") }}</span>
 					</div>
 				</div>
 			</div>
@@ -20,7 +20,7 @@
 					class="retro-input"
 					@input="onInputWord"
 					@keydown.enter="searchWord"
-					placeholder="Quick search..."
+					:placeholder="t('notes.searchInput')"
 				/>
 			</div>
 			<button class="retro-btn-small" @click="searchWord">
@@ -63,7 +63,9 @@
 			<div class="btn-shadow">
 				<div class="btn-edge">
 					<div class="btn-face">
-						<span>{{ isImportantMode ? "Vocabulary" : "Star-List" }}</span>
+						<span>{{
+							isImportantMode ? t("notes.vocabulary") : t("notes.starlist")
+						}}</span>
 						<div v-if="showLightning" class="lightning-animation">
 							<FlashIcon :size="'4'" class="mr-2" />+1
 						</div>
@@ -80,6 +82,9 @@ import FlashIcon from "../icons/Flash.vue";
 import { useNotebookStore } from "@/store/index";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const notebookStore = useNotebookStore();
 const { toggleBlinkBox } = notebookStore;
 

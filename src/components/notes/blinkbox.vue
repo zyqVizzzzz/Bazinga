@@ -74,6 +74,9 @@
 import FlashIcon from "../icons/Flash.vue";
 import { ref } from "vue";
 import { useNotebookStore } from "@/store/index";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const notebookStore = useNotebookStore();
 const { toggleBlinkBox } = notebookStore;

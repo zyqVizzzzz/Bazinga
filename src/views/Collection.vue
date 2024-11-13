@@ -84,7 +84,7 @@
 			<div v-if="currentProgress.course" class="mb-10">
 				<div class="alert-content">
 					<span @click="goToLessonProgress" class="retro-link text-sm">
-						继续上次进度
+						{{ t("collection.continue") }}
 					</span>
 				</div>
 			</div>
@@ -147,6 +147,9 @@ import apiClient from "@/api";
 import { useAppStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
 import { hexToRgba, formatNumber } from "@/utils";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
 
 const appStore = useAppStore();
 const router = useRouter();

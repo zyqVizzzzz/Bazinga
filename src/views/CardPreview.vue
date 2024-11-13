@@ -21,64 +21,72 @@
 						<!-- 正面内容 -->
 						<div class="front">
 							<div
-								class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
-							></div>
-							<div
-								class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 -rotate-45 -translate-x-8 translate-y-8"
-							></div>
-							<div class="card-body relative">
-								<!-- 标题栏 -->
-								<div class="flex justify-between items-center mb-4">
-									<h2
-										class="card-title font-bold -skew-x-6 text-2xl text-shadow"
-									>
-										{{ currentDialogue.title }}
-									</h2>
-									<div class="flex items-center gap-2">
-										<span class="badge badge-primary badge-outline rotate-2">
-											Episode {{ currentPage }}
-										</span>
-									</div>
-								</div>
-
-								<!-- 主要内容区域 -->
-								<div class="card-content flex items-stretch relative">
-									<div class="w-4/6 transition-all duration-500">
-										<div
-											class="p-4 bg-white border-2 border-black rounded-lg relative dialogue-box"
+								v-if="isLoading"
+								class="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2"
+							>
+								<span class="loading loading-bars"></span>
+							</div>
+							<div v-if="!isLoading">
+								<div
+									class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
+								></div>
+								<div
+									class="absolute bottom-0 left-0 w-16 h-16 bg-secondary/10 -rotate-45 -translate-x-8 translate-y-8"
+								></div>
+								<div class="card-body relative">
+									<!-- 标题栏 -->
+									<div class="flex justify-between items-center mb-4">
+										<h2
+											class="card-title font-bold -skew-x-6 text-2xl text-shadow"
 										>
-											<DialogueCard
-												ref="dialogueCard"
-												:showHints="showHints"
-												:showTrans="showTrans"
-												:currentKnowledgePoints="currentKnowledgePoints"
-												:highlightedText="highlightedText"
-												:highlightedTextZh="highlightedTextZh"
-											/>
+											{{ currentDialogue.title }}
+										</h2>
+										<div class="flex items-center gap-2">
+											<span class="badge badge-primary badge-outline rotate-2">
+												Episode {{ currentPage }}
+											</span>
 										</div>
 									</div>
 
-									<!-- 知识点卡片 -->
-									<KnowledgeCard
-										v-if="isKnowledgeReady"
-										class="w-2/6 border-2 border-black rounded-lg knowledge-box"
-										style="background-color: var(--milk-color)"
-										:showHints="showHints"
-										:currentKnowledgePoints="currentKnowledgePoints"
-										:currentCustomNotes="
-											customNotes[currentDialogueIndex + 1] || []
-										"
-										:currentDialogueIndex="currentDialogueIndex"
-										:resourceId="episodeId"
-										@on-slide-change="handleSlideChange"
-										@update-note="handleUpdateNote"
-									/>
+									<!-- 主要内容区域 -->
+									<div class="card-content flex items-stretch relative">
+										<div class="w-4/6 transition-all duration-500">
+											<div
+												class="p-4 bg-white border-2 border-black rounded-lg relative dialogue-box"
+											>
+												<DialogueCard
+													ref="dialogueCard"
+													:showHints="showHints"
+													:showTrans="showTrans"
+													:currentKnowledgePoints="currentKnowledgePoints"
+													:highlightedText="highlightedText"
+													:highlightedTextZh="highlightedTextZh"
+												/>
+											</div>
+										</div>
+
+										<!-- 知识点卡片 -->
+										<KnowledgeCard
+											v-if="isKnowledgeReady"
+											class="w-2/6 border-2 border-black rounded-lg knowledge-box"
+											style="background-color: var(--milk-color)"
+											:showHints="showHints"
+											:currentKnowledgePoints="currentKnowledgePoints"
+											:currentCustomNotes="
+												customNotes[currentDialogueIndex + 1] || []
+											"
+											:currentDialogueIndex="currentDialogueIndex"
+											:resourceId="episodeId"
+											@on-slide-change="handleSlideChange"
+											@update-note="handleUpdateNote"
+										/>
+									</div>
 								</div>
 							</div>
 						</div>
 
 						<!-- 背面内容 -->
-						<div class="back">
+						<div class="back" v-if="!isLoading">
 							<div class="card-body h-full">
 								<!-- 标题 -->
 								<div class="terminal-title text-left">
@@ -315,7 +323,7 @@ const getLesson = async () => {
 
 				setTimeout(() => {
 					isLoading.value = false;
-				}, 1000);
+				}, 1500);
 
 				if (!knowledgeSuccess) {
 					throw new Error("Failed to load knowledge data");

@@ -5,7 +5,7 @@
 			class="absolute left-1/2 -translate-x-1/2 text-red-500 font-bold bg-paper"
 			style="width: 300px; top: -156px; z-index: 99; font-size: 13px"
 		>
-			理论上，你可以输入很多字，但最终只有50个字符会被上传，大概是25个汉字或50个英文字母...而实际情况是，我建议你起一个更短的名字，最好在10个字以内，因为这里没有任何换行的处理，字太多会超出卡片的宽度...当然，whatever，如果你非要这么做的话...
+			{{ t("profile.nickname_tips") }}
 			<p class="pt-1">那你就是个怪家伙...</p>
 		</div>
 		<div>
@@ -47,6 +47,9 @@
 </template>
 <script setup>
 import { ref, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const { nickname } = defineProps({
 	nickname: String,

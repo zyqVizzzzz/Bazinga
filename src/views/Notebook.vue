@@ -70,6 +70,9 @@ import EditCard from "@/components/notes/edit.vue";
 import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const notebookStore = useNotebookStore();
 const selectedNote = ref(null);

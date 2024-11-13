@@ -4,10 +4,12 @@
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
 				<div class="text-shadow-retro">
-					<span><mark class="retro-highlight">Collections</mark></span>
+					<span
+						><mark class="retro-highlight">{{ t("home.title") }}</mark></span
+					>
 				</div>
 				<div class="pronunciation">
-					<span>n. 合集(复数) - /kəˈlɛkʃənz/</span>
+					<span>n. {{ t("home.subTitle") }} - /kəˈlɛkʃənz/</span>
 				</div>
 			</h1>
 		</div>
@@ -54,14 +56,14 @@
 			<button class="retro-btn-medium" @click="goToAllScenes">
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face text-sm">查看更多</div>
+						<div class="btn-face text-sm">{{ t("home.more") }}</div>
 					</div>
 				</div>
 			</button>
 		</div>
 
 		<!-- Roadmap -->
-		<div class="w-full" style="margin-top: 100px">
+		<div class="w-full" style="margin-top: 80px">
 			<!-- 标题 -->
 			<div class="terminal-title text-center mb-6">
 				<div class="terminal-header">
@@ -71,7 +73,7 @@
 					<span class="terminal-title-text">dev_log.md</span>
 				</div>
 				<h1 class="text-2xl font-mono font-bold text-shadow-retro">
-					> NEXT_PLAN
+					> {{ t("home.devLog") }}
 					<span class="cursor">_</span>
 				</h1>
 			</div>
@@ -138,6 +140,9 @@ import { ref, onMounted } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
 
 const router = useRouter();
 const scenes = ref([]);

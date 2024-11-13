@@ -4,7 +4,7 @@
 		<div class="notebook-header">
 			<div class="paper-clip"></div>
 			<h2 class="text-2xl font-bold text-gray-800 text-left">
-				{{ isImportantMode ? "Star-List" : "Vocabulary" }}
+				{{ isImportantMode ? t("notes.starlist") : t("notes.vocabulary") }}
 			</h2>
 		</div>
 
@@ -69,6 +69,9 @@ import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const emit = defineEmits(["on-select-note"]);
 const props = defineProps({

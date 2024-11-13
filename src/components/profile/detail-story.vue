@@ -4,33 +4,32 @@
 		<div class="terminal-window">
 			<!-- 标题栏 -->
 			<div class="terminal-header">
-				<span class="terminal-title">story_progress.log</span>
+				<span class="terminal-title">story_stats.dat</span>
 			</div>
 
 			<!-- 内容 -->
 			<div class="terminal-content">
 				<div class="terminal-text">
-					<p class="command-line">
-						<span class="prompt">$</span>
-						<span class="command">current_progress</span>
+					<p class="command-line text-left">
+						<span class="prompt">>></span>
+						<span class="command">story.scan()</span>
 					</p>
 
 					<div class="output-block">
-						<p class="progress-line">
-							<span class="indicator">[01]</span> 目前已完成
+						<p class="progress-line text-left">
+							<span class="indicator">[01]</span> {{ t("profile.story.s_01") }}
 							<span class="highlight-primary mr-1">第 10 集</span>
-							<span class="loading-dots">...</span>
 						</p>
 
 						<p class="progress-line">
-							<span class="indicator">[02]</span> 下一个节点在
+							<span class="indicator">[02]</span> {{ t("profile.story.s_02") }}
 							<span class="highlight-primary mr-1">S02E05</span>
-							<span class="loading-dots">...</span>
 						</p>
 
 						<p class="progress-line">
 							<span class="indicator">[03]</span>
-							请继续前行
+							{{ t("profile.story.s_03") }}
+							<span class="loading-dots">...</span>
 						</p>
 					</div>
 				</div>
@@ -49,7 +48,11 @@
 	</div>
 </template>
 
-<script></script>
+<script setup>
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+</script>
 <style scoped>
 .story-module {
 	top: -100px;
@@ -79,7 +82,7 @@
 	background: #1a1a1a;
 	border: 3px solid #333;
 	border-radius: 8px;
-	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	box-shadow: 6px 6px 0 rgba(var(--primary-color-rgb), 0.2);
 	overflow: hidden;
 }
 
@@ -99,7 +102,7 @@
 
 .terminal-content {
 	padding: 16px;
-	color: #33ff33;
+	color: var(--accent-color);
 	font-family: monospace;
 }
 
@@ -117,7 +120,6 @@
 }
 
 .output-block {
-	margin-left: 16px;
 	margin-bottom: 16px;
 	text-align: left;
 }

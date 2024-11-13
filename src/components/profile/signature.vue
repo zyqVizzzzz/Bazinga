@@ -15,20 +15,19 @@
 					class="btn btn-sm text-xs btn-primary text-white"
 					@mousedown.stop="saveSignature"
 				>
-					保存
+					{{ t("profile.sign_submit") }}
 				</button>
 				<button
 					class="btn btn-sm text-xs btn-gray"
 					@mousedown.stop="resetEditing"
 				>
-					取消
+					{{ t("profile.sign_cancel") }}
 				</button>
 			</div>
 			<div
 				class="text-xs text-red-500 font-bold border-t w-full border-gray-200 py-2 mt-2"
 			>
-				我知道这是个怪异的互动...你依然可以在这里输入很多个字，如果你非要这么做的话...如你所见，它可能会挡住一些东西...but
-				whatever...虽然我不建议你在这里输入太多字，但如果你非要这么做的话...
+				{{ t("profile.sign_tips") }}
 				<br /><br />
 				那你就是进一步的怪家伙...
 			</div>
@@ -42,6 +41,9 @@
 
 <script setup>
 import { ref, nextTick, computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps({
 	signature: String, // 接收父组件传入的签名
