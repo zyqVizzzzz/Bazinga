@@ -288,6 +288,6 @@ onMounted(() => {
 }
 
 .knowledge-capsule {
-	box-shadow: 0 6px 15px rgba(255, 0, 255, 0.1); /* 红色阴影 */
+	box-shadow: 0 6px 15px rgba(255, 0, 255, 0.1);
 }
 </style>

@@ -104,6 +104,7 @@ const showBlinkbox = computed(() => notebookStore.showBlinkbox);
 const onMinusPoint = () => {
 	minusPoint.value++;
 };
+
 // 控制单词盲盒的显示和隐藏
 watch(showBlinkbox, (newValue) => {
 	const binkModalDom = document.getElementById("note_blink_modal");
@@ -112,14 +113,12 @@ watch(showBlinkbox, (newValue) => {
 </script>
 
 <style scoped>
-/* 基础容器样式 */
 .notebook-section,
 .edit-section {
 	height: calc(100vh - 280px);
 	min-height: 730px;
 }
 
-/* 复古卡片基础样式 */
 .retro-card {
 	position: relative;
 	width: 100%;
@@ -149,8 +148,37 @@ watch(showBlinkbox, (newValue) => {
 	border-radius: 12px;
 	transform: translateY(-4px);
 }
+.card-face::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.02) 2px,
+		rgba(0, 0, 0, 0.02) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
+}
 
-/* 笔记本特殊样式 */
+/* 光泽效果 */
+.card-face::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 40%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	border-radius: 9px 9px 0 0;
+	pointer-events: none;
+}
+
 .notebook-face {
 	display: flex;
 	background-color: #fff;
@@ -183,7 +211,7 @@ watch(showBlinkbox, (newValue) => {
 	overflow-y: auto;
 }
 
-/* 编辑区网格纸效果 */
+/* 网格纸效果 */
 .edit-face {
 	background-color: white;
 	background-image: linear-gradient(
@@ -195,38 +223,6 @@ watch(showBlinkbox, (newValue) => {
 	background-size: 15px 15px;
 	padding: 1rem;
 	overflow-y: auto;
-}
-
-/* 装饰性细节 */
-.card-face::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 2px,
-		rgba(0, 0, 0, 0.02) 2px,
-		rgba(0, 0, 0, 0.02) 4px
-	);
-	border-radius: 9px;
-	pointer-events: none;
-}
-
-/* 光泽效果 */
-.card-face::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 40%;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
-	border-radius: 9px 9px 0 0;
-	pointer-events: none;
 }
 
 /* 滚动条样式 */

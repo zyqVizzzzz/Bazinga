@@ -20,7 +20,6 @@
 					>
 						<!-- 正面内容 -->
 						<div class="front">
-							<!-- 漫画风格装饰元素 -->
 							<div
 								class="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 translate-x-8 -translate-y-8"
 							></div>
@@ -81,7 +80,7 @@
 						<!-- 背面内容 -->
 						<div class="back">
 							<div class="card-body h-full">
-								<!-- 终端标题栏 -->
+								<!-- 标题 -->
 								<div class="terminal-title text-left">
 									<div class="terminal-header">
 										<span class="terminal-dot red relative top-[2px]"></span>
@@ -90,10 +89,9 @@
 										<span class="terminal-title-text">trust_terminal.exe</span>
 									</div>
 								</div>
-								<!-- 主终端容器 -->
+								<!-- 终端容器 -->
 								<div class="retro-terminal">
 									<div class="terminal-face">
-										<!-- 命令提示符 -->
 										<div class="terminal-prompt mb-6">
 											<span class="text-accent">student@PRATICE</span>
 											<span class="text-accent mr-2">:</span>
@@ -177,7 +175,6 @@
 
 					<!-- 翻页控制器 -->
 					<div class="flex justify-center items-center gap-6 mt-4">
-						<!-- 上一页按钮 -->
 						<button
 							class="retro-btn"
 							@click="prevDialogue"
@@ -194,7 +191,6 @@
 							</div>
 						</button>
 
-						<!-- 页码显示/输入 -->
 						<div class="retro-display">
 							<div class="display-shadow">
 								<div class="display-edge">
@@ -222,7 +218,6 @@
 							</div>
 						</div>
 
-						<!-- 下一页按钮 -->
 						<button
 							class="retro-btn"
 							@click="nextDialogue"
@@ -514,14 +509,10 @@ const highlightedText = computed(() => {
 
 	try {
 		const parsedText = Array.isArray(text) ? text : JSON.parse(text);
-		let wordMatched = false; // 用于标记知识点是否已经匹配
-
-		// 逐条处理台词
+		let wordMatched = false;
 		return parsedText.map(([speaker, line]) => {
-			// 检查是否为 narration
 			const isNarration = speaker.toLowerCase().includes("narration");
 
-			// 检查是否需要高亮当前台词中的知识点
 			let processedLine = line;
 			const currentPoint =
 				currentKnowledgePoints.value[currentKnowledgeIndex.value];
@@ -538,14 +529,13 @@ const highlightedText = computed(() => {
 				const sanitizedWord = currentPoint.origin.replace(/([.?!,])/g, "\\$1");
 				const regex = new RegExp(sanitizedWord, "i");
 
-				// 使用回调函数确保只替换第一个匹配项
+				// 确保只替换第一个匹配项
 				processedLine = processedLine.replace(regex, (match) => {
-					wordMatched = true; // 确保匹配后设置为 true，防止后续匹配
+					wordMatched = true;
 					return `<mark class="pink">${match}</mark>`;
 				});
 			}
 
-			// 返回每句台词，带上角色名或处理 narration
 			return { speaker, line: processedLine, isNarration };
 		});
 	} catch (error) {
@@ -571,7 +561,7 @@ const highlightedTextZh = computed(() => {
 const handleSlideChange = (data) => {
 	currentKnowledgeIndex.value = data;
 	const currentWord = currentKnowledgePoints.value[data].origin;
-	dialogueCard.value.scrollToWord(currentWord); // 调用子组件方法
+	dialogueCard.value.scrollToWord(currentWord);
 };
 
 const handleUpdateNote = ({ note, word, action, scene }) => {
@@ -593,7 +583,7 @@ watch(currentDialogueIndex, (newIndex) => {
 });
 
 watch(
-	() => lessonStore.isListenMode, // 监控 isListenMode 的状态变化
+	() => lessonStore.isListenMode,
 	(newVal) => {
 		if (newVal) {
 			isListenMode.value = newVal;
@@ -605,7 +595,6 @@ watch(
 	}
 );
 
-// 监听 knowledges 的变化
 watch(
 	knowledges,
 	(newValue) => {
@@ -616,22 +605,20 @@ watch(
 	{ deep: true }
 );
 
-// 下一页
 const nextDialogue = () => {
 	if (currentDialogueIndex.value < dialogues.value.length - 1) {
-		slideDirection.value = "right"; // 设置方向为向右
+		slideDirection.value = "right";
 		currentDialogueIndex.value++;
 		isFirstLoad.value = false;
-		resetKnowledgeIndex(); // 重置知识点索引
+		resetKnowledgeIndex();
 	}
 };
 
-// 上一页
 const prevDialogue = () => {
 	if (currentDialogueIndex.value > 0) {
-		slideDirection.value = "left"; // 设置方向为向左
+		slideDirection.value = "left";
 		currentDialogueIndex.value--;
-		resetKnowledgeIndex(); // 重置知识点索引
+		resetKnowledgeIndex();
 	}
 };
 
@@ -673,7 +660,6 @@ const jumpToPageBlur = (isTrue) => {
 	min-height: 540px;
 }
 
-/* 卡片容器 */
 .manga-card {
 	position: relative;
 	width: 100%;
@@ -694,7 +680,6 @@ const jumpToPageBlur = (isTrue) => {
 	transform: rotateY(-180deg);
 }
 
-/* 正反面共同样式 */
 .front,
 .back {
 	position: absolute;
@@ -709,7 +694,8 @@ const jumpToPageBlur = (isTrue) => {
 .front {
 	transform: rotateY(0deg);
 }
-/* 纹理效果 */
+
+/* 纹理 */
 .front::before {
 	content: "";
 	position: absolute;
@@ -728,7 +714,7 @@ const jumpToPageBlur = (isTrue) => {
 	pointer-events: none;
 }
 
-/* 光泽效果 */
+/* 光泽 */
 .front::after {
 	content: "";
 	position: absolute;
@@ -752,20 +738,8 @@ const jumpToPageBlur = (isTrue) => {
 	animation: crt-flicker 0.15s infinite;
 	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
 	transform: rotateY(180deg);
-
-	/* background-color: rgba(12, 12, 12, 0.8);
-	border: 3px solid #333;
-	border-radius: 12px;
-	padding: 2rem;
-	transform: translateY(-4px);
-	color: var(--accent-color);
-	position: relative;
-	overflow: hidden;
-	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
-	animation: crt-flicker 0.15s infinite;
-	height: 100%; */
 }
-/* 新增装饰性细节 */
+
 .back::before {
 	content: " ";
 	display: block;
@@ -869,7 +843,7 @@ const jumpToPageBlur = (isTrue) => {
 	font-family: "Comic Sans MS", cursive;
 }
 
-/* 纹理效果 */
+/* 纹理 */
 .btn-face::before {
 	content: "";
 	position: absolute;
@@ -888,7 +862,7 @@ const jumpToPageBlur = (isTrue) => {
 	pointer-events: none;
 }
 
-/* 光泽效果 */
+/* 光泽 */
 .btn-face::after {
 	content: "";
 	position: absolute;
@@ -901,7 +875,6 @@ const jumpToPageBlur = (isTrue) => {
 	pointer-events: none;
 }
 
-/* 翻页按钮样式 */
 .retro-btn {
 	position: relative;
 	width: 3rem;
@@ -917,7 +890,6 @@ const jumpToPageBlur = (isTrue) => {
 	height: 2.2rem;
 }
 
-/* 按钮按下效果 */
 .retro-btn:active .btn-edge,
 .retro-btn:active .btn-face,
 .retro-btn.btn-active .btn-edge,
@@ -962,7 +934,6 @@ const jumpToPageBlur = (isTrue) => {
 	transition: transform 0.1s;
 }
 
-/* 页码显示器样式 */
 .retro-display {
 	position: relative;
 	width: 6rem;
@@ -1057,7 +1028,6 @@ const jumpToPageBlur = (isTrue) => {
 	}
 }
 
-/* 输入框样式 */
 .retro-input {
 	width: 100%;
 	height: 100%;
@@ -1080,7 +1050,6 @@ const jumpToPageBlur = (isTrue) => {
 	color: #333;
 }
 
-/* 按钮交互效果 */
 .retro-btn:hover .btn-face {
 	background-color: #fff;
 }
@@ -1089,26 +1058,21 @@ const jumpToPageBlur = (isTrue) => {
 .retro-btn:active .btn-face {
 	transform: translateY(0);
 }
-
-/* 禁用状态 */
 .retro-btn:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
-
 .retro-btn:disabled .btn-face {
 	background-color: #ddd;
 	border-color: #999;
 	color: #999;
 }
-
 .retro-terminal {
 	text-align: left;
 	align-items: center;
 	flex: 1 1 auto;
 }
 
-/* 终端标题样式 */
 .terminal-title {
 	position: relative;
 	display: inline-block;

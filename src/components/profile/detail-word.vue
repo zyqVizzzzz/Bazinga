@@ -2,12 +2,12 @@
 	<div class="word-module absolute">
 		<div class="arrow-base arrow-word"></div>
 		<div class="terminal-window right-aligned">
-			<!-- 终端标题栏 -->
+			<!-- 标题 -->
 			<div class="terminal-header">
 				<span class="terminal-title">vocabulary_stats.dat</span>
 			</div>
 
-			<!-- 终端内容 -->
+			<!-- 内容 -->
 			<div class="terminal-content">
 				<div class="terminal-text">
 					<p class="command-line text-xs">
@@ -75,7 +75,6 @@
 	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
 }
 
-/* 终端窗口样式 */
 .terminal-window {
 	width: 300px;
 	background: #1a1a1a;
@@ -99,7 +98,6 @@
 	font-size: 12px;
 }
 
-/* 终端内容样式 */
 .terminal-content {
 	padding: 16px;
 	color: #00ff00;
@@ -119,7 +117,6 @@
 	color: #fff;
 }
 
-/* 状态行样式 */
 .stat-line {
 	text-align: left;
 	margin-bottom: 8px;
@@ -149,13 +146,11 @@
 	text-shadow: 0 0 8px rgba(255, 105, 180, 0.5);
 }
 
-/* 错误效果 */
 .error-text {
 	color: #ff5f56;
 	animation: glitch 0.3s ease infinite;
 }
 
-/* 状态框 */
 .status-box {
 	margin-top: 16px;
 	padding: 12px;

@@ -1,6 +1,6 @@
 <template>
 	<div class="all-collections">
-		<!-- 复古标题 -->
+		<!-- 标题 -->
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
 				<span class="text-shadow-retro"
@@ -12,9 +12,8 @@
 			<div class="title-decoration right"></div> -->
 		</div>
 
-		<!-- 卡片网格 -->
+		<!-- 合集 -->
 		<div class="grid-container justify-items-center">
-			<!-- 合集卡片 -->
 			<div
 				v-for="scene in scenes"
 				:key="scene.id"
@@ -46,7 +45,7 @@
 				</div>
 			</div>
 
-			<!-- 新增卡片 -->
+			<!-- 新增合集 -->
 			<div class="retro-card add-card" @click="addNewScene">
 				<div class="card-shadow">
 					<div class="card-edge">
@@ -107,7 +106,6 @@ const addNewScene = () => {
 	padding: 20px;
 }
 
-/* 网格布局 */
 .grid-container {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -115,7 +113,6 @@ const addNewScene = () => {
 	padding: 1rem;
 }
 
-/* 复古标题样式 */
 .retro-title-box {
 	position: relative;
 	display: inline-block;
@@ -163,13 +160,16 @@ const addNewScene = () => {
 	border-radius: 4px;
 }
 
-/* 复古卡片样式 */
 .retro-card {
 	position: relative;
 	width: 100%;
 	max-width: 320px;
 	cursor: pointer;
 	transition: transform 0.3s;
+}
+
+.retro-card:hover {
+	transform: translateY(-5px);
 }
 
 .card-shadow {
@@ -194,7 +194,28 @@ const addNewScene = () => {
 	overflow: hidden;
 }
 
-/* Banner 样式 */
+/* 卡片装饰效果 */
+.card-face::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 40%;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+	pointer-events: none;
+}
+
+.retro-card:hover .card-edge,
+.retro-card:hover .card-face {
+	transform: translateY(-6px);
+}
+
+.retro-card:active .card-edge,
+.retro-card:active .card-face {
+	transform: translateY(-2px);
+}
+
 .banner-container {
 	height: 150px;
 	overflow: hidden;
@@ -216,7 +237,6 @@ const addNewScene = () => {
 	height: 100%;
 }
 
-/* 内容区域样式 */
 .content-container {
 	height: 180px;
 	padding: 1.5rem;
@@ -244,7 +264,6 @@ const addNewScene = () => {
 	text-align: center;
 }
 
-/* 新增卡片样式 */
 .add-card .card-face {
 	background-color: #f8f8f8;
 	border: 3px solid #333;
@@ -258,32 +277,5 @@ const addNewScene = () => {
 	align-items: center;
 	justify-content: center;
 	color: #666;
-}
-
-/* 交互效果 */
-.retro-card:hover {
-	transform: translateY(-5px);
-}
-
-.retro-card:hover .card-edge,
-.retro-card:hover .card-face {
-	transform: translateY(-6px);
-}
-
-.retro-card:active .card-edge,
-.retro-card:active .card-face {
-	transform: translateY(-2px);
-}
-
-/* 卡片装饰效果 */
-.card-face::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 40%;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
-	pointer-events: none;
 }
 </style>

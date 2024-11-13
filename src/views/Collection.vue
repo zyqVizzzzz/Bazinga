@@ -5,7 +5,6 @@
 			class="collection-content relative w-full mb-8 retro-banner"
 			:style="isDefault ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
 		>
-			<!-- Banner 背景 -->
 			<div
 				v-if="infoData"
 				class="absolute inset-0 bg-cover bg-center opacity-50"
@@ -15,7 +14,7 @@
 				}"
 			></div>
 
-			<!-- 复古纹理遮罩 -->
+			<!-- 纹理遮罩 -->
 			<div class="absolute inset-0 retro-overlay"></div>
 
 			<!-- 内容区域 -->
@@ -23,7 +22,7 @@
 				v-if="infoData"
 				class="relative z-10 text-center text-white flex flex-col items-center justify-center h-full"
 			>
-				<!-- 标题区域 -->
+				<!-- 标题 -->
 				<div class="manga-title-box">
 					<h1 class="text-4xl font-bold relative text-shadow-retro">
 						{{ infoData.showName }}
@@ -37,7 +36,7 @@
 					{{ infoData.description }}
 				</h2>
 
-				<!-- 难度等级显示 -->
+				<!-- 难度等级 -->
 				<div class="retro-display-box w-3/5 mt-4">
 					<div class="display-shadow">
 						<div class="display-edge">
@@ -63,7 +62,7 @@
 					</div>
 				</div>
 
-				<!-- 设置按钮 -->
+				<!-- 设置 -->
 				<button @click="goToCollectionEdit" class="retro-btn-small mt-6">
 					<div class="btn-face">
 						<i class="bi bi-gear-fill text-lg"></i>
@@ -74,7 +73,7 @@
 
 		<!-- 内容区域 -->
 		<div class="w-2/3">
-			<!-- 季数标题 -->
+			<!-- 季数 -->
 			<div class="manga-subtitle-box">
 				<h2 class="text-xl font-bold text-shadow-retro">
 					Season {{ currentSeasonIndex + 1 }}
@@ -90,7 +89,7 @@
 				</div>
 			</div>
 
-			<!-- 剧集网格 -->
+			<!-- 剧集 -->
 			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
 				<div
 					v-for="(episode, index) in currentSeasonEpisodes"
@@ -110,7 +109,7 @@
 				</div>
 			</div>
 
-			<!-- 季数切换按钮 -->
+			<!-- 控制区 -->
 			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
 				<button
 					class="retro-nav-btn"
@@ -263,7 +262,7 @@ const nextSeason = () => {
 	padding-top: 96px;
 }
 
-/* 复古纹理遮罩 */
+/* 纹理遮罩 */
 .retro-overlay {
 	background-image: repeating-linear-gradient(
 		45deg,
@@ -301,7 +300,6 @@ const nextSeason = () => {
 	transform: translateY(-50%) rotate(45deg);
 }
 
-/* 复古显示框 */
 .retro-display-box {
 	position: relative;
 }
@@ -325,7 +323,7 @@ const nextSeason = () => {
 	transform: translateY(-3px);
 }
 
-/* 复古星星 */
+/* 星星 */
 .retro-star {
 	width: 20px;
 	height: 20px;
@@ -345,7 +343,6 @@ const nextSeason = () => {
 	margin: 0 2px;
 }
 
-/* 复古按钮 */
 .retro-btn-small {
 	position: relative;
 	width: 4rem;
@@ -405,7 +402,6 @@ const nextSeason = () => {
 	font-weight: bold;
 }
 
-/* 剧集卡片 */
 .retro-episode-card {
 	position: relative;
 	height: 3rem;
@@ -451,7 +447,6 @@ const nextSeason = () => {
 	justify-content: center;
 }
 
-/* 交互效果 */
 .retro-episode-card:hover {
 	transform: translateY(-2px);
 }
@@ -475,7 +470,6 @@ button:disabled {
 	cursor: not-allowed;
 }
 
-/* 复古提示框 */
 .retro-alert {
 	position: relative;
 	border: 3px solid #333;

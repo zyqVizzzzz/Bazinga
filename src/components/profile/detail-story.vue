@@ -2,12 +2,12 @@
 	<div class="story-module absolute">
 		<div class="arrow-base arrow-story"></div>
 		<div class="terminal-window">
-			<!-- 终端标题栏 -->
+			<!-- 标题栏 -->
 			<div class="terminal-header">
 				<span class="terminal-title">story_progress.log</span>
 			</div>
 
-			<!-- 终端内容 -->
+			<!-- 内容 -->
 			<div class="terminal-content">
 				<div class="terminal-text">
 					<p class="command-line">
@@ -35,7 +35,6 @@
 					</div>
 				</div>
 
-				<!-- 播放按钮 -->
 				<div class="retro-button-container">
 					<button class="retro-play-button mt-2">
 						<div class="button-face">
@@ -75,7 +74,6 @@
 	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
 }
 
-/* 终端窗口样式 */
 .terminal-window {
 	width: 300px;
 	background: #1a1a1a;
@@ -92,23 +90,6 @@
 	align-items: center;
 }
 
-.terminal-dot {
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	margin-right: 6px;
-}
-
-.terminal-dot.red {
-	background: #ff5f56;
-}
-.terminal-dot.yellow {
-	background: #ffbd2e;
-}
-.terminal-dot.green {
-	background: #27c93f;
-}
-
 .terminal-title {
 	margin-left: 8px;
 	color: #888;
@@ -116,7 +97,6 @@
 	font-size: 12px;
 }
 
-/* 终端内容样式 */
 .terminal-content {
 	padding: 16px;
 	color: #33ff33;
@@ -158,7 +138,6 @@
 	text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
 }
 
-/* 按钮样式 */
 .retro-button-container {
 	margin: 16px 0;
 }
@@ -198,7 +177,6 @@
 	overflow: hidden;
 }
 
-/* 状态框样式 */
 .status-box {
 	background: rgba(59, 130, 246, 0.1);
 	border: 2px solid #3b82f6;
@@ -207,8 +185,6 @@
 	position: relative;
 	overflow: hidden;
 }
-
-/* 动画效果 */
 @keyframes scan {
 	from {
 		transform: translateY(0);

@@ -1,6 +1,6 @@
 <template>
 	<div class="home">
-		<!-- 复古标题 -->
+		<!-- 标题 -->
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
 				<div class="text-shadow-retro">
@@ -23,7 +23,7 @@
 				<div class="card-shadow">
 					<div class="card-edge">
 						<div class="card-face">
-							<!-- Banner区域 -->
+							<!-- Banner -->
 							<div class="banner-container h-[160px]">
 								<div v-if="scene.banner" class="banner-wrapper h-full">
 									<img
@@ -38,7 +38,6 @@
 									:style="{ backgroundColor: scene.theme }"
 								></div>
 							</div>
-
 							<!-- 内容区域 -->
 							<div class="content-container" :style="{ color: scene.theme }">
 								<h2 class="text-lg font-bold">{{ scene.showName }}</h2>
@@ -50,7 +49,7 @@
 			</div>
 		</div>
 
-		<!-- More按钮 -->
+		<!-- More -->
 		<div class="text-center mb-16">
 			<button class="retro-btn-medium" @click="goToAllScenes">
 				<div class="btn-shadow">
@@ -61,9 +60,9 @@
 			</button>
 		</div>
 
-		<!-- Next部分 -->
+		<!-- Roadmap -->
 		<div class="w-full" style="margin-top: 100px">
-			<!-- Terminal-style title -->
+			<!-- 标题 -->
 			<div class="terminal-title text-center mb-6">
 				<div class="terminal-header">
 					<span class="terminal-dot red"></span>
@@ -77,7 +76,7 @@
 				</h1>
 			</div>
 
-			<!-- Dev Log Content -->
+			<!-- Dev Log -->
 			<div class="retro-terminal max-w-3xl mx-auto">
 				<div class="terminal-shadow">
 					<div class="terminal-edge">
@@ -101,15 +100,12 @@
 									:key="index"
 									class="log-item"
 								>
-									<!-- 标题和状态标签 -->
 									<div class="flex items-center gap-3 mb-2">
 										<div class="status-badge">WIP</div>
 										<h3 class="text-lg font-mono font-bold text-primary">
 											{{ article.title }}
 										</h3>
 									</div>
-
-									<!-- 中文说明和进度 -->
 									<div class="ml-10 font-mono">
 										<div class="flex items-center gap-4">
 											<span class="text-gray-300"
@@ -120,10 +116,10 @@
 								</div>
 							</div>
 
-							<!-- 装饰性动画 -->
+							<!-- Matrix rain 动画 -->
 							<div class="matrix-rain"></div>
 
-							<!-- 开发者签名 -->
+							<!-- 签名 -->
 							<div
 								class="dev-signature mt-8 text-right font-mono text-sm text-gray-400"
 							>
@@ -284,7 +280,6 @@ const goToCollection = (id) => {
 	height: 100%;
 }
 
-/* 内容区域样式 */
 .content-container {
 	height: 180px;
 	padding: 1.5rem;
@@ -301,7 +296,6 @@ const goToCollection = (id) => {
 	);
 }
 
-/* More按钮样式 */
 .retro-btn-medium {
 	position: relative;
 	width: 8rem;
@@ -311,7 +305,6 @@ const goToCollection = (id) => {
 	cursor: pointer;
 }
 
-/* 文章列表卡片 */
 .retro-article-card {
 	position: relative;
 	padding: 2rem;
@@ -355,7 +348,6 @@ const goToCollection = (id) => {
 	color: var(--primary-color);
 }
 
-/* 交互效果 */
 .retro-card:hover {
 	transform: translateY(-5px);
 }
@@ -407,7 +399,6 @@ const goToCollection = (id) => {
 	justify-content: center;
 }
 
-/* 标题样式调整 */
 .terminal-title {
 	position: relative;
 	display: inline-block;
@@ -443,7 +434,6 @@ const goToCollection = (id) => {
 	font-family: monospace;
 }
 
-/* 闪烁的光标 */
 .cursor {
 	animation: blink 1s step-start infinite;
 }
@@ -460,7 +450,6 @@ const goToCollection = (id) => {
 	}
 }
 
-/* 终端主体样式 */
 .retro-terminal {
 	position: relative;
 	background: #666;
@@ -482,7 +471,7 @@ const goToCollection = (id) => {
 	animation: crt-flicker 0.15s infinite;
 }
 
-/* CRT 扫描线效果 */
+/* CRT 扫描线 */
 .terminal-face::before {
 	content: " ";
 	display: block;
@@ -501,7 +490,7 @@ const goToCollection = (id) => {
 	z-index: 2;
 }
 
-/* CRT 光晕效果 */
+/* CRT 光晕 */
 .terminal-face::after {
 	content: " ";
 	display: block;
@@ -517,7 +506,6 @@ const goToCollection = (id) => {
 	animation: crt-flicker 0.15s infinite;
 }
 
-/* 日志条目样式 */
 .log-item {
 	position: relative;
 	padding: 1rem;
@@ -527,6 +515,11 @@ const goToCollection = (id) => {
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
 }
 
+.log-item:hover {
+	background: rgba(51, 255, 51, 0.06);
+	box-shadow: 0 0 15px rgba(51, 255, 51, 0.1);
+}
+
 .status-badge {
 	background: rgba(51, 255, 51, 0.1);
 	border: 1px solid #33ff33;
@@ -534,45 +527,6 @@ const goToCollection = (id) => {
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
 }
 
-/* 进度条样式 */
-.progress-bar {
-	flex: 1;
-	height: 6px;
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 3px;
-	position: relative;
-	margin-left: 1rem;
-}
-
-.progress-fill {
-	height: 100%;
-	background: var(--primary-color);
-	border-radius: 3px;
-	transition: width 0.3s ease;
-}
-
-.progress-text {
-	position: absolute;
-	right: -2rem;
-	top: -0.5rem;
-	font-size: 0.75rem;
-	color: var(--primary-color);
-}
-
-/* CRT 闪烁动画 */
-@keyframes crt-flicker {
-	0% {
-		opacity: 0.97;
-	}
-	50% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0.98;
-	}
-}
-
-/* Matrix Rain Animation */
 .matrix-rain {
 	position: absolute;
 	top: 0;
@@ -580,11 +534,7 @@ const goToCollection = (id) => {
 	width: 16%;
 	height: 100%;
 	opacity: 0.1;
-	background: linear-gradient(
-		transparent,
-		var(--primary-color) 50%,
-		transparent 100%
-	);
+	background: linear-gradient(transparent, #33ff33 50%, transparent 100%);
 	background-size: 100% 30px;
 	animation: rain 2s linear infinite;
 }
@@ -610,15 +560,14 @@ const goToCollection = (id) => {
 		opacity: 0.98;
 	}
 }
-/* Matrix Rain 调整 */
-.matrix-rain {
-	background: linear-gradient(transparent, #33ff33 50%, transparent 100%);
-}
 
-/* 开发者签名调整 */
 .dev-signature {
 	color: #33ff33;
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+}
+
+.dev-signature:hover .text-primary {
+	text-shadow: 0 0 15px rgba(51, 255, 51, 0.8);
 }
 
 .terminal-prompt {
@@ -627,15 +576,5 @@ const goToCollection = (id) => {
 
 .terminal-prompt span {
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
-}
-
-/* 交互效果 */
-.log-item:hover {
-	background: rgba(51, 255, 51, 0.06);
-	box-shadow: 0 0 15px rgba(51, 255, 51, 0.1);
-}
-
-.dev-signature:hover .text-primary {
-	text-shadow: 0 0 15px rgba(51, 255, 51, 0.8);
 }
 </style>

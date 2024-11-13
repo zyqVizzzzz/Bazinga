@@ -199,27 +199,24 @@ const props = defineProps({
 const showPrevNext = ref(false);
 const submitClicked = ref(false);
 
-// 存储用户答案和反馈
-const userAnswer = ref("");
+const userAnswer = ref(""); // 用户答案和反馈
 const answerFeedback = ref("");
 const feedbackClass = ref("");
 const currentIndex = ref(0); // 当前问题的索引
 
-// 添加选择题相关的状态
+// 选择题相关状态
 const selectedOption = ref(null);
 
-// 切换到上一题的函数
 const goToPreviousQuestion = () => {
 	if (currentIndex.value > 0) {
-		currentIndex.value--; // 切换到上一题
+		currentIndex.value--;
 		resetInputs();
 	}
 };
 
-// 切换到下一题的函数
 const goToNextQuestion = () => {
 	if (currentIndex.value < props.currentPractice.length - 1) {
-		currentIndex.value++; // 切换到下一题
+		currentIndex.value++;
 		resetInputs();
 	}
 };
@@ -230,7 +227,7 @@ const resetInputs = () => {
 	answerFeedback.value = "";
 	feedbackClass.value = "";
 	showPrevNext.value = false;
-	selectedOption.value = null; // 重置选中的选项
+	selectedOption.value = null;
 };
 
 // 检查答案
@@ -238,7 +235,6 @@ const checkAnswer = () => {
 	const practice = props.currentPractice[currentIndex.value];
 
 	if (practice.type === "fill-in-the-blank") {
-		// 保持原有的填空题逻辑
 		const possibleAnswers = practice.answer
 			.split("/")
 			.map((ans) => ans.trim().toLowerCase());
@@ -303,7 +299,7 @@ const selectOption = (index) => {
 	border-radius: 4px;
 }
 
-/* Prev按钮和Next按钮从中间弹射出来的动画 */
+/* 按钮弹射动画 */
 .animate-prev {
 	animation: slideOutLeft 0.8s ease forwards;
 }
