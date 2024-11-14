@@ -41,9 +41,9 @@
 										>
 											{{ currentDialogue.title }}
 										</h2>
-										<div class="flex items-center gap-2">
+										<div class="flex items-center gap-2" v-if="!guestNotAllow">
 											<span class="badge badge-primary badge-outline rotate-2">
-												Episode {{ currentPage }}
+												Scene {{ currentPage }}
 											</span>
 										</div>
 									</div>
@@ -55,6 +55,7 @@
 												class="p-4 bg-white border-2 border-black rounded-lg relative dialogue-box"
 											>
 												<DialogueCard
+													v-if="!guestNotAllow"
 													ref="dialogueCard"
 													:showHints="showHints"
 													:showTrans="showTrans"
@@ -62,6 +63,7 @@
 													:highlightedText="highlightedText"
 													:highlightedTextZh="highlightedTextZh"
 												/>
+												<div v-if="guestNotAllow">登录后可查看全部内容</div>
 											</div>
 										</div>
 
@@ -125,7 +127,10 @@
 					</div>
 				</div>
 
-				<div class="flex justify-between items-center">
+				<div
+					class="flex justify-between items-center"
+					v-if="!isLoading && !guestNotAllow"
+				>
 					<!-- 控制按钮组 -->
 					<div class="flex justify-center gap-6 mt-6">
 						<button
@@ -254,7 +259,6 @@ import { useRouter, useRoute } from "vue-router";
 import { useLessonStore, useAppStore, useLoginStore } from "@/store";
 import apiClient from "@/api";
 
-import TitleBar from "@/components/card/title.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
@@ -295,11 +299,9 @@ const editCurrentPageNumber = ref(0); // 跳转页码
 
 const isDefault = ref(true);
 const isListenMode = ref(false);
-const isHoveredJ = ref(false);
-const isHoveredVoice = ref(false);
-const isHoveredTrans = ref(false);
-
 const isLoading = ref(true);
+
+const guestNotAllow = ref(false);
 
 // 获取课程
 const getLesson = async () => {
@@ -342,11 +344,16 @@ const getLesson = async () => {
 			throw new Error(scriptRes.data.message || "Invalid lesson data");
 		}
 	} catch (error) {
-		console.error("Error loading lesson:", error);
-		showToast({
-			message: "加载失败，请刷新页面重试",
-			type: "error",
-		});
+		console.error("Error loading lesson:", error.status);
+		isLoading.value = false;
+		if (error.status === 403) {
+			guestNotAllow.value = true;
+		} else {
+			showToast({
+				message: "加载失败，请刷新页面重试",
+				type: "error",
+			});
+		}
 	}
 };
 

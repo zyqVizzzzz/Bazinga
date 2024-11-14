@@ -74,7 +74,10 @@
 		<!-- 内容区域 -->
 		<div class="w-2/3">
 			<!-- 季数 -->
-			<div class="manga-subtitle-box">
+			<div
+				class="manga-subtitle-box"
+				:class="{ 'mb-10': !currentProgress.course }"
+			>
 				<h2 class="text-xl font-bold text-shadow-retro">
 					Season {{ currentSeasonIndex + 1 }}
 				</h2>
@@ -223,20 +226,6 @@ const goToLessonProgress = () => {
 };
 
 const goToLesson = (season, episode) => {
-	const isAuth = canAccessResource(
-		userInfo.value.role,
-		episode.auth,
-		userInfo.value._id,
-		episode.userId
-	);
-	if (!isAuth) {
-		if (userInfo.value._id) {
-			console.log("此内容为会员内容");
-		} else {
-			console.log("登录后查看全部内容");
-		}
-		return;
-	}
 	const params = `${route.params.id}/${season}/${episode.ep.toString()}`;
 	const query = { sign: episode._id };
 	episode.scriptUrl
