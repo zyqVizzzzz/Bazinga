@@ -97,7 +97,7 @@ import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 const loginStore = useLoginStore();
-const { setLoginState } = loginStore;
+const { setLoginState, setUserInfo } = loginStore;
 
 const router = useRouter();
 const route = useRoute();
@@ -117,6 +117,7 @@ const login = async () => {
 			if (response.data.data.access_token) {
 				localStorage.setItem("token", response.data.data.access_token); // 保存 token
 				setLoginState(true);
+				setUserInfo(response.data.data);
 				const redirectPath = route.query.redirect || "/";
 				router.replace({ path: redirectPath, force: true });
 			}

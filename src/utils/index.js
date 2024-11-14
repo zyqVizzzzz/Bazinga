@@ -14,3 +14,42 @@ export const formatNumber = (num) => {
 export const generateTextHash = (text) => {
 	return md5(text.trim().toLowerCase());
 };
+
+const UserRole = {
+	GUEST: "guest",
+	FREE_USER: "free_user",
+	PREMIUM_USER: "premium_user",
+};
+
+const AuthType = {
+	PUBLIC: "public",
+	FREE: "free",
+	PREMIUM: "premium",
+	PRIVATE: "private",
+};
+
+export const canAccessResource = (
+	userRole,
+	authType,
+	userId,
+	resourceOwnerId
+) => {
+	// 如果是资源拥有者，允许访问
+	if (userId && resourceOwnerId && userId === resourceOwnerId) {
+		return true;
+	}
+
+	// 根据用户角色和资源类型判断权限
+	switch (userRole) {
+		case UserRole.PREMIUM_USER:
+			return [AuthType.PUBLIC, AuthType.FREE, AuthType.PREMIUM].includes(
+				authType
+			);
+		case UserRole.FREE_USER:
+			return [AuthType.PUBLIC, AuthType.FREE].includes(authType);
+		case UserRole.GUEST:
+			return authType === AuthType.PUBLIC;
+		default:
+			return false;
+	}
+};

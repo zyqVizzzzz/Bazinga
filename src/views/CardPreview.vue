@@ -251,7 +251,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useLessonStore, useAppStore } from "@/store";
+import { useLessonStore, useAppStore, useLoginStore } from "@/store";
 import apiClient from "@/api";
 
 import TitleBar from "@/components/card/title.vue";
@@ -259,6 +259,9 @@ import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import { showToast } from "@/components/common/toast.js";
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
 
 const lessonStore = useLessonStore();
 const appStore = useAppStore();
@@ -318,7 +321,7 @@ const getLesson = async () => {
 				// 使用 Promise.all 等待所有数据加载完成
 				const [knowledgeSuccess] = await Promise.all([
 					getKnowledge(),
-					getVocabulary(),
+					isLogin.value && getVocabulary(),
 				]);
 
 				setTimeout(() => {

@@ -148,6 +148,12 @@ import { useAppStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
 import { hexToRgba, formatNumber } from "@/utils";
 import { useI18n } from "vue-i18n";
+import { useLoginStore } from "@/store/index";
+import { canAccessResource } from "@/utils";
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
+const userInfo = computed(() => loginStore.userInfo);
 
 const { t, locale } = useI18n();
 
@@ -194,26 +200,19 @@ const loadCategoryData = async () => {
 };
 
 const getUserProfile = async () => {
-	try {
-		const res = await apiClient.get("/users/me");
-		if (res.data.code === 200) {
-			const learningProgress = res.data.data.learningProgress;
-			const foundProgress = learningProgress.find(
-				(p) => p.course === route.params.id
-			);
-			foundProgress && (currentProgress.value = foundProgress);
-			appStore.initProgress(learningProgress);
-		} else {
-			showToast({ message: res.data.message, type: "error" });
-		}
-	} catch (error) {
-		showToast({ message: error, type: "error" });
+	const learningProgress = userInfo.value.learningProgress || null;
+	if (learningProgress.length) {
+		const foundProgress = learningProgress.find(
+			(p) => p.course === route.params.id
+		);
+		foundProgress && (currentProgress.value = foundProgress);
+		appStore.initProgress(learningProgress);
 	}
 };
 
 onMounted(() => {
 	loadCategoryData();
-	getUserProfile();
+	isLogin.value && getUserProfile();
 });
 
 const goToLessonProgress = () => {
@@ -224,7 +223,21 @@ const goToLessonProgress = () => {
 };
 
 const goToLesson = (season, episode) => {
-	const params = `${route.params.id}/${season}/${episode.ep.toString()}`; // 格式化集数，如 E01
+	const isAuth = canAccessResource(
+		userInfo.value.role,
+		episode.auth,
+		userInfo.value._id,
+		episode.userId
+	);
+	if (!isAuth) {
+		if (userInfo.value._id) {
+			console.log("此内容为会员内容");
+		} else {
+			console.log("登录后查看全部内容");
+		}
+		return;
+	}
+	const params = `${route.params.id}/${season}/${episode.ep.toString()}`;
 	const query = { sign: episode._id };
 	episode.scriptUrl
 		? router.push({ path: `/collections/${params}`, query })

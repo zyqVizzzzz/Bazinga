@@ -32,10 +32,10 @@ apiClient.interceptors.response.use(
 		// 可以在这里处理错误，如未授权、网络问题等
 		if (error.response && error.response.status === 401) {
 			const currentRoute = router.currentRoute.value; // 获取当前路由
-			router.push({
-				path: "/login",
-				query: { redirect: currentRoute.fullPath },
-			});
+			// router.push({
+			// 	path: "/login",
+			// 	query: { redirect: currentRoute.fullPath },
+			// });
 		}
 		return Promise.reject(error);
 	}

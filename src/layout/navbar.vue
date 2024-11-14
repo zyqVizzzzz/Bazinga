@@ -17,21 +17,21 @@
 		<div class="flex-none">
 			<ul class="menu menu-horizontal px-1">
 				<!-- 如果用户已登录，显示 Notebook 和 Profile -->
-				<li v-if="isLogin">
+				<li>
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToHome()"
 						>{{ t("nav.home") }}</a
 					>
 				</li>
-				<li v-if="isLogin">
+				<li>
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('collections')"
 						>{{ t("nav.collections") }}</a
 					>
 				</li>
-				<li v-if="isLogin">
+				<li>
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="goToLink('notebook')"
@@ -45,7 +45,7 @@
 						>{{ t("nav.profile") }}</a
 					>
 				</li>
-				<li>
+				<li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="changeLanguage"
@@ -81,7 +81,7 @@ const { t, locale } = useI18n();
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
-const { setLoginState } = loginStore;
+const { setLoginState, setUserInfo } = loginStore;
 
 const router = useRouter();
 const route = useRoute();
@@ -103,6 +103,7 @@ const goToLink = (path) => {
 const logout = () => {
 	localStorage.removeItem("token"); // 删除 JWT
 	setLoginState(false);
+	setUserInfo({});
 	username.value = "";
 	router.push({
 		path: "/login",

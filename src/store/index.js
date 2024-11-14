@@ -35,10 +35,14 @@ export const useAppStore = defineStore("app", {
 export const useLoginStore = defineStore("login", {
 	state: () => ({
 		isLogin: false,
+		userInfo: {},
 	}),
 	actions: {
 		setLoginState(bool) {
 			this.isLogin = bool;
+		},
+		setUserInfo(user) {
+			this.userInfo = user;
 		},
 	},
 	persist: true,

@@ -63,10 +63,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { useLoginStore } from "@/store/index";
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
 
 const router = useRouter();
 const scenes = ref([]);
@@ -93,7 +97,11 @@ const goToCollection = (id) => {
 };
 
 const addNewScene = () => {
-	router.push("/setup-collection");
+	if (isLogin.value) {
+		router.push("/setup-collection");
+	} else {
+		showToast({ message: "登录后可创建合集", type: "warning" });
+	}
 };
 </script>
 

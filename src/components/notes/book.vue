@@ -70,6 +70,10 @@ import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
+import { useLoginStore } from "@/store/index";
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
 
 const { t } = useI18n();
 
@@ -93,7 +97,7 @@ const notebookStore = useNotebookStore();
 const { setCurrentActiveNote } = notebookStore;
 
 onMounted(() => {
-	getNotebook();
+	isLogin.value && getNotebook();
 });
 
 // 计算总页数
@@ -110,6 +114,11 @@ const selectNote = (note) => {
 };
 
 const getNotebook = async (page = 1, limit = 18) => {
+	if (!isLogin.value) {
+		vocabularyNotes.value = [];
+		totalCounts.value = 0;
+		return;
+	}
 	const response = await apiClient.get(
 		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}&isImportant=${isImportantMode.value}`
 	);

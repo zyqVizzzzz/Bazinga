@@ -77,12 +77,16 @@
 </template>
 
 <script setup>
-import { ref, watch, toRefs } from "vue";
+import { ref, watch, toRefs, computed } from "vue";
 import FlashIcon from "../icons/Flash.vue";
 import { useNotebookStore } from "@/store/index";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
+import { useLoginStore } from "@/store/index";
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
 
 const { t } = useI18n();
 const notebookStore = useNotebookStore();
@@ -104,6 +108,7 @@ const emit = defineEmits([
 
 // 查询功能
 const searchWord = () => {
+	if (!isLogin.value) return;
 	if (searchQuery.value.trim()) {
 		emit("on-search-word", searchQuery.value.trim());
 	}
@@ -124,6 +129,7 @@ const selectSuggestion = (suggestion) => {
 };
 
 const onInputWord = debounce(async () => {
+	if (!isLogin.value) return;
 	if (searchQuery.value.trim()) {
 		try {
 			// 调用后端接口
