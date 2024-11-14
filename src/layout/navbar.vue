@@ -105,9 +105,18 @@ const logout = () => {
 	setLoginState(false);
 	setUserInfo({});
 	username.value = "";
+
+	// 获取当前路由的完整路径和查询参数
+	const currentQuery = { ...route.query };
+	const fullPath =
+		route.path +
+		(Object.keys(currentQuery).length > 0
+			? "?" + new URLSearchParams(currentQuery).toString()
+			: "");
+
 	router.push({
 		path: "/login",
-		query: { redirect: route.fullPath }, // 将当前路径作为 query 参数传递给登录页面
+		query: { redirect: fullPath },
 	});
 };
 

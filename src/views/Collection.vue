@@ -203,7 +203,7 @@ const loadCategoryData = async () => {
 };
 
 const getUserProfile = async () => {
-	const learningProgress = userInfo.value.learningProgress || null;
+	const learningProgress = userInfo.value.learningProgress || [];
 	if (learningProgress.length) {
 		const foundProgress = learningProgress.find(
 			(p) => p.course === route.params.id

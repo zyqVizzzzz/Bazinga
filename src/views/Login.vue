@@ -118,8 +118,25 @@ const login = async () => {
 				localStorage.setItem("token", response.data.data.access_token); // 保存 token
 				setLoginState(true);
 				setUserInfo(response.data.data);
-				const redirectPath = route.query.redirect || "/";
-				router.replace({ path: redirectPath, force: true });
+
+				// 处理重定向路径
+				const redirectUrl = route.query.redirect;
+				if (redirectUrl) {
+					// 解析重定向URL中的路径和查询参数
+					try {
+						const urlObj = new URL(redirectUrl, window.location.origin);
+						router.replace({
+							path: urlObj.pathname,
+							query: Object.fromEntries(urlObj.searchParams.entries()),
+							force: true,
+						});
+					} catch {
+						router.replace({ path: redirectUrl, force: true });
+					}
+				} else {
+					// 如果没有重定向路径，去首页
+					router.replace({ path: "/", force: true });
+				}
 			}
 		} else {
 			errorMessage.value = t("login.error");
