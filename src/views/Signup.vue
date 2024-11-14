@@ -24,12 +24,48 @@
 								<label class="retro-label">
 									<span class="label-text">{{ t("signup.email") }}:</span>
 								</label>
+								<div class="flex space-x-2 items-center">
+									<div class="retro-input-wrapper flex-1">
+										<input
+											type="email"
+											v-model="email"
+											class="retro-input text-sm"
+											:placeholder="t('signup.emailInput')"
+											required
+										/>
+									</div>
+									<button
+										type="button"
+										@click="sendVerificationCode"
+										:disabled="cooldown > 0"
+										class="retro-btn-small"
+									>
+										<div class="btn-shadow">
+											<div class="btn-edge">
+												<div class="btn-face">
+													{{
+														cooldown > 0 ? `${cooldown}s` : t("signup.sendCode")
+													}}
+												</div>
+											</div>
+										</div>
+									</button>
+								</div>
+							</div>
+
+							<!-- 验证码输入 -->
+							<div class="form-control">
+								<label class="retro-label">
+									<span class="label-text"
+										>{{ t("signup.verificationCode") }}:</span
+									>
+								</label>
 								<div class="retro-input-wrapper">
 									<input
-										type="email"
-										v-model="email"
-										class="retro-input"
-										:placeholder="t('signup.emailInput')"
+										type="text"
+										v-model="verificationCode"
+										class="retro-input text-sm"
+										:placeholder="t('signup.verificationCodeInput')"
 										required
 									/>
 								</div>
@@ -44,7 +80,7 @@
 									<input
 										type="password"
 										v-model="password"
-										class="retro-input"
+										class="retro-input text-sm"
 										:placeholder="t('signup.passwordInput')"
 										required
 									/>
@@ -62,7 +98,7 @@
 									<input
 										type="password"
 										v-model="confirmPassword"
-										class="retro-input"
+										class="retro-input text-sm"
 										:placeholder="t('signup.passwordRepeatInput')"
 										required
 									/>
@@ -119,11 +155,46 @@ const router = useRouter();
 const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
+const verificationCode = ref("");
 const errorMessage = ref("");
+const cooldown = ref(0); // 验证码冷却时间
 
+// 发送验证码方法
+const sendVerificationCode = async () => {
+	if (!email.value) {
+		errorMessage.value = t("signup.emailRequired");
+		return;
+	}
+
+	try {
+		await apiClient.post("/users/send-verification-code", {
+			email: email.value,
+		});
+
+		// 开始倒计时
+		cooldown.value = 60;
+		const timer = setInterval(() => {
+			cooldown.value--;
+			if (cooldown.value <= 0) {
+				clearInterval(timer);
+			}
+		}, 1000);
+
+		showToast({ message: t("signup.codeSent"), type: "success" });
+	} catch (error) {
+		errorMessage.value = t("signup.sendCodeError");
+	}
+};
+
+// 注册
 const register = async () => {
 	if (password.value !== confirmPassword.value) {
-		errorMessage.value = "Passwords do not match. Please try again.";
+		errorMessage.value = t("signup.passwordMismatch");
+		return;
+	}
+
+	if (!verificationCode.value) {
+		errorMessage.value = t("signup.codeRequired");
 		return;
 	}
 
@@ -131,17 +202,19 @@ const register = async () => {
 		const response = await apiClient.post("/users/register", {
 			email: email.value,
 			password: password.value,
+			verificationCode: verificationCode.value,
 		});
+
 		if (response.data.code === 200) {
 			if (response.data.data.user) {
 				showToast({ message: t("signup.success"), type: "success" });
-				router.push("/login"); // 注册成功后跳转到登录页面
+				router.push("/login");
 			}
 		} else {
 			errorMessage.value = t("signup.error");
 		}
 	} catch (error) {
-		errorMessage.value = t("signup.error");
+		errorMessage.value = error.response?.data?.message || t("signup.error");
 	}
 };
 
@@ -152,7 +225,29 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-/* 复古卡片样式 */
+.retro-btn-small {
+	position: relative;
+	width: 6rem;
+	height: 2.51rem;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.retro-btn-small:hover .btn-face {
+	background-color: white;
+}
+
+.retro-btn-small:active .btn-edge,
+.retro-btn-small:active .btn-face {
+	transform: translateY(0);
+}
+
+.retro-btn-small:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
 .retro-card {
 	position: relative;
 	width: 100%;
