@@ -564,7 +564,7 @@ const uploadBanner = async (file) => {
 }
 
 .card-edge {
-	background-color: #888;
+	background-color: #b3b3b3;
 	border-radius: 12px;
 	transform: translateY(-4px);
 }
