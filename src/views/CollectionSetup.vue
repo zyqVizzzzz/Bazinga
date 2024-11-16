@@ -464,7 +464,7 @@ const handleFileUpload = (event) => {
 	}
 };
 
-// 方法：更新主题色预览
+// 更新主题色预览
 const updateThemePreview = () => {
 	// 在选择主题色时更新按钮的颜色
 };
