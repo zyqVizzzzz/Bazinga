@@ -255,7 +255,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
 import { useLessonStore, useAppStore, useLoginStore } from "@/store";
 import apiClient from "@/api";
 
@@ -263,6 +263,8 @@ import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import { showToast } from "@/components/common/toast.js";
+
+import { useProgress } from "@/composables/useProgress";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
@@ -302,6 +304,14 @@ const isListenMode = ref(false);
 const isLoading = ref(true);
 
 const guestNotAllow = ref(false);
+
+const { saveProgress, isSaving, hasUnsavedChanges } = useProgress(
+	appStore,
+	apiClient,
+	showToast,
+	currentPage,
+	route
+);
 
 // 获取课程
 const getLesson = async () => {
@@ -481,6 +491,12 @@ onMounted(async () => {
 	await getLesson();
 });
 
+onBeforeRouteLeave(async (to, from, next) => {
+	console.log("Route leaving, saving progress...");
+	await saveProgress();
+	next();
+});
+
 const toggleTransMode = () => {
 	showTrans.value = !showTrans.value;
 };
@@ -491,34 +507,6 @@ const togglePracticeMode = () => {
 
 const toggleListenMode = async () => {
 	lessonStore.setListenMode();
-};
-
-const saveProgress = async () => {
-	const course = route.params.id;
-	const season = route.params.season;
-	const episode = route.params.episode;
-	const page = currentPage.value;
-	const sign = route.query.sign;
-
-	appStore.saveProgress(course, season, episode, page, sign);
-	try {
-		const response = await apiClient.post("/users/me/update", {
-			learningProgress: appStore.progressList,
-		});
-		if (response.data.code === 200) {
-			showToast({
-				message: "进度保存成功",
-				type: "success",
-			});
-		} else {
-			showToast({
-				message: response.data.message,
-				type: "error",
-			});
-		}
-	} catch (error) {
-		console.error(error);
-	}
 };
 
 // 高亮知识点相关台词
