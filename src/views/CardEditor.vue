@@ -264,7 +264,6 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
-import Header from "@editorjs/header";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import { exampleText, exampleTextZh, word } from "@/constants/example.js";
@@ -398,15 +397,18 @@ const initKnowledges = async () => {
 
 			// 处理每个场景的知识点
 			response.data.data.forEach((scene) => {
-				(scene.knowledge || []).forEach((item) => {
-					if (!currentKnowledge.value.has(item.word)) {
+				scene.knowledge.forEach((item) => {
+					const existingKnowledge = currentKnowledge.value.get(item.word);
+
+					if (!existingKnowledge) {
+						// 创建新的知识点对象，添加场景信息
 						currentKnowledge.value.set(item.word, {
 							...item,
-							scenes: new Set([scene.sceneId]), // 记录单词出现的场景
+							scenes: new Set([scene.sceneId]),
 						});
 					} else {
-						// 如果单词已存在，添加新的场景ID
-						currentKnowledge.value.get(item.word).scenes.add(scene.sceneId);
+						// 更新现有知识点的场景集合
+						existingKnowledge.scenes.add(scene.sceneId);
 					}
 				});
 			});
@@ -692,66 +694,85 @@ function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
 }
 
 function checkBoldText(content) {
-	// 用于追踪当前正在处理的场景ID
+	console.log("Original content:", content);
 	let currentSceneId = null;
-	const currentBoldWordsByScene = new Map(); // Map<sceneId, Set<word>>
+	const currentBoldWordsByScene = new Map();
+	// 创建一个新的Map而不是直接引用
+	const updatedKnowledge = new Map();
 
-	// 第一遍遍历：确定每个场景的范围和加粗词
-	content.blocks.forEach((block) => {
+	// 第一步：扫描文档，按场景收集加粗的单词
+	content.blocks.forEach((block, index) => {
 		const line = block.data.text;
 
-		// 检查是否是场景标题（以 # 开头）
+		// 检查场景标题
 		if (line.match(/^#\s+\S/)) {
-			// 根据标题位置确定场景ID
 			const sceneIndex = content.blocks
 				.filter((b) => b.data.text.match(/^#\s+\S/))
 				.findIndex((b) => b.data.text === line);
 			currentSceneId = `Scene${sceneIndex + 1}`;
 			currentBoldWordsByScene.set(currentSceneId, new Set());
+
+			if (block.data.text.includes("<b>")) {
+				// 移除标题中的加粗标签
+				block.data.text = block.data.text.replace(/<\/?b>/g, "");
+			}
 		}
 
-		// 如果当前块有加粗文本且我们知道当前场景
-		if (currentSceneId && block.type === "paragraph") {
+		// 如果在场景内且是段落，收集加粗单词
+		if (
+			currentSceneId &&
+			block.type === "paragraph" &&
+			!line.match(/^#\s+\S/)
+		) {
 			const boldWords = extractBoldWords(line);
+			console.log("Found bold words:", boldWords, "in scene:", currentSceneId);
 			boldWords.forEach((word) => {
-				currentBoldWordsByScene.get(currentSceneId).add(word.toLowerCase());
+				currentBoldWordsByScene.get(currentSceneId).add(word); // 不转换为小写
 			});
 		}
 	});
 
-	// 第二遍遍历：更新知识点的场景关联
-	for (const [word, knowledge] of currentKnowledge.value.entries()) {
-		// 检查每个场景
-		for (const [sceneId, sceneWords] of currentBoldWordsByScene.entries()) {
-			if (sceneWords.has(word.toLowerCase())) {
-				// 该词在这个场景中被加粗
-				knowledge.scenes.add(sceneId);
-			} else {
-				// 该词在这个场景中没有被加粗
-				knowledge.scenes.delete(sceneId);
-			}
-		}
+	console.log("Words by scene:", currentBoldWordsByScene);
 
-		// 如果词没有关联任何场景，则删除该词
-		if (knowledge.scenes.size === 0) {
-			currentKnowledge.value.delete(word);
-			existingBoldWords.delete(word.toLowerCase());
-		}
-	}
+	// 第二步：保留现有知识点的其他信息
+	currentKnowledge.value.forEach((knowledge, word) => {
+		const updatedKnowledgeItem = {
+			...knowledge,
+			scenes: new Set(), // 重置场景集合
+		};
+		updatedKnowledge.set(word, updatedKnowledgeItem);
+	});
 
-	// 添加新的加粗词
+	// 第三步：更新知识点的场景关联
 	for (const [sceneId, sceneWords] of currentBoldWordsByScene.entries()) {
-		const newWords = Array.from(sceneWords).filter(
-			(word) =>
-				!Array.from(currentKnowledge.value.values()).some(
-					(k) => k.word.toLowerCase() === word
-				)
-		);
+		sceneWords.forEach((word) => {
+			if (updatedKnowledge.has(word)) {
+				// 更新现有知识点的场景
+				updatedKnowledge.get(word).scenes.add(sceneId);
+			} else {
+				// 添加新的知识点
+				addBoldWordsToKnowledge([word], sceneId);
+				// 将新添加的知识点复制到updatedKnowledge中
+				const newKnowledge = currentKnowledge.value.get(word);
+				if (newKnowledge) {
+					updatedKnowledge.set(word, newKnowledge);
+				}
+			}
+		});
+	}
 
-		if (newWords.length) {
-			addBoldWordsToKnowledge(newWords, sceneId);
+	// 第四步：删除没有场景关联的知识点
+	for (const [word, knowledge] of updatedKnowledge.entries()) {
+		if (knowledge.scenes.size === 0) {
+			updatedKnowledge.delete(word);
+			existingBoldWords.delete(word);
 		}
 	}
+
+	console.log("Final updated knowledge:", updatedKnowledge);
+
+	// 更新知识点集合
+	currentKnowledge.value = updatedKnowledge;
 }
 
 function extractBoldWords(text) {
@@ -839,28 +860,57 @@ const saveKnowledge = () => {
 	}
 };
 
-// 修改保存所有知识点的方法
+// 保存所有知识点的方法
 const saveAllKnowledge = async () => {
 	try {
-		// 转换知识点数据结构以适应批量保存
-		const knowledgeArray = Array.from(currentKnowledge.value.values());
+		// 按场景ID重组知识点数据
+		const sceneKnowledgeMap = new Map();
 
-		// 准备批量保存的数据
+		// 遍历所有知识点，按场景分组
+		Array.from(currentKnowledge.value.values()).forEach((knowledge) => {
+			// 确保我们有一个scenes集合
+			if (knowledge.scenes) {
+				knowledge.scenes.forEach((sceneId) => {
+					if (!sceneKnowledgeMap.has(sceneId)) {
+						sceneKnowledgeMap.set(sceneId, []);
+					}
+					// 创建知识点副本，排除scenes属性
+					const { scenes, ...knowledgeData } = knowledge;
+					sceneKnowledgeMap.get(sceneId).push(knowledgeData);
+				});
+			}
+		});
+
+		// 准备批量保存的数据，格式与后端接口匹配
 		const bulkData = {
 			catalogId: route.params.id,
 			lessonId: route.query.sign,
 			items: scriptJson.value.scenes[0].dialogues.map((dialogue) => ({
 				sceneId: dialogue.id,
-				knowledge: knowledgeArray
-					.filter((k) => k.scenes.has(dialogue.id))
-					.map(({ scenes, ...item }) => item), // 移除 scenes 字段
+				// 只在有知识点时才包含knowledge字段
+				...(sceneKnowledgeMap.get(dialogue.id)?.length > 0 && {
+					knowledge: sceneKnowledgeMap.get(dialogue.id),
+				}),
+				// 保持原有practice字段不变
+				...(dialogue.practice && { practice: dialogue.practice }),
 			})),
 		};
 
-		// 调用批量保存接口
-		await apiClient.post("/knowledge/bulk", bulkData);
+		// 调用现有的批量保存接口
+		const response = await apiClient.post("/knowledge/bulk", bulkData);
+
+		if (response.data.code === 200) {
+			showToast({ message: "知识点保存成功", type: "success" });
+
+			// 刷新知识点数据
+			await initKnowledges();
+		}
 	} catch (error) {
-		showToast({ message: "知识点更新失败", type: "error" });
+		console.error("Failed to save knowledge:", error);
+		showToast({
+			message: error.response?.data?.message || "知识点保存失败",
+			type: "error",
+		});
 	}
 };
 
@@ -939,6 +989,7 @@ function processDialogueData(savedData, route) {
 
 		// 标题行总是保留
 		if (currentLine.match(/^#\s+\S/)) {
+			block.data.text = block.data.text.replace(/<\/?b>/g, "");
 			return true;
 		}
 
@@ -980,7 +1031,10 @@ function processDialogueData(savedData, route) {
 				id: `Scene${outputDialogues.length + 1}`,
 				season: route.params.season,
 				episode: route.params.episode,
-				title: line.replace(/^#\s*/, "").trim(),
+				title: line
+					.replace(/^#\s*/, "")
+					.replace(/<\/?b>/g, "")
+					.trim(),
 				img: "",
 				text: [],
 				text_zh: [],
@@ -1036,28 +1090,63 @@ function processPair(pair, dialogue) {
 // 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
 const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
 	const content = await editorInstance.save();
-	// 创建一个对象来跟踪每个知识点单词的匹配状态
-	const matchedWords = new Set();
-	const newBlocks = content.blocks.map((block) => {
-		if (block.type === "paragraph" && block.data.text.trim()) {
-			// 遍历每个知识点，并在整个文本范围内仅加粗首次出现
-			knowledges.forEach(({ word }) => {
-				// 如果该单词已经加粗过，则跳过
-				if (matchedWords.has(word)) return;
+	let currentSceneId = null;
 
-				const regExp = new RegExp(`(${word})`, "i"); // 匹配第一个出现的单词（忽略大小写）
+	// 创建场景知识点映射
+	const sceneKnowledgeMap = new Map();
 
-				// 替换第一个匹配项后停止
-				block.data.text = block.data.text.replace(regExp, (match) => {
-					matchedWords.add(word); // 标记该单词已加粗
-					return `<b>${match}</b>`; // 仅加粗第一个匹配项
-				});
+	// 将知识点按场景分组
+	knowledges.forEach((knowledge) => {
+		if (knowledge.scenes) {
+			knowledge.scenes.forEach((sceneId) => {
+				if (!sceneKnowledgeMap.has(sceneId)) {
+					sceneKnowledgeMap.set(sceneId, new Set());
+				}
+				sceneKnowledgeMap.get(sceneId).add(knowledge.word);
 			});
+		}
+	});
+
+	const newBlocks = content.blocks.map((block) => {
+		// 检查是否是场景标题
+		if (block.data.text.match(/^#\s+\S/)) {
+			// 更新当前场景ID
+			const sceneIndex = content.blocks
+				.filter((b) => b.data.text.match(/^#\s+\S/))
+				.findIndex((b) => b.data.text === block.data.text);
+			currentSceneId = `Scene${sceneIndex + 1}`;
+
+			// 确保标题中没有加粗标签
+			block.data.text = block.data.text.replace(/<\/?b>/g, "");
+			return block;
+		}
+
+		// 只处理当前场景中的非标题段落
+		if (
+			block.type === "paragraph" &&
+			block.data.text.trim() &&
+			!block.data.text.match(/^#\s+\S/) &&
+			currentSceneId
+		) {
+			// 获取当前场景的知识点
+			const sceneKnowledge = sceneKnowledgeMap.get(currentSceneId);
+
+			if (sceneKnowledge) {
+				// 移除现有的加粗标签
+				let text = block.data.text.replace(/<\/?b>/g, "");
+
+				// 只为当前场景的知识点添加加粗
+				sceneKnowledge.forEach((word) => {
+					const regExp = new RegExp(`\\b${word}\\b`, "g");
+					text = text.replace(regExp, (match) => `<b>${match}</b>`);
+				});
+
+				block.data.text = text;
+			}
 		}
 		return block;
 	});
 
-	// 渲染编辑器内容
 	await editorInstance.render({ blocks: newBlocks });
 };
 
