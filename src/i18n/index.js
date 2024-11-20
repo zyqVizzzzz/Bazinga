@@ -7,22 +7,22 @@ const messages = {
 		},
 		nav: {
 			home: "首页",
-			collections: "书屋",
+			collections: "合集",
 			notes: "笔记",
 			profile: "个人主页",
 			login: "登录",
 			signup: "注册",
 		},
 		home: {
-			title: "故事书",
-			subTitle: "Collections",
+			title: "Collections",
+			subTitle: "合集",
 			devLog: "日志",
 			more: "查看更多",
 		},
 		collections: {
 			title: "书架",
 			subTitle: "Bookshelf",
-			create: "新增故事合集",
+			create: "新增合集",
 		},
 		collection: {
 			continue: "继续上次进度",
@@ -101,8 +101,8 @@ const messages = {
 		profile: {
 			button_community: "加入社区",
 			button_account: "账户设置",
-			story_progress: "剧集进度",
-			word_progress: "单词进度",
+			story_progress: "",
+			word_progress: "",
 			account_form: {
 				save_account: "保存",
 				cancel_account: "取消",
@@ -123,10 +123,8 @@ const messages = {
 				v_01: "词汇库数量",
 				v_02: "词汇块处理",
 			},
-			nickname_tips:
-				"理论上，你可以输入很多字，但最终只有50个字符会被上传，大概是25个汉字或50个英文字母...而实际情况是，我建议你起一个更短的名字，最好在10个字以内，因为这里没有任何换行的处理，字太多会超出卡片的宽度...当然，whatever，如果你非要这么做的话...",
-			sign_tips:
-				"我知道这是个怪异的互动...你依然可以在这里输入很多个字，如果你非要这么做的话...如你所见，它可能会挡住一些东西...but whatever...虽然我不建议你在这里输入太多字，但如果你非要这么做的话...",
+			nickname_tips: "请输入适当(...)数量的字符",
+			sign_tips: "首先，最好不要输入很多字...其次，也没有必要输入很多字...",
 			sign_submit: "保存",
 			sign_cancel: "取消",
 		},

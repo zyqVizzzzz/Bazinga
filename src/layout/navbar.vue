@@ -3,7 +3,7 @@
 		class="navbar bg-base-100 shadow-lg"
 		style="z-index: 9999"
 		:style="{
-			background: isCategory || isProfile ? 'rgba(255,255,255,0)' : '#fff',
+			background: isCategory || isProfile ? 'rgba(255,255,255,0.1)' : '#fff',
 		}"
 	>
 		<div class="flex-1">
@@ -11,7 +11,8 @@
 				@click="goToHome"
 				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
 			>
-				<img src="../assets/banner2.png" class="w-[144px]" alt="" />
+				<!-- <img src="../assets/banner2.png" class="w-[144px]" alt="" /> -->
+				Bazinga！
 			</a>
 		</div>
 		<div class="flex-none">

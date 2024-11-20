@@ -4,27 +4,22 @@
 		<div class="terminal-window right-aligned">
 			<!-- 标题 -->
 			<div class="terminal-header">
-				<span class="terminal-title">vocabulary_stats.dat</span>
+				<span class="terminal-title">词汇数据.dat</span>
 			</div>
 
 			<!-- 内容 -->
 			<div class="terminal-content">
 				<div class="terminal-text">
-					<p class="command-line text-xs">
-						<span class="prompt">>></span>
-						<span class="command">vocabulary.scan()</span>
-					</p>
-
 					<div class="output-block">
 						<div class="stat-line">
-							<span class="hex-prefix">0x01</span>
+							<span class="hex-prefix">[01]</span>
 							<span class="stat-text">{{ t("profile.vocabulary.v_01") }}:</span>
 							<span class="stat-value highlight-secondary">2</span>
 							<span class="loading-dots">...</span>
 						</div>
 
 						<div class="stat-line">
-							<span class="hex-prefix">0x02</span>
+							<span class="hex-prefix">[02]</span>
 							<span class="stat-text">{{ t("profile.vocabulary.v_02") }}:</span>
 							<span class="stat-value highlight-secondary">10</span>
 							<span class="loading-dots">...</span>
@@ -68,32 +63,46 @@ const { t } = useI18n();
 }
 
 .arrow-word {
-	width: 100px;
-	height: 70px;
+	width: 40px;
+	height: 40px;
 	background-image: url("@/assets/6.png");
 	background-size: 100% 100%;
 	position: absolute;
-	top: 105px;
-	right: -125px;
-	transform: scaleX(-1) rotate(30deg);
-	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
+	top: 110px;
+	right: -60px;
+	transform: scaleX(-1) rotate(10deg);
+	filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.2));
 }
 
 .terminal-window {
 	width: 300px;
 	background: #1a1a1a;
 	border: 3px solid #333;
-	border-radius: 8px;
 	box-shadow: 6px 6px 0 rgba(var(--secondary-color-rgb), 0.2);
 	overflow: hidden;
 	font-family: "Fira Code", monospace;
 }
 
 .terminal-header {
-	background: #333;
 	padding: 8px;
 	display: flex;
 	align-items: center;
+
+	width: 96%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	top: -1.4rem;
+	left: 50%;
+	transform: translateX(-50%);
+	color: white;
+	padding: 4px 16px;
+	font-weight: bold;
+	font-size: 1.25rem;
+	border: 2px solid #fff;
+	white-space: nowrap;
+	background: #333;
 }
 
 .terminal-title {
@@ -103,7 +112,7 @@ const { t } = useI18n();
 }
 
 .terminal-content {
-	padding: 16px;
+	padding: 16px 16px 16px;
 	color: var(--accent-color);
 }
 
@@ -123,7 +132,6 @@ const { t } = useI18n();
 
 .stat-line {
 	text-align: left;
-	margin-bottom: 8px;
 	font-size: 14px;
 }
 

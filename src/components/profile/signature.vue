@@ -1,41 +1,33 @@
 <template>
-	<div class="sign-container bg-paper" @click="toggleEditing">
-		<template v-if="isEditingSignature">
-			<!-- 可编辑的文本框 -->
-			<textarea
-				ref="signatureInput"
-				v-model="tempSignature"
-				class="editable-input"
-				rows="1"
-			></textarea>
+	<div class="sign-container bg-gray-700" v-if="isEditingSignature">
+		<!-- 可编辑的文本框 -->
+		<textarea
+			ref="signatureInput"
+			v-model="tempSignature"
+			class="editable-input"
+			rows="2"
+		></textarea>
 
-			<!-- 保存和取消按钮 -->
-			<div class="button-group">
-				<button
-					class="btn btn-sm text-xs btn-primary text-white"
-					@mousedown.stop="saveSignature"
-				>
-					{{ t("profile.sign_submit") }}
-				</button>
-				<button
-					class="btn btn-sm text-xs btn-gray"
-					@mousedown.stop="resetEditing"
-				>
-					{{ t("profile.sign_cancel") }}
-				</button>
-			</div>
-			<div
-				class="text-xs text-red-500 font-bold border-t w-full border-gray-200 py-2 mt-2"
+		<!-- 保存和取消按钮 -->
+		<div class="button-group">
+			<button
+				class="btn btn-sm text-xs btn-primary text-white"
+				@mousedown.stop="saveSignature"
 			>
-				{{ t("profile.sign_tips") }}
-				<br /><br />
-				那你就是进一步的怪家伙...
-			</div>
-		</template>
-		<template v-else>
-			<!-- 把换行符替换为 p 标签 -->
-			<div v-html="formattedSignature"></div>
-		</template>
+				{{ t("profile.sign_submit") }}
+			</button>
+			<button
+				class="btn btn-sm text-xs btn-gray"
+				@mousedown.stop="resetEditing"
+			>
+				{{ t("profile.sign_cancel") }}
+			</button>
+		</div>
+		<div
+			class="text-xs text-gray-100 font-bold border-t w-full border-gray-600 py-2 mt-2"
+		>
+			{{ t("profile.sign_tips") }}
+		</div>
 	</div>
 </template>
 
@@ -85,6 +77,10 @@ const formattedSignature = computed(() => {
 				.join("")
 		: "";
 });
+
+defineExpose({
+	toggleEditing,
+});
 </script>
 
 <style scoped>
@@ -92,11 +88,10 @@ const formattedSignature = computed(() => {
 	width: 150%;
 	font-size: 0.875rem;
 	position: absolute;
+	top: 0;
 	left: 50%;
-	top: -140px;
 	border-width: 2px;
 	padding: 0.5rem;
-	border-color: #000;
 	transform: translate(-50%, -33%);
 	z-index: 10;
 	display: flex;
@@ -104,6 +99,10 @@ const formattedSignature = computed(() => {
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
+	color: white;
+	border: 2px solid #fff;
+	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	transform: translate(-50%, -33%) rotate(-2deg);
 }
 .bg-paper {
 	background: linear-gradient(155deg, #f4f2f2, #eeeeee);

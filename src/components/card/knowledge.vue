@@ -273,13 +273,13 @@ onMounted(() => {
 	right: 0;
 	margin: 16px;
 	opacity: 0;
-	transform: translateY(-20px);
+	transform: translateY(-10px);
 	transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .knowledge-card:hover .knowledge-card-star {
 	opacity: 1;
-	transform: translateY(0);
+	transform: translateY(3px);
 }
 
 .clicked {

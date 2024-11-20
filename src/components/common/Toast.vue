@@ -122,7 +122,6 @@ const toastStyles = computed(() => ({
 	borderRadius: "255px 15px 225px 15px/15px 225px 15px 255px",
 	filter: "url(#sketchy-filter)",
 	boxShadow: "1px 1px 0 currentColor",
-	animation: "wobble 1s ease-in-out",
 }));
 
 const startTimer = () => {

@@ -2,17 +2,15 @@
 	<div class="relative inline-block">
 		<div
 			v-if="isEditing"
-			class="absolute left-1/2 -translate-x-1/2 text-red-500 font-bold bg-paper"
-			style="width: 300px; top: -156px; z-index: 99; font-size: 13px"
+			class="absolute left-1/2 -translate-x-1/2 text-gray-700 font-bold"
+			style="width: 300px; top: -36px; z-index: 99; font-size: 13px"
 		>
 			{{ t("profile.nickname_tips") }}
-			<p class="pt-1">那你就是个怪家伙...</p>
 		</div>
 		<div>
 			<h1
 				v-if="!isEditing"
-				class="nickname-text text-2xl font-bold text-gray-800 relative w-full"
-				style="height: 32px"
+				class="nickname-text text-xl font-bold text-gray-200 relative w-full"
 			>
 				{{ nickname }}
 			</h1>
@@ -21,23 +19,22 @@
 				ref="nicknameRef"
 				v-model="tempNickname"
 				class="dynamic-input text-center focus:outline-none"
-				style="padding: 6px 0"
-				@blur="resetEditing"
 			/>
+			<!-- @blur="resetEditing" -->
 		</div>
 		<!-- 编辑按钮 -->
 		<button
 			v-if="!isEditing"
-			class="absolute -right-3 top-1/2 transform -translate-y-1/2 translate-x-full"
+			class="absolute text-sm -right-3 top-1/2 transform -translate-y-1/2 translate-x-full"
 			@click="toggleEditing"
 		>
-			<i class="bi bi-pencil-square text-xl"></i>
+			<i class="bi bi-pencil-square"></i>
 		</button>
 
 		<!-- 保存按钮 -->
 		<button
 			v-if="isEditing"
-			class="absolute -right-3 top-1/2 transform -translate-y-1/2 translate-x-full"
+			class="absolute -right-0 top-1/2 transform -translate-y-1/2 translate-x-full"
 			style="z-index: 99"
 			@mousedown="saveEditing"
 		>
@@ -90,9 +87,11 @@ const resetEditing = () => {
 	text-overflow: ellipsis; /* 显示省略号 */
 }
 .dynamic-input {
-	border: 1px solid #ccc;
+	border: none;
 	padding: 4px;
-	font-size: 16px;
+	font-size: 1rem;
+	color: white;
+	background-color: transparent;
 	/* 其他样式 */
 }
 </style>

@@ -70,7 +70,7 @@
 					<span class="terminal-dot red"></span>
 					<span class="terminal-dot yellow"></span>
 					<span class="terminal-dot green"></span>
-					<span class="terminal-title-text">dev_log.md</span>
+					<span class="terminal-title-text">开发者留言.log</span>
 					<span class="cursor text-xs">_</span>
 				</div>
 			</div>
@@ -79,51 +79,74 @@
 			<div class="retro-terminal max-w-3xl mx-auto" v-if="showDevLog">
 				<div class="terminal-shadow">
 					<div class="terminal-edge">
-						<div class="terminal-face">
-							<!-- 命令提示符和时间戳 -->
-							<div class="terminal-prompt mb-6">
-								<span class="text-green-500">dev@Bazinga_妙哉</span>
-								<span class="text-gray-400 mr-2">:</span>
-								<span class="text-blue-500">~/projects/roadmap</span>
-								<span class="text-gray-400">$</span>
-								<span class="text-gray-200 ml-2">cat TODO.md</span>
-								<div class="text-gray-400 text-sm mt-1">
-									Last updated: {{ new Date().toLocaleDateString() }}
+						<div class="terminal-face flex">
+							<div class="character-card">
+								<!-- 角色卡片容器 -->
+								<div class="card-inner">
+									<!-- 标题 -->
+									<div class="card-title bg-gray-700">Muztagh(d/acc)</div>
+
+									<!-- 头像区域 -->
+									<div class="avatar-container">
+										<slot name="avatar">
+											<img src="../assets/avatar.jpg" alt="Character avatar" />
+										</slot>
+									</div>
+
+									<p class="text-sm mt-1 text-gray-800">zyqvizzz@gmail.com</p>
+									<div style="background-color: rgba(0, 0, 0, 0.2)">
+										<p class="text-xs mt-2 py-2 text-gray-300">
+											With math, 6900 simply cannot be contained by 500
+										</p>
+									</div>
 								</div>
 							</div>
-
-							<!-- 文章列表 -->
-							<div class="space-y-6">
-								<div
-									v-for="(article, index) in articles"
-									:key="index"
-									class="log-item"
-								>
-									<div class="flex items-center gap-3 mb-2">
-										<div class="status-badge">WIP</div>
-										<h3 class="text-lg font-mono font-bold text-primary">
-											{{ article.title }}
-										</h3>
+							<div>
+								<!-- 命令提示符和时间戳 -->
+								<div class="terminal-prompt mb-6">
+									<span class="text-green-500">dev@Bazinga_妙哉</span>
+									<span class="text-gray-400 mr-2">:</span>
+									<span class="text-blue-500">~/projects/roadmap</span>
+									<span class="text-gray-400">$</span>
+									<span class="text-gray-200 ml-2">cat TODO.md</span>
+									<div class="text-gray-400 text-sm mt-1">
+										Last updated: {{ new Date().toLocaleDateString() }}
 									</div>
-									<div class="ml-10 font-mono">
-										<div class="flex items-center gap-4">
-											<span class="text-gray-300"
-												># {{ "{" }} {{ article.title_zh }} {{ "}" }}
-											</span>
+								</div>
+
+								<!-- 文章列表 -->
+								<div class="space-y-6">
+									<div
+										v-for="(article, index) in articles"
+										:key="index"
+										class="log-item"
+									>
+										<div class="flex items-center gap-3 mb-2">
+											<div class="status-badge">WIP</div>
+											<h3 class="text-lg font-mono font-bold text-primary">
+												{{ article.title }}
+											</h3>
+										</div>
+										<div class="ml-10 font-mono">
+											<div class="flex items-center gap-4">
+												<span class="text-gray-300"
+													># {{ "{" }} {{ article.title_zh }} {{ "}" }}
+												</span>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
 
-							<!-- Matrix rain 动画 -->
-							<div class="matrix-rain"></div>
+								<!-- Matrix rain 动画 -->
+								<div class="matrix-rain"></div>
 
-							<!-- 签名 -->
-							<div
-								class="dev-signature mt-8 text-right font-mono text-sm text-gray-400"
-							>
-								<div>Best regards</div>
-								<div class="text-primary mt-1">@Muztagh(d/acc)</div>
+								<!-- 签名 -->
+								<div
+									class="dev-signature mt-8 text-right font-mono text-sm text-gray-400"
+								>
+									<div>Best regards</div>
+									<div class="text-primary mt-1">@Muztagh(d/acc)</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -146,7 +169,7 @@ const router = useRouter();
 const scenes = ref([]);
 const articles = ref([
 	{
-		title: "With math, 6900 simply cannot be contained by 500",
+		title: "0110100001100101011011000110110001101111",
 		title_zh: "开发者留言",
 		progress: 0,
 	},
@@ -299,58 +322,6 @@ const goToCollection = (id) => {
 	);
 }
 
-.retro-btn-medium {
-	position: relative;
-	width: 8rem;
-	height: 2.5rem;
-	border: none;
-	background: none;
-	cursor: pointer;
-}
-
-.retro-article-card {
-	position: relative;
-	padding: 2rem;
-	background-image: url("@/assets/cytus.jpg");
-	background-repeat: no-repeat;
-	background-position: right center;
-	background-size: 16%;
-}
-
-.article-item {
-	padding: 0.5rem;
-	transition: background-color 0.3s;
-	border-radius: 8px;
-}
-
-.article-item:hover {
-	background-color: rgba(0, 0, 0, 0.05);
-}
-
-.progress-line {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-
-.progress-line::after {
-	content: "";
-	flex: 1;
-	height: 2px;
-	background: repeating-linear-gradient(
-		90deg,
-		#666 0px,
-		#666 4px,
-		transparent 4px,
-		transparent 8px
-	);
-}
-
-.progress {
-	font-weight: bold;
-	color: var(--primary-color);
-}
-
 .retro-card:hover {
 	transform: translateY(-5px);
 }
@@ -367,6 +338,15 @@ const goToCollection = (id) => {
 .retro-btn-medium:active .btn-edge,
 .retro-btn-medium:active .btn-face {
 	transform: translateY(0);
+}
+
+.retro-btn-medium {
+	position: relative;
+	width: 8rem;
+	height: 2.5rem;
+	border: none;
+	background: none;
+	cursor: pointer;
 }
 
 /* 按钮通用样式 */
@@ -450,17 +430,17 @@ const goToCollection = (id) => {
 
 .retro-terminal {
 	position: relative;
-	background: #666;
+	background: #b3b3b3;
 	border-radius: 12px;
 	font-family: "Fira Code", monospace;
-	padding: 24px;
+	padding: 0 0 6px;
 }
 
 .terminal-face {
 	background-color: #0c0c0c;
 	border: 3px solid #333;
 	border-radius: 12px;
-	padding: 2rem;
+	padding: 2rem 1rem 1rem 0;
 	transform: translateY(-4px);
 	color: #33ff33;
 	position: relative;
@@ -560,7 +540,6 @@ const goToCollection = (id) => {
 }
 
 .dev-signature {
-	color: #33ff33;
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
 }
 
@@ -574,5 +553,105 @@ const goToCollection = (id) => {
 
 .terminal-prompt span {
 	text-shadow: 0 0 8px rgba(51, 255, 51, 0.4);
+}
+
+.character-card {
+	width: 300px;
+	padding: 8px;
+}
+
+.card-inner {
+	position: relative;
+	padding: 1rem;
+	background: linear-gradient(
+		180deg,
+		rgba(var(--primary-color-rgb), 0.5) 0%,
+		rgba(var(--accent-color-rgb), 0.5) 50%,
+		rgba(var(--secondary-color-rgb), 0.5)
+	);
+	border: 4px solid #000;
+}
+
+.card-title {
+	width: 90%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	top: -1.8rem;
+	left: 50%;
+	transform: translateX(-50%);
+	/* background: #000; */
+	color: white;
+	padding: 4px 16px;
+	font-weight: bold;
+	font-size: 1.25rem;
+	border: 2px solid #fff;
+	white-space: nowrap;
+}
+
+.status-bars {
+	margin-top: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.status-bar {
+	height: 24px;
+	background: #2d3748;
+	border: 2px solid #000;
+	position: relative;
+	overflow: hidden;
+}
+
+.bar-fill {
+	height: 100%;
+	color: #fff;
+	font-size: 0.875rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: width 0.3s ease;
+}
+
+.health .bar-fill {
+	background: var(--milk-color);
+}
+
+.energy .bar-fill {
+	background: var(--secondary-color);
+}
+
+.card-inner::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.05) 2px,
+		rgba(0, 0, 0, 0.05) 4px
+	);
+}
+
+.avatar-container {
+	width: 90%;
+	height: 90%;
+	margin: 1rem auto 0;
+	border: 4px solid #000;
+	background: #fff;
+	overflow: hidden;
+}
+
+.avatar-container img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 }
 </style>

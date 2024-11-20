@@ -52,7 +52,9 @@
 						<div class="card-face">
 							<div class="add-content">
 								<i class="bi bi-folder-plus text-3xl mb-2"></i>
-								<span class="text-lg font-bold">Create</span>
+								<span class="text-lg font-bold">{{
+									t("collections.create")
+								}}</span>
 							</div>
 						</div>
 					</div>
@@ -68,6 +70,9 @@ import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useLoginStore } from "@/store/index";
+import { useI18n } from "vue-i18n";
+
+const { t, locale } = useI18n();
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
@@ -100,7 +105,7 @@ const addNewScene = () => {
 	if (isLogin.value) {
 		router.push("/setup-collection");
 	} else {
-		showToast({ message: "登录后可创建合集", type: "warning" });
+		showToast({ message: "登录后可创建合集", type: "info" });
 	}
 };
 </script>

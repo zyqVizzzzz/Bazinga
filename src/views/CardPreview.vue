@@ -175,15 +175,21 @@
 							</div>
 						</button>
 
-						<button class="retro-btn option" @click="editCard">
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<i class="bi bi-pencil-square text-xl"></i>
+						<div class="flex items-center gap-6" v-if="!isDefault">
+							<!-- 竖线分隔符 -->
+							<div class="h-8 w-[2px] bg-black"></div>
+
+							<!-- 编辑按钮 -->
+							<button class="retro-btn option" @click="editCard">
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face flex items-center justify-center">
+											<i class="bi bi-pencil-square text-xl"></i>
+										</div>
 									</div>
 								</div>
-							</div>
-						</button>
+							</button>
+						</div>
 					</div>
 
 					<!-- 翻页控制器 -->
@@ -299,7 +305,7 @@ const isEditPage = ref(false);
 const editPageRef = ref(null);
 const editCurrentPageNumber = ref(0); // 跳转页码
 
-const isDefault = ref(true);
+const isDefault = ref(false);
 const isListenMode = ref(false);
 const isLoading = ref(true);
 
@@ -484,8 +490,8 @@ const editCard = () => {
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
-	if (route.params.id !== "67230dee6fc3d389ea1ffedf") {
-		isDefault.value = false;
+	if (route.params.id === "67230dee6fc3d389ea1ffedf") {
+		isDefault.value = true;
 	}
 	isLoading.value = true;
 	await getLesson();
@@ -507,6 +513,10 @@ const togglePracticeMode = () => {
 
 const toggleListenMode = async () => {
 	lessonStore.setListenMode();
+	showToast({
+		message: "语音模式开启",
+		type: "info",
+	});
 };
 
 // 高亮知识点相关台词

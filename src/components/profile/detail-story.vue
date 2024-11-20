@@ -4,19 +4,14 @@
 		<div class="terminal-window">
 			<!-- 标题栏 -->
 			<div class="terminal-header">
-				<span class="terminal-title">story_stats.dat</span>
+				<span class="terminal-title">学习数据.dat</span>
 			</div>
 
 			<!-- 内容 -->
 			<div class="terminal-content">
 				<div class="terminal-text">
-					<p class="command-line text-left">
-						<span class="prompt">>></span>
-						<span class="command">story.scan()</span>
-					</p>
-
 					<div class="output-block">
-						<p class="progress-line text-left">
+						<p class="progress-line">
 							<span class="indicator">[01]</span> {{ t("profile.story.s_01") }}
 							<span class="highlight-primary mr-1">第 10 集</span>
 						</p>
@@ -55,7 +50,7 @@ const { t } = useI18n();
 </script>
 <style scoped>
 .story-module {
-	top: -100px;
+	top: -180px;
 	right: -400px;
 	z-index: 20;
 }
@@ -67,30 +62,44 @@ const { t } = useI18n();
 }
 
 .arrow-story {
-	width: 100px;
-	height: 100px;
+	width: 50px;
+	height: 50px;
 	background-image: url("@/assets/5.png");
 	position: absolute;
-	bottom: 150px;
-	left: -120px;
-	transform: scaleX(-1) scaleY(-1) rotate(200deg);
-	filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
+	bottom: 20px;
+	left: -60px;
+	transform: scaleX(-1) scaleY(1) rotate(210deg);
+	filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.2));
 }
 
 .terminal-window {
 	width: 300px;
 	background: #1a1a1a;
 	border: 3px solid #333;
-	border-radius: 8px;
 	box-shadow: 6px 6px 0 rgba(var(--primary-color-rgb), 0.2);
 	overflow: hidden;
 }
 
 .terminal-header {
-	background: #333;
 	padding: 8px;
 	display: flex;
 	align-items: center;
+
+	width: 96%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	top: -1.4rem;
+	left: 50%;
+	transform: translateX(-50%);
+	color: white;
+	padding: 4px 16px;
+	font-weight: bold;
+	font-size: 1.25rem;
+	border: 2px solid #fff;
+	white-space: nowrap;
+	background: #333;
 }
 
 .terminal-title {
@@ -101,7 +110,7 @@ const { t } = useI18n();
 }
 
 .terminal-content {
-	padding: 16px;
+	padding: 24px 16px 0;
 	color: var(--accent-color);
 	font-family: monospace;
 }

@@ -1,15 +1,14 @@
 <template>
-	<div class="relative w-24 h-24 mx-auto mb-4 group">
+	<div class="avatar-container relative group">
 		<!-- 头像图片 -->
 		<img
 			:src="props.user.profilePic || '/default-avatar.png'"
 			alt="Profile Avatar"
-			class="w-24 h-24 rounded-full border-2 border-gray-800 object-cover"
 		/>
 
 		<!-- 悬停遮罩层 -->
 		<div
-			class="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+			class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
 			@click="triggerFileInput"
 		>
 			<span class="text-white text-sm">更换头像</span>
@@ -105,3 +104,20 @@ const handleFileChange = async (event) => {
 	}
 };
 </script>
+<style scoped>
+.avatar-container {
+	margin-top: 1rem;
+	border: 4px solid #000;
+	background: #fff;
+	overflow: hidden;
+}
+
+.avatar-container img {
+	width: 100%;
+	height: 100%;
+	min-width: 236px;
+	min-height: 235px;
+	object-fit: cover;
+	display: block;
+}
+</style>
