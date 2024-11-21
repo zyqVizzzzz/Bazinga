@@ -317,8 +317,8 @@ const goToCollection = (id) => {
 		45deg,
 		transparent,
 		transparent 2px,
-		rgba(0, 0, 0, 0.02) 2px,
-		rgba(0, 0, 0, 0.02) 4px
+		rgba(0, 0, 0, 0.05) 2px,
+		rgba(0, 0, 0, 0.05) 4px
 	);
 }
 

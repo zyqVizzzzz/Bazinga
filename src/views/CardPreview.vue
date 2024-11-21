@@ -91,18 +91,18 @@
 						<div class="back" v-if="!isLoading">
 							<div class="card-body h-full">
 								<!-- 标题 -->
-								<div class="terminal-title text-left">
+								<!-- <div class="terminal-title text-left">
 									<div class="terminal-header">
 										<span class="terminal-dot red relative top-[2px]"></span>
 										<span class="terminal-dot yellow relative top-[2px]"></span>
 										<span class="terminal-dot green relative top-[2px]"></span>
 										<span class="terminal-title-text">trust_terminal.exe</span>
 									</div>
-								</div>
+								</div> -->
 								<!-- 终端容器 -->
 								<div class="retro-terminal">
 									<div class="terminal-face">
-										<div class="terminal-prompt mb-6">
+										<div class="terminal-prompt mb-10">
 											<span class="text-accent">student@PRATICE</span>
 											<span class="text-accent mr-2">:</span>
 											<span class="text-gray-400"
@@ -709,6 +709,7 @@ const jumpToPageBlur = (isTrue) => {
 
 .front {
 	transform: rotateY(0deg);
+	z-index: 1;
 }
 
 /* 纹理 */

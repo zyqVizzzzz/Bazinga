@@ -1,10 +1,10 @@
 <template>
 	<div
-		v-show="showHints && localKnowledgePoints.length > 0"
 		class="card-knowledge w-2/5 ml-4 transition-all duration-300 border-l relative"
 	>
 		<!-- Swiper 轮播 -->
 		<Swiper
+			v-show="showHints && localKnowledgePoints.length > 0"
 			ref="mySwiper"
 			:modules="[Pagination]"
 			:loop="false"
@@ -155,6 +155,15 @@
 			</SwiperSlide>
 		</Swiper>
 		<div class="swiper-pagination"></div>
+		<div
+			v-show="!showHints || !localKnowledgePoints.length"
+			class="h-full min-h-[200px] p-6 bg-gray-50/50 rounded-l flex justify-center items-center"
+		>
+			<div>
+				<i class="bi bi-folder2-open text-2xl text-gray-500"></i>
+				<p class="text-gray-800 text-sm mt-2">暂无数据</p>
+			</div>
+		</div>
 	</div>
 </template>
 <script setup>
@@ -289,5 +298,25 @@ onMounted(() => {
 
 .knowledge-capsule {
 	box-shadow: 0 6px 15px rgba(255, 0, 255, 0.1);
+}
+
+.knowledge-empty-state {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+/* 可选的悬浮效果 */
+.knowledge-empty-state:hover .bi {
+	transform: translateY(-2px);
+}
+
+.knowledge-empty-state .bi {
+	transition: transform 0.2s ease;
+}
+
+/* 确保图标垂直对齐 */
+.bi::before {
+	vertical-align: middle;
 }
 </style>

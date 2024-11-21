@@ -35,7 +35,6 @@
 			</ul>
 		</div>
 
-		<!-- 复古分页器 -->
 		<div class="pagination-controls">
 			<button class="retro-btn" @click="prevPage" :disabled="currentPage === 1">
 				<div class="btn-shadow">

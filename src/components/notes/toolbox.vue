@@ -1,7 +1,7 @@
 <template>
 	<div class="retro-toolbox w-full flex items-center justify-between px-4">
 		<!-- Blind-Box 按钮 -->
-		<button class="retro-btn" @click="openBlinkBox">
+		<!-- <button class="retro-btn" @click="openBlinkBox">
 			<div class="btn-shadow">
 				<div class="btn-edge">
 					<div class="btn-face">
@@ -9,7 +9,7 @@
 					</div>
 				</div>
 			</div>
-		</button>
+		</button> -->
 
 		<!-- 搜索框 -->
 		<div class="search-box flex items-center space-x-2 relative">
@@ -23,15 +23,16 @@
 					:placeholder="t('notes.searchInput')"
 				/>
 			</div>
-			<button class="retro-btn-small" @click="searchWord">
+			<!-- <i class="bi bi-search text-lg"></i> -->
+			<!-- <button class="retro-btn-small" @click="searchWord">
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face">
-							<i class="bi bi-search text-lg"></i>
+						<div class="btn-face px-4 text-sm">
+							搜索
 						</div>
 					</div>
 				</div>
-			</button>
+			</button> -->
 
 			<!-- 联想框 -->
 			<div
@@ -62,13 +63,14 @@
 		<button class="retro-btn" @click="startReviewMode">
 			<div class="btn-shadow">
 				<div class="btn-edge">
-					<div class="btn-face">
+					<div class="btn-face text-sm">
 						<span>{{
-							isImportantMode ? t("notes.vocabulary") : t("notes.starlist")
+							isImportantMode
+								? t("notes.vocabulary")
+								: showLightning
+								? "+1"
+								: t("notes.starlist")
 						}}</span>
-						<div v-if="showLightning" class="lightning-animation">
-							<FlashIcon :size="'4'" class="mr-2" />+1
-						</div>
 					</div>
 				</div>
 			</div>
@@ -202,8 +204,8 @@ watch(flashState, (newVal, oldVal) => {
 
 .retro-btn-small {
 	position: relative;
-	width: 40px;
-	height: 40px;
+	width: 80px;
+	height: 36px;
 	border: none;
 	background: none;
 	cursor: pointer;

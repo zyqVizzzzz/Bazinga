@@ -18,69 +18,73 @@
 
 		<!-- 基本释义 -->
 		<div class="content-section">
-			<p class="definition-text text-sm">
+			<p class="definition-text text-sm mb-2">
 				<span v-if="selectedNote.symbols">{{ selectedNote.symbols }}；</span>
 				{{ selectedNote.pos }} {{ selectedNote.word_zh }}；
 			</p>
+			<p class="explanation-text text-sm">{{ selectedNote.definition_zh }}</p>
 		</div>
 
 		<!-- 详细解释 -->
-		<div class="content-section">
-			<p class="explanation-text text-sm">{{ selectedNote.definition_zh }}</p>
-
+		<div
+			class="content-section"
+			v-if="selectedNote?.system?.rootAnalysis?.root"
+		>
 			<!-- 词根词缀分析 -->
-			<div class="word-analysis" v-if="hasWordAnalysis">
+			<div class="word-analysis">
 				<!-- 词根 -->
-				<div v-if="selectedNote.system.rootAnalysis.root" class="analysis-item">
-					<span class="label">[词根]</span>
-					<span class="term"
-						>{{ selectedNote.system.rootAnalysis.root }}：</span
+				<div
+					v-if="selectedNote?.system?.rootAnalysis?.root"
+					class="analysis-item"
+				>
+					<span class="text-gray-600"
+						>[词根]
+						<span class="text-primary font-bold ml-2"
+							>{{ selectedNote.system.rootAnalysis.root }}：</span
+						>{{ selectedNote.system.rootAnalysis.meaning_zh }}</span
 					>
-					<span class="meaning">{{
-						selectedNote.system.rootAnalysis.meaning_zh
-					}}</span>
 				</div>
 
 				<!-- 前缀 -->
 				<div
-					v-if="selectedNote.system.affixAnalysis.prefix"
+					v-if="selectedNote?.system?.affixAnalysis.prefix"
 					class="analysis-item"
 				>
-					<span class="label">[前缀]</span>
-					<span class="term"
-						>{{ selectedNote.system.affixAnalysis.prefix }}-：</span
-					>
-					<span class="meaning">{{
-						selectedNote.system.affixAnalysis.prefixMeaning_zh
-					}}</span>
+					<span class="text-gray-600"
+						>[前缀]
+						<span class="text-primary font-bold ml-2"
+							>{{ selectedNote.system.affixAnalysis.prefix }}-：</span
+						>
+						{{ selectedNote.system.affixAnalysis.prefixMeaning_zh }}
+					</span>
 				</div>
 
 				<!-- 后缀 -->
 				<div
-					v-if="selectedNote.system.affixAnalysis.suffix"
+					v-if="selectedNote?.system?.affixAnalysis.suffix"
 					class="analysis-item"
 				>
-					<span class="label">[后缀]</span>
-					<span class="term"
-						>-{{ selectedNote.system.affixAnalysis.suffix }}：</span
-					>
-					<span class="meaning">{{
-						selectedNote.system.affixAnalysis.suffixMeaning_zh
-					}}</span>
+					<span class="text-gray-600"
+						>[后缀]
+						<span class="text-primary font-bold ml-2"
+							>-{{ selectedNote.system.affixAnalysis.suffix }}：</span
+						>
+						{{ selectedNote.system.affixAnalysis.suffixMeaning_zh }}
+					</span>
 				</div>
 			</div>
 		</div>
 
 		<!-- 变形 -->
-		<div class="content-section" v-if="selectedNote.system?.wordInflections">
+		<div class="content-section" v-if="selectedNote?.system?.wordInflections">
 			<div class="inflections-grid">
 				<div
-					class="inflection-item"
-					v-for="(inflection, key) in wordInflections"
-					:key="key"
+					class="inflection-item text-gray-600 mb-2"
+					v-for="field in processedFields"
+					:key="field.key"
 				>
-					<span class="label">{{ inflection.label }}:</span>
-					<span class="form">{{ inflection.form }}</span>
+					<span>[{{ field.label }}] : </span>
+					<span class="form">{{ field.form }}</span>
 				</div>
 			</div>
 		</div>
@@ -108,7 +112,7 @@
 
 		<!-- 按钮区 -->
 		<div class="button-group">
-			<button
+			<!-- <button
 				class="retro-btn primary"
 				:class="{ 'w-2/3': showEditModal, 'w-full': !showEditModal }"
 				@click="toggleEditModal"
@@ -120,7 +124,7 @@
 						</div>
 					</div>
 				</div>
-			</button>
+			</button> -->
 
 			<button
 				v-if="showEditModal"
@@ -168,6 +172,64 @@ const toggleEditModal = async () => {
 		}
 	}
 };
+
+const wordInflections = computed(() => {
+	const result = [];
+	const inflections = selectedNote.value.system?.wordInflections || {};
+
+	// 获取所有键名
+	const keys = Object.keys(inflections);
+
+	// 找出所有不带_zh后缀的基础键名
+	const baseKeys = keys.filter((key) => !key.endsWith("_zh"));
+
+	// 处理每个基础键值对
+	baseKeys.forEach((baseKey) => {
+		const zhKey = `${baseKey}_zh`;
+
+		// 只有当同时存在英文和中文键时才添加
+		if (inflections[zhKey]) {
+			result.push({
+				key: baseKey,
+				label: inflections[zhKey], // 中文标签
+				form: inflections[baseKey], // 英文内容
+			});
+		}
+	});
+
+	return result;
+});
+
+const processedFields = computed(() => {
+	const result = [];
+
+	// 获取所有键名
+	const inflections = selectedNote.value.system?.wordInflections || {};
+
+	// 获取所有键名
+	const keys = Object.keys(inflections);
+
+	// 找出所有不带_zh后缀的基础键名
+	const baseKeys = keys.filter((key) => !key.endsWith("_zh"));
+
+	// 处理每个基础键值对
+	baseKeys.forEach((baseKey) => {
+		const zhKey = `${baseKey}_zh`;
+
+		// 只有当同时存在英文和中文键时才添加
+		if (inflections[zhKey]) {
+			result.push({
+				key: baseKey,
+				label: inflections[zhKey], // 中文标签
+				form: inflections[baseKey], // 英文内容
+			});
+		}
+	});
+
+	console.log(result);
+
+	return result;
+});
 
 const updateComment = async () => {
 	const result = commentContent.value.replace(/\n/g, "<br>");
@@ -304,18 +366,11 @@ watch(
 
 /* 词根词缀分析 */
 .word-analysis {
-	margin-top: 1rem;
 }
 
 .analysis-item {
 	margin-bottom: 0.5rem;
 	font-size: 0.875rem;
-}
-
-.label {
-	color: #666;
-	font-weight: bold;
-	margin-right: 0.5rem;
 }
 
 .term {
@@ -326,13 +381,13 @@ watch(
 /* 变形表格 */
 .inflections-grid {
 	display: grid;
-	gap: 0.5rem;
 }
 
 .inflection-item {
 	font-size: 0.875rem;
 	display: flex;
 	gap: 0.5rem;
+	align-items: center;
 }
 
 /* 例句样式 */
@@ -442,13 +497,6 @@ watch(
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 2px,
-		rgba(0, 0, 0, 0.02) 2px,
-		rgba(0, 0, 0, 0.02) 4px
-	);
 	border-radius: 9px;
 	pointer-events: none;
 }
