@@ -13,7 +13,6 @@
 					'transition-all duration-300 ease-in-out',
 					colorClasses[type],
 				]"
-				:style="toastStyles"
 				@mouseenter="clearTimer"
 				@mouseleave="startTimer"
 			>
@@ -111,10 +110,10 @@ const icons = {
 };
 
 const colorClasses = {
-	success: "border-green-600 text-green-600",
-	error: "border-red-600 text-red-600",
-	warning: "border-yellow-600 text-yellow-600",
-	info: "border-blue-600 text-blue-600",
+	success: "toast-container__success text-green-600",
+	error: "toast-container__error text-red-600",
+	warning: "toast-container__warning text-yellow-600",
+	info: "toast-container__info text-primary",
 };
 
 const toastStyles = computed(() => ({
@@ -160,7 +159,6 @@ onUnmounted(() => {
 		rgba(255, 255, 255, 0.9)
 	);
 	backdrop-filter: blur(8px); /* 背景模糊 */
-	box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1), 0px 4px 4px rgba(0, 0, 0, 0.15); /* 更柔和的阴影 */
 	z-index: 9999;
 	transition: opacity 0.3s ease;
 	min-width: 250px;
@@ -170,6 +168,23 @@ onUnmounted(() => {
 	align-items: center;
 	gap: 12px;
 	font-size: 0.9rem;
+}
+
+.toast-container__error {
+	box-shadow: 0px 4px 4px rgba(220, 38, 38, 0.2), 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toast-container__success {
+	box-shadow: 0px 4px 4px rgba(22, 163, 74, 0.2), 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toast-container__info {
+	box-shadow: 0px 4px 4px rgba(var(--primary-color-rgb), 0.2),
+		0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toast-container__warning {
+	box-shadow: 0px 4px 4px rgba(202, 138, 4, 0.2), 0px 4px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 纹理 */
