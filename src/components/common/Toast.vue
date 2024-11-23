@@ -21,7 +21,10 @@
 					v-html="icons[type]"
 					style="position: relative; top: 1px"
 				></span>
-				<span>{{ message }}</span>
+				<span
+					>{{ message }}
+					<div class="text-gray-500 text-xs">{{ disc }}</div>
+				</span>
 			</div>
 
 			<!-- SVG Filters for sketchy effect -->
@@ -49,6 +52,10 @@ const props = defineProps({
 	message: {
 		type: String,
 		required: true,
+	},
+	disc: {
+		type: String,
+		default: "",
 	},
 	type: {
 		type: String,
@@ -162,6 +169,7 @@ onUnmounted(() => {
 	z-index: 9999;
 	transition: opacity 0.3s ease;
 	min-width: 250px;
+	max-width: 500px;
 	text-align: left;
 	border-radius: 8px;
 	display: flex;

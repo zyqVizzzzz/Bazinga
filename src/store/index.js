@@ -57,6 +57,9 @@ export const useLessonStore = defineStore("lesson", {
 		setListenMode() {
 			this.isListenMode = !this.isListenMode;
 		},
+		closeListenMode() {
+			this.isListenMode = false;
+		},
 		setVoicesList(voices) {
 			this.voicesList = voices;
 		},

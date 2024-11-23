@@ -463,6 +463,7 @@ const editCard = () => {
 
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
+	lessonStore.closeListenMode();
 	if (route.params.id === "67230dee6fc3d389ea1ffedf") {
 		isDefault.value = true;
 	}
@@ -486,10 +487,19 @@ const togglePracticeMode = () => {
 
 const toggleListenMode = async () => {
 	lessonStore.setListenMode();
-	showToast({
-		message: "语音模式开启",
-		type: "info",
-	});
+	isListenMode.value = lessonStore.isListenMode;
+	if (isListenMode.value) {
+		showToast({
+			message: "语音模式开启",
+			disc: "点击对话内容即可朗读",
+			type: "info",
+		});
+	} else {
+		showToast({
+			message: "语音模式关闭",
+			type: "info",
+		});
+	}
 };
 
 // 高亮知识点相关台词
@@ -570,19 +580,6 @@ const handleUpdateNote = ({ note, word, action, scene }) => {
 watch(currentDialogueIndex, (newIndex) => {
 	currentPage.value = newIndex + 1;
 });
-
-watch(
-	() => lessonStore.isListenMode,
-	(newVal) => {
-		if (newVal) {
-			isListenMode.value = newVal;
-			console.log("Listen mode is activated");
-		} else {
-			isListenMode.value = newVal;
-			console.log("Listen mode is deactivated");
-		}
-	}
-);
 
 watch(
 	knowledges,
