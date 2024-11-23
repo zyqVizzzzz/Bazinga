@@ -16,7 +16,7 @@
 				<div class="scene">
 					<div
 						class="card w-full bg-base-100 border-4 border-black manga-card"
-						:class="{ flipped: isFlipped, 'box-shadow-back': isFlipped }"
+						:class="{ active: isFlipped }"
 					>
 						<!-- 正面内容 -->
 						<div class="front">
@@ -89,40 +89,13 @@
 
 						<!-- 背面内容 -->
 						<div class="back" v-if="!isLoading">
-							<div class="card-body h-full">
-								<!-- 标题 -->
-								<!-- <div class="terminal-title text-left">
-									<div class="terminal-header">
-										<span class="terminal-dot red relative top-[2px]"></span>
-										<span class="terminal-dot yellow relative top-[2px]"></span>
-										<span class="terminal-dot green relative top-[2px]"></span>
-										<span class="terminal-title-text">trust_terminal.exe</span>
-									</div>
-								</div> -->
-								<!-- 终端容器 -->
-								<div class="retro-terminal">
-									<div class="terminal-face">
-										<div class="terminal-prompt mb-10">
-											<span class="text-accent">student@PRATICE</span>
-											<span class="text-accent mr-2">:</span>
-											<span class="text-gray-400"
-												>~/episode/{{ currentPage }}</span
-											>
-											<span class="text-gray-400">$</span>
-											<span class="text-gray-200 ml-2"
-												>run {{ currentDialogue.title }}.sh</span
-											>
-										</div>
-										<PracticeCard
-											v-if="currentPractice.length"
-											:currentPractice="currentPractice"
-											:showHints="showHints"
-											:currentKnowledgePoints="currentKnowledgePoints"
-											class="h-full practice-box"
-										/>
-									</div>
-								</div>
-							</div>
+							<PracticeCard
+								v-if="currentPractice.conversation_id"
+								:currentPractice="currentPractice"
+								:currentPage="currentPage"
+								:showHints="showHints"
+								class="practice-box text-left"
+							/>
 						</div>
 					</div>
 				</div>
@@ -462,7 +435,7 @@ const currentPractice = computed(() => {
 	) {
 		return [];
 	}
-	return knowledges.value[currentDialogueIndex.value]?.practice || [];
+	return knowledges.value[currentDialogueIndex.value]?.practice[0] || {};
 });
 
 // 从已保存进度开始
@@ -634,6 +607,7 @@ const prevDialogue = () => {
 	if (currentDialogueIndex.value > 0) {
 		slideDirection.value = "left";
 		currentDialogueIndex.value--;
+		isFirstLoad.value = false;
 		resetKnowledgeIndex();
 	}
 };
@@ -670,46 +644,42 @@ const jumpToPageBlur = (isTrue) => {
 };
 </script>
 <style scoped>
-/* 设置3D场景 */
 .scene {
-	perspective: 1000px;
+	position: relative;
 	min-height: 540px;
+	overflow: hidden;
 }
 
 .manga-card {
 	position: relative;
-	width: 100%;
-	height: 100%;
-	min-height: 550px;
-	border-radius: 5px;
-	transition: transform 1.4s;
-	transform-style: preserve-3d;
-	box-shadow: 6px 6px 0 0 rgba(var(--primary-color-rgb), 0.5);
+	height: 540px;
+	overflow: hidden;
+}
+
+/* 可以添加缩放效果 */
+.manga-card.active .front {
+	transform: translateY(-100%) scale(0.95);
+}
+
+.manga-card.active .back {
+	transform: translateY(0) scale(1);
 }
 
 .box-shadow-back {
 	box-shadow: -6px 6px 0 0 rgba(var(--accent-color-rgb), 0.8);
 }
 
-/* 翻转状态 */
-.manga-card.flipped {
-	transform: rotateY(-180deg);
-}
-
 .front,
 .back {
 	position: absolute;
 	width: 100%;
-	height: 100%;
 	min-height: 540px;
-	backface-visibility: hidden;
-	overflow: hidden;
-	background: white;
+	transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .front {
-	transform: rotateY(0deg);
-	z-index: 1;
+	transform: translateY(0);
+	background: white;
 }
 
 /* 纹理 */
@@ -729,66 +699,6 @@ const jumpToPageBlur = (isTrue) => {
 	);
 	border-radius: 9px;
 	pointer-events: none;
-}
-
-/* 光泽 */
-.front::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 50%;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
-	border-radius: 9px 9px 0 0;
-	pointer-events: none;
-}
-
-/* 背面旋转180度 */
-.back {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	backface-visibility: hidden;
-	color: var(--accent-color);
-	background-color: rgba(12, 12, 12, 0.8);
-	animation: crt-flicker 0.15s infinite;
-	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
-	transform: rotateY(180deg);
-}
-
-.back::before {
-	content: " ";
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	background: linear-gradient(
-		to bottom,
-		rgba(18, 16, 16, 0) 50%,
-		rgba(0, 0, 0, 0.1) 50%
-	);
-	background-size: 100% 4px;
-	pointer-events: none;
-	z-index: 2;
-}
-
-.terminal-dot {
-	width: 12px;
-	height: 12px;
-	border-radius: 9999px;
-}
-
-.terminal-dot.red {
-	background-color: var(--secondary-color);
-}
-.terminal-dot.green {
-	background-color: var(--primary-color);
-}
-.terminal-dot.yellow {
-	background-color: var(--accent-color);
 }
 
 .dialogue-box {
@@ -829,6 +739,37 @@ const jumpToPageBlur = (isTrue) => {
 	text-shadow: 2px 2px 0 rgba(var(--primary-color-rgb), 0.3);
 }
 
+.back {
+	position: absolute;
+	width: 100%;
+	height: 100%; /* 使用100%而不是min-height */
+	transform: translateY(100%) scale(0.95);
+	background-color: rgba(12, 12, 12, 0.8);
+	color: var(--accent-color);
+	animation: crt-flicker 0.15s infinite;
+	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
+	display: flex; /* 添加flex布局 */
+	flex-direction: column;
+	transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back::before {
+	content: " ";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background: linear-gradient(
+		to bottom,
+		rgba(18, 16, 16, 0) 50%,
+		rgba(0, 0, 0, 0.1) 50%
+	);
+	background-size: 100% 4px;
+	pointer-events: none;
+}
+
 .fade-slide-right-enter-active,
 .fade-slide-right-leave-active,
 .fade-slide-left-enter-active,
@@ -837,27 +778,23 @@ const jumpToPageBlur = (isTrue) => {
 }
 
 .fade-slide-right-enter-from {
-	transform: translateX(30%);
+	transform: translateX(15%);
 	opacity: 0;
 }
 
 .fade-slide-right-leave-to {
-	transform: translateX(-30%);
+	transform: translateX(-15%);
 	opacity: 0;
 }
 
 .fade-slide-left-enter-from {
-	transform: translateX(-30%);
+	transform: translateX(-15%);
 	opacity: 0;
 }
 
 .fade-slide-left-leave-to {
-	transform: translateX(30%);
+	transform: translateX(15%);
 	opacity: 0;
-}
-
-.font-comic {
-	font-family: "Comic Sans MS", cursive;
 }
 
 /* 纹理 */
@@ -1083,29 +1020,5 @@ const jumpToPageBlur = (isTrue) => {
 	background-color: #ddd;
 	border-color: #999;
 	color: #999;
-}
-.retro-terminal {
-	text-align: left;
-	align-items: center;
-	flex: 1 1 auto;
-}
-
-.terminal-title {
-	position: relative;
-	display: inline-block;
-	padding: 0 1rem;
-	width: 100%;
-	flex: 0 0 30px;
-}
-
-.terminal-header {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	margin-bottom: 1rem;
-}
-.terminal-title-text {
-	margin-left: 1rem;
-	color: #666;
 }
 </style>

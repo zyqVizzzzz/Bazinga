@@ -854,7 +854,7 @@ const saveKnowledge = () => {
 			);
 		}
 
-		showToast({ message: "知识点已更新", type: "success" });
+		// showToast({ message: "知识点已更新", type: "success" });
 	} catch (error) {
 		showToast({ message: "知识点更新失败", type: "error" });
 	}
@@ -900,7 +900,7 @@ const saveAllKnowledge = async () => {
 		const response = await apiClient.post("/knowledge/bulk", bulkData);
 
 		if (response.data.code === 200) {
-			showToast({ message: "知识点保存成功", type: "success" });
+			showToast({ message: "卡片保存成功", type: "success" });
 
 			// 刷新知识点数据
 			await initKnowledges();
@@ -908,7 +908,7 @@ const saveAllKnowledge = async () => {
 	} catch (error) {
 		console.error("Failed to save knowledge:", error);
 		showToast({
-			message: error.response?.data?.message || "知识点保存失败",
+			message: error.response?.data?.message || "卡片保存失败",
 			type: "error",
 		});
 	}
@@ -1135,10 +1135,21 @@ const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
 				// 移除现有的加粗标签
 				let text = block.data.text.replace(/<\/?b>/g, "");
 
-				// 只为当前场景的知识点添加加粗
+				// 只为当前场景的知识点添加加粗（仅第一次出现）
 				sceneKnowledge.forEach((word) => {
-					const regExp = new RegExp(`\\b${word}\\b`, "g");
-					text = text.replace(regExp, (match) => `<b>${match}</b>`);
+					// 如果这个单词在当前场景还没有被加粗过
+					if (!sceneBoldedWords.has(word)) {
+						// 创建不区分大小写但保持原始匹配文本的正则表达式
+						const regExp = new RegExp(`\\b${word}\\b`, "i");
+						const match = text.match(regExp);
+
+						if (match) {
+							// 只替换第一次出现的实例
+							text = text.replace(regExp, `<b>${match[0]}</b>`);
+							// 标记这个单词已在当前场景中被加粗
+							sceneBoldedWords.add(word);
+						}
+					}
 				});
 
 				block.data.text = text;
