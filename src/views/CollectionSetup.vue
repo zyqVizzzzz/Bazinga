@@ -359,7 +359,13 @@
 
 		<!-- 操作按钮 -->
 		<div class="flex justify-center mb-20 space-x-6">
-			<button class="retro-btn-large" @click="submitNote">
+			<button
+				v-debounce-click="{
+					handler: submitNote,
+					delay: 500,
+				}"
+				class="retro-btn-large"
+			>
 				<div class="btn-shadow">
 					<div class="btn-edge">
 						<div class="btn-face">{{ t("collectionSetup.form.submit") }}</div>
@@ -371,8 +377,8 @@
 				class="retro-btn-large danger"
 				@click="deleteCollection"
 			>
-				<div class="btn-shadow">
-					<div class="btn-edge">
+				<div class="btn-shadow btn-shadow-danger">
+					<div class="btn-edge btn-edge-danger">
 						<div class="btn-face">{{ t("collectionSetup.form.delete") }}</div>
 					</div>
 				</div>
@@ -393,11 +399,14 @@
 					</h3>
 					<div class="flex space-x-4 justify-center">
 						<button
-							@click="confirmDelete"
+							v-debounce-click="{
+								handler: confirmDelete,
+								delay: 500,
+							}"
 							class="retro-btn-small danger modal-btn"
 						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
+							<div class="btn-shadow btn-shadow-danger">
+								<div class="btn-edge btn-edge-danger">
 									<div class="btn-face">
 										{{ t("collectionSetup.form.deleteConfirm") }}
 									</div>
@@ -671,17 +680,13 @@ const submitNote = async () => {
 		showToast({ message: "请检查表单填写是否正确", type: "error" });
 		return;
 	}
-	showError.value = !noteForm.value.showName;
-	if (showError.value) {
-		showToast({ message: "提交失败！请填写合集名", type: "error" });
-		return;
-	}
 	if (noteForm.value.bannerFile) {
 		// 上传封面图
 		const bannerUrl = await uploadBanner(noteForm.value.bannerFile);
 		if (!bannerUrl) return;
 		noteForm.value.banner = bannerUrl;
 	}
+	console.log(noteForm.value);
 	try {
 		// 判断是新增还是编辑操作
 		const res = resourceId.value
@@ -977,6 +982,12 @@ const handleTitleInput = () => {
 	border-radius: 8px;
 	transform: translateY(-2px);
 	transition: transform 0.1s;
+}
+.btn-shadow-danger {
+	background-color: #982929;
+}
+.btn-edge-danger {
+	background-color: #b55353;
 }
 
 .btn-face {
