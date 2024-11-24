@@ -38,7 +38,14 @@
 					}"
 				>
 					<div class="flex items-start gap-3">
-						<div class="w-[50px] text-accent">{{ dialogue.character }}</div>
+						<div class="w-[60px] text-accent text-center">
+							<!-- <img
+								src="./zfh8.png"
+								alt=""
+								style="width: 50px; opacity: 0.5; border-radius: 25px"
+							/> -->
+							{{ dialogue.character }}
+						</div>
 						<div class="flex-1">
 							<div class="text-gray-100">
 								<template

@@ -30,8 +30,8 @@ const messages = {
 			create: "新增故事合集",
 		},
 		collectionSetup: {
-			createTitle: "创建故事合集",
-			updateTitle: "更新故事合集",
+			createTitle: "创建合集",
+			updateTitle: "更新合集",
 			form: {
 				title: "合集名",
 				titleDesc: "必填项",
@@ -45,8 +45,8 @@ const messages = {
 				themeColor: "主题色",
 				level: "难度等级",
 				levelInput: "请输入难度等级描述",
-				seasons: "季号",
-				episodes: "集数",
+				seasons: "季/组",
+				episodes: "集/文章",
 				submit: "提交",
 				delete: "删除合集",
 				deleteTips: "确认删除当前合集?",

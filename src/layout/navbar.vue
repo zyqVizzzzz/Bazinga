@@ -12,7 +12,7 @@
 				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
 			>
 				<!-- <img src="../assets/banner2.png" class="w-[144px]" alt="" /> -->
-				Bazinga！
+				Bazinga
 			</a>
 		</div>
 		<div class="flex-none">

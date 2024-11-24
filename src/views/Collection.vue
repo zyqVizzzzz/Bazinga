@@ -38,27 +38,23 @@
 
 				<!-- 难度等级 -->
 				<div class="retro-display-box w-3/5 mt-4">
-					<div class="display-shadow">
-						<div class="display-edge">
-							<div class="display-face p-4">
-								<div
-									class="font-semibold flex items-center justify-center text-gray-800"
-								>
-									<div
-										class="rating rating-sm ml-2"
-										v-for="item in parseInt(infoData.difficulty)"
-									>
-										<div class="retro-star"></div>
-									</div>
-								</div>
-								<p
-									class="text-sm text-left text-gray-700 mt-2"
-									v-if="infoData.difficultyDetails"
-								>
-									{{ infoData.difficultyDetails }}
-								</p>
+					<div class="display-face p-4">
+						<div
+							class="font-semibold flex items-center justify-center text-gray-800"
+						>
+							<div
+								class="rating rating-sm ml-2"
+								v-for="item in parseInt(infoData.difficulty)"
+							>
+								<div class="retro-star"></div>
 							</div>
 						</div>
+						<p
+							class="text-sm text-left text-gray-700 mt-2"
+							v-if="infoData.difficultyDetails"
+						>
+							{{ infoData.difficultyDetails }}
+						</p>
 					</div>
 				</div>
 
@@ -326,7 +322,7 @@ const nextSeason = () => {
 }
 
 .display-face {
-	background-color: #f0f0f0;
+	background-color: rgba(240, 240, 240, 0.8);
 	border: 3px solid #333;
 	border-radius: 12px;
 	transform: translateY(-3px);
@@ -411,6 +407,10 @@ const nextSeason = () => {
 	font-weight: bold;
 }
 
+.retro-btn-small .btn-face {
+	background-color: rgba(240, 240, 240, 0.8);
+}
+
 .retro-episode-card {
 	position: relative;
 	height: 3rem;
@@ -434,7 +434,7 @@ const nextSeason = () => {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: rgba(var(--primary-color-rgb), 0.5);
+	background-color: rgba(102, 102, 102, 0.5);
 	border-radius: 12px;
 	transform: translateY(-4px);
 	transition: transform 0.1s;

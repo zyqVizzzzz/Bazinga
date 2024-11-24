@@ -367,7 +367,7 @@ const goToCollection = (id) => {
 }
 
 .btn-edge {
-	background-color: #888;
+	background-color: #b3b3b3;
 	transform: translateY(-2px);
 }
 

@@ -40,7 +40,14 @@
 												'border-red-500': showError && !noteForm.showName,
 											}"
 											:placeholder="t('collectionSetup.form.titleInput')"
+											@blur="v$.showName.$touch()"
 										/>
+									</div>
+									<div
+										v-if="v$.showName.$error"
+										class="text-red-500 text-sm mt-1"
+									>
+										{{ v$.showName.$errors[0].$message }}
 									</div>
 								</div>
 
@@ -57,11 +64,15 @@
 											type="text"
 											class="retro-input"
 											:placeholder="t('collectionSetup.form.subTitleInput')"
+											@blur="v$.name.$touch()"
 										/>
+									</div>
+									<div v-if="v$.name.$error" class="text-red-500 text-sm mt-1">
+										{{ v$.name.$errors[0].$message }}
 									</div>
 								</div>
 
-								<!-- 描述文本框 -->
+								<!-- 合集简介 -->
 								<div class="form-control">
 									<label class="retro-label">
 										<span class="label-text">{{
@@ -73,21 +84,17 @@
 											v-model="noteForm.description"
 											class="retro-textarea"
 											:placeholder="t('collectionSetup.form.descriptionInput')"
+											@blur="v$.description.$touch()"
 										></textarea>
 									</div>
+									<div
+										v-if="v$.description.$error"
+										class="text-red-500 text-sm mt-1"
+									>
+										{{ v$.description.$errors[0].$message }}
+									</div>
 								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
 
-			<!-- 上传和主题卡片 -->
-			<div class="retro-card h-full w-full max-w-lg">
-				<div class="card-shadow h-full">
-					<div class="card-edge h-full">
-						<div class="card-face h-full">
-							<form class="space-y-6">
 								<!-- Banner上传区域 -->
 								<div class="form-control">
 									<label class="retro-label">
@@ -137,26 +144,10 @@
 										/>
 									</div>
 								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
 
-			<!-- 难度设置卡片 -->
-			<div class="retro-card h-full w-full max-w-lg">
-				<div class="card-shadow h-full">
-					<div class="card-edge h-full">
-						<div class="card-face h-full">
-							<form class="space-y-6">
 								<!-- 难度滑块 -->
 								<div class="form-control">
-									<label class="retro-label">
-										<span class="label-text">{{
-											t("collectionSetup.form.level")
-										}}</span>
-									</label>
-									<div class="retro-range-wrapper">
+									<div class="retro-range-wrapper mt-2">
 										<input
 											v-model="noteForm.difficulty"
 											type="range"
@@ -164,7 +155,7 @@
 											min="1"
 											max="5"
 										/>
-										<div class="text-center mt-2">
+										<div class="text-center mt-2 text-sm">
 											{{ t("collectionSetup.form.level") }}:
 											{{ noteForm.difficulty }}
 										</div>
@@ -177,7 +168,14 @@
 										v-model="noteForm.difficultyDetails"
 										class="retro-textarea"
 										:placeholder="t('collectionSetup.form.levelInput')"
+										@blur="v$.difficultyDetails.$touch()"
 									></textarea>
+									<div
+										v-if="v$.difficultyDetails.$error"
+										class="text-red-500 text-sm mt-1"
+									>
+										{{ v$.difficultyDetails.$errors[0].$message }}
+									</div>
 								</div>
 							</form>
 						</div>
@@ -243,40 +241,112 @@
 									</div>
 								</div>
 
+								<div class="form-control" v-if="selectedSeason">
+									<div class="retro-input-wrapper">
+										<input
+											v-model="selectedSeason.seasonName"
+											type="text"
+											class="retro-input"
+											placeholder="为组设置标题，未设置则自动以 S01, S02... 为标题"
+											@blur="
+												v$.seasons[selectedSeasonIndex]?.seasonName?.$touch()
+											"
+										/>
+									</div>
+									<div class="flex justify-between">
+										<div
+											v-if="v$.seasons[selectedSeasonIndex]?.seasonName?.$error"
+											class="text-red-500 text-sm mt-1"
+										>
+											{{
+												v$.seasons[selectedSeasonIndex]?.seasonName?.$errors[0]
+													?.$message
+											}}
+										</div>
+									</div>
+								</div>
+
 								<!-- Episodes网格 -->
 								<div class="form-control" v-if="selectedSeason">
-									<label class="retro-label">
-										<span class="label-text">{{
-											t("collectionSetup.form.episodes")
-										}}</span>
-									</label>
-									<div class="episode-group grid grid-cols-5 gap-4">
+									<div class="flex justify-between items-center mb-2">
+										<label class="retro-label">
+											<span class="label-text">{{
+												t("collectionSetup.form.episodes")
+											}}</span>
+										</label>
+									</div>
+
+									<div class="space-y-4">
 										<div
 											v-for="(episode, episodeIndex) in selectedSeason.episodes"
 											:key="episodeIndex"
-											class="card card-compact bg-base-100 shadow-md relative mb-10"
+											class="flex items-center space-x-4 bg-base-200 p-4 rounded-lg"
 										>
-											<div class="card-body justify-center items-center">
-												{{ episode.ep }}
+											<!-- EP编号显示 -->
+											<div class="text-center font-medium">
+												EP{{ episode.ep }}
 											</div>
+
+											<!-- EP名称输入 -->
+											<div class="flex-1">
+												<div class="retro-input-wrapper">
+													<input
+														v-model="episode.epName"
+														type="text"
+														class="retro-input"
+														placeholder="请输入集数名称"
+														@blur="
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$touch()
+														"
+													/>
+												</div>
+												<div class="flex justify-between">
+													<div
+														v-if="
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$error
+														"
+														class="text-red-500 text-sm mt-1"
+													>
+														{{
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$errors[0]?.$message
+														}}
+													</div>
+												</div>
+											</div>
+
 											<button
 												type="button"
-												class="btn btn-error btn-sm mt-2 absolute w-full text-white"
-												style="bottom: -40px"
+												class="retro-btn-small"
+												@click="addEpisodeAfter(episodeIndex)"
+											>
+												<div class="btn-shadow">
+													<div class="btn-edge">
+														<div class="btn-face">
+															<i class="bi bi-plus text-xl"></i>
+														</div>
+													</div>
+												</div>
+											</button>
+											<!-- 删除按钮 -->
+											<button
+												type="button"
+												class="retro-btn-small"
 												@click="removeEpisode(episodeIndex)"
 											>
-												<i class="bi bi-trash"></i>
+												<div class="btn-shadow">
+													<div class="btn-edge">
+														<div class="btn-face">
+															<i class="bi bi-trash text-lg"></i>
+														</div>
+													</div>
+												</div>
 											</button>
-										</div>
-										<div
-											class="card card-compact bg-base-100 shadow-md mb-10 mx-2 cursor-pointer bg-primary text-white"
-											@click="addEpisode"
-										>
-											<div
-												class="card-body flex justify-center items-center text-center"
-											>
-												<i class="bi bi-plus text-2xl"></i>
-											</div>
 										</div>
 									</div>
 								</div>
@@ -351,16 +421,55 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
+import { useVuelidate } from "@vuelidate/core";
+import { required, maxLength, helpers } from "@vuelidate/validators";
 
 const { t, locale } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
+
+// 基本字段验证规则
+const standardNameRule = {
+	maxLength: helpers.withMessage("不能超过30个字符", maxLength(30)),
+};
+
+const longTextRule = {
+	maxLength: helpers.withMessage("不能超过200个字符", maxLength(200)),
+};
+
+// 动态生成季节和集数的验证规则
+const createSeasonRules = (seasons) => {
+	const seasonRules = {};
+	seasons.forEach((season, seasonIndex) => {
+		seasonRules[seasonIndex] = {
+			seasonName: standardNameRule,
+			episodes: {
+				$each: {
+					epName: standardNameRule,
+				},
+			},
+		};
+	});
+	return seasonRules;
+};
+
+// 验证规则
+const rules = computed(() => ({
+	showName: {
+		required: helpers.withMessage("请输入标题", required),
+		...standardNameRule,
+	},
+	name: standardNameRule,
+	description: longTextRule,
+	difficultyDetails: longTextRule,
+	seasons: createSeasonRules(noteForm.value.seasons),
+}));
 
 // 表单数据
 const noteForm = ref({
@@ -374,9 +483,18 @@ const noteForm = ref({
 	seasons: [
 		{
 			seasonNumber: "S01",
-			episodes: [{ ep: "1", scriptUrl: "" }],
+			seasonName: "",
+			episodes: [{ ep: "1", epName: "", scriptUrl: "" }],
 		},
 	],
+});
+
+const v$ = useVuelidate(rules, noteForm);
+
+// 计算字符长度
+const getCharCount = (text = "") => ({
+	current: text.length,
+	max: text.length >= 200 ? 200 : text.length >= 30 ? 30 : 30,
 });
 
 // 即时预览数据
@@ -403,9 +521,26 @@ const getCollection = async () => {
 	try {
 		const res = await apiClient.get("catalogs/" + route.query.resource);
 		if (res.data.code === 200) {
-			noteForm.value = res.data.data;
+			// 确保每个季节都至少有一集
+			const seasons = res.data.data.seasons.map((season) => {
+				if (!season.episodes || season.episodes.length === 0) {
+					season.episodes = [
+						{
+							ep: "1",
+							epName: "",
+							scriptUrl: "",
+						},
+					];
+				}
+				return season;
+			});
+
+			noteForm.value = {
+				...res.data.data,
+				seasons,
+			};
 			bannerPreview.value = res.data.data.banner;
-			selectedSeasonIndex.value = 0; // 默认选择第一季
+			selectedSeasonIndex.value = 0;
 		} else {
 			showToast({ message: "合集获取失败，请重试！", type: "error" });
 		}
@@ -415,37 +550,73 @@ const getCollection = async () => {
 	}
 };
 
-const addSeason = () => {
+// 新增季
+const addSeason = async () => {
 	const newSeasonNumber = noteForm.value.seasons.length + 1;
 	const formattedSeasonNumber = `S${String(newSeasonNumber).padStart(2, "0")}`;
 	noteForm.value.seasons.push({
 		seasonNumber: formattedSeasonNumber,
-		episodes: [],
+		seasonName: "",
+		episodes: [
+			{
+				ep: "1",
+				epName: "",
+				scriptUrl: "",
+			},
+		],
 	});
-	selectedSeasonIndex.value = noteForm.value.seasons.length - 1; // 自动选择新添加的季
+	selectedSeasonIndex.value = noteForm.value.seasons.length - 1;
+	await v$.value.$touch(); // 触发验证
 };
 
 // 删除当前选择的季
 const removeSeason = () => {
-	if (selectedSeasonIndex.value !== null) {
+	if (selectedSeasonIndex.value !== null && noteForm.value.seasons.length > 1) {
 		noteForm.value.seasons.splice(selectedSeasonIndex.value, 1);
-		selectedSeasonIndex.value = noteForm.value.seasons.length ? 0 : null; // 更新选择的索引
+		// 如果删除的是最后一个季节，选中新的最后一个
+		if (selectedSeasonIndex.value >= noteForm.value.seasons.length) {
+			selectedSeasonIndex.value = noteForm.value.seasons.length - 1;
+		}
 	}
 };
 
-// 添加新集
-const addEpisode = () => {
+// 在指定位置后添加新集数
+const addEpisodeAfter = (index) => {
 	if (selectedSeason.value) {
-		selectedSeason.value.episodes.push({
-			ep: String(selectedSeason.value.episodes.length + 1),
+		// 在指定位置后插入新集数
+		selectedSeason.value.episodes.splice(index + 1, 0, {
+			ep: "", // 临时设置为空，会在重新编号时更新
+			epName: "",
 			scriptUrl: "",
 		});
+
+		// 重新编号所有集数
+		selectedSeason.value.episodes = selectedSeason.value.episodes.map(
+			(episode, idx) => ({
+				...episode,
+				ep: String(idx + 1),
+			})
+		);
 	}
 };
 
 // 删除指定集
-const removeEpisode = (episodeIndex) => {
-	selectedSeason.value.episodes.splice(episodeIndex, 1);
+const removeEpisode = (index) => {
+	if (selectedSeason.value.episodes.length === 1) {
+		showToast({ message: "每组请至少保留一篇内容", type: "warning" });
+	}
+	if (selectedSeason.value && index !== 0) {
+		// 确保不能删除第一集
+		selectedSeason.value.episodes.splice(index, 1);
+
+		// 重新编号剩余集数
+		selectedSeason.value.episodes = selectedSeason.value.episodes.map(
+			(episode, idx) => ({
+				...episode,
+				ep: String(idx + 1),
+			})
+		);
+	}
 };
 
 // 打开文件上传对话框
@@ -495,6 +666,11 @@ const closeDeleteModal = () => {
 
 // 提交表单
 const submitNote = async () => {
+	const result = await v$.value.$validate();
+	if (!result) {
+		showToast({ message: "请检查表单填写是否正确", type: "error" });
+		return;
+	}
 	showError.value = !noteForm.value.showName;
 	if (showError.value) {
 		showToast({ message: "提交失败！请填写合集名", type: "error" });
@@ -546,6 +722,15 @@ const uploadBanner = async (file) => {
 	} catch (error) {
 		showToast({ message: "头像上传失败，请重试！", type: "error" });
 		console.error("Failed to upload banner:", error);
+	}
+};
+
+const handleTitleInput = () => {
+	const result = validateCollectionTitle(noteForm.value.showName);
+	formErrors.showName = result.error;
+
+	if (result.value) {
+		noteForm.value.showName = result.value;
 	}
 };
 </script>
@@ -762,6 +947,15 @@ const uploadBanner = async (file) => {
 	cursor: pointer;
 }
 
+.retro-btn-md {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
 .btn-shadow {
 	position: absolute;
 	top: 0;
@@ -841,8 +1035,17 @@ const uploadBanner = async (file) => {
 }
 
 .episode-card {
-	position: relative;
-	padding-bottom: 100%;
+	border: 2px solid #333;
+	border-radius: 8px;
+	background: white;
+	overflow: hidden;
+	display: flex;
+}
+.episode-card-add {
+	background-color: #f0f0f0;
+}
+.episode-card-add:hover {
+	background-color: white;
 }
 
 .card-content {
@@ -971,5 +1174,44 @@ const uploadBanner = async (file) => {
 	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
 	border-radius: 9px 9px 0 0;
 	pointer-events: none;
+}
+
+.delete-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	visibility: hidden;
+}
+
+.episode-card:hover .delete-overlay {
+	opacity: 1;
+	visibility: visible;
+}
+
+.delete-button {
+	background-color: #fee2e2;
+	color: #dc2626;
+	width: 100%;
+	height: 100%;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	transition: all 0.2s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+}
+
+.delete-button:hover {
+	background-color: #fecaca;
+	transform: scale(1.05);
 }
 </style>
