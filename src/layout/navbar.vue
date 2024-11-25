@@ -46,14 +46,14 @@
 						>{{ t("nav.profile") }}</a
 					>
 				</li>
-				<li v-if="isLogin">
+				<!-- <li v-if="isLogin">
 					<a
 						class="btn btn-white btn-ghost hover:text-inherit"
 						@click="changeLanguage"
 					>
 						<i class="bi bi-translate text-xl"></i>
 					</a>
-				</li>
+				</li> -->
 				<li v-if="isLogin">
 					<a class="btn btn-white btn-ghost hover:text-inherit" @click="logout">
 						<i class="bi bi-box-arrow-right text-xl"></i>

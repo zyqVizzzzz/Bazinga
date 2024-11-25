@@ -4,7 +4,7 @@ import Collections from "@/views/Collections.vue";
 import Collection from "@/views/Collection.vue";
 
 import Notebook from "@/views/Notebook.vue";
-import Profile from "@/views/Profile.vue";
+import Profile from "@/views/Profile2.vue";
 import CardPreview from "@/views/CardPreview.vue";
 
 import Login from "@/views/Login.vue";

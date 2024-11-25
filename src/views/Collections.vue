@@ -4,7 +4,7 @@
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
 				<span class="text-shadow-retro"
-					>Collections <mark class="retro-highlight">Gallery</mark></span
+					><mark class="retro-highlight">Gallery</mark></span
 				>
 				<span class="pronunciation mt-2">n. 画廊 - /ˈɡæləri/</span>
 			</h1>

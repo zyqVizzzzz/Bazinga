@@ -46,7 +46,6 @@
 								{{ t("profile.story_progress") }}
 							</p>
 							<div class="barcode-progress bg-primary primary-progress"></div>
-							<StoryProgressDetail />
 						</div>
 						<div class="progress-bar relative">
 							<p class="text-xs text-gray-700 mb-1">
@@ -55,7 +54,6 @@
 							<div
 								class="barcode-progress bg-secondary secondary-progress"
 							></div>
-							<WordProgressDetail />
 						</div>
 						<!-- <div class="progress-bar relative">
 							<p class="text-xs text-gray-700 mb-1">数据碎片收集进度</p>
@@ -192,9 +190,6 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import NicknameCard from "@/components/profile/nickname.vue";
-import StoryProgressDetail from "@/components/profile/detail-story.vue";
-import WordProgressDetail from "@/components/profile/detail-word.vue";
-import FragmentProgressDetail from "@/components/profile/detail-fragment.vue";
 import SignatureCard from "@/components/profile/signature.vue";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
