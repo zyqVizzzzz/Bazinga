@@ -266,7 +266,7 @@ import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
-import { exampleText, exampleTextZh, word } from "@/constants/example.js";
+import { exampleText, exampleTextZh, word } from "@/constants/Example.js";
 import { getDefinitions } from "@/utils/decompose.js";
 import { TranslateTool } from "../utils/translateTool";
 
