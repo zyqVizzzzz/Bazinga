@@ -52,6 +52,17 @@
 							</div>
 						</div>
 					</div>
+					<div
+						class="dev-call absolute"
+						style="
+							bottom: -30px;
+							left: 50%;
+							transform: translateX(-50%);
+							width: 100%;
+						"
+					>
+						<Footer />
+					</div>
 				</div>
 			</div>
 			<div
@@ -243,6 +254,7 @@ import { required, maxLength, helpers } from "@vuelidate/validators";
 import AvatarUpload from "@/components/profile/avatar-upload.vue";
 import PasswordEdit from "../components/profile/password-edit.vue";
 import EmailEdit from "../components/profile/email-edit.vue";
+import Footer from "../layout/footer.vue";
 
 const { t, locale } = useI18n();
 

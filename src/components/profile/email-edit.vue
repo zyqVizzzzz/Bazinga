@@ -5,7 +5,7 @@
 		<div class="space-y-4">
 			<!-- 邮箱输入 -->
 			<div>
-				<label class="text-sm text-gray-600 mb-2 block">邮箱地址</label>
+				<!-- <label class="text-sm text-gray-600 mb-2 block">邮箱地址</label> -->
 				<div class="flex space-x-2 items-center">
 					<div class="flex-1">
 						<input
@@ -15,6 +15,9 @@
 							:class="{ 'input-error': v$.tempEmail.$error }"
 							class="input input-bordered w-full text-sm"
 							:placeholder="t('profile.account_form.email_input')"
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck="false"
 						/>
 						<div class="text-red-500 text-xs mt-1" v-if="v$.tempEmail.$error">
 							{{ v$.tempEmail.$errors[0].$message }}
@@ -33,7 +36,7 @@
 
 			<!-- 验证码输入 -->
 			<div>
-				<label class="text-sm text-gray-600 mb-2 block">验证码</label>
+				<!-- <label class="text-sm text-gray-600 mb-2 block">验证码</label> -->
 				<input
 					type="text"
 					v-model="verificationCode"
@@ -87,7 +90,7 @@ const props = defineProps({
 });
 
 // 使用 tempEmail 来避免命名冲突
-const tempEmail = ref(props.userEmail);
+const tempEmail = ref("");
 
 // 自定义邮箱验证规则
 const customEmail = helpers.regex(

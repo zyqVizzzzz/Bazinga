@@ -71,13 +71,17 @@
 
 							<!-- 注册链接 -->
 							<p class="text-center text-sm mt-6 text-gray-600">
-								{{ t("login.tips") }}
 								<a
 									@click="goToSignup"
-									class="text-blue-600 cursor-pointer hover:text-blue-800 ml-1"
+									class="text-blue-600 cursor-pointer hover:text-blue-800"
 								>
 									{{ t("login.tips2") }}
 								</a>
+								<a
+									@click="goToResetPassword"
+									class="text-blue-600 cursor-pointer hover:text-blue-800 ml-4"
+									>找回密码</a
+								>
 							</p>
 						</form>
 					</div>
@@ -142,6 +146,12 @@ const login = async () => {
 			errorMessage.value = t("login.error");
 		}
 	} catch (error) {
+		console.error("登录错误:", error);
+		console.error("错误详情:", {
+			message: error.message,
+			response: error.response?.data,
+			status: error.response?.status,
+		});
 		errorMessage.value = t("login.error");
 	}
 };
@@ -149,6 +159,10 @@ const login = async () => {
 // 跳转到注册页面
 const goToSignup = () => {
 	router.push("/signup");
+};
+
+const goToResetPassword = () => {
+	router.push("/reset-password");
 };
 </script>
 

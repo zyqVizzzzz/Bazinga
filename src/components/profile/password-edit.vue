@@ -12,6 +12,7 @@
 					v-model="passwordForm.currentPassword"
 					class="input input-bordered w-full text-sm"
 					:placeholder="t('profile.account_form.password_input')"
+					autocomplete="new-password"
 				/>
 				<div class="text-red-500 text-xs mt-1" v-if="v$.currentPassword.$error">
 					{{ v$.currentPassword.$errors[0].$message }}
@@ -27,6 +28,7 @@
 					v-model="passwordForm.newPassword"
 					class="input input-bordered w-full text-sm"
 					:placeholder="t('profile.account_form.password_new_input')"
+					autocomplete="new-password"
 				/>
 				<div v-if="passwordForm.newPassword" class="mt-2">
 					<div class="w-full h-2 bg-gray-200 rounded-full mt-1">
@@ -58,6 +60,7 @@
 					v-model="passwordForm.confirmPassword"
 					class="input input-bordered w-full text-sm"
 					:placeholder="t('profile.account_form.password_confirm_input')"
+					autocomplete="new-password"
 				/>
 				<div class="text-red-500 text-xs mt-1" v-if="v$.confirmPassword.$error">
 					{{ v$.confirmPassword.$errors[0].$message }}

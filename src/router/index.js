@@ -9,6 +9,7 @@ import CardPreview from "@/views/CardPreview.vue";
 
 import Login from "@/views/Login.vue";
 import Signup from "@/views/Signup.vue";
+import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
@@ -64,6 +65,11 @@ const routes = [
 		path: "/signup",
 		name: "Signup",
 		component: Signup,
+	},
+	{
+		path: "/reset-password",
+		name: "ForgotPassword",
+		component: ForgotPassword,
 	},
 	{
 		path: "/membership",
