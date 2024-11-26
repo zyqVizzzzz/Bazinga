@@ -18,7 +18,7 @@
 							</h1>
 						</div>
 
-						<form @submit.prevent="register" class="space-y-6">
+						<div class="space-y-6">
 							<!-- 邮箱输入 -->
 							<div class="form-control">
 								<label class="retro-label">
@@ -28,16 +28,20 @@
 									<div class="retro-input-wrapper flex-1">
 										<input
 											type="email"
-											v-model="email"
+											v-model="formData.email"
 											class="retro-input text-sm"
+											:class="{ 'border-red-500': v$.email.$error }"
 											:placeholder="t('signup.emailInput')"
 											required
+											autocomplete="off"
+											autocorrect="off"
+											spellcheck="false"
 										/>
 									</div>
 									<button
 										type="button"
 										@click="sendVerificationCode"
-										:disabled="cooldown > 0"
+										:disabled="cooldown > 0 || v$.email.$invalid"
 										class="retro-btn-small"
 									>
 										<div class="btn-shadow">
@@ -51,6 +55,9 @@
 										</div>
 									</button>
 								</div>
+								<div class="text-red-500 text-xs mt-1" v-if="v$.email.$error">
+									{{ v$.email.$errors[0].$message }}
+								</div>
 							</div>
 
 							<!-- 验证码输入 -->
@@ -63,11 +70,21 @@
 								<div class="retro-input-wrapper">
 									<input
 										type="text"
-										v-model="verificationCode"
+										v-model="formData.verificationCode"
 										class="retro-input text-sm"
+										:class="{ 'border-red-500': v$.verificationCode.$error }"
 										:placeholder="t('signup.verificationCodeInput')"
 										required
+										autocomplete="off"
+										autocorrect="off"
+										spellcheck="false"
 									/>
+								</div>
+								<div
+									class="text-red-500 text-xs mt-1"
+									v-if="v$.verificationCode.$error"
+								>
+									{{ v$.verificationCode.$errors[0].$message }}
 								</div>
 							</div>
 
@@ -79,11 +96,40 @@
 								<div class="retro-input-wrapper">
 									<input
 										type="password"
-										v-model="password"
+										v-model="formData.password"
 										class="retro-input text-sm"
+										:class="{ 'border-red-500': v$.password.$error }"
 										:placeholder="t('signup.passwordInput')"
 										required
+										autocomplete="new-password"
 									/>
+								</div>
+								<div
+									class="text-red-500 text-xs mt-1"
+									v-if="v$.password.$error"
+								>
+									{{ v$.password.$errors[0].$message }}
+								</div>
+								<!-- 密码强度显示 -->
+								<!-- <div v-if="formData.password" class="mt-2">
+									<div class="w-full h-1.5 bg-gray-200 rounded-full mt-1">
+										<div
+											class="h-full rounded-full transition-all duration-300"
+											:class="`bg-${passwordStrength.color}`"
+											:style="`width: ${(passwordStrength.score + 1) * 20}%`"
+										></div>
+									</div>
+								</div> -->
+								<!-- 密码规则提示 -->
+								<div class="text-gray-500 text-xs mt-2">
+									密码要求：
+									<ul class="list-disc ml-4 mt-1">
+										<li>长度至少8位</li>
+										<li>必须包含字母和数字</li>
+										<li>
+											如果包含特殊字符，仅限于：!@#$%^&*()-_=+[]{}|;:,.<>?
+										</li>
+									</ul>
 								</div>
 							</div>
 
@@ -97,22 +143,25 @@
 								<div class="retro-input-wrapper">
 									<input
 										type="password"
-										v-model="confirmPassword"
+										v-model="formData.confirmPassword"
 										class="retro-input text-sm"
+										:class="{ 'border-red-500': v$.confirmPassword.$error }"
 										:placeholder="t('signup.passwordRepeatInput')"
 										required
+										autocomplete="new-password"
 									/>
 								</div>
-							</div>
-
-							<!-- 错误信息 -->
-							<div v-if="errorMessage" class="text-red-500 text-sm text-center">
-								{{ errorMessage }}
+								<div
+									class="text-red-500 text-xs mt-1"
+									v-if="v$.confirmPassword.$error"
+								>
+									{{ v$.confirmPassword.$errors[0].$message }}
+								</div>
 							</div>
 
 							<!-- 提交按钮 -->
 							<div class="flex justify-center mt-6">
-								<button type="submit" class="retro-btn-large">
+								<button class="retro-btn-large" @click="register">
 									<div class="btn-shadow">
 										<div class="btn-edge">
 											<div class="btn-face">
@@ -133,7 +182,7 @@
 									{{ t("signup.tips2") }}
 								</a>
 							</p>
-						</form>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -142,33 +191,87 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
+import { useVuelidate } from "@vuelidate/core";
+import { required, helpers } from "@vuelidate/validators";
 
 const { t } = useI18n();
-
 const router = useRouter();
 
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const verificationCode = ref("");
+// 表单数据 - 改用 formData 对象统一管理
+const formData = ref({
+	email: "",
+	password: "",
+	confirmPassword: "",
+	verificationCode: "",
+});
 const errorMessage = ref("");
-const cooldown = ref(0); // 验证码冷却时间
+const cooldown = ref(0);
+
+// 自定义验证规则
+const containsLower = (value) => /[a-z]/.test(value);
+const containsUpper = (value) => /[A-Z]/.test(value);
+const containsNumber = (value) => /[0-9]/.test(value);
+const validSpecialChars = /^[A-Za-z0-9!@#$%^&*()\-_=+[\]{}|;:,.<>?]*$/;
+const customEmail = helpers.regex(
+	/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+);
+
+// 基本验证规则
+const rules = computed(() => ({
+	email: {
+		required: helpers.withMessage("请输入邮箱地址", required),
+		validFormat: helpers.withMessage("请输入有效的邮箱地址", customEmail),
+	},
+	password: {
+		required: helpers.withMessage("请输入密码", required),
+		minLength: helpers.withMessage(
+			"密码长度不能小于8位",
+			(value) => value.length >= 8
+		),
+		containsLetter: helpers.withMessage(
+			"密码必须包含字母",
+			(value) => containsLower(value) || containsUpper(value)
+		),
+		containsNumber: helpers.withMessage("密码必须包含数字", containsNumber),
+		format: helpers.withMessage("密码格式不正确", (value) =>
+			validSpecialChars.test(value)
+		),
+	},
+	confirmPassword: {
+		required: helpers.withMessage("请再次输入密码", required),
+		sameAsPassword: helpers.withMessage(
+			"两次输入的密码不一致",
+			(value) => value === formData.value.password
+		),
+	},
+	verificationCode: {
+		required: helpers.withMessage("请输入验证码", required),
+		length: helpers.withMessage(
+			"验证码格式不正确",
+			(value) => value.length === 6
+		),
+	},
+}));
+
+const v$ = useVuelidate(rules, formData);
 
 // 发送验证码方法
 const sendVerificationCode = async () => {
-	if (!email.value) {
-		errorMessage.value = t("signup.emailRequired");
+	// 验证邮箱
+	const isEmailValid = await v$.value.email.$validate();
+	if (!isEmailValid) {
+		errorMessage.value = v$.value.email.$errors[0].$message;
 		return;
 	}
 
 	try {
 		await apiClient.post("/users/send-verification-code", {
-			email: email.value,
+			email: formData.value.email,
 		});
 
 		// 开始倒计时
@@ -182,39 +285,80 @@ const sendVerificationCode = async () => {
 
 		showToast({ message: t("signup.codeSent"), type: "success" });
 	} catch (error) {
-		errorMessage.value = t("signup.sendCodeError");
+		if (error.response?.data?.code) {
+			errorMessage.value = error.response.data.data;
+		} else {
+			errorMessage.value = t("signup.sendCodeError");
+		}
 	}
 };
 
+// 计算密码强度
+const passwordStrength = computed(() => {
+	const password = formData.value.password;
+	if (!password) return { score: 0, text: "弱", color: "red-500" };
+
+	let score = 0;
+	if (password.length >= 8) score++;
+	if (password.length >= 12) score++;
+	if (containsLower(password)) score++;
+	if (containsUpper(password)) score++;
+	if (containsNumber(password)) score++;
+	if (/[!@#$%^&*()\-_=+[\]{}|;:,.<>?]/.test(password)) score++;
+
+	score = Math.min(score, 4);
+
+	const strengthTexts = ["弱", "一般", "中等", "强", "很强"];
+	const strengthColors = [
+		"red-500",
+		"orange-500",
+		"yellow-500",
+		"green-500",
+		"green-500",
+	];
+
+	return {
+		score,
+		text: strengthTexts[score],
+		color: strengthColors[score],
+	};
+});
+
 // 注册
 const register = async () => {
-	if (password.value !== confirmPassword.value) {
-		errorMessage.value = t("signup.passwordMismatch");
-		return;
-	}
-
-	if (!verificationCode.value) {
-		errorMessage.value = t("signup.codeRequired");
-		return;
-	}
-
+	console.log("inter");
 	try {
+		const isFormValid = await v$.value.$validate();
+		if (!isFormValid) {
+			// 使用第一个验证错误作为错误信息
+			const firstError = Object.values(v$.value).find((field) => field.$error);
+			if (firstError) {
+				errorMessage.value = firstError.$errors[0].$message;
+			}
+			return;
+		}
+
 		const response = await apiClient.post("/users/register", {
-			email: email.value,
-			password: password.value,
-			verificationCode: verificationCode.value,
+			email: formData.value.email,
+			password: formData.value.password,
+			verificationCode: formData.value.verificationCode,
 		});
 
-		if (response.data.code === 200) {
-			if (response.data.data.user) {
-				showToast({ message: t("signup.success"), type: "success" });
-				router.push("/login");
-			}
+		// 根据你的后端响应格式调整
+		if (response.data.code === 200 || response.data.code === 0) {
+			showToast({ message: t("signup.success"), type: "success" });
+			router.push("/login");
+		} else {
+			errorMessage.value = response.data.data || response.data.message;
+		}
+	} catch (error) {
+		console.error("Registration error:", error);
+		if (error.response?.data) {
+			errorMessage.value =
+				error.response.data.data || error.response.data.message;
 		} else {
 			errorMessage.value = t("signup.error");
 		}
-	} catch (error) {
-		errorMessage.value = error.response?.data?.message || t("signup.error");
 	}
 };
 

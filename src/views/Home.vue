@@ -89,7 +89,7 @@
 									<!-- 头像区域 -->
 									<div class="avatar-container">
 										<slot name="avatar">
-											<img src="../assets/avatar.jpg" alt="Character avatar" />
+											<img src="../assets/avatar.jpg" alt="Muztag" />
 										</slot>
 									</div>
 
