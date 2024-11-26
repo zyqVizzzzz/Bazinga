@@ -236,6 +236,10 @@ const resetPasswordForm = () => {
 	passwordForm.value.confirmPassword = "";
 	v$.value.$reset();
 };
+
+onMounted(() => {
+	resetPasswordForm();
+});
 </script>
 
 <style scoped></style>

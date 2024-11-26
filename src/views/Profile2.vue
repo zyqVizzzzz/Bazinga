@@ -154,33 +154,7 @@
 										class="form-sections flex gap-8"
 									>
 										<!-- 左侧：邮箱部分 -->
-										<div
-											class="email-section flex-1 bg-white p-6 rounded-xl border-2 border-gray-100"
-										>
-											<div class="space-y-4">
-												<div>
-													<!-- <label class="text-sm text-gray-600 mb-2 block"
-														>当前邮箱</label
-													> -->
-													<input
-														type="email"
-														id="email"
-														v-model="user.email"
-														class="input input-bordered w-full text-sm"
-														:placeholder="t('profile.account_form.email_input')"
-													/>
-												</div>
-												<!-- 邮箱部分的保存按钮 -->
-												<div class="mt-6">
-													<button
-														class="w-full py-3 bg-primary hover:bg-primary-focus text-white rounded-lg font-semibold text-sm transition-colors"
-														@click="saveAccountChanges"
-													>
-														更新邮箱
-													</button>
-												</div>
-											</div>
-										</div>
+										<EmailEdit :userEmail="user.email" />
 
 										<!-- 右侧：密码部分 -->
 										<PasswordEdit />
@@ -268,6 +242,7 @@ import { required, maxLength, helpers } from "@vuelidate/validators";
 
 import AvatarUpload from "@/components/profile/avatar-upload.vue";
 import PasswordEdit from "../components/profile/password-edit.vue";
+import EmailEdit from "../components/profile/email-edit.vue";
 
 const { t, locale } = useI18n();
 
@@ -297,14 +272,6 @@ const v$ = useVuelidate(rules, {
 });
 
 const activeTab = ref("profile"); // 默认显示账户安全设置
-
-const saveAccountChanges = async () => {
-	try {
-		console.log("Account changes saved:", user.value);
-	} catch (error) {
-		console.error("Failed to save changes:", error);
-	}
-};
 
 // 保存个人资料
 const saveProfileChanges = async () => {
