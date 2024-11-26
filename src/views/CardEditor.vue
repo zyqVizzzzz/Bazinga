@@ -683,7 +683,7 @@ function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
 				},
 				type: "vocabulary",
 				word_zh: "",
-				scenes: new Set([currentSceneId]), // 添加当前场景ID
+				scenes: new Set([currentSceneId]),
 			});
 			existingBoldWords.add(boldText.toLowerCase());
 		} else {
@@ -697,44 +697,57 @@ function checkBoldText(content) {
 	console.log("Original content:", content);
 	let currentSceneId = null;
 	const currentBoldWordsByScene = new Map();
-	// 创建一个新的Map而不是直接引用
 	const updatedKnowledge = new Map();
 
-	// 第一步：扫描文档，按场景收集加粗的单词
-	content.blocks.forEach((block, index) => {
-		const line = block.data.text;
+	// 首先通过扫描找出所有场景标题的位置和对应的场景ID
+	const titleIndices = content.blocks
+		.map((block, index) => ({ text: block.data.text, index }))
+		.filter(({ text }) => text.startsWith("#"))
+		.map(({ index }, sceneNum) => ({
+			index,
+			sceneId: `Scene${sceneNum + 1}`,
+		}));
 
-		// 检查场景标题
-		if (line.match(/^#\s+\S/)) {
-			const sceneIndex = content.blocks
-				.filter((b) => b.data.text.match(/^#\s+\S/))
-				.findIndex((b) => b.data.text === line);
-			currentSceneId = `Scene${sceneIndex + 1}`;
-			currentBoldWordsByScene.set(currentSceneId, new Set());
+	// 扫描文档，按场景收集加粗的单词
+	content.blocks.forEach((block, blockIndex) => {
+		// 找出当前块属于哪个场景
+		const currentScene = titleIndices.find((title, index) => {
+			const nextTitle = titleIndices[index + 1];
+			return (
+				blockIndex >= title.index &&
+				(!nextTitle || blockIndex < nextTitle.index)
+			);
+		});
 
-			if (block.data.text.includes("<b>")) {
-				// 移除标题中的加粗标签
-				block.data.text = block.data.text.replace(/<\/?b>/g, "");
+		if (currentScene) {
+			currentSceneId = currentScene.sceneId;
+			if (!currentBoldWordsByScene.has(currentSceneId)) {
+				currentBoldWordsByScene.set(currentSceneId, new Set());
 			}
 		}
 
-		// 如果在场景内且是段落，收集加粗单词
+		// 如果是标题行，跳过加粗词收集
+		if (block.data.text.startsWith("#")) {
+			return;
+		}
+
+		// 在场景内且是段落时，收集加粗单词
 		if (
 			currentSceneId &&
 			block.type === "paragraph" &&
-			!line.match(/^#\s+\S/)
+			block.data.text.trim()
 		) {
-			const boldWords = extractBoldWords(line);
+			const boldWords = extractBoldWords(block.data.text);
 			console.log("Found bold words:", boldWords, "in scene:", currentSceneId);
 			boldWords.forEach((word) => {
-				currentBoldWordsByScene.get(currentSceneId).add(word); // 不转换为小写
+				currentBoldWordsByScene.get(currentSceneId).add(word);
 			});
 		}
 	});
 
 	console.log("Words by scene:", currentBoldWordsByScene);
 
-	// 第二步：保留现有知识点的其他信息
+	// 保留现有知识点的其他信息
 	currentKnowledge.value.forEach((knowledge, word) => {
 		const updatedKnowledgeItem = {
 			...knowledge,
@@ -743,7 +756,7 @@ function checkBoldText(content) {
 		updatedKnowledge.set(word, updatedKnowledgeItem);
 	});
 
-	// 第三步：更新知识点的场景关联
+	// 更新知识点的场景关联
 	for (const [sceneId, sceneWords] of currentBoldWordsByScene.entries()) {
 		sceneWords.forEach((word) => {
 			if (updatedKnowledge.has(word)) {
@@ -761,11 +774,11 @@ function checkBoldText(content) {
 		});
 	}
 
-	// 第四步：删除没有场景关联的知识点
+	// 删除没有场景关联的知识点
 	for (const [word, knowledge] of updatedKnowledge.entries()) {
 		if (knowledge.scenes.size === 0) {
 			updatedKnowledge.delete(word);
-			existingBoldWords.delete(word);
+			existingBoldWords.delete(word.toLowerCase());
 		}
 	}
 
@@ -979,96 +992,64 @@ const handleEnterKey = async (e) => {
 function processDialogueData(savedData, route) {
 	const outputDialogues = [];
 	let currentDialogue = null;
-	let currentPair = []; // 当前配对的行
-	let lastWasEmpty = false; // 跟踪上一行是否为空
+	let currentPair = [];
 
-	// 首先清理连续的空行
-	const cleanedBlocks = savedData.blocks.filter((block, index, blocks) => {
-		const currentLine = block.data.text;
-		const isEmptyLine = !currentLine.replace(/\u200B/g, "").trim();
+	// 获取所有场景标题的位置
+	const titleBlocks = savedData.blocks
+		.map((block, index) => ({ text: block.data.text, index }))
+		.filter(({ text }) => text.startsWith("#"));
 
-		// 标题行总是保留
-		if (currentLine.match(/^#\s+\S/)) {
-			block.data.text = block.data.text.replace(/<\/?b>/g, "");
-			return true;
-		}
+	// 为每个场景处理内容
+	titleBlocks.forEach((titleBlock, sceneIndex) => {
+		const nextTitleBlock = titleBlocks[sceneIndex + 1];
+		const sceneEndIndex = nextTitleBlock
+			? nextTitleBlock.index
+			: savedData.blocks.length;
+		const sceneBlocks = savedData.blocks.slice(titleBlock.index, sceneEndIndex);
 
-		// 检查前一个块
-		const prevBlock = blocks[index - 1];
-		const isPrevEmpty =
-			prevBlock && !prevBlock.data.text.replace(/\u200B/g, "").trim();
+		// 创建新场景
+		currentDialogue = {
+			id: `Scene${sceneIndex + 1}`,
+			season: route.params.season,
+			episode: route.params.episode,
+			title: sceneBlocks[0].data.text
+				.replace(/^#\s*/, "")
+				.replace(/<\/?b>/g, "")
+				.trim(),
+			img: "",
+			text: [],
+			text_zh: [],
+		};
 
-		// 不保留连续的空行，除非是在对话之间（即前面是空行且下一个是标题）
-		if (isEmptyLine && isPrevEmpty) {
-			const nextBlock = blocks[index + 1];
-			if (nextBlock && nextBlock.data.text.match(/^#\s+\S/)) {
-				return true; // 保留对话之间的双空行
-			}
-			return false; // 过滤掉其他连续空行
-		}
+		// 处理场景内的对话
+		let currentPair = [];
+		sceneBlocks.slice(1).forEach((block) => {
+			// 跳过标题块
+			const line = block.data.text;
+			const isEmptyLine = !line.replace(/\u200B/g, "").trim();
 
-		return true; // 保留所有其他行
-	});
-	// 处理清理后的块
-	cleanedBlocks.forEach((block) => {
-		const line = block.data.text;
-		const isEmptyLine = !line.replace(/\u200B/g, "").trim();
-
-		// 处理标题行
-		if (line.match(/^#\s+\S/)) {
-			// 处理未完成的配对
-			if (currentPair.length > 0 && currentDialogue) {
-				processPair(currentPair, currentDialogue);
-			}
-
-			// 保存当前对话
-			if (currentDialogue) {
-				outputDialogues.push(currentDialogue);
-			}
-
-			// 创建新对话
-			currentDialogue = {
-				id: `Scene${outputDialogues.length + 1}`,
-				season: route.params.season,
-				episode: route.params.episode,
-				title: line
-					.replace(/^#\s*/, "")
-					.replace(/<\/?b>/g, "")
-					.trim(),
-				img: "",
-				text: [],
-				text_zh: [],
-			};
-			currentPair = [];
-			lastWasEmpty = false;
-		}
-		// 处理内容行和空行
-		else if (currentDialogue) {
 			if (isEmptyLine) {
-				// 遇到空行，处理当前配对
 				if (currentPair.length > 0) {
 					processPair(currentPair, currentDialogue);
 					currentPair = [];
 				}
 			} else {
-				// 处理内容行
 				currentPair.push(line);
-				// 如果积累了两行，立即处理
 				if (currentPair.length === 2) {
 					processPair(currentPair, currentDialogue);
 					currentPair = [];
 				}
 			}
+		});
+
+		// 处理最后一对未处理的对话
+		if (currentPair.length > 0) {
+			processPair(currentPair, currentDialogue);
 		}
+
+		outputDialogues.push(currentDialogue);
 	});
 
-	// 处理最后可能未处理的配对
-	if (currentPair.length > 0 && currentDialogue) {
-		processPair(currentPair, currentDialogue);
-	}
-	if (currentDialogue) {
-		outputDialogues.push(currentDialogue);
-	}
 	return outputDialogues;
 }
 
@@ -1091,11 +1072,9 @@ function processPair(pair, dialogue) {
 const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
 	const content = await editorInstance.save();
 	let currentSceneId = null;
-
-	// 创建场景知识点映射
 	const sceneKnowledgeMap = new Map();
+	const sceneBoldedWords = new Set();
 
-	// 将知识点按场景分组
 	knowledges.forEach((knowledge) => {
 		if (knowledge.scenes) {
 			knowledge.scenes.forEach((sceneId) => {
@@ -1107,46 +1086,53 @@ const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
 		}
 	});
 
-	const newBlocks = content.blocks.map((block) => {
-		// 检查是否是场景标题
-		if (block.data.text.match(/^#\s+\S/)) {
-			// 更新当前场景ID
-			const sceneIndex = content.blocks
-				.filter((b) => b.data.text.match(/^#\s+\S/))
-				.findIndex((b) => b.data.text === block.data.text);
-			currentSceneId = `Scene${sceneIndex + 1}`;
+	// 先找出所有场景标题，并建立映射关系
+	const titleIndices = content.blocks
+		.map((block, index) => ({ text: block.data.text, index }))
+		.filter(({ text }) => text.startsWith("#"))
+		.map(({ index }, sceneNum) => ({
+			index,
+			sceneId: `Scene${sceneNum + 1}`,
+		}));
 
-			// 确保标题中没有加粗标签
+	const newBlocks = content.blocks.map((block, blockIndex) => {
+		// 查找当前块属于哪个场景
+		const currentScene = titleIndices.find((title, index) => {
+			const nextTitle = titleIndices[index + 1];
+			return (
+				blockIndex >= title.index &&
+				(!nextTitle || blockIndex < nextTitle.index)
+			);
+		});
+
+		if (currentScene) {
+			currentSceneId = currentScene.sceneId;
+		}
+
+		// 如果是标题行，移除加粗标签并返回
+		if (block.data.text.startsWith("#")) {
 			block.data.text = block.data.text.replace(/<\/?b>/g, "");
 			return block;
 		}
 
-		// 只处理当前场景中的非标题段落
+		// 处理普通内容行
 		if (
 			block.type === "paragraph" &&
 			block.data.text.trim() &&
-			!block.data.text.match(/^#\s+\S/) &&
 			currentSceneId
 		) {
-			// 获取当前场景的知识点
 			const sceneKnowledge = sceneKnowledgeMap.get(currentSceneId);
 
 			if (sceneKnowledge) {
-				// 移除现有的加粗标签
 				let text = block.data.text.replace(/<\/?b>/g, "");
 
-				// 只为当前场景的知识点添加加粗（仅第一次出现）
 				sceneKnowledge.forEach((word) => {
-					// 如果这个单词在当前场景还没有被加粗过
 					if (!sceneBoldedWords.has(word)) {
-						// 创建不区分大小写但保持原始匹配文本的正则表达式
 						const regExp = new RegExp(`\\b${word}\\b`, "i");
 						const match = text.match(regExp);
 
 						if (match) {
-							// 只替换第一次出现的实例
 							text = text.replace(regExp, `<b>${match[0]}</b>`);
-							// 标记这个单词已在当前场景中被加粗
 							sceneBoldedWords.add(word);
 						}
 					}
