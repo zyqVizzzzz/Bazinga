@@ -12,7 +12,7 @@
 					class="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg shadow-md flex items-center justify-center space-x-2"
 					@click="processPayment('支付宝')"
 				>
-					<img src="/img/alipay.svg" alt="支付宝" class="w-5 h-5" />
+					<!-- <img src="/img/alipay.svg" alt="支付宝" class="w-5 h-5" /> -->
 					<span>使用支付宝付款</span>
 				</button>
 			</div>
@@ -23,7 +23,7 @@
 					class="w-full py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-md flex items-center justify-center space-x-2"
 					@click="processPayment('微信')"
 				>
-					<img src="/img/wechat.svg" alt="微信" class="w-5 h-5" />
+					<!-- <img src="/img/wechat.svg" alt="微信" class="w-5 h-5" /> -->
 					<span>使用微信付款</span>
 				</button>
 			</div>
