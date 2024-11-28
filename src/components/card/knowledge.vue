@@ -30,9 +30,7 @@
 						</h3>
 						<!-- 词性 -->
 						<p class="text-left text-sm text-gray-500 font-light mb-2">
-							<span v-if="point.type === 'vocabulary'">{{
-								point.word_zh
-							}}</span>
+							<span>{{ point.word_zh }}</span>
 							<span class="text-sm text-gray-500 ml-2" v-if="point.pos">{{
 								point.pos
 							}}</span>
@@ -40,12 +38,6 @@
 							<span v-if="point.symbols" class="text-sm text-gray-500 ml-4"
 								>[{{ point.symbols }}]</span
 							>
-						</p>
-						<p
-							v-if="point.type !== 'vocabulary'"
-							class="text-left text-sm text-gray-500 font-light mb-2"
-						>
-							{{ point.definition_zh }}
 						</p>
 						<!-- Rank (根据 rank 动态显示星级) -->
 						<div class="flex items-center relative -left-1 mb-4 text-xs">
@@ -125,6 +117,12 @@
 							</div>
 						</div>
 
+						<p
+							v-if="point.type !== 'vocabulary'"
+							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
+						>
+							{{ point.definition_zh }}
+						</p>
 						<!-- 例句 -->
 						<p
 							v-if="point.example"

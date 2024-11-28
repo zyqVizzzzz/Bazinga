@@ -47,7 +47,7 @@
 
 				<!-- 前缀 -->
 				<div
-					v-if="selectedNote?.system?.affixAnalysis.prefix"
+					v-if="selectedNote?.system?.affixAnalysis?.prefix"
 					class="analysis-item"
 				>
 					<span class="text-gray-600"
@@ -61,7 +61,7 @@
 
 				<!-- 后缀 -->
 				<div
-					v-if="selectedNote?.system?.affixAnalysis.suffix"
+					v-if="selectedNote?.system?.affixAnalysis?.suffix"
 					class="analysis-item"
 				>
 					<span class="text-gray-600"

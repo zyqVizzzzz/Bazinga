@@ -39,7 +39,11 @@
 										<h2
 											class="card-title font-bold -skew-x-6 text-2xl text-shadow"
 										>
-											{{ currentDialogue.title }}
+											{{
+												showTrans
+													? currentDialogue.title_zh
+													: currentDialogue.title
+											}}
 										</h2>
 										<div class="flex items-center gap-2" v-if="!guestNotAllow">
 											<span class="badge badge-primary badge-outline rotate-2">
