@@ -10,7 +10,6 @@ lerna-debug.log*
 node_modules
 dist
 db_backup
-src/prompt
 public/*
 dist-ssr
 *.local
