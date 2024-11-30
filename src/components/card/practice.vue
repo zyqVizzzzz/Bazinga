@@ -1,30 +1,22 @@
 <template>
 	<div class="scroll-container" ref="praticeContainerRef">
 		<div class="space-y-6">
-			<div class="terminal-prompt my-4 text-left">
-				<span class="text-accent"
-					>{{ currentPractice.conversation_id }}@PRATICE</span
-				>
+			<div class="terminal-prompt my-4 text-left relative">
+				<span class="text-accent">@PRATICE</span>
 				<span class="text-accent mr-2">:</span>
 				<span class="text-gray-400">~/episode/{{ props.currentPage }}</span>
 				<span class="text-gray-400">$</span>
 				<span class="text-gray-200 ml-2"
-					>run {{ currentPractice.theme }}.sh</span
+					>run {{ currentPractice.conversation_id }}.sh</span
 				>
-			</div>
-			<!-- Setting Description -->
-			<div v-if="currentPractice" class="log-item log-item-gray text-left mb-4">
-				<div class="text-gray-400 mb-2">
-					{{ currentPractice.setting }}
-					<span
-						class="ml-4 cursor-pointer"
-						@click="() => (showSetting_zh = !showSetting_zh)"
-						><i class="bi bi-translate"></i
-					></span>
-				</div>
-				<div v-if="showSetting_zh" class="text-gray-400 text-sm">
-					{{ currentPractice.setting_zh }}
-				</div>
+				<button
+					v-if="displayedDialogues.length > 1 || showContinueButton"
+					@click="handleRetry"
+					class="ml-2 status-badge px-6 py-2 hover:bg-primary/20 absolute"
+					style="right: 0; top: 50%; transform: translateY(-50%)"
+				>
+					<i class="bi bi-arrow-counterclockwise"></i>
+				</button>
 			</div>
 
 			<!-- Dialogue History -->
@@ -36,14 +28,12 @@
 					:class="{
 						'animate-fade-in': index === displayedDialogues.length - 1,
 					}"
+					@click="
+						isFinished && dialogue.has_exercise && toggleExplanation(index)
+					"
 				>
 					<div class="flex items-start gap-3">
 						<div class="w-[60px] text-accent text-center">
-							<!-- <img
-								src="./zfh8.png"
-								alt=""
-								style="width: 50px; opacity: 0.5; border-radius: 25px"
-							/> -->
 							{{ dialogue.character }}
 						</div>
 						<div class="flex-1">
@@ -53,9 +43,10 @@
 										dialogue.has_exercise &&
 										index === displayedDialogues.length - 1
 									"
+									@click="toggleCurrentExplanation"
 								>
 									<template v-if="!isCurrentDialogueCompleted">
-										{{ dialogue.english_blank }}
+										{{ getUncompletedText(dialogue.english) }}
 									</template>
 									<template v-else>
 										<span
@@ -81,6 +72,15 @@
 						</div>
 					</div>
 
+					<div
+						v-if="shownExplanations[index]"
+						class="mt-4 p-4 rounded bg-green-500/10 border-l-4 border-green-500"
+					>
+						<div class="text-gray-400 text-sm">
+							{{ currentExercise?.explanation }}
+						</div>
+					</div>
+
 					<!-- Exercise Section -->
 					<div
 						v-if="
@@ -90,31 +90,10 @@
 						"
 						class="mt-6 border-t border-accent/30 pt-6"
 					>
-						<div class="text-center mb-6">
-							<div class="text-gray-100 mb-2">
-								{{ dialogue.exercise.question }}
-							</div>
-							<div
-								class="flex items-center justify-center gap-2 text-sm text-gray-400"
-							>
-								<span class="cursor-pointer" @click="showQuestionTranslate"
-									><i class="bi bi-translate"></i
-								></span>
-								<span
-									class="cursor-pointer"
-									@click="showExerciseHint = !showExerciseHint"
-									><i class="bi bi-lightbulb"></i
-								></span>
-								<span v-if="showExerciseHint">{{
-									dialogue.exercise.hint_cn
-								}}</span>
-							</div>
-						</div>
-
 						<!-- Options Grid -->
 						<div class="grid grid-cols-2 gap-3">
 							<button
-								v-for="(option, optIndex) in dialogue.exercise.options"
+								v-for="(option, optIndex) in dialogue.options"
 								:key="optIndex"
 								@click="selectOption(optIndex)"
 								:class="[
@@ -135,9 +114,11 @@
 										>{{ optIndex + 1 }})</span
 									>
 									<div class="flex-1 min-w-0">
-										<div class="text-gray-100 text-sm">{{ option.text }}</div>
+										<div class="text-gray-100 text-sm">
+											{{ option.text.split(" / ").join(" / ") }}
+										</div>
 										<div
-											v-if="showQuestion_zh"
+											v-if="showTranslation"
 											class="text-gray-400 text-sm mt-1"
 										>
 											{{ option.translation }}
@@ -167,10 +148,10 @@
 								{{ answerFeedback }}
 							</span>
 							<div
-								v-if="feedbackClass === 'input-error'"
+								v-if="feedbackClass === 'input-success'"
 								class="text-gray-400 text-sm mt-2"
 							>
-								{{ currentExercise?.options[selectedOption]?.explanation_zh }}
+								{{ currentExercise?.explanation }}
 							</div>
 						</div>
 					</div>
@@ -178,28 +159,44 @@
 			</div>
 
 			<!-- Continue Button -->
-			<div class="mt-8 flex justify-center">
-				<button
-					v-if="showContinueButton"
-					@click="handleContinue"
-					class="status-badge px-6 py-2 hover:bg-primary/20"
-					:class="{ 'animate-pulse': submitClicked }"
-				>
-					{{ continueButtonText }}
-				</button>
-				<button
-					@click="handleRetry"
-					class="ml-2 status-badge px-6 py-2 hover:bg-primary/20"
-				>
-					<i class="bi bi-arrow-counterclockwise"></i> RETRY
-				</button>
+			<div class="mt-8">
+				<div v-if="exerciseCompleted && !isFinished">
+					<div
+						class="mt-4 mb-6 p-4 rounded bg-green-500/10 border-l-4 border-green-500"
+					>
+						<div class="text-gray-400 text-sm">
+							{{ currentExercise?.explanation }}
+						</div>
+					</div>
+				</div>
+
+				<div class="flex justify-center">
+					<button
+						v-if="showContinueButton && !isFinished"
+						@click="handleContinue"
+						class="status-badge px-6 py-2 hover:bg-primary/20"
+						:class="{ 'animate-pulse': submitClicked }"
+					>
+						{{ continueButtonText }}
+					</button>
+					<button
+						v-if="answerFeedback && feedbackClass === 'input-error'"
+						@click="toggleTranslation"
+						class="ml-2 status-badge px-6 py-2 hover:bg-primary/20"
+					>
+						<i class="bi bi-translate"></i>
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
+import { showToast } from "@/components/common/toast.js";
+import apiClient from "@/api";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
 	currentPractice: {
@@ -212,6 +209,8 @@ const props = defineProps({
 	},
 });
 
+const route = useRoute();
+
 // State Management
 const currentDialogueIndex = ref(0);
 const displayedDialogues = ref([]);
@@ -220,23 +219,20 @@ const answerFeedback = ref("");
 const feedbackClass = ref("");
 const submitClicked = ref(false);
 const exerciseCompleted = ref(false);
-
-const showSetting_zh = ref(false);
-const showExerciseHint = ref(false);
-const showQuestion_zh = ref(false);
-
-const showQuestionTranslate = () => {
-	showQuestion_zh.value = !showQuestion_zh.value;
-	scrollToBottom();
-};
+const showTranslation = ref(false);
 
 const praticeContainerRef = ref(null);
+
+const toggleTranslation = () => {
+	showTranslation.value = !showTranslation.value;
+	scrollToBottom();
+};
 
 // Computed Properties
 const currentExercise = computed(() => {
 	const currentDialogue =
 		props.currentPractice.dialogues[currentDialogueIndex.value];
-	return currentDialogue?.exercise;
+	return currentDialogue;
 });
 
 const continueButtonText = computed(() => {
@@ -253,17 +249,11 @@ const isCurrentDialogueCompleted = computed(() => {
 	return exerciseCompleted.value;
 });
 
-const isFinished = computed(() => {
-	return (
-		currentDialogueIndex.value >= props.currentPractice.dialogues.length - 1
-	);
-});
+const isFinished = ref(false);
 
-// 计算是否显示按钮
 const showContinueButton = computed(() => {
 	const currentDialogue =
 		props.currentPractice.dialogues[currentDialogueIndex.value];
-	// 如果当前对话有练习且未完成，则不显示按钮
 	if (currentDialogue?.has_exercise && !exerciseCompleted.value) {
 		return false;
 	}
@@ -272,52 +262,43 @@ const showContinueButton = computed(() => {
 
 // 保存处理后的对话
 const processedDialogues = ref([]);
-const getProcessedText = (english, englishBlank) => {
-	// 如果没有空白，直接返回原文
-	if (!englishBlank.includes("_____")) {
+// 未完成状态的处理函数
+const getUncompletedText = (english) => {
+	return english.replace(/\[[\?]\]/g, "_____");
+};
+
+// 完成状态的处理函数
+const getProcessedText = (english, answersText) => {
+	if (!english.includes("[?]")) {
 		return english;
 	}
 
-	let displayText = english;
-	const blankParts = englishBlank.split("_____");
+	const selectedAnswers = answersText.split(" / ");
+	let result = english;
+	const matches = result.match(/\[[\?]\]/g) || [];
 
-	// 对于每个空白部分
-	for (let i = 0; i < blankParts.length - 1; i++) {
-		let startText = blankParts[i];
-		let endText = blankParts[i + 1];
-
-		// 处理开始文本
-		startText = startText.trim();
-		// 处理结束文本
-		endText = endText.trim();
-
-		// 在原文中找到对应位置
-		let startIndex = 0;
-		let endIndex = displayText.length;
-
-		if (startText) {
-			startIndex = displayText.indexOf(startText) + startText.length;
+	matches.forEach((match, index) => {
+		if (index < selectedAnswers.length) {
+			const answer = selectedAnswers[index];
+			const underlinedText = `<span class="border-b-2 border-accent/10 inline-block hover:bg-accent/10 transition-all relative after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-accent/50 after:blur-[1px]">${answer}</span>`;
+			result = result.replace("[?]", underlinedText);
 		}
+	});
 
-		if (endText) {
-			endIndex = displayText.indexOf(endText, startIndex);
-			if (endIndex === -1) endIndex = displayText.length;
-		}
-
-		// 获取需要加下划线的文本
-		let textToUnderline = displayText.substring(startIndex, endIndex).trim();
-
-		// 创建带下划线的文本
-		const underlinedText = `<span class="border-b-2 border-accent/10 inline-block hover:bg-accent/10 transition-all relative after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-accent/50 after:blur-[1px]">${textToUnderline}</span>`;
-
-		// 替换原文中的对应部分
-		displayText = displayText.replace(textToUnderline, underlinedText);
-	}
-
-	return displayText;
+	return result;
 };
 
-// Add to existing methods
+const shownExplanations = ref({});
+
+const toggleExplanation = (index) => {
+	console.log(index);
+	if (!shownExplanations.value[index]) {
+		shownExplanations.value[index] = true;
+	} else {
+		shownExplanations.value[index] = false;
+	}
+};
+
 const handleRetry = () => {
 	currentDialogueIndex.value = 0;
 	displayedDialogues.value = [props.currentPractice.dialogues[0]];
@@ -326,15 +307,16 @@ const handleRetry = () => {
 	feedbackClass.value = "";
 	exerciseCompleted.value = false;
 	submitClicked.value = false;
-	processedDialogues.value = []; // 重置处理后的对话
+	processedDialogues.value = [];
+	isFinished.value = false;
+	showTranslation.value = false; // 也重置翻译状态
 };
 
-onMounted(() => {
-	// Initialize first dialogue
+onMounted(async () => {
+	await getPracticeStatus();
 	displayedDialogues.value = [props.currentPractice.dialogues[0]];
 });
 
-// Methods
 const selectOption = (index) => {
 	selectedOption.value = index;
 	checkAnswer();
@@ -346,27 +328,25 @@ const scrollToBottom = () => {
 		setTimeout(() => {
 			const container = praticeContainerRef.value;
 			container.scrollTop = container.scrollHeight;
-		}, 100); // Small delay to ensure content is rendered
+		}, 100);
 	}
 };
 
-const showExplanation = ref(false);
 const checkAnswer = () => {
 	const currentDialogue =
 		props.currentPractice.dialogues[currentDialogueIndex.value];
-	const selectedAnswer = currentDialogue.exercise.options[selectedOption.value];
+	const selectedAnswer = currentDialogue.options[selectedOption.value];
 
 	if (selectedAnswer.is_correct) {
 		feedbackClass.value = "input-success";
 		answerFeedback.value = "Excellent! 🌟";
 		exerciseCompleted.value = true;
-		showExplanation.value = true; // 显示解释
 		submitClicked.value = true;
 
 		if (currentDialogue.has_exercise) {
 			const processedText = getProcessedText(
 				currentDialogue.english,
-				currentDialogue.english_blank
+				selectedAnswer.text
 			);
 			processedDialogues.value[currentDialogueIndex.value] = {
 				processedText,
@@ -383,12 +363,119 @@ const checkAnswer = () => {
 	}
 };
 
-const handleContinue = () => {
+const getPracticeStatus = async () => {
+	try {
+		const res = await apiClient.get("/exercises", {
+			params: {
+				catalogId: route.params.id,
+				lessonId: route.query.sign,
+				sceneId: "Scene" + props.currentPage,
+			},
+		});
+
+		console.log("API Response:", res.data);
+		console.log("Current practice dialogues:", props.currentPractice.dialogues);
+
+		if (res.data.data?.completed) {
+			console.log("Practice is completed, setting completed state");
+			setCompletedState();
+			console.log("After setCompletedState:", {
+				displayedDialogues: displayedDialogues.value,
+				currentIndex: currentDialogueIndex.value,
+			});
+		} else {
+			displayedDialogues.value = [props.currentPractice.dialogues[0]];
+		}
+	} catch (error) {
+		console.error("Error in getPracticeStatus:", error);
+		displayedDialogues.value = [props.currentPractice.dialogues[0]];
+	}
+};
+
+// 处理完成状态
+const setCompletedState = () => {
+	console.log("Starting setCompletedState");
+	console.log("Dialogues to display:", props.currentPractice.dialogues);
+
+	// 先确保清空当前状态
+	displayedDialogues.value = [];
+	processedDialogues.value = [];
+	shownExplanations.value = {};
+
+	// 使用 nextTick 确保状态清空后再设置新状态
+	nextTick(() => {
+		// 初始化处理后的对话数组
+		processedDialogues.value = props.currentPractice.dialogues.map(
+			(dialogue) => {
+				if (dialogue.has_exercise) {
+					const correctOption = dialogue.options.find((opt) => opt.is_correct);
+					if (correctOption) {
+						return {
+							processedText: getProcessedText(
+								dialogue.english,
+								correctOption.text
+							),
+							completed: true,
+						};
+					}
+				}
+				return null;
+			}
+		);
+
+		props.currentPractice.dialogues.forEach((_, index) => {
+			shownExplanations.value[index] = false;
+		});
+
+		// 设置显示的对话
+		displayedDialogues.value = props.currentPractice.dialogues;
+
+		// 设置其他状态
+		currentDialogueIndex.value = props.currentPractice.dialogues.length - 1;
+		exerciseCompleted.value = true;
+		isFinished.value = true;
+
+		// 设置最后一个对话的练习状态
+		const lastDialogue =
+			props.currentPractice.dialogues[currentDialogueIndex.value];
+		if (lastDialogue?.has_exercise) {
+			const correctOptionIndex = lastDialogue.options.findIndex(
+				(opt) => opt.is_correct
+			);
+			if (correctOptionIndex !== -1) {
+				selectedOption.value = correctOptionIndex;
+				feedbackClass.value = "input-success";
+				answerFeedback.value = "Excellent! 🌟";
+			}
+		}
+
+		console.log("Final state:", {
+			displayedDialoguesLength: displayedDialogues.value.length,
+			dialoguesContent: displayedDialogues.value,
+			processedDialogues: processedDialogues.value,
+		});
+	});
+};
+
+const handleContinue = async () => {
+	console.log(currentDialogueIndex.value);
 	if (
 		currentDialogueIndex.value >=
 		props.currentPractice.dialogues.length - 1
 	) {
-		// Handle completion
+		const res = await apiClient.post("/exercises", {
+			catalogId: route.params.id,
+			lessonId: route.query.sign,
+			sceneId: "Scene" + props.currentPage,
+		});
+		if (res.data.code === 200) {
+			showToast({
+				message: "数据碎片：+5",
+				disc: "请继续前行...",
+				type: "success",
+			});
+			isFinished.value = true;
+		}
 		return;
 	}
 
@@ -401,62 +488,49 @@ const handleContinue = () => {
 		return;
 	}
 
-	// Move to next dialogue
 	currentDialogueIndex.value++;
 	displayedDialogues.value = props.currentPractice.dialogues.slice(
 		0,
 		currentDialogueIndex.value + 1
 	);
 
-	// Reset exercise state
+	console.log(
+		currentDialogueIndex.value,
+		props.currentPractice.dialogues.length - 1
+	);
+
 	selectedOption.value = null;
 	answerFeedback.value = "";
 	feedbackClass.value = "";
 	exerciseCompleted.value = false;
 	scrollToBottom();
-
-	console.log(processedDialogues.value);
 };
 </script>
 
 <style scoped>
 .scroll-container {
 	position: relative;
-	height: 100%; /* 确保有高度 */
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
 	flex: 1;
-	min-height: 0; /* 关键：允许flex子项收缩 */
+	min-height: 0;
 	overflow-y: auto;
 	padding: 0 20px 40px 20px;
 	position: relative;
 	z-index: 3;
-	height: 0; /* 强制使用flex-grow */
+	height: 0;
 	-webkit-overflow-scrolling: touch;
 	scroll-behavior: smooth;
 }
-.practice-container {
-	height: 100%;
-	overflow-y: auto;
-	padding: 1rem;
-}
 
-.practice-content {
-	min-height: min-content;
-}
 .log-item {
 	padding: 1rem;
 	border-radius: 4px;
 	background: rgba(var(--accent-color-rgb), 0.03);
 	border-left: 3px solid var(--accent-color);
 	text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.4);
-}
-.log-item-gray {
-	padding: 1rem;
-	border-radius: 4px;
-	background: rgba(var(--accent-color-rgb), 0.03);
-	border-left: 3px solid rgba(172, 171, 171, 0.8);
 }
 
 .status-badge {
@@ -497,38 +571,5 @@ const handleContinue = () => {
 		opacity: 1;
 		transform: translateY(0);
 	}
-}
-
-@keyframes neonPulse {
-	0%,
-	100% {
-		border-color: rgb(var(--color-accent));
-		box-shadow: 0 0 5px rgba(var(--color-accent), 0.3),
-			0 0 10px rgba(var(--color-accent), 0.1);
-	}
-	50% {
-		border-color: rgb(var(--color-accent) / 0.3);
-		box-shadow: 0 0 10px rgba(var(--color-accent), 0.2),
-			0 0 20px rgba(var(--color-accent), 0.3),
-			0 0 30px rgba(var(--color-accent), 0.1);
-	}
-}
-
-.neon-underline {
-	border-bottom: 2px solid rgb(var(--color-accent));
-	/* animation: neonPulse 5s infinite; */
-	position: relative;
-}
-
-.neon-underline::after {
-	content: "";
-	position: absolute;
-	bottom: -2px;
-	left: 0;
-	width: 100%;
-	height: 2px;
-	background-color: rgb(var(--color-accent));
-	filter: blur(2px);
-	opacity: 0.7;
 }
 </style>

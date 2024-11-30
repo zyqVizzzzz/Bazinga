@@ -14,6 +14,7 @@ import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
+import GenPractice from "@/prompt/practice_prompt.vue";
 
 const routes = [
 	{
@@ -80,6 +81,11 @@ const routes = [
 		path: "/test",
 		name: "Test",
 		component: Test,
+	},
+	{
+		path: "/gen_practice",
+		name: "gen_practice",
+		component: GenPractice,
 	},
 ];
 
