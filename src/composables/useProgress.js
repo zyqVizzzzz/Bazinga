@@ -106,7 +106,6 @@ export function useProgress(
 		],
 		() => {
 			if (checkRouteParams()) {
-				console.log("Route params updated and valid");
 				hasUnsavedChanges.value = true;
 			}
 		}

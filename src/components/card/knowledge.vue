@@ -241,12 +241,19 @@ const toggleBookmark = async (point) => {
 			}
 		}
 	} catch (error) {
-		showToast({
-			message: error,
-			type: "error",
-			duration: 3000,
-		});
-		console.error("Error updating bookmark:", error);
+		if (error.response.status === 401) {
+			showToast({
+				message: "登录后解锁全部功能",
+				type: "info",
+				duration: 3000,
+			});
+		} else {
+			showToast({
+				message: error,
+				type: "error",
+				duration: 3000,
+			});
+		}
 	}
 };
 

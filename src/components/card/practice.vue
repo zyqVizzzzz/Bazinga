@@ -19,7 +19,7 @@
 				</button>
 			</div>
 
-			<!-- Dialogue History -->
+			<!-- 对话历史 -->
 			<div class="space-y-4">
 				<div
 					v-for="(dialogue, index) in displayedDialogues"
@@ -28,9 +28,6 @@
 					:class="{
 						'animate-fade-in': index === displayedDialogues.length - 1,
 					}"
-					@click="
-						isFinished && dialogue.has_exercise && toggleExplanation(index)
-					"
 				>
 					<div class="flex items-start gap-3">
 						<div class="w-[60px] text-accent text-center">
@@ -43,27 +40,30 @@
 										dialogue.has_exercise &&
 										index === displayedDialogues.length - 1
 									"
-									@click="toggleCurrentExplanation"
 								>
 									<template v-if="!isCurrentDialogueCompleted">
 										{{ getUncompletedText(dialogue.english) }}
 									</template>
 									<template v-else>
-										<span
-											v-html="
-												processedDialogues[index]?.processedText ||
-												dialogue.english
-											"
-										></span>
+										<ProcessedText
+											:text="dialogue.english"
+											:answers="getAnswersForDialogue(dialogue)"
+											:dialogue-index="index"
+											:is-finished="isFinished"
+											:has-exercise="dialogue.has_exercise"
+											@toggle-explanation="toggleExplanation(index)"
+										/>
 									</template>
 								</template>
 								<template v-else>
-									<span
-										v-html="
-											processedDialogues[index]?.processedText ||
-											dialogue.english
-										"
-									></span>
+									<ProcessedText
+										:text="dialogue.english"
+										:answers="getAnswersForDialogue(dialogue)"
+										:dialogue-index="index"
+										:is-finished="isFinished"
+										:has-exercise="dialogue.has_exercise"
+										@toggle-explanation="toggleExplanation(index)"
+									/>
 								</template>
 							</div>
 							<div class="text-gray-400 text-sm mt-1">
@@ -77,7 +77,7 @@
 						class="mt-4 p-4 rounded bg-green-500/10 border-l-4 border-green-500"
 					>
 						<div class="text-gray-400 text-sm">
-							{{ currentExercise?.explanation }}
+							{{ dialogue.explanation }}
 						</div>
 					</div>
 
@@ -197,6 +197,7 @@ import { ref, computed, onMounted, nextTick } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
 import { useRoute } from "vue-router";
+import ProcessedText from "@/components/card/processedText.vue";
 
 const props = defineProps({
 	currentPractice: {
@@ -280,7 +281,9 @@ const getProcessedText = (english, answersText) => {
 	matches.forEach((match, index) => {
 		if (index < selectedAnswers.length) {
 			const answer = selectedAnswers[index];
-			const underlinedText = `<span class="border-b-2 border-accent/10 inline-block hover:bg-accent/10 transition-all relative after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-accent/50 after:blur-[1px]">${answer}</span>`;
+			const underlinedText = `<span class="border-b-2 border-accent/10 inline-block hover:bg-accent/10 transition-all relative after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-accent/50 after:blur-[1px]" @click="
+						isFinished && dialogue.has_exercise && toggleExplanation(index)
+					">${answer}</span>`;
 			result = result.replace("[?]", underlinedText);
 		}
 	});
@@ -297,6 +300,12 @@ const toggleExplanation = (index) => {
 	} else {
 		shownExplanations.value[index] = false;
 	}
+};
+
+const getAnswersForDialogue = (dialogue) => {
+	if (!dialogue.has_exercise) return [];
+	const correctOption = dialogue.options.find((opt) => opt.is_correct);
+	return correctOption ? correctOption.text.split(" / ") : [];
 };
 
 const handleRetry = () => {
@@ -373,16 +382,8 @@ const getPracticeStatus = async () => {
 			},
 		});
 
-		console.log("API Response:", res.data);
-		console.log("Current practice dialogues:", props.currentPractice.dialogues);
-
 		if (res.data.data?.completed) {
-			console.log("Practice is completed, setting completed state");
 			setCompletedState();
-			console.log("After setCompletedState:", {
-				displayedDialogues: displayedDialogues.value,
-				currentIndex: currentDialogueIndex.value,
-			});
 		} else {
 			displayedDialogues.value = [props.currentPractice.dialogues[0]];
 		}
@@ -394,9 +395,6 @@ const getPracticeStatus = async () => {
 
 // 处理完成状态
 const setCompletedState = () => {
-	console.log("Starting setCompletedState");
-	console.log("Dialogues to display:", props.currentPractice.dialogues);
-
 	// 先确保清空当前状态
 	displayedDialogues.value = [];
 	processedDialogues.value = [];
@@ -448,12 +446,6 @@ const setCompletedState = () => {
 				answerFeedback.value = "Excellent! 🌟";
 			}
 		}
-
-		console.log("Final state:", {
-			displayedDialoguesLength: displayedDialogues.value.length,
-			dialoguesContent: displayedDialogues.value,
-			processedDialogues: processedDialogues.value,
-		});
 	});
 };
 

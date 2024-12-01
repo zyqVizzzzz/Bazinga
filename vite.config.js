@@ -14,6 +14,15 @@ export default defineConfig({
 			plugins: [tailwindcss, autoprefixer],
 		},
 	},
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://localhost:3000",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api/, ""),
+			},
+		},
+	},
 	resolve: {
 		alias: {
 			"@": fileURLToPath(new URL("./src", import.meta.url)), // 让 '@' 指向 'src' 目录
