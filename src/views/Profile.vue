@@ -83,16 +83,22 @@
 								<div class="study-note collection-note">
 									<div class="paper-clip"></div>
 									<h3>已创建合集</h3>
-									<p class="stat-number">2<span class="unit">个</span></p>
+									<p class="stat-number">
+										{{ statistics.catalogsCount }}<span class="unit">个</span>
+									</p>
 									<div class="mini-graph"></div>
 								</div>
 
 								<div class="study-note word-note">
 									<div class="tape-section"></div>
 									<h3>单词收藏</h3>
-									<p class="stat-number">128<span class="unit">词</span></p>
+									<p class="stat-number">
+										{{ statistics.wordsCount }}<span class="unit">词</span>
+									</p>
 									<div class="progress-indicator">
-										<span class="completed">已掌握: 85</span>
+										<span class="completed"
+											>重点单词: {{ statistics.importantWordsCount }}</span
+										>
 									</div>
 								</div>
 
@@ -325,6 +331,21 @@ const getUserProfile = async () => {
 	}
 };
 
+const statistics = ref({});
+const getUserLearnInfo = async () => {
+	try {
+		const res = await apiClient.get("/users/statistics");
+		if (res.data.code === 200) {
+			console.log(res.data.data);
+			statistics.value = res.data.data;
+		} else {
+			showToast({ message: res.data.message, type: "error" });
+		}
+	} catch (error) {
+		console.log("dddddd");
+	}
+};
+
 const linkToMembership = () => {
 	router.push("/membership");
 };
@@ -347,8 +368,9 @@ const editProfile = () => {
 	}
 };
 
-onMounted(() => {
-	getUserProfile();
+onMounted(async () => {
+	await getUserProfile();
+	await getUserLearnInfo();
 });
 </script>
 

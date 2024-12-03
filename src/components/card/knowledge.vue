@@ -154,12 +154,12 @@
 		</Swiper>
 		<div class="swiper-pagination"></div>
 		<div
-			v-show="!showHints || !localKnowledgePoints.length"
+			v-show="!localKnowledgePoints.length"
 			class="h-full min-h-[200px] p-6 bg-gray-50/50 rounded-l flex justify-center items-center"
 		>
 			<div>
 				<i class="bi bi-folder2-open text-2xl text-gray-500"></i>
-				<p class="text-gray-800 text-sm mt-2">暂无数据</p>
+				<p class="text-gray-800 text-sm mt-2">暂无知识点数据</p>
 			</div>
 		</div>
 	</div>
@@ -276,7 +276,6 @@ onMounted(() => {
 	localKnowledgePoints.value = JSON.parse(
 		JSON.stringify(props.currentKnowledgePoints)
 	);
-
 	compareCustomNotesWithKnowledgePoints();
 });
 </script>

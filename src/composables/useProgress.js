@@ -59,39 +59,32 @@ export function useProgress(
 		}
 	};
 
-	// 同步保存方法（用于页面刷新/关闭时）
-	const syncSaveProgress = () => {
-		if (!checkRouteParams()) {
-			console.warn("Route params not ready, skipping sync save");
-			return;
-		}
+	// 只保存到本地 - 用于页面卸载时
+	const saveLocalProgress = () => {
+		if (!checkRouteParams()) return;
 
-		try {
-			const course = route.params.id;
-			const season = route.params.season;
-			const episode = route.params.episode;
-			const page = currentPage.value;
-			const sign = route.query.sign;
+		const course = route.params.id;
+		const season = route.params.season;
+		const episode = route.params.episode;
+		const page = currentPage.value;
+		const sign = route.query.sign;
 
-			appStore.saveProgress(course, season, episode, page, sign);
+		console.log("Saving local progress:", {
+			course,
+			season,
+			episode,
+			page,
+			sign,
+		});
 
-			const xhr = new XMLHttpRequest();
-			xhr.open("POST", "/api/users/me/update", false); // 同步请求
-			xhr.setRequestHeader("Content-Type", "application/json");
-			xhr.send(
-				JSON.stringify({
-					learningProgress: appStore.progressList,
-				})
-			);
-		} catch (error) {
-			console.error("Sync save failed:", error);
-		}
+		// 只保存到 store，不发送请求
+		appStore.saveProgress(course, season, episode, page, sign);
 	};
 
 	// 处理页面刷新/关闭
 	const handleBeforeUnload = () => {
-		if (checkRouteParams()) {
-			syncSaveProgress();
+		if (hasUnsavedChanges.value) {
+			saveLocalProgress();
 		}
 	};
 
@@ -112,16 +105,27 @@ export function useProgress(
 	);
 
 	// 设置事件监听
-	onMounted(() => {
+	onMounted(async () => {
 		window.addEventListener("beforeunload", handleBeforeUnload);
+
+		// 如果有本地进度，同步到后端
+		if (appStore.progressList.length > 0) {
+			try {
+				await apiClient.post("/users/me/update", {
+					learningProgress: appStore.progressList,
+				});
+			} catch (error) {
+				console.error("Failed to sync local progress:", error);
+			}
+		}
 	});
 
 	// 组件卸载时的清理和保存
 	onUnmounted(() => {
-		console.log("Component unmounting, saving progress...");
+		console.log("Component unmounting, saving local progress...");
 		window.removeEventListener("beforeunload", handleBeforeUnload);
 		if (checkRouteParams()) {
-			saveProgress();
+			saveLocalProgress();
 		}
 	});
 

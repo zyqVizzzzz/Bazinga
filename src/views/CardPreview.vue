@@ -68,8 +68,9 @@
 										</div>
 
 										<!-- 知识点卡片 -->
+
+										<!-- v-if="isKnowledgeReady" -->
 										<KnowledgeCard
-											v-if="isKnowledgeReady"
 											class="w-2/6 border-2 border-black rounded-lg knowledge-box"
 											style="background-color: var(--milk-color)"
 											:showHints="showHints"
@@ -242,7 +243,6 @@ import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
 import { showToast } from "@/components/common/toast.js";
-
 import { useProgress } from "@/composables/useProgress";
 
 const loginStore = useLoginStore();
@@ -284,7 +284,7 @@ const isLoading = ref(true);
 
 const guestNotAllow = ref(false);
 
-const { saveProgress, isSaving, hasUnsavedChanges } = useProgress(
+const { saveProgress } = useProgress(
 	appStore,
 	apiClient,
 	showToast,
@@ -323,9 +323,7 @@ const getLesson = async () => {
 					throw new Error("Failed to load knowledge data");
 				}
 
-				if (route.query.progress) {
-					progressJumpToPage();
-				}
+				progressJumpToPage();
 			} else {
 				throw new Error("No scenes found in script");
 			}

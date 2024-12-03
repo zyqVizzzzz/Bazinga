@@ -163,13 +163,15 @@
 								</div>
 
 								<!-- 难度描述 -->
-								<div class="retro-textarea-wrapper">
-									<textarea
-										v-model="noteForm.difficultyDetails"
-										class="retro-textarea"
-										:placeholder="t('collectionSetup.form.levelInput')"
-										@blur="v$.difficultyDetails.$touch()"
-									></textarea>
+								<div class="form-control">
+									<div class="retro-textarea-wrapper">
+										<textarea
+											v-model="noteForm.difficultyDetails"
+											class="retro-textarea"
+											:placeholder="t('collectionSetup.form.levelInput')"
+											@blur="v$.difficultyDetails.$touch()"
+										></textarea>
+									</div>
 									<div
 										v-if="v$.difficultyDetails.$error"
 										class="text-red-500 text-sm mt-1"
@@ -437,6 +439,7 @@ import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
 import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
+import { useAppStore } from "@/store";
 
 const { t, locale } = useI18n();
 
@@ -656,7 +659,8 @@ const deleteCollection = () => {
 const confirmDelete = async () => {
 	try {
 		const res = await apiClient.delete("/catalogs/" + resourceId.value);
-		if ((res.data.code = 200)) {
+		if (res.data.code === 200) {
+			clearLocalProgressByCatalogId(resourceId.value);
 			showToast({ message: "删除合集成功", type: "success" });
 			router.replace({
 				path: "/collections",
@@ -666,6 +670,22 @@ const confirmDelete = async () => {
 		}
 	} catch (error) {
 		showToast({ message: "删除合集失败", type: "error" });
+	}
+};
+
+const clearLocalProgressByCatalogId = (catalogId) => {
+	try {
+		const appStore = useAppStore();
+
+		// 过滤掉指定 catalogId 的进度
+		const updatedProgress = appStore.progressList.filter(
+			(item) => item.course !== catalogId
+		);
+
+		// 更新 store
+		appStore.initProgress(updatedProgress);
+	} catch (error) {
+		console.error("Failed to clear local progress:", error);
 	}
 };
 
@@ -694,6 +714,11 @@ const submitNote = async () => {
 			: await apiClient.post("/catalogs", noteForm.value); // 新增接口
 
 		if (res.data.code === 200) {
+			// 如果是编辑操作，需要更新本地存储的进度信息
+			if (resourceId.value) {
+				updateLocalProgress(resourceId.value, noteForm.value);
+			}
+
 			const successMessage = resourceId.value ? "合集更新成功" : "新增合集成功";
 			showToast({ message: successMessage, type: "success" });
 			setTimeout(() => {
@@ -707,6 +732,40 @@ const submitNote = async () => {
 	} catch (error) {
 		showToast({ message: "操作失败，请重试！", type: "error" });
 		console.error("Failed to create or update note:", error);
+	}
+};
+
+// 更新本地存储的进度信息
+
+const updateLocalProgress = (catalogId, catalogData) => {
+	try {
+		const appStore = useAppStore();
+
+		// 过滤掉不存在的季和集的进度
+		const updatedProgress = appStore.progressList.filter((item) => {
+			if (item.course !== catalogId) return true;
+
+			// 检查季是否存在
+			const seasonExists = catalogData.seasons.some(
+				(season) => season.seasonNumber === item.season
+			);
+			if (!seasonExists) return false;
+
+			// 检查集是否存在
+			const season = catalogData.seasons.find(
+				(s) => s.seasonNumber === item.season
+			);
+			const episodeExists = season.episodes.some(
+				(episode) => episode.ep === item.episode
+			);
+
+			return episodeExists;
+		});
+
+		// 使用 store action 更新进度
+		appStore.initProgress(updatedProgress);
+	} catch (error) {
+		console.error("Failed to update local progress:", error);
 	}
 };
 

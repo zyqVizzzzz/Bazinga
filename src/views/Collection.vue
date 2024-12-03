@@ -29,10 +29,14 @@
 					</h1>
 				</div>
 
+				<div class="manga-sub-box">
+					<h1 class="text-xl -mt-1 mb-1 font-bold relative text-shadow-retro">
+						{{ infoData.name }}
+					</h1>
+				</div>
+
 				<!-- 描述文本 -->
-				<h2
-					class="text-xl font-semibold mb-2 text-gray-200 w-4/5 retro-text-shadow"
-				>
+				<h2 class="font-semibold my-2 text-gray-200 w-4/5 retro-text-shadow">
 					{{ infoData.description }}
 				</h2>
 
@@ -78,8 +82,21 @@
 				class="manga-subtitle-box"
 				:class="{ 'mb-10': !currentProgress.course }"
 			>
-				<h2 class="text-xl font-bold text-shadow-retro">
-					Season {{ currentSeasonIndex + 1 }}
+				<h2 class="text-xl font-bold text-shadow-retro h-[30px]">
+					{{
+						viewMode === "gallery"
+							? currentSeason?.seasonNumber
+							: currentSeason?.seasonName
+					}}
+					<div class="tooltip" data-tip="切换视图">
+						<span
+							@click="toggleViewMode"
+							class="cursor-pointer w-[30px]"
+							style="display: inline-block"
+							><i v-if="viewMode === 'gallery'" class="bi bi-list"></i
+							><i v-else class="bi bi-grid" style="font-size: 1rem"></i>
+						</span>
+					</div>
 				</h2>
 			</div>
 
@@ -91,26 +108,50 @@
 					</span>
 				</div>
 			</div>
-
 			<!-- 剧集 -->
-			<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
-				<div
-					v-for="(episode, index) in currentSeasonEpisodes"
-					:key="index"
-					@click="goToLesson(currentSeason, episode)"
-					class="retro-episode-card"
-				>
-					<div class="card-shadow">
-						<div class="card-edge">
-							<div class="card-face">
-								<p class="text-sm font-bold">
-									{{ `episode ${episode.ep}` }}
-								</p>
+			<template v-if="viewMode === 'gallery'">
+				<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
+					<div
+						v-for="(episode, index) in currentSeasonEpisodes"
+						:key="index"
+						@click="goToLesson(currentSeason?.seasonNumber, episode)"
+						class="retro-episode-card"
+					>
+						<div class="card-shadow">
+							<div class="card-edge">
+								<div class="card-face">
+									<p class="text-sm font-bold">
+										{{ `episode ${episode.ep}` }}
+									</p>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</template>
+			<template v-else>
+				<!-- 列表视图 -->
+				<div class="flex flex-col space-y-4">
+					<div
+						v-for="(episode, index) in currentSeasonEpisodes"
+						:key="index"
+						@click="goToLesson(currentSeason?.seasonNumber, episode)"
+						class="retro-episode-card p-4 flex items-center justify-between hover:bg-gray-100 cursor-pointer rounded-lg border border-gray-200"
+					>
+						<div class="flex items-center justify-center space-x-4">
+							<span class="text-sm font-bold">
+								{{
+									`${episode.epName ? episode.epName : "episode " + episode.ep}`
+								}}
+							</span>
+							<span v-if="episode.title" class="text-sm text-gray-600">
+								{{ episode.title }}
+							</span>
+						</div>
+						<i class="bi bi-chevron-right text-gray-400" />
+					</div>
+				</div>
+			</template>
 
 			<!-- 控制区 -->
 			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
@@ -170,12 +211,14 @@ const episodes = ref({}); // 存储每季的集数
 const currentSeasonIndex = ref(0); // 当前季的索引
 const isDefault = ref(true); // 是否是系统默认数据
 const currentProgress = ref({}); // 当前进度
+const viewMode = ref("gallery");
 
 // 获取当前季的集数
 const currentSeason = computed(() => seasons.value[currentSeasonIndex.value]);
-const currentSeasonEpisodes = computed(
-	() => episodes.value[currentSeason.value] || []
-);
+const currentSeasonEpisodes = computed(() => {
+	if (!currentSeason.value || !currentSeason.value.seasonNumber) return [];
+	return episodes.value[currentSeason.value.seasonNumber] || [];
+});
 
 // 异步加载 JSON 数据
 const loadCategoryData = async () => {
@@ -183,10 +226,17 @@ const loadCategoryData = async () => {
 		const res = await apiClient.get(`/catalogs/${route.params.id}`);
 		if (res.data.code === 200) {
 			infoData.value = res.data.data;
-			infoData.value.seasons.forEach((item) => {
-				seasons.value.push(item.seasonNumber);
-				episodes.value[item.seasonNumber] = item.episodes;
-			});
+			if (infoData.value.seasons && infoData.value.seasons.length > 0) {
+				infoData.value.seasons.forEach((item) => {
+					if (item && item.seasonNumber) {
+						seasons.value.push({
+							seasonNumber: item.seasonNumber,
+							seasonName: item.seasonName || item.seasonNumber,
+						});
+						episodes.value[item.seasonNumber] = item.episodes || [];
+					}
+				});
+			}
 			// 判断是否是默认课程
 			if (infoData.value.userId && infoData.value.isCustom) {
 				isDefault.value = false;
@@ -213,8 +263,8 @@ const getUserProfile = async () => {
 	}
 };
 
-onMounted(() => {
-	loadCategoryData();
+onMounted(async () => {
+	await loadCategoryData();
 	isLogin.value && getUserProfile();
 });
 
@@ -225,8 +275,9 @@ const goToLessonProgress = () => {
 	});
 };
 
-const goToLesson = (season, episode) => {
-	const params = `${route.params.id}/${season}/${episode.ep.toString()}`;
+const goToLesson = (seasonNumber, episode) => {
+	if (!seasonNumber || !episode) return;
+	const params = `${route.params.id}/${seasonNumber}/${episode.ep.toString()}`;
 	const query = { sign: episode._id };
 	episode.scriptUrl
 		? router.push({ path: `/collections/${params}`, query })
@@ -254,6 +305,14 @@ const previousSeason = () => {
 const nextSeason = () => {
 	if (currentSeasonIndex.value < seasons.value.length - 1) {
 		currentSeasonIndex.value++;
+	}
+};
+
+const toggleViewMode = () => {
+	if (viewMode.value === "gallery") {
+		viewMode.value = "list";
+	} else {
+		viewMode.value = "gallery";
 	}
 };
 </script>
@@ -503,25 +562,5 @@ button:disabled {
 	position: relative;
 	display: inline-block;
 	padding: 0.5rem 2rem;
-}
-
-.manga-subtitle-box::before,
-.manga-subtitle-box::after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	width: 20px;
-	height: 3px;
-	background-color: currentColor;
-}
-
-.manga-subtitle-box::before {
-	left: 0;
-	transform: translateY(-50%);
-}
-
-.manga-subtitle-box::after {
-	right: 0;
-	transform: translateY(-50%);
 }
 </style>

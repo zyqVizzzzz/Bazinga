@@ -266,6 +266,7 @@ import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
+import { useAppStore } from "@/store";
 import { exampleText, exampleTextZh, word } from "@/constants/Example.js";
 import { getDefinitions } from "@/utils/decompose.js";
 import { TranslateTool } from "../utils/translateTool";
@@ -538,6 +539,7 @@ const saveDialogue = async (isCustom = false) => {
 	}
 };
 
+const isSaved = ref(false);
 const uploadScripts = async (jsonData, isCustom = false) => {
 	const catalogId = route.params.id;
 	const season = route.params.season;
@@ -551,6 +553,8 @@ const uploadScripts = async (jsonData, isCustom = false) => {
 		);
 		if (response.data.code === 200) {
 			if (isCustom) {
+				isSaved.value = true;
+				clearLocalProgressByCatalogId(catalogId);
 				showToast({ message: "保存成功", type: "success" });
 			}
 		} else {
@@ -561,11 +565,33 @@ const uploadScripts = async (jsonData, isCustom = false) => {
 	}
 };
 
+const clearLocalProgressByCatalogId = (catalogId) => {
+	try {
+		const appStore = useAppStore();
+
+		// 过滤掉指定 catalogId 的进度
+		const updatedProgress = appStore.progressList.filter(
+			(item) => item.course !== catalogId
+		);
+
+		// 更新 store
+		appStore.initProgress(updatedProgress);
+	} catch (error) {
+		console.error("Failed to clear local progress:", error);
+	}
+};
+
 const backToPreview = () => {
 	const courseId = route.params.id;
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const sign = route.query.sign;
+	const mode = route.query?.mode;
+	console.log(isSaved.value, mode);
+	if (mode === "edit" && !isSaved.value) {
+		router.replace("/collections/" + courseId);
+		return;
+	}
 	router.replace({
 		path: `/collections/${courseId}/${season}/${episode}`,
 		query: {
