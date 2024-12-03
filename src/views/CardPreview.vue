@@ -317,7 +317,7 @@ const getLesson = async () => {
 
 				setTimeout(() => {
 					isLoading.value = false;
-				}, 1500);
+				}, 1000);
 
 				if (!knowledgeSuccess) {
 					throw new Error("Failed to load knowledge data");
@@ -441,8 +441,14 @@ const progressJumpToPage = () => {
 	const progress = appStore.progressList.find(
 		(p) => p.course === route.params.id
 	);
-	currentPage.value = parseInt(progress.page);
-	jumpToPage();
+	if (
+		progress &&
+		progress.season === route.params.season &&
+		progress.episode === route.params.episode
+	) {
+		currentPage.value = parseInt(progress.page);
+		jumpToPage();
+	}
 };
 
 // 编辑卡片
