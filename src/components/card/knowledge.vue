@@ -56,62 +56,16 @@
 						<div class="border-gray-300 border-b"></div>
 						<div
 							class="py-2 border-gray-300 border-b"
-							v-if="
-								point.type !== 'vocabulary' &&
-								(point.system?.rootAnalysis?.root ||
-									point.system?.affixAnalysis?.suffix ||
-									point.system?.affixAnalysis?.prefix)
-							"
+							v-if="point.type === 'vocabulary' && point.etymology"
 						>
 							<div>
 								<!-- 词根 -->
-								<div
-									v-if="point.system?.rootAnalysis?.root"
-									class="text-gray-600 mb-1 text-left"
-								>
+								<div class="text-gray-600 mb-1 text-left">
 									<p class="font-bold">
-										<span class="text-xs">[词根] </span>
-										{{ point.system.rootAnalysis.root ?? "" }}
-										<span
-											class="font-normal text-xs"
-											v-if="point.system.rootAnalysis?.meaning_zh"
-										>
-											：{{ point.system.rootAnalysis.meaning_zh ?? "" }}
-										</span>
-									</p>
-								</div>
-
-								<!-- 前缀 -->
-								<div
-									v-if="point.system?.affixAnalysis?.prefix"
-									class="text-gray-600 mb-1 text-left"
-								>
-									<p class="mb-1 font-bold">
-										<span class="text-xs">[前缀] </span>
-										{{ point.system.affixAnalysis.prefix ?? "" }}-
-										<span
-											class="font-normal text-xs"
-											v-if="point.system.affixAnalysis?.prefixMeaning_zh"
-										>
-											：{{ point.system.affixAnalysis.prefixMeaning_zh ?? "" }}
-										</span>
-									</p>
-								</div>
-
-								<!-- 后缀 -->
-								<div
-									v-if="point.system?.affixAnalysis?.suffix"
-									class="text-gray-600 text-left"
-								>
-									<p class="mb-1 font-bold">
-										<span class="text-xs">[后缀] </span>
-										-{{ point.system.affixAnalysis.suffix ?? "" }}
-										<span
-											class="font-normal text-xs"
-											v-if="point.system.affixAnalysis?.suffixMeaning_zh"
-										>
-											：{{ point.system.affixAnalysis.suffixMeaning_zh ?? "" }}
-										</span>
+										<span class="text-xs">[词根 & 词缀分析] </span>
+										<span class="text-sm text-gray-500 font-light ml-2">{{
+											point.etymology
+										}}</span>
 									</p>
 								</div>
 							</div>

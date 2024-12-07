@@ -26,51 +26,17 @@
 		</div>
 
 		<!-- 详细解释 -->
-		<div
-			class="content-section"
-			v-if="selectedNote?.system?.rootAnalysis?.root"
-		>
+		<div class="content-section" v-if="selectedNote.etymology">
 			<!-- 词根词缀分析 -->
 			<div class="word-analysis">
 				<!-- 词根 -->
-				<div
-					v-if="selectedNote?.system?.rootAnalysis?.root"
-					class="analysis-item"
-				>
-					<span class="text-gray-600"
-						>[词根]
-						<span class="text-primary font-bold ml-2"
-							>{{ selectedNote.system.rootAnalysis.root }}：</span
-						>{{ selectedNote.system.rootAnalysis.meaning_zh }}</span
+				<div class="analysis-item">
+					<span class="text-primary"
+						>[词根 & 词缀分析]
+						<span class="text-gray-600 ml-2">{{
+							selectedNote.etymology
+						}}</span></span
 					>
-				</div>
-
-				<!-- 前缀 -->
-				<div
-					v-if="selectedNote?.system?.affixAnalysis?.prefix"
-					class="analysis-item"
-				>
-					<span class="text-gray-600"
-						>[前缀]
-						<span class="text-primary font-bold ml-2"
-							>{{ selectedNote.system.affixAnalysis.prefix }}-：</span
-						>
-						{{ selectedNote.system.affixAnalysis.prefixMeaning_zh }}
-					</span>
-				</div>
-
-				<!-- 后缀 -->
-				<div
-					v-if="selectedNote?.system?.affixAnalysis?.suffix"
-					class="analysis-item"
-				>
-					<span class="text-gray-600"
-						>[后缀]
-						<span class="text-primary font-bold ml-2"
-							>-{{ selectedNote.system.affixAnalysis.suffix }}：</span
-						>
-						{{ selectedNote.system.affixAnalysis.suffixMeaning_zh }}
-					</span>
 				</div>
 			</div>
 		</div>
@@ -225,8 +191,6 @@ const processedFields = computed(() => {
 			});
 		}
 	});
-
-	console.log(result);
 
 	return result;
 });

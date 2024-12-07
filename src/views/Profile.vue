@@ -76,7 +76,7 @@
 								<!-- 标题区域 -->
 								<div class="notebook-title">
 									<h2 class="sketch-title">Bazinga_Log</h2>
-									<div class="date-stamp">2024.11.25</div>
+									<div class="date-stamp">{{ getCurrentDate() }}</div>
 								</div>
 
 								<!-- 学习数据卡片 -->
@@ -106,8 +106,43 @@
 								<div class="study-note recent-progress">
 									<div class="push-pin"></div>
 									<h3 class="mb-2">学习进度</h3>
-									<p class="manga-title">《辛普森一家》</p>
-									<p class="chapter">S01E03</p>
+									<div v-if="statistics.learningProgress?.length > 0">
+										<p class="manga-title">
+											《{{
+												statistics.learningProgress[currentIndex].courseName
+											}}》
+										</p>
+										<p class="chapter">
+											{{ statistics.learningProgress[currentIndex].season }}E{{
+												formatEpisode(
+													statistics.learningProgress[currentIndex].episode
+												)
+											}}
+										</p>
+										<div class="progress-nav">
+											<button
+												class="nav-btn prev"
+												@click="prevProgress"
+												:disabled="currentIndex === 0"
+											>
+												<i class="bi bi-chevron-left"></i>
+											</button>
+											<span class="progress-indicator" style="margin-top: 0"
+												>{{ currentIndex + 1 }}/{{
+													statistics.learningProgress.length
+												}}</span
+											>
+											<button
+												class="nav-btn next"
+												@click="nextProgress"
+												:disabled="
+													currentIndex >= statistics.learningProgress.length - 1
+												"
+											>
+												<i class="bi bi-chevron-right"></i>
+											</button>
+										</div>
+									</div>
 								</div>
 
 								<!-- 随机装饰元素 -->
@@ -365,6 +400,34 @@ const editProfile = () => {
 	} else {
 		tempNickname.value = "";
 		tempSignature.value = "";
+	}
+};
+
+const formatEpisode = (episode) => {
+	// 将 episode 转换为数字并格式化为两位数
+	return episode.toString().padStart(2, "0");
+};
+
+const getCurrentDate = () => {
+	const today = new Date();
+	const year = today.getFullYear();
+	// 月份需要 +1 因为 getMonth() 返回 0-11
+	const month = (today.getMonth() + 1).toString().padStart(2, "0");
+	const day = today.getDate().toString().padStart(2, "0");
+	return `${year}.${month}.${day}`;
+};
+
+const currentIndex = ref(0);
+
+const nextProgress = () => {
+	if (currentIndex.value < statistics.value.learningProgress.length - 1) {
+		currentIndex.value++;
+	}
+};
+
+const prevProgress = () => {
+	if (currentIndex.value > 0) {
+		currentIndex.value--;
 	}
 };
 
@@ -633,12 +696,25 @@ onMounted(async () => {
 	position: absolute;
 	top: 10rem;
 	right: 4rem;
-	background: var(--secondary-color);
+	background: linear-gradient(
+		45deg,
+		var(--primary-color),
+		var(--secondary-color)
+	);
 	color: white;
 	padding: 0.5rem 1rem;
 	transform: rotate(15deg);
 	border-radius: 4px;
 	font-family: monospace;
+	/* 可选：添加一些效果使其更突出 */
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+
+/* 可选：添加悬停效果 */
+.date-stamp:hover {
+	transform: rotate(10deg) scale(1.05);
+	box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* 学习笔记卡片基础样式 */
@@ -886,5 +962,38 @@ onMounted(async () => {
 .textarea-bordered:focus {
 	outline: none;
 	box-shadow: inset 2px 2px 0 rgba(var(--primary-color-rgb), 0.2);
+}
+
+.progress-nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+.nav-btn {
+	background: none;
+	border: none;
+	padding: 4px 8px;
+	cursor: pointer;
+	border-radius: 4px;
+	transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.progress-indicator {
+	font-size: 0.9em;
+	color: #666;
+	min-width: 40px;
+	text-align: center;
 }
 </style>

@@ -5,14 +5,26 @@
 				class="optionbox-container option-group flex-col justify-between space-y-4"
 			>
 				<div class="tooltip" data-tip="退出">
-					<button @click="backToPreview" class="btn btn-sm text-gray-800">
-						<i class="bi bi-box-arrow-left text-lg"></i>
+					<button class="retro-btn" @click="backToPreview">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<i class="bi bi-box-arrow-left text-lg"></i>
+								</div>
+							</div>
+						</div>
 					</button>
 				</div>
 
 				<div class="tooltip" data-tip="保存">
-					<button @click="saveDialogue(true)" class="btn btn-sm text-gray-800">
-						<i class="bi bi-floppy text-lg"></i>
+					<button class="retro-btn" @click="saveDialogue(true)">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<i class="bi bi-floppy text-lg"></i>
+								</div>
+							</div>
+						</div>
 					</button>
 				</div>
 			</div>
@@ -31,22 +43,12 @@
 
 				<div class="relative w-full max-w-2xl mx-auto">
 					<div class="relative">
-						<div class="decorated-card p-6">
+						<div class="decorated-card py-6 px-4">
 							<div
-								class="flex items-center justify-between mb-2"
 								v-if="!isEditing"
+								class="flex items-center justify-between space-x-2 ml-3 mb-2 text-lg font-bold gradient-to-r from-primary to-secondary"
 							>
-								<div class="flex items-center space-x-2">
-									<i
-										class="bi bi-book text-primary text-lg relative"
-										style="top: 2px"
-									></i>
-									<h3
-										class="text-lg font-bold gradient-to-r from-primary to-secondary"
-									>
-										知识点
-									</h3>
-								</div>
+								知识点
 							</div>
 
 							<!-- 编辑表单 -->
@@ -57,14 +59,21 @@
 								<div
 									class="mb-4 font-bold text-base text-left flex justify-between pl-1"
 								>
-									{{ editedFields.origin }}
 									<span class="transition-opacity duration-200">
-										<button
-											@click="generateKnowledge(editedFields.origin)"
-											class="btn btn-ghost btn-xs text-secondary"
-										>
-											自动生成知识点
-										</button>
+										{{ editedFields.origin }}
+										<div class="tooltip" data-tip="自动生成知识点">
+											<button
+												@click="generateKnowledge(editedFields.origin)"
+												class="btn btn-ghost btn-xs text-secondary text-sm"
+											>
+												<!-- 自动生成知识点 -->
+												<i v-if="!generateLoading" class="bi bi-lightning"></i>
+												<span
+													v-else
+													class="loading loading-spinner loading-xs"
+												></span>
+											</button>
+										</div>
 									</span>
 								</div>
 								<div class="mb-2">
@@ -91,7 +100,7 @@
 										<option value="">请选择类型</option>
 										<option value="vocabulary">词汇</option>
 										<option value="phrase">短语</option>
-										<option value="daily expression">日常用语</option>
+										<option value="daily">日常用语</option>
 									</select>
 								</div>
 								<div
@@ -102,25 +111,13 @@
 										<label for="pos" class="text-xs pb-1 ml-1 block"
 											>词性:</label
 										>
-										<select
+										<input
+											type="text"
 											v-model="editedFields.pos"
 											id="pos"
-											class="select select-bordered select-sm w-full max-w-xs"
-										>
-											<option value="">词性</option>
-											<option value="n.">n.</option>
-											<option value="v.">v.</option>
-											<option value="vt.">vt.</option>
-											<option value="vi.">vi.</option>
-											<option value="adj.">adj.</option>
-											<option value="adv.">adv.</option>
-											<option value="prep.">prep.</option>
-											<option value="conj.">conj.</option>
-											<option value="pron.">pron.</option>
-											<option value="art.">art.</option>
-											<option value="int.">int.</option>
-											<!-- 根据需要添加更多词性选项 -->
-										</select>
+											placeholder="请输入词性"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
 									</div>
 									<div>
 										<label for="word_zh" class="text-xs pb-1 ml-1 block"
@@ -139,13 +136,12 @@
 									<label for="definition_zh" class="text-xs pb-1 ml-1 block"
 										>详细释义:</label
 									>
-									<input
-										type="text"
+									<textarea
 										v-model="editedFields.definition_zh"
 										id="definition_zh"
 										placeholder="请输入详细释义"
-										class="input input-bordered input-sm w-full max-w-xs"
-									/>
+										class="textarea textarea-bordered w-full p-2"
+									></textarea>
 								</div>
 
 								<div
@@ -153,30 +149,15 @@
 									v-if="editedFields.type === 'vocabulary'"
 								>
 									<label for="prefix" class="text-xs pb-1 ml-1 block"
-										>词根 & 词缀:</label
+										>词根 & 词缀分析:</label
 									>
 									<div class="flex items-center space-x-2">
-										<input
-											type="text"
-											v-model="editedFields.system.affixAnalysis.prefix"
-											id="prefix"
-											placeholder="前缀"
-											class="input input-bordered input-sm w-full max-w-xs"
-										/>
-										<input
-											type="text"
-											v-model="editedFields.system.rootAnalysis.root"
-											id="root"
-											placeholder="词根"
-											class="input input-bordered input-sm w-full max-w-xs"
-										/>
-										<input
-											type="text"
-											v-model="editedFields.system.affixAnalysis.suffix"
-											id="suffix"
-											placeholder="后缀"
-											class="input input-bordered input-sm w-full max-w-xs"
-										/>
+										<textarea
+											v-model="editedFields.etymology"
+											id="etymology"
+											placeholder="请输入词根词缀分析"
+											class="textarea textarea-bordered w-full p-2"
+										></textarea>
 									</div>
 								</div>
 								<div class="mb-2">
@@ -191,9 +172,6 @@
 									></textarea>
 								</div>
 								<div class="mb-2">
-									<label for="type" class="text-xs pb-1 ml-1 block"
-										>例句释义:</label
-									>
 									<textarea
 										v-model="editedFields.example_zh"
 										id="example_zh"
@@ -226,7 +204,7 @@
 										class="flex items-center justify-between cursor-pointer"
 										@click="startEditing(item)"
 									>
-										<div class="flex items-center space-x-3">
+										<div class="flex-1 text-left">
 											<span class="font-medium text-sm">{{ item.word }}</span>
 										</div>
 
@@ -284,6 +262,8 @@ const currentKnowledge = ref(new Map()); // 当前知识点
 const scriptJson = ref(null);
 
 const existingBoldWords = new Set();
+
+const generateLoading = ref(false);
 
 // 在组件setup最开始就定义这个函数
 const preventDefaultEnter = (event) => {
@@ -436,21 +416,37 @@ const initDialogues = async () => {
 	} catch (err) {}
 };
 
-const generateKnowledge = async (word) => {
+const generateKnowledge2 = async (word) => {
 	const res = await apiClient.get(`/dictionary/${word}`);
 	if (res.data.code === 200) {
-		console.log(res.data.data);
-		const knowledgeData = {
-			pos: res.data.data.pos[0].type,
-			word_zh: res.data.data.pos[0].explanation.split("\\")[0],
-			example: res.data.data.examples[0].text,
-			example_zh: res.data.data.examples[0].translate,
-		};
 		editedFields.value.pos = res.data.data.pos[0].type;
-		editedFields.value.word_zh =
-			res.data.data.pos[0].explanation.split("\\")[0];
-		editedFields.value.example = res.data.data.examples[0].text;
-		editedFields.value.example_zh = res.data.data.examples[0].translation;
+	}
+};
+
+const generateKnowledge = async (word) => {
+	generateLoading.value = true;
+	try {
+		const res = await apiClient.post("/knowledge/generate", {
+			word,
+		});
+		if (res.data.code === 200) {
+			generateLoading.value = false;
+			editedFields.value.type = res.data.data.type;
+			editedFields.value.word_zh = res.data.data.word_zh;
+			editedFields.value.etymology = res.data.data.etymology;
+			editedFields.value.definition_zh =
+				res.data.data.word_zh + "；" + res.data.data.definition_zh;
+			editedFields.value.example = res.data.data.example;
+			editedFields.value.example_zh = res.data.data.example_zh;
+			res.data.data.pos && (editedFields.value.pos = res.data.data.pos);
+			res.data.data.symbol &&
+				(editedFields.value.symbol = res.data.data.symbol);
+		} else {
+			generateLoading.value = false;
+		}
+	} catch (err) {
+		showToast({ message: "网络错误，请重试！", type: "warning" });
+		generateLoading.value = false;
 	}
 };
 
@@ -646,27 +642,8 @@ const startEditing = (item) => {
 		example_zh: itemWithoutScenes.example_zh,
 		type: itemWithoutScenes.type,
 		definition_zh: itemWithoutScenes.definition_zh,
+		etymology: itemWithoutScenes.etymology,
 	};
-
-	const { prefix, prefixMeaning, suffix, suffixMeaning, root, rootMeaning } =
-		getDefinitions(itemWithoutScenes.word);
-
-	Object.assign(editedFields.value, {
-		system: {
-			affixAnalysis: { prefix, prefixMeaning, suffix, suffixMeaning },
-			rootAnalysis: { root, rootMeaning },
-			wordInflections: {
-				baseForm: itemWithoutScenes.baseForm,
-				baseForm_zh: "原型",
-				presentParticiple: itemWithoutScenes.presentParticiple,
-				pastParticiple_zh: "过去分词",
-				pastTense: itemWithoutScenes.pastTense,
-				pastTense_zh: "过去式",
-				presentParticiple: itemWithoutScenes.presentParticiple,
-				presentParticiple_zh: "现在分词",
-			},
-		},
-	});
 };
 
 function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
@@ -839,35 +816,13 @@ const saveKnowledge = () => {
 			origin: editedFields.value.origin,
 			word: editedFields.value.word,
 			pos: editedFields.value.pos,
+			symbols: editedFields.value.symbol,
 			word_zh: editedFields.value.word_zh,
 			example: editedFields.value.example,
 			example_zh: editedFields.value.example_zh,
 			type: editedFields.value.type,
 			definition_zh: editedFields.value.definition_zh,
-			system: {
-				affixAnalysis: {
-					prefix: editedFields.value.system.affixAnalysis.prefix,
-					prefixMeaning: editedFields.value.system.affixAnalysis.prefixMeaning,
-					suffix: editedFields.value.system.affixAnalysis.suffix,
-					suffixMeaning: editedFields.value.system.affixAnalysis.suffixMeaning,
-				},
-				rootAnalysis: {
-					root: editedFields.value.system.rootAnalysis.root,
-					meaning: editedFields.value.system.rootAnalysis.meaning,
-				},
-				wordInflections: {
-					baseForm: editedFields.value.system.wordInflections.baseForm,
-					baseForm_zh: "原型",
-					presentParticiple:
-						editedFields.value.system.wordInflections.presentParticiple,
-					pastParticiple_zh: "过去分词",
-					pastTense: editedFields.value.system.wordInflections.pastTense,
-					pastTense_zh: "过去式",
-					presentParticiple:
-						editedFields.value.system.wordInflections.presentParticiple,
-					presentParticiple_zh: "现在分词",
-				},
-			},
+			etymology: editedFields.value.etymology,
 			// 保持原有的场景关联
 			scenes: originalScenes,
 		};
@@ -1286,7 +1241,7 @@ function parseDialogueLine(line, tag) {
 }
 
 /* 复古按钮样式 */
-.optionbox-container button {
+/* .optionbox-container button {
 	position: relative;
 	width: 3rem;
 	height: 3rem;
@@ -1296,9 +1251,74 @@ function parseDialogueLine(line, tag) {
 	cursor: pointer;
 	transition: all 0.2s;
 	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+} */
+
+.retro-btn {
+	position: relative;
+	width: 36px;
+	height: 36px;
+	border: none;
+	background: none;
+	cursor: pointer;
 }
 
-.optionbox-container button:hover {
+.retro-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 6px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 6px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 6px;
+	color: #333;
+	font-weight: bold;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* 按钮交互效果 */
+.retro-btn:hover:not(:disabled) .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active:not(:disabled) .btn-edge,
+.retro-btn:active:not(:disabled) .btn-face {
+	transform: translateY(0);
+}
+
+/* .optionbox-container button:hover {
 	transform: translate(2px, 2px);
 	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
 }
@@ -1306,7 +1326,7 @@ function parseDialogueLine(line, tag) {
 .optionbox-container button:active {
 	transform: translate(4px, 4px);
 	box-shadow: none;
-}
+} */
 
 /* 编辑器容器 */
 .editor-container {
@@ -1315,7 +1335,7 @@ function parseDialogueLine(line, tag) {
 	min-height: 500px;
 	border: 3px solid #333;
 	border-radius: 12px;
-	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .editorjs-container {
@@ -1335,7 +1355,7 @@ function parseDialogueLine(line, tag) {
 	border: 3px solid #333;
 	border-radius: 12px;
 	background: white;
-	box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+	box-shadow: -3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* 工具箱装饰 */
