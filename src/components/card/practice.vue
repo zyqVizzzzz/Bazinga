@@ -169,10 +169,19 @@ const playAllDialogues = async () => {
 			const currentElement = dialogueElements[currentPlayingIndex];
 
 			// 滚动到当前对话框
-			if (currentElement && isPlaying.value) {
-				currentElement.scrollIntoView({
+			if (currentElement && isPlaying.value && praticeContainerRef.value) {
+				const container = praticeContainerRef.value;
+				const containerRect = container.getBoundingClientRect();
+				const elementRect = currentElement.getBoundingClientRect();
+				const targetScrollTop =
+					container.scrollTop +
+					(elementRect.top - containerRect.top) -
+					containerRect.height / 2 +
+					elementRect.height / 2;
+
+				container.scrollTo({
+					top: targetScrollTop,
 					behavior: "smooth",
-					block: "center",
 				});
 			}
 
@@ -338,6 +347,7 @@ onMounted(() => {
 	height: 0;
 	-webkit-overflow-scrolling: touch;
 	scroll-behavior: smooth;
+	overscroll-behavior-y: contain;
 }
 
 .dialogue-wrapper {
