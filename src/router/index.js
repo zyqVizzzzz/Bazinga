@@ -15,6 +15,7 @@ import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
+import GenKnowledge from "@/prompt/upload_knowledge.vue";
 
 const routes = [
 	{
@@ -86,6 +87,11 @@ const routes = [
 		path: "/gen_practice",
 		name: "gen_practice",
 		component: GenPractice,
+	},
+	{
+		path: "/gen_knowledge",
+		name: "gen_knowledge",
+		component: GenKnowledge,
 	},
 ];
 

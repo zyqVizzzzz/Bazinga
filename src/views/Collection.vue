@@ -63,11 +63,8 @@
 				</div>
 
 				<!-- 设置 -->
-				<button
-					v-if="!isDefault"
-					@click="goToCollectionEdit"
-					class="retro-btn-small mt-6"
-				>
+				<!-- v-if="!isDefault" -->
+				<button @click="goToCollectionEdit" class="retro-btn-small mt-6">
 					<div class="btn-face">
 						<i class="bi bi-gear-fill text-lg"></i>
 					</div>

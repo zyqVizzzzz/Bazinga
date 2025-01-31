@@ -4,7 +4,7 @@
 		:class="
 			showHints && currentKnowledgePoints.length > 0 ? 'w-full' : 'w-full'
 		"
-		style="height: 350px"
+		style="height: 400px"
 		v-if="highlightedText.length"
 	>
 		<div v-for="(dialogue, index) in highlightedText" :key="index">

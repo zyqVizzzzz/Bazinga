@@ -1,191 +1,98 @@
 <template>
 	<div class="scroll-container" ref="praticeContainerRef">
-		<div class="space-y-6">
-			<div class="terminal-prompt my-4 text-left relative">
-				<span class="text-accent">@PRATICE</span>
+		<div class="space-y-8">
+			<div
+				class="terminal-prompt my-6 text-left relative p-4 bg-gray-800/50 rounded-lg shadow-lg"
+			>
+				<span class="text-accent">@Bazinga</span>
 				<span class="text-accent mr-2">:</span>
 				<span class="text-gray-400">~/episode/{{ props.currentPage }}</span>
 				<span class="text-gray-400">$</span>
 				<span class="text-gray-200 ml-2"
 					>run {{ currentPractice.conversation_id }}.sh</span
 				>
-				<button
-					v-if="displayedDialogues.length > 1 || showContinueButton"
-					@click="handleRetry"
-					class="ml-2 status-badge px-6 py-2 hover:bg-primary/20 absolute"
-					style="right: 0; top: 50%; transform: translateY(-50%)"
+				<div
+					class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-4"
 				>
-					<i class="bi bi-arrow-counterclockwise"></i>
-				</button>
+					<button
+						@click="playAllDialogues"
+						class="status-badge px-4 py-2 hover:bg-primary/20 disabled:opacity-50 rounded-lg transition-all duration-200 flex items-center gap-2"
+					>
+						<i
+							class="bi text-xl"
+							:class="isPlaying ? 'bi-pause-circle' : 'bi-play-circle'"
+						></i>
+					</button>
+					<button
+						@click="toggleTranslation"
+						class="status-badge px-4 py-2 hover:bg-primary/20 rounded-lg transition-all duration-200 flex items-center gap-2"
+					>
+						<i class="bi bi-translate text-xl"></i>
+					</button>
+				</div>
 			</div>
 
 			<!-- 对话历史 -->
-			<div class="space-y-4">
+			<div class="space-y-8">
 				<div
 					v-for="(dialogue, index) in displayedDialogues"
 					:key="index"
-					class="log-item"
+					class="dialogue-wrapper flex items-start gap-4"
 					:class="{
 						'animate-fade-in': index === displayedDialogues.length - 1,
+						'flex-row-reverse': dialogue.character === 'Jinji',
 					}"
 				>
-					<div class="flex items-start gap-3">
-						<div class="w-[60px] text-accent text-center">
-							{{ dialogue.character }}
-						</div>
-						<div class="flex-1">
-							<div class="text-gray-100">
-								<template
-									v-if="
-										dialogue.has_exercise &&
-										index === displayedDialogues.length - 1
-									"
-								>
-									<template v-if="!isCurrentDialogueCompleted">
-										{{ getUncompletedText(dialogue.english) }}
-									</template>
-									<template v-else>
-										<ProcessedText
-											:text="dialogue.english"
-											:answers="getAnswersForDialogue(dialogue)"
-											:dialogue-index="index"
-											:is-finished="isFinished"
-											:has-exercise="dialogue.has_exercise"
-											@toggle-explanation="toggleExplanation(index)"
-										/>
-									</template>
-								</template>
-								<template v-else>
-									<ProcessedText
-										:text="dialogue.english"
-										:answers="getAnswersForDialogue(dialogue)"
-										:dialogue-index="index"
-										:is-finished="isFinished"
-										:has-exercise="dialogue.has_exercise"
-										@toggle-explanation="toggleExplanation(index)"
-									/>
-								</template>
-							</div>
-							<div class="text-gray-400 text-sm mt-1">
-								{{ dialogue.chinese }}
-							</div>
-						</div>
-					</div>
-
-					<div
-						v-if="shownExplanations[index]"
-						class="mt-4 p-4 rounded bg-green-500/10 border-l-4 border-green-500"
-					>
-						<div class="text-gray-400 text-sm">
-							{{ dialogue.explanation }}
-						</div>
-					</div>
-
-					<!-- Exercise Section -->
-					<div
-						v-if="
-							dialogue.has_exercise &&
-							index === displayedDialogues.length - 1 &&
-							!exerciseCompleted
-						"
-						class="mt-6 border-t border-accent/30 pt-6"
-					>
-						<!-- Options Grid -->
-						<div class="grid grid-cols-2 gap-3">
-							<button
-								v-for="(option, optIndex) in dialogue.options"
-								:key="optIndex"
-								@click="selectOption(optIndex)"
-								:class="[
-									'text-left px-4 py-2 transition-colors duration-200',
-									'border-2 border-accent/30 hover:border-accent/50',
-									{
-										'border-green-500/50 bg-green-500/10':
-											selectedOption === optIndex &&
-											feedbackClass === 'input-success',
-										'border-red-500/50 bg-red-500/10':
-											selectedOption === optIndex &&
-											feedbackClass === 'input-error',
-									},
-								]"
-							>
-								<div class="flex items-start gap-2 py-2">
-									<span class="text-accent w-4 text-sm"
-										>{{ optIndex + 1 }})</span
-									>
-									<div class="flex-1 min-w-0">
-										<div class="text-gray-100 text-sm">
-											{{ option.text.split(" / ").join(" / ") }}
-										</div>
-										<div
-											v-if="showTranslation"
-											class="text-gray-400 text-sm mt-1"
-										>
-											{{ option.translation }}
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-
-						<!-- Exercise Feedback -->
+					<div class="avatar-wrapper flex flex-col items-center gap-2">
 						<div
-							v-if="answerFeedback"
-							class="mt-4 p-4 rounded"
+							class="w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 shadow-lg"
+						>
+							<img
+								:src="`/src/assets/${dialogue.character.toLowerCase()}.png`"
+								:alt="dialogue.character"
+								class="w-full h-full object-cover"
+							/>
+						</div>
+						<span class="text-accent text-sm font-medium">{{
+							dialogue.character
+						}}</span>
+					</div>
+					<div class="flex-1 max-w-[70%]">
+						<div
+							class="log-item rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl relative group"
 							:class="{
-								'bg-green-500/10 border-l-4 border-green-500':
-									feedbackClass === 'input-success',
-								'bg-red-500/10 border-l-4 border-red-500':
-									feedbackClass === 'input-error',
+								'bg-primary/10 border-primary rounded-tr-sm':
+									dialogue.character === 'User',
+								'bg-accent/10 border-accent rounded-tl-sm':
+									dialogue.character !== 'User',
 							}"
 						>
-							<span
-								:class="{
-									'text-green-500': feedbackClass === 'input-success',
-									'text-red-500': feedbackClass === 'input-error',
-								}"
-							>
-								{{ answerFeedback }}
-							</span>
-							<div
-								v-if="feedbackClass === 'input-success'"
-								class="text-gray-400 text-sm mt-2"
-							>
-								{{ currentExercise?.explanation }}
+							<div class="flex-1">
+								<div class="text-gray-100 text-md leading-relaxed">
+									<span>{{ dialogue.english }}</span>
+								</div>
+								<div
+									class="text-gray-400 text-sm pt-3 border-t border-gray-700/30 transition-all duration-300"
+									v-if="showTranslation"
+									:class="{ 'opacity-0': !showTranslation }"
+								>
+									{{ dialogue.chinese }}
+								</div>
 							</div>
+							<button
+								class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-accent hover:text-accent/80"
+								@click="
+									playDialogueVoice(
+										dialogue.voiceUrl,
+										dialogue.english,
+										dialogue.character
+									)
+								"
+							>
+								<i class="bi bi-play-circle text-lg"></i>
+							</button>
 						</div>
 					</div>
-				</div>
-			</div>
-
-			<!-- Continue Button -->
-			<div class="mt-8">
-				<div v-if="exerciseCompleted && !isFinished">
-					<div
-						class="mt-4 mb-6 p-4 rounded bg-green-500/10 border-l-4 border-green-500"
-					>
-						<div class="text-gray-400 text-sm">
-							{{ currentExercise?.explanation }}
-						</div>
-					</div>
-				</div>
-
-				<div class="flex justify-center">
-					<button
-						v-if="showContinueButton && !isFinished"
-						@click="handleContinue"
-						class="status-badge px-6 py-2 hover:bg-primary/20"
-						:class="{ 'animate-pulse': submitClicked }"
-					>
-						{{ continueButtonText }}
-					</button>
-					<button
-						v-if="answerFeedback && feedbackClass === 'input-error'"
-						@click="toggleTranslation"
-						class="ml-2 status-badge px-6 py-2 hover:bg-primary/20"
-					>
-						<i class="bi bi-translate"></i>
-					</button>
 				</div>
 			</div>
 		</div>
@@ -193,11 +100,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
-import { showToast } from "@/components/common/toast.js";
+import { ref, onMounted } from "vue";
 import apiClient from "@/api";
-import { useRoute } from "vue-router";
-import ProcessedText from "@/components/card/processedText.vue";
 
 const props = defineProps({
 	currentPractice: {
@@ -210,293 +114,195 @@ const props = defineProps({
 	},
 });
 
-const route = useRoute();
-
-// State Management
-const currentDialogueIndex = ref(0);
 const displayedDialogues = ref([]);
-const selectedOption = ref(null);
-const answerFeedback = ref("");
-const feedbackClass = ref("");
-const submitClicked = ref(false);
-const exerciseCompleted = ref(false);
-const showTranslation = ref(false);
-
 const praticeContainerRef = ref(null);
+const showTranslation = ref(false);
 
 const toggleTranslation = () => {
 	showTranslation.value = !showTranslation.value;
-	scrollToBottom();
 };
 
-// Computed Properties
-const currentExercise = computed(() => {
-	const currentDialogue =
-		props.currentPractice.dialogues[currentDialogueIndex.value];
-	return currentDialogue;
-});
+const isPlaying = ref(false);
+let currentPlayingIndex = 0;
+let audioQueue = [];
 
-const continueButtonText = computed(() => {
-	if (
-		currentDialogueIndex.value >=
-		props.currentPractice.dialogues.length - 1
-	) {
-		return "FINISH";
-	}
-	return "CONTINUE";
-});
-
-const isCurrentDialogueCompleted = computed(() => {
-	return exerciseCompleted.value;
-});
-
-const isFinished = ref(false);
-
-const showContinueButton = computed(() => {
-	const currentDialogue =
-		props.currentPractice.dialogues[currentDialogueIndex.value];
-	if (currentDialogue?.has_exercise && !exerciseCompleted.value) {
-		return false;
-	}
-	return true;
-});
-
-// 保存处理后的对话
-const processedDialogues = ref([]);
-// 未完成状态的处理函数
-const getUncompletedText = (english) => {
-	return english.replace(/\[[\?]\]/g, "_____");
-};
-
-// 完成状态的处理函数
-const getProcessedText = (english, answersText) => {
-	if (!english.includes("[?]")) {
-		return english;
+const playAllDialogues = async () => {
+	if (isPlaying.value) {
+		// 如果正在播放，停止播放
+		audioQueue.forEach((audio) => {
+			if (audio) {
+				audio.pause();
+				audio.currentTime = 0;
+			}
+		});
+		audioQueue = [];
+		isPlaying.value = false;
+		// 移除所有对话框的 playing 类
+		const dialogueElements = document.querySelectorAll(".log-item");
+		dialogueElements.forEach((element) => {
+			element.classList.remove("playing");
+		});
+		return;
 	}
 
-	const selectedAnswers = answersText.split(" / ");
-	let result = english;
-	const matches = result.match(/\[[\?]\]/g) || [];
+	isPlaying.value = true;
 
-	matches.forEach((match, index) => {
-		if (index < selectedAnswers.length) {
-			const answer = selectedAnswers[index];
-			const underlinedText = `<span class="border-b-2 border-accent/10 inline-block hover:bg-accent/10 transition-all relative after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-accent/50 after:blur-[1px]" @click="
-						isFinished && dialogue.has_exercise && toggleExplanation(index)
-					">${answer}</span>`;
-			result = result.replace("[?]", underlinedText);
+	const playNext = async () => {
+		if (
+			currentPlayingIndex >= displayedDialogues.value.length ||
+			!isPlaying.value
+		) {
+			isPlaying.value = false;
+			currentPlayingIndex = 0;
+			return;
 		}
-	});
 
-	return result;
-};
+		const dialogue = displayedDialogues.value[currentPlayingIndex];
+		try {
+			// 获取当前对话框元素
+			const dialogueElements = document.querySelectorAll(".dialogue-wrapper");
+			const currentElement = dialogueElements[currentPlayingIndex];
 
-const shownExplanations = ref({});
+			// 滚动到当前对话框
+			if (currentElement) {
+				currentElement.scrollIntoView({
+					behavior: "smooth",
+					block: "center",
+				});
+			}
 
-const toggleExplanation = (index) => {
-	console.log(index);
-	if (!shownExplanations.value[index]) {
-		shownExplanations.value[index] = true;
-	} else {
-		shownExplanations.value[index] = false;
-	}
-};
+			// 移除所有对话框的 playing 类
+			const allDialogueElements = document.querySelectorAll(".log-item");
+			allDialogueElements.forEach((element) => {
+				element.classList.remove("playing");
+			});
 
-const getAnswersForDialogue = (dialogue) => {
-	if (!dialogue.has_exercise) return [];
-	const correctOption = dialogue.options.find((opt) => opt.is_correct);
-	return correctOption ? correctOption.text.split(" / ") : [];
-};
+			// 只给当前播放的对话框添加 playing 类
+			const currentDialogueElement = allDialogueElements[currentPlayingIndex];
+			if (currentDialogueElement) {
+				currentDialogueElement.classList.add("playing");
+			}
 
-const handleRetry = () => {
-	currentDialogueIndex.value = 0;
-	displayedDialogues.value = [props.currentPractice.dialogues[0]];
-	selectedOption.value = null;
-	answerFeedback.value = "";
-	feedbackClass.value = "";
-	exerciseCompleted.value = false;
-	submitClicked.value = false;
-	processedDialogues.value = [];
-	isFinished.value = false;
-	showTranslation.value = false; // 也重置翻译状态
-};
-
-onMounted(async () => {
-	await getPracticeStatus();
-	displayedDialogues.value = [props.currentPractice.dialogues[0]];
-});
-
-const selectOption = (index) => {
-	selectedOption.value = index;
-	checkAnswer();
-	scrollToBottom();
-};
-
-const scrollToBottom = () => {
-	if (praticeContainerRef.value) {
-		setTimeout(() => {
-			const container = praticeContainerRef.value;
-			container.scrollTop = container.scrollHeight;
-		}, 100);
-	}
-};
-
-const checkAnswer = () => {
-	const currentDialogue =
-		props.currentPractice.dialogues[currentDialogueIndex.value];
-	const selectedAnswer = currentDialogue.options[selectedOption.value];
-
-	if (selectedAnswer.is_correct) {
-		feedbackClass.value = "input-success";
-		answerFeedback.value = "Excellent! 🌟";
-		exerciseCompleted.value = true;
-		submitClicked.value = true;
-
-		if (currentDialogue.has_exercise) {
-			const processedText = getProcessedText(
-				currentDialogue.english,
-				selectedAnswer.text
+			await playDialogueVoice(
+				dialogue.voiceUrl,
+				dialogue.english,
+				dialogue.character
 			);
-			processedDialogues.value[currentDialogueIndex.value] = {
-				processedText,
-				completed: true,
-			};
+			currentPlayingIndex++;
+			await playNext();
+		} catch (error) {
+			console.error("播放失败:", error);
+			isPlaying.value = false;
 		}
+	};
 
-		setTimeout(() => {
-			submitClicked.value = false;
-		}, 1000);
-	} else {
-		feedbackClass.value = "input-error";
-		answerFeedback.value = "Try again! ✨";
-	}
+	await playNext();
 };
 
-const getPracticeStatus = async () => {
+// 修改现有的playDialogueVoice函数
+const playDialogueVoice = async (voiceUrl, text, character) => {
 	try {
-		const res = await apiClient.get("/exercises", {
-			params: {
-				catalogId: route.params.id,
-				lessonId: route.query.sign,
-				sceneId: "Scene" + props.currentPage,
-			},
+		// 如果有预生成的语音URL，直接播放
+		if (voiceUrl) {
+			const audio = new Audio();
+			return new Promise((resolve, reject) => {
+				audio.oncanplaythrough = async () => {
+					try {
+						audioQueue.push(audio);
+						// 找到当前播放的对话元素并添加 playing 类
+						const currentDialogue = displayedDialogues.value.find(
+							(d) => d.english === text
+						);
+						const dialogueIndex =
+							displayedDialogues.value.indexOf(currentDialogue);
+						const dialogueElements = document.querySelectorAll(".log-item");
+						if (dialogueElements[dialogueIndex]) {
+							dialogueElements[dialogueIndex].classList.add("playing");
+						}
+
+						// 检查是否处于暂停状态
+						if (!isPlaying.value) {
+							throw new Error("Playback paused");
+						}
+
+						await audio.play();
+						console.log("开始播放预生成音频");
+						audio.onended = () => {
+							// 移除 playing 类
+							if (dialogueElements[dialogueIndex]) {
+								dialogueElements[dialogueIndex].classList.remove("playing");
+							}
+							const index = audioQueue.indexOf(audio);
+							if (index > -1) {
+								audioQueue.splice(index, 1);
+							}
+							resolve();
+						};
+					} catch (err) {
+						reject(err);
+					}
+				};
+				audio.src = voiceUrl;
+				audio.load();
+			});
+		}
+
+		// 如果没有预生成的语音URL，则生成新的语音
+		const response = await apiClient.post("/voice/generate", {
+			text: text,
+			role: character,
 		});
 
-		if (res.data.data?.completed) {
-			setCompletedState();
-		} else {
-			displayedDialogues.value = [props.currentPractice.dialogues[0]];
+		if (response.data.code === 200 && response.data.data.audio) {
+			const base64Data = response.data.data.audio;
+			const binaryString = window.atob(base64Data);
+			const bytes = new Uint8Array(binaryString.length);
+
+			for (let i = 0; i < binaryString.length; i++) {
+				bytes[i] = binaryString.charCodeAt(i);
+			}
+
+			const blob = new Blob([bytes.buffer], { type: "audio/mp3" });
+			const audioUrl = URL.createObjectURL(blob);
+			const audio = new Audio();
+
+			return new Promise((resolve, reject) => {
+				audio.oncanplaythrough = async () => {
+					try {
+						audioQueue.push(audio);
+
+						// 检查是否处于暂停状态
+						if (!isPlaying.value) {
+							throw new Error("Playback paused");
+						}
+
+						await audio.play();
+						console.log("开始播放生成的音频", response.data.data.extraInfo);
+						audio.onended = () => {
+							URL.revokeObjectURL(audioUrl);
+							const index = audioQueue.indexOf(audio);
+							if (index > -1) {
+								audioQueue.splice(index, 1);
+							}
+							resolve();
+						};
+					} catch (err) {
+						reject(err);
+					}
+				};
+				audio.src = audioUrl;
+				audio.load();
+			});
 		}
 	} catch (error) {
-		console.error("Error in getPracticeStatus:", error);
-		displayedDialogues.value = [props.currentPractice.dialogues[0]];
+		console.error("播放音频失败:", error);
+		throw error;
 	}
 };
 
-// 处理完成状态
-const setCompletedState = () => {
-	// 先确保清空当前状态
-	displayedDialogues.value = [];
-	processedDialogues.value = [];
-	shownExplanations.value = {};
-
-	// 使用 nextTick 确保状态清空后再设置新状态
-	nextTick(() => {
-		// 初始化处理后的对话数组
-		processedDialogues.value = props.currentPractice.dialogues.map(
-			(dialogue) => {
-				if (dialogue.has_exercise) {
-					const correctOption = dialogue.options.find((opt) => opt.is_correct);
-					if (correctOption) {
-						return {
-							processedText: getProcessedText(
-								dialogue.english,
-								correctOption.text
-							),
-							completed: true,
-						};
-					}
-				}
-				return null;
-			}
-		);
-
-		props.currentPractice.dialogues.forEach((_, index) => {
-			shownExplanations.value[index] = false;
-		});
-
-		// 设置显示的对话
-		displayedDialogues.value = props.currentPractice.dialogues;
-
-		// 设置其他状态
-		currentDialogueIndex.value = props.currentPractice.dialogues.length - 1;
-		exerciseCompleted.value = true;
-		isFinished.value = true;
-
-		// 设置最后一个对话的练习状态
-		const lastDialogue =
-			props.currentPractice.dialogues[currentDialogueIndex.value];
-		if (lastDialogue?.has_exercise) {
-			const correctOptionIndex = lastDialogue.options.findIndex(
-				(opt) => opt.is_correct
-			);
-			if (correctOptionIndex !== -1) {
-				selectedOption.value = correctOptionIndex;
-				feedbackClass.value = "input-success";
-				answerFeedback.value = "Excellent! 🌟";
-			}
-		}
-	});
-};
-
-const handleContinue = async () => {
-	console.log(currentDialogueIndex.value);
-	if (
-		currentDialogueIndex.value >=
-		props.currentPractice.dialogues.length - 1
-	) {
-		const res = await apiClient.post("/exercises", {
-			catalogId: route.params.id,
-			lessonId: route.query.sign,
-			sceneId: "Scene" + props.currentPage,
-		});
-		if (res.data.code === 200) {
-			showToast({
-				message: "数据碎片：+5",
-				disc: "请继续前行...",
-				type: "success",
-			});
-			isFinished.value = true;
-		}
-		return;
-	}
-
-	const currentDialogue =
-		props.currentPractice.dialogues[currentDialogueIndex.value];
-
-	if (currentDialogue.has_exercise && !exerciseCompleted.value) {
-		checkAnswer();
-		scrollToBottom();
-		return;
-	}
-
-	currentDialogueIndex.value++;
-	displayedDialogues.value = props.currentPractice.dialogues.slice(
-		0,
-		currentDialogueIndex.value + 1
-	);
-
-	console.log(
-		currentDialogueIndex.value,
-		props.currentPractice.dialogues.length - 1
-	);
-
-	selectedOption.value = null;
-	answerFeedback.value = "";
-	feedbackClass.value = "";
-	exerciseCompleted.value = false;
-	scrollToBottom();
-};
+onMounted(() => {
+	displayedDialogues.value = props.currentPractice.dialogues;
+});
 </script>
 
 <style scoped>
@@ -509,7 +315,7 @@ const handleContinue = async () => {
 	flex: 1;
 	min-height: 0;
 	overflow-y: auto;
-	padding: 0 20px 40px 20px;
+	padding: 0 24px 48px 24px;
 	position: relative;
 	z-index: 3;
 	height: 0;
@@ -517,47 +323,41 @@ const handleContinue = async () => {
 	scroll-behavior: smooth;
 }
 
+.dialogue-wrapper {
+	position: relative;
+}
+
 .log-item {
-	padding: 1rem;
-	border-radius: 4px;
-	background: rgba(var(--accent-color-rgb), 0.03);
-	border-left: 3px solid var(--accent-color);
-	text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.4);
+	padding: 1.5rem;
+	background: rgba(var(--accent-color-rgb), 0.05);
+	border-left: 4px solid var(--accent-color);
+	text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.3);
+	transform-origin: bottom;
 }
 
-.status-badge {
-	background: rgba(51, 255, 51, 0.1);
-	border: 1px solid var(--accent-color);
-	color: var(--accent-color);
-	text-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.4);
-	padding: 0.25rem 0.75rem;
-	border-radius: 4px;
+.log-item.playing {
+	animation: borderPulse 2s infinite;
 }
 
-.animate-pulse {
-	animation: terminal-pulse 1s ease-in-out infinite;
-}
-
-.animate-fade-in {
-	animation: fadeIn 0.5s ease-out forwards;
-}
-
-@keyframes terminal-pulse {
-	0%,
-	100% {
-		opacity: 1;
-		text-shadow: 0 0 8px rgba(51, 255, 51, 0.1);
+@keyframes borderPulse {
+	0% {
+		border-left-color: var(--accent-color);
 	}
 	50% {
-		opacity: 0.7;
-		text-shadow: 0 0 12px rgba(51, 255, 51, 0.6);
+		border-left-color: transparent;
 	}
+	100% {
+		border-left-color: var(--accent-color);
+	}
+}
+.animate-fade-in {
+	animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes fadeIn {
 	from {
 		opacity: 0;
-		transform: translateY(10px);
+		transform: translateY(20px);
 	}
 	to {
 		opacity: 1;

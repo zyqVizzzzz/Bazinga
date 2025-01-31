@@ -647,13 +647,13 @@ const jumpToPageBlur = (isTrue) => {
 <style scoped>
 .scene {
 	position: relative;
-	min-height: 540px;
+	min-height: 590px;
 	overflow: hidden;
 }
 
 .manga-card {
 	position: relative;
-	height: 540px;
+	height: 590px;
 	overflow: hidden;
 }
 
@@ -674,7 +674,7 @@ const jumpToPageBlur = (isTrue) => {
 .back {
 	position: absolute;
 	width: 100%;
-	min-height: 540px;
+	min-height: 590px;
 	transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

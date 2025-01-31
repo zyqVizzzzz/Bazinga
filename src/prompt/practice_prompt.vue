@@ -132,7 +132,30 @@ const submitContent = async () => {
 	console.log("准备提交的内容:", submittedContent.value);
 
 	// 转换内容
-	const practice = practiceData;
+	const practice = { ...practiceData };
+
+	// 为每个对话生成语音URL
+	for (const dialogue of practice.dialogues) {
+		try {
+			// 使用文本转语音API生成URL
+			console.log({
+				text: dialogue.english,
+				role: dialogue.character,
+				emotion: dialogue.emoji,
+			});
+			const response = await apiClient.post("/voice/generate", {
+				text: dialogue.english,
+				role: dialogue.character,
+				emotion: dialogue.emoji,
+			});
+			if (response.data.code === 200) {
+				// 添加语音URL到对话数据中
+				dialogue.voiceUrl = response.data.data.audioUrl;
+			}
+		} catch (error) {
+			console.error("生成语音URL失败:", error);
+		}
+	}
 
 	// 输出转换后的数据
 	console.log("转换后的数据:", practice);
@@ -146,6 +169,8 @@ const submitContent = async () => {
 			}
 		);
 		localStorage.setItem("sceneId", "");
-	} catch (error) {}
+	} catch (error) {
+		console.error("提交数据失败:", error);
+	}
 };
 </script>

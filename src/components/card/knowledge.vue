@@ -31,24 +31,12 @@
 						<!-- 词性 -->
 						<p class="text-left text-sm text-gray-500 font-light mb-2">
 							<span>{{ point.word_zh }}</span>
-							<span class="text-sm text-gray-500 ml-2" v-if="point.pos">{{
-								point.pos
-							}}</span>
-
-							<span v-if="point.symbols" class="text-sm text-gray-500 ml-4"
-								>[{{ point.symbols }}]</span
-							>
 						</p>
 						<!-- Rank (根据 rank 动态显示星级) -->
 						<div class="flex items-center relative -left-1 mb-4 text-xs">
 							<span class="badge badge-secondary" v-if="point.type"
 								><span class="relative -top-0.5 text-white">{{
 									point.type
-								}}</span>
-							</span>
-							<span class="badge badge-secondary ml-2" v-if="point.book"
-								><span class="relative -top-0.5 text-white">{{
-									point.book
 								}}</span>
 							</span>
 						</div>
@@ -75,7 +63,19 @@
 							v-if="point.type !== 'vocabulary'"
 							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
 						>
-							{{ point.definition_zh }}
+							[{{ point.point }}] - {{ point.definition_zh }}
+						</p>
+						<p
+							v-if="point.type !== 'vocabulary'"
+							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
+						>
+							[同义句] - {{ point.synonyms }}
+						</p>
+						<p
+							v-if="point.type !== 'vocabulary'"
+							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
+						>
+							[发音注意] - {{ point.pronunciation }}
 						</p>
 						<!-- 例句 -->
 						<p
