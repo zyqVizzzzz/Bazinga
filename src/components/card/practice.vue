@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted,onUpdated } from "vue";
+import { ref, onMounted, onUnmounted, onUpdated } from "vue";
 import apiClient from "@/api";
 import WordDictionary from "@/components/common/WordDictionary.vue";
 
@@ -139,7 +139,7 @@ const playAllDialogues = async () => {
 		});
 		globalAudioQueue = [];
 		isGlobalPlaying.value = false;
-		currentPlayingIndex = 0; // 重置播放索引
+		// 不重置播放索引，保持当前位置
 
 		// 移除所有对话框的 playing 类
 		const dialogueElements = document.querySelectorAll(".log-item");
@@ -159,7 +159,10 @@ const playAllDialogues = async () => {
 	}
 
 	isGlobalPlaying.value = true;
-	currentPlayingIndex = 0;
+	// 如果没有暂停位置记录，从头开始播放
+	if (currentPlayingIndex >= displayedDialogues.value.length) {
+		currentPlayingIndex = 0;
+	}
 
 	const playNext = async () => {
 		if (
