@@ -50,7 +50,7 @@
 						>
 							<div class="flex-1">
 								<div class="text-gray-100 text-md leading-relaxed">
-									<span>{{ dialogue.english }}</span>
+									<span v-html="highlightWords(dialogue.english)"></span>
 								</div>
 								<div
 									class="text-gray-400 text-sm pt-3 border-t border-gray-700/30 transition-all duration-300"
@@ -69,8 +69,15 @@
 										dialogue.character
 									)
 								"
-								:disabled="isPlaying"
-								:class="{ 'cursor-not-allowed opacity-50': isPlaying }"
+								:disabled="
+									isPlaying &&
+									dialogueElements[index]?.classList.contains('playing')
+								"
+								:class="{
+									'cursor-not-allowed opacity-50':
+										isPlaying &&
+										dialogueElements[index]?.classList.contains('playing'),
+								}"
 							>
 								<i class="bi bi-play-circle text-lg"></i>
 							</button>
@@ -83,8 +90,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted,onUpdated } from "vue";
 import apiClient from "@/api";
+import WordDictionary from "@/components/common/WordDictionary.vue";
 
 const props = defineProps({
 	currentPractice: {
@@ -109,21 +117,30 @@ onMounted(() => {
 	displayedDialogues.value = props.currentPractice.dialogues;
 });
 
-const isPlaying = ref(false);
+// 全局播放状态
+const isGlobalPlaying = ref(false);
 let currentPlayingIndex = 0;
-let audioQueue = [];
+let globalAudioQueue = [];
+
+// 单独播放状态
+const isPlaying = ref(false);
+let currentAudio = null;
 
 const playAllDialogues = async () => {
-	if (isPlaying.value) {
-		// 如果正在播放，停止播放
-		audioQueue.forEach((audio) => {
+	if (isGlobalPlaying.value) {
+		// 停止所有音频播放并清理资源
+		globalAudioQueue.forEach((audio) => {
 			if (audio) {
 				audio.pause();
 				audio.currentTime = 0;
+				audio.src = ""; // 清除音频源
+				audio.load(); // 强制重置
 			}
 		});
-		audioQueue = [];
-		isPlaying.value = false;
+		globalAudioQueue = [];
+		isGlobalPlaying.value = false;
+		currentPlayingIndex = 0; // 重置播放索引
+
 		// 移除所有对话框的 playing 类
 		const dialogueElements = document.querySelectorAll(".log-item");
 		dialogueElements.forEach((element) => {
@@ -132,14 +149,24 @@ const playAllDialogues = async () => {
 		return;
 	}
 
-	isPlaying.value = true;
+	// 确保开始新的播放前清理旧的状态
+	if (currentAudio) {
+		currentAudio.pause();
+		currentAudio.currentTime = 0;
+		currentAudio.src = "";
+		currentAudio.load();
+		currentAudio = null;
+	}
+
+	isGlobalPlaying.value = true;
+	currentPlayingIndex = 0;
 
 	const playNext = async () => {
 		if (
 			currentPlayingIndex >= displayedDialogues.value.length ||
-			!isPlaying.value
+			!isGlobalPlaying.value
 		) {
-			isPlaying.value = false;
+			isGlobalPlaying.value = false;
 			currentPlayingIndex = 0;
 			// 移除所有对话框的 playing 类
 			const dialogueElements = document.querySelectorAll(".log-item");
@@ -156,7 +183,11 @@ const playAllDialogues = async () => {
 			const currentElement = dialogueElements[currentPlayingIndex];
 
 			// 滚动到当前对话框
-			if (currentElement && isPlaying.value && praticeContainerRef.value) {
+			if (
+				currentElement &&
+				isGlobalPlaying.value &&
+				praticeContainerRef.value
+			) {
 				const container = praticeContainerRef.value;
 				const containerRect = container.getBoundingClientRect();
 				const elementRect = currentElement.getBoundingClientRect();
@@ -179,25 +210,29 @@ const playAllDialogues = async () => {
 			});
 
 			// 只给当前播放的对话框添加 playing 类
-			if (isPlaying.value) {
+			if (isGlobalPlaying.value) {
 				const currentDialogueElement = allDialogueElements[currentPlayingIndex];
 				if (currentDialogueElement) {
 					currentDialogueElement.classList.add("playing");
 				}
 			}
 
-			if (isPlaying.value) {
+			if (isGlobalPlaying.value) {
 				await playDialogueVoice(
 					dialogue.voiceUrl,
 					dialogue.english,
-					dialogue.character
+					dialogue.character,
+					true
 				);
-				currentPlayingIndex++;
-				await playNext();
+				if (isGlobalPlaying.value) {
+					// 确保仍在全局播放状态
+					currentPlayingIndex++;
+					await playNext();
+				}
 			}
 		} catch (error) {
 			console.error("播放失败:", error);
-			isPlaying.value = false;
+			isGlobalPlaying.value = false;
 			// 移除所有对话框的 playing 类
 			const dialogueElements = document.querySelectorAll(".log-item");
 			dialogueElements.forEach((element) => {
@@ -215,8 +250,33 @@ defineExpose({
 });
 
 // 修改现有的playDialogueVoice函数
-const playDialogueVoice = async (voiceUrl, text, character) => {
-	console.log(voiceUrl);
+const playDialogueVoice = async (
+	voiceUrl,
+	text,
+	character,
+	isGlobal = false
+) => {
+	// 如果正在全局播放，不允许单独播放
+	if (!isGlobal && isGlobalPlaying.value) {
+		return;
+	}
+
+	// 停止当前播放的音频并清理资源
+	if (!isGlobal && currentAudio) {
+		currentAudio.pause();
+		currentAudio.currentTime = 0;
+		currentAudio.src = "";
+		currentAudio.load();
+		currentAudio = null;
+
+		// 移除所有对话框的 playing 类
+		const dialogueElements = document.querySelectorAll(".log-item");
+		dialogueElements.forEach((element) => {
+			element.classList.remove("playing");
+		});
+		isPlaying.value = false;
+	}
+
 	try {
 		// 如果有预生成的语音URL，直接播放
 		if (voiceUrl) {
@@ -224,38 +284,58 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 			return new Promise((resolve, reject) => {
 				audio.oncanplaythrough = async () => {
 					try {
-						// 只在连续播放模式下检查播放状态
-						if (currentPlayingIndex > 0 && !isPlaying.value) {
-							reject(new Error("Playback paused"));
-							return;
-						}
-
-						audioQueue.push(audio);
-						// 找到当前播放的对话元素并添加 playing 类
-						const currentDialogue = displayedDialogues.value.find(
-							(d) => d.english === text
-						);
-						const dialogueIndex =
-							displayedDialogues.value.indexOf(currentDialogue);
-						const dialogueElements = document.querySelectorAll(".log-item");
-						if (dialogueElements[dialogueIndex]) {
-							dialogueElements[dialogueIndex].classList.add("playing");
+						if (isGlobal) {
+							// 确保在添加新音频前清理已结束的音频
+							globalAudioQueue = globalAudioQueue.filter((a) => !a.ended);
+							globalAudioQueue.push(audio);
+						} else {
+							currentAudio = audio;
+							isPlaying.value = true;
+							// 找到当前播放的对话元素并添加 playing 类
+							const currentDialogue = displayedDialogues.value.find(
+								(d) => d.english === text
+							);
+							const dialogueIndex =
+								displayedDialogues.value.indexOf(currentDialogue);
+							const dialogueElements = document.querySelectorAll(".log-item");
+							if (dialogueElements[dialogueIndex]) {
+								dialogueElements[dialogueIndex].classList.add("playing");
+							}
 						}
 
 						await audio.play();
 						console.log("开始播放预生成音频");
 						audio.onended = () => {
-							// 移除 playing 类
-							if (dialogueElements[dialogueIndex]) {
-								dialogueElements[dialogueIndex].classList.remove("playing");
-							}
-							const index = audioQueue.indexOf(audio);
-							if (index > -1) {
-								audioQueue.splice(index, 1);
+							if (!isGlobal) {
+								// 移除 playing 类
+								const currentDialogue = displayedDialogues.value.find(
+									(d) => d.english === text
+								);
+								const dialogueIndex =
+									displayedDialogues.value.indexOf(currentDialogue);
+								const dialogueElements = document.querySelectorAll(".log-item");
+								if (dialogueElements[dialogueIndex]) {
+									dialogueElements[dialogueIndex].classList.remove("playing");
+								}
+								isPlaying.value = false;
+								currentAudio = null;
 							}
 							resolve();
 						};
+
+						// 添加错误处理
+						audio.onerror = () => {
+							console.error("音频播放出错");
+							if (!isGlobal) {
+								isPlaying.value = false;
+								currentAudio = null;
+							}
+							reject(new Error("Audio playback error"));
+						};
 					} catch (err) {
+						// 确保在错误时清理资源
+						audio.src = "";
+						audio.load();
 						reject(err);
 					}
 				};
@@ -286,23 +366,30 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 			return new Promise((resolve, reject) => {
 				audio.oncanplaythrough = async () => {
 					try {
-						// 检查是否处于暂停状态
-						if (!isPlaying.value) {
-							URL.revokeObjectURL(audioUrl);
-							reject(new Error("Playback paused"));
-							return;
+						if (!isGlobal) {
+							currentAudio = audio;
+							isPlaying.value = true;
 						}
-
-						audioQueue.push(audio);
 						await audio.play();
 						console.log("开始播放生成的音频", response.data.data.extraInfo);
 						audio.onended = () => {
 							URL.revokeObjectURL(audioUrl);
-							const index = audioQueue.indexOf(audio);
-							if (index > -1) {
-								audioQueue.splice(index, 1);
+							if (!isGlobal) {
+								isPlaying.value = false;
+								currentAudio = null;
 							}
 							resolve();
+						};
+
+						// 添加错误处理
+						audio.onerror = () => {
+							console.error("音频播放出错");
+							URL.revokeObjectURL(audioUrl);
+							const index = singleAudioQueue.indexOf(audio);
+							if (index > -1) {
+								singleAudioQueue.splice(index, 1);
+							}
+							reject(new Error("Audio playback error"));
 						};
 					} catch (err) {
 						URL.revokeObjectURL(audioUrl);
@@ -319,9 +406,71 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 	}
 };
 
-onMounted(() => {
-	displayedDialogues.value = props.currentPractice.dialogues;
+const cleanupAudioResources = () => {
+	// 清理全局音频队列
+	globalAudioQueue.forEach((audio) => {
+		if (audio) {
+			audio.pause();
+			audio.currentTime = 0;
+			audio.src = "";
+			audio.load();
+		}
+	});
+	globalAudioQueue = [];
+
+	// 清理当前音频
+	if (currentAudio) {
+		currentAudio.pause();
+		currentAudio.currentTime = 0;
+		currentAudio.src = "";
+		currentAudio.load();
+		currentAudio = null;
+	}
+
+	// 重置状态
+	isGlobalPlaying.value = false;
+	isPlaying.value = false;
+	currentPlayingIndex = 0;
+
+	// 移除所有播放标记
+	const dialogueElements = document.querySelectorAll(".log-item");
+	dialogueElements.forEach((element) => {
+		element.classList.remove("playing");
+	});
+};
+
+// 在组件卸载时清理资源
+onUnmounted(() => {
+	cleanupAudioResources();
 });
+
+// 在组件更新时检查状态
+onUpdated(() => {
+	if (!isGlobalPlaying.value && !isPlaying.value) {
+		cleanupAudioResources();
+	}
+});
+const highlightWords = (text) => {
+	return text
+		.split(/\s+/)
+		.map((word) => {
+			return `<span class="word-highlight cursor-pointer hover:text-accent transition-colors duration-200" @click="showWordDefinition(word)">${word}</span>`;
+		})
+		.join(" ");
+};
+
+const showWordDefinition = async (word) => {
+	const dictionaryPopup = document.createElement("div");
+	const app = createApp(WordDictionary, {
+		word,
+		onClose: () => {
+			document.body.removeChild(dictionaryPopup);
+		},
+	});
+	dictionaryPopup.id = "word-dictionary-popup";
+	document.body.appendChild(dictionaryPopup);
+	app.mount("#word-dictionary-popup");
+};
 </script>
 
 <style scoped>

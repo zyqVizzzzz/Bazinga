@@ -2,11 +2,11 @@
 	<div class="profile-page mt-20 px-10 relative w-full">
 		<div class="profile-container flex gap-10">
 			<div class="personal-card">
-				<div class="character-card bg-gray-800">
+				<div class="character-card bg-gray-300">
 					<!-- 角色卡片容器 -->
 					<div class="card-inner">
 						<!-- 标题 -->
-						<div class="card-title bg-gray-700">
+						<div class="card-title bg-gray-800">
 							<h1
 								class="nickname-text text-xl font-bold text-gray-200 relative w-full"
 							>
@@ -484,9 +484,9 @@ onMounted(async () => {
 	padding: 1rem;
 	background: linear-gradient(
 		180deg,
-		rgba(var(--primary-color-rgb), 0.5) 0%,
-		rgba(var(--accent-color-rgb), 0.5) 50%,
-		rgba(var(--secondary-color-rgb), 0.5)
+		rgba(var(--primary-color-rgb), 0.2) 0%,
+		rgba(var(--accent-color-rgb), 0.1) 50%,
+		rgba(var(--secondary-color-rgb), 0.2)
 	);
 	border: 4px solid #000;
 }
