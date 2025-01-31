@@ -154,6 +154,11 @@ const playAllDialogues = async () => {
 		) {
 			isPlaying.value = false;
 			currentPlayingIndex = 0;
+			// 移除所有对话框的 playing 类
+			const dialogueElements = document.querySelectorAll(".log-item");
+			dialogueElements.forEach((element) => {
+				element.classList.remove("playing");
+			});
 			return;
 		}
 
@@ -164,7 +169,7 @@ const playAllDialogues = async () => {
 			const currentElement = dialogueElements[currentPlayingIndex];
 
 			// 滚动到当前对话框
-			if (currentElement) {
+			if (currentElement && isPlaying.value) {
 				currentElement.scrollIntoView({
 					behavior: "smooth",
 					block: "center",
@@ -178,21 +183,30 @@ const playAllDialogues = async () => {
 			});
 
 			// 只给当前播放的对话框添加 playing 类
-			const currentDialogueElement = allDialogueElements[currentPlayingIndex];
-			if (currentDialogueElement) {
-				currentDialogueElement.classList.add("playing");
+			if (isPlaying.value) {
+				const currentDialogueElement = allDialogueElements[currentPlayingIndex];
+				if (currentDialogueElement) {
+					currentDialogueElement.classList.add("playing");
+				}
 			}
 
-			await playDialogueVoice(
-				dialogue.voiceUrl,
-				dialogue.english,
-				dialogue.character
-			);
-			currentPlayingIndex++;
-			await playNext();
+			if (isPlaying.value) {
+				await playDialogueVoice(
+					dialogue.voiceUrl,
+					dialogue.english,
+					dialogue.character
+				);
+				currentPlayingIndex++;
+				await playNext();
+			}
 		} catch (error) {
 			console.error("播放失败:", error);
 			isPlaying.value = false;
+			// 移除所有对话框的 playing 类
+			const dialogueElements = document.querySelectorAll(".log-item");
+			dialogueElements.forEach((element) => {
+				element.classList.remove("playing");
+			});
 		}
 	};
 
@@ -208,6 +222,12 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 			return new Promise((resolve, reject) => {
 				audio.oncanplaythrough = async () => {
 					try {
+						// 检查是否处于暂停状态
+						if (!isPlaying.value) {
+							reject(new Error("Playback paused"));
+							return;
+						}
+
 						audioQueue.push(audio);
 						// 找到当前播放的对话元素并添加 playing 类
 						const currentDialogue = displayedDialogues.value.find(
@@ -218,11 +238,6 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 						const dialogueElements = document.querySelectorAll(".log-item");
 						if (dialogueElements[dialogueIndex]) {
 							dialogueElements[dialogueIndex].classList.add("playing");
-						}
-
-						// 检查是否处于暂停状态
-						if (!isPlaying.value) {
-							throw new Error("Playback paused");
 						}
 
 						await audio.play();
@@ -269,13 +284,14 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 			return new Promise((resolve, reject) => {
 				audio.oncanplaythrough = async () => {
 					try {
-						audioQueue.push(audio);
-
 						// 检查是否处于暂停状态
 						if (!isPlaying.value) {
-							throw new Error("Playback paused");
+							URL.revokeObjectURL(audioUrl);
+							reject(new Error("Playback paused"));
+							return;
 						}
 
+						audioQueue.push(audio);
 						await audio.play();
 						console.log("开始播放生成的音频", response.data.data.extraInfo);
 						audio.onended = () => {
@@ -287,6 +303,7 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 							resolve();
 						};
 					} catch (err) {
+						URL.revokeObjectURL(audioUrl);
 						reject(err);
 					}
 				};
