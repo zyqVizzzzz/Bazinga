@@ -11,7 +11,7 @@
 			mode="out-in"
 		>
 			<!-- key 用于触发动画，确保每次对话内容变化时都会有动画效果 -->
-			<div :key="currentDialogue.id" class="relative">
+			<div v-if="currentDialogue" :key="currentDialogue.id" class="relative">
 				<!-- 主卡片容器 -->
 				<div class="scene">
 					<div
@@ -92,6 +92,7 @@
 						<div class="back" v-if="!isLoading">
 							<PracticeCard
 								v-if="currentPractice.conversation_id"
+								ref="practiceCard"
 								:currentPractice="currentPractice"
 								:currentPage="currentPage"
 								:showHints="showHints"
@@ -108,6 +109,7 @@
 					<!-- 控制按钮组 -->
 					<div class="flex justify-center gap-6 mt-6">
 						<button
+							v-if="!isFlipped"
 							class="retro-btn option"
 							:class="{ 'btn-active': isListenMode }"
 							@click="toggleListenMode"
@@ -122,9 +124,43 @@
 						</button>
 
 						<button
+							v-if="!isFlipped"
 							class="retro-btn option"
 							:class="{ 'btn-active': showTrans }"
 							@click="toggleTransMode"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i class="bi bi-translate text-xl"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<button
+							v-if="isFlipped"
+							class="retro-btn option"
+							:class="{ 'btn-active': showBazingaPlay }"
+							@click="toggleBazingaPlayMode"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face flex items-center justify-center">
+										<i
+											class="bi text-xl"
+											:class="showBazingaPlay ? 'bi-pause' : 'bi-play'"
+										></i>
+									</div>
+								</div>
+							</div>
+						</button>
+
+						<button
+							v-if="isFlipped"
+							class="retro-btn option"
+							:class="{ 'btn-active': showBazingaTrans }"
+							@click="toggleBazingaTransMode"
 						>
 							<div class="btn-shadow">
 								<div class="btn-edge">
@@ -267,8 +303,11 @@ const isFlipped = ref(false); // 是否翻转卡片
 // 控制子卡片显示状态
 const showHints = ref(true);
 const showTrans = ref(false);
+const showBazingaTrans = ref(false);
+const showBazingaPlay = ref(false);
 
 const dialogueCard = ref(null); // 获取 DialogueCard 实例
+const practiceCard = ref(null); // 获取 PracticeCard 实例
 const episodeId = ref("");
 
 // 页码相关
@@ -405,14 +444,14 @@ const isKnowledgeReady = computed(() => {
 	);
 });
 
-// 获取当前台词
+// 获取当前nline
 const currentDialogue = computed(() => {
 	return dialogues.value.length > 0
 		? dialogues.value[currentDialogueIndex.value]
 		: {};
 });
 
-// 获取当前台词的知识点
+// 获取当前nline的知识点
 const currentKnowledgePoints = computed(() => {
 	if (
 		!knowledges.value ||
@@ -424,7 +463,7 @@ const currentKnowledgePoints = computed(() => {
 	return knowledges.value[currentDialogueIndex.value]?.knowledge || [];
 });
 
-// 动态获取当前台词的练习题
+// 动态获取当前nline的练习题
 const currentPractice = computed(() => {
 	if (
 		!knowledges.value ||
@@ -485,6 +524,20 @@ const toggleTransMode = () => {
 	showTrans.value = !showTrans.value;
 };
 
+const toggleBazingaTransMode = () => {
+	showBazingaTrans.value = !showBazingaTrans.value;
+	if (practiceCard.value) {
+		practiceCard.value.toggleTranslation();
+	}
+};
+
+const toggleBazingaPlayMode = () => {
+	showBazingaPlay.value = !showBazingaPlay.value;
+	if (practiceCard.value) {
+		practiceCard.value.playAllDialogues();
+	}
+};
+
 const togglePracticeMode = () => {
 	isFlipped.value = !isFlipped.value;
 };
@@ -506,7 +559,7 @@ const toggleListenMode = async () => {
 	}
 };
 
-// 高亮知识点相关台词
+// 高亮知识点相关nline
 const highlightedText = computed(() => {
 	let text = currentDialogue.value.text || [["", ""]];
 
@@ -745,7 +798,7 @@ const jumpToPageBlur = (isTrue) => {
 	width: 100%;
 	height: 100%; /* 使用100%而不是min-height */
 	transform: translateY(100%) scale(0.95);
-	background-color: rgba(12, 12, 12, 0.8);
+	background-color: rgba(12, 12, 12, 0.75);
 	color: var(--accent-color);
 	animation: crt-flicker 0.15s infinite;
 	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);

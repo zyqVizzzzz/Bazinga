@@ -2,7 +2,7 @@
 	<div class="scroll-container" ref="praticeContainerRef">
 		<div class="space-y-8">
 			<div
-				class="terminal-prompt my-6 text-left relative p-4 bg-gray-800/50 rounded-lg shadow-lg"
+				class="terminal-prompt my-6 text-left relative p-4 bg-gray-600/20 rounded-lg shadow-lg"
 			>
 				<span class="text-accent">@Bazinga</span>
 				<span class="text-accent mr-2">:</span>
@@ -11,25 +11,6 @@
 				<span class="text-gray-200 ml-2"
 					>run {{ currentPractice.conversation_id }}.sh</span
 				>
-				<div
-					class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-4"
-				>
-					<button
-						@click="playAllDialogues"
-						class="status-badge px-4 py-2 hover:bg-primary/20 disabled:opacity-50 rounded-lg transition-all duration-200 flex items-center gap-2"
-					>
-						<i
-							class="bi text-xl"
-							:class="isPlaying ? 'bi-pause-circle' : 'bi-play-circle'"
-						></i>
-					</button>
-					<button
-						@click="toggleTranslation"
-						class="status-badge px-4 py-2 hover:bg-primary/20 rounded-lg transition-all duration-200 flex items-center gap-2"
-					>
-						<i class="bi bi-translate text-xl"></i>
-					</button>
-				</div>
 			</div>
 
 			<!-- 对话历史 -->
@@ -88,6 +69,8 @@
 										dialogue.character
 									)
 								"
+								:disabled="isPlaying"
+								:class="{ 'cursor-not-allowed opacity-50': isPlaying }"
 							>
 								<i class="bi bi-play-circle text-lg"></i>
 							</button>
@@ -121,6 +104,10 @@ const showTranslation = ref(false);
 const toggleTranslation = () => {
 	showTranslation.value = !showTranslation.value;
 };
+
+onMounted(() => {
+	displayedDialogues.value = props.currentPractice.dialogues;
+});
 
 const isPlaying = ref(false);
 let currentPlayingIndex = 0;
@@ -222,8 +209,14 @@ const playAllDialogues = async () => {
 	await playNext();
 };
 
+defineExpose({
+	toggleTranslation,
+	playAllDialogues,
+});
+
 // 修改现有的playDialogueVoice函数
 const playDialogueVoice = async (voiceUrl, text, character) => {
+	console.log(voiceUrl);
 	try {
 		// 如果有预生成的语音URL，直接播放
 		if (voiceUrl) {
@@ -231,8 +224,8 @@ const playDialogueVoice = async (voiceUrl, text, character) => {
 			return new Promise((resolve, reject) => {
 				audio.oncanplaythrough = async () => {
 					try {
-						// 检查是否处于暂停状态
-						if (!isPlaying.value) {
+						// 只在连续播放模式下检查播放状态
+						if (currentPlayingIndex > 0 && !isPlaying.value) {
 							reject(new Error("Playback paused"));
 							return;
 						}

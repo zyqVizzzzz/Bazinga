@@ -14,8 +14,6 @@
 			</h1>
 		</div>
 
-		<div @click="textVoice">生成语音</div>
-
 		<!-- 卡片展示区 -->
 		<div class="flex flex-wrap justify-center my-10 gap-12">
 			<div
@@ -80,50 +78,6 @@ onMounted(() => {
 	getCatalogs();
 	aiTest();
 });
-
-const textVoice = async () => {
-	try {
-		const response = await apiClient.post("/voice/generate", {
-			text: "Hey, everyone! Welcome back to Bazinga, I'm your host Jinji!",
-		});
-
-		if (response.data.code === 200 && response.data.data.audio) {
-			const base64Data = response.data.data.audio;
-			const binaryString = window.atob(base64Data);
-			const bytes = new Uint8Array(binaryString.length);
-
-			for (let i = 0; i < binaryString.length; i++) {
-				bytes[i] = binaryString.charCodeAt(i);
-			}
-
-			const blob = new Blob([bytes.buffer], { type: "audio/mp3" });
-			const audioUrl = URL.createObjectURL(blob);
-			const audio = new Audio();
-
-			return new Promise((resolve, reject) => {
-				audio.oncanplaythrough = async () => {
-					try {
-						await audio.play();
-						console.log("开始播放音频", response.data.data.extraInfo);
-						resolve();
-					} catch (err) {
-						reject(err);
-					}
-				};
-
-				audio.onended = () => {
-					URL.revokeObjectURL(audioUrl);
-				};
-
-				audio.src = audioUrl;
-				audio.load();
-			});
-		}
-	} catch (error) {
-		console.error("播放音频失败:", error);
-		throw error;
-	}
-};
 
 const aiTest = async () => {
 	try {
