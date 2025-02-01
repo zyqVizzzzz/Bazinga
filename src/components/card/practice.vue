@@ -144,28 +144,25 @@ class SinglePlayer {
 	}
 
 	async playAudio(voiceUrl, text, character, dialogueElements, dialogueIndex) {
-		// 如果已经在播放，先停止
+		// 如果已经在播放，先停止当前播放
 		if (this.isPlaying.value) {
-			this.cleanup();
-			return;
-		}
-
-		// 移除所有对话框的 playing 类
-		dialogueElements.forEach((element) => {
-			element.classList.remove("playing");
-		});
-
-		// 给当前播放的对话框添加 playing 类
-		dialogueElements[dialogueIndex].classList.add("playing");
-
-		this.isPlaying.value = true;
-
-		try {
+			// 停止当前音频
 			if (this.currentAudio) {
 				this.currentAudio.pause();
 				this.currentAudio = null;
 			}
+			// 移除所有播放状态
+			dialogueElements.forEach((element) => {
+				element.classList.remove("playing");
+			});
+			this.isPlaying.value = false;
+		}
 
+		// 给当前播放的对话框添加 playing 类
+		dialogueElements[dialogueIndex].classList.add("playing");
+		this.isPlaying.value = true;
+
+		try {
 			this.currentAudio = new Audio(voiceUrl);
 			await this.currentAudio.play();
 
