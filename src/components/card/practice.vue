@@ -66,20 +66,24 @@
 									playDialogueVoice(
 										dialogue.voiceUrl,
 										dialogue.english,
-										dialogue.character
+										dialogue.character,
+										index
 									)
 								"
-								:disabled="
-									isPlaying &&
-									dialogueElements[index]?.classList.contains('playing')
-								"
+								:disabled="globalPlayer.isPlaying.value"
 								:class="{
-									'cursor-not-allowed opacity-50':
-										isPlaying &&
-										dialogueElements[index]?.classList.contains('playing'),
+									'cursor-not-allowed opacity-50': globalPlayer.isPlaying.value,
 								}"
 							>
-								<i class="bi bi-play-circle text-lg"></i>
+								<i
+									class="bi text-lg"
+									:class="
+										singlePlayer.currentIndex === index &&
+										singlePlayer.isPlaying.value
+											? 'bi-stop-circle'
+											: 'bi-play-circle'
+									"
+								></i>
 							</button>
 						</div>
 					</div>
@@ -94,11 +98,20 @@ import { ref, onMounted, onUnmounted, onUpdated } from "vue";
 import apiClient from "@/api";
 import WordDictionary from "@/components/common/WordDictionary.vue";
 
+// 全局播放状态
+const isGlobalPlaying = ref(false);
+let currentPlayingIndex = 0;
+let globalAudioQueue = [];
+
+// 单独播放状态
+const isPlaying = ref(false);
+let currentAudio = null;
+
 // 全局播放器类
 class GlobalPlayer {
 	constructor() {
 		this.isPlaying = ref(false);
-		this.currentIndex = 0;
+		this.currentIndex = ref(0);
 		this.currentAudio = null;
 	}
 
@@ -126,13 +139,17 @@ class GlobalPlayer {
 			this.currentAudio.pause();
 			this.currentAudio = null;
 		}
-		// 清理时重置索引
-		this.currentIndex = 0;
+
 		// 移除所有对话框的 playing 类
 		const allDialogueElements = document.querySelectorAll(".log-item");
 		allDialogueElements.forEach((element) => {
 			element.classList.remove("playing");
 		});
+	}
+
+	reset() {
+		this.cleanup();
+		this.currentIndex.value = 0; // 只在需要完全重置时重置索引
 	}
 }
 
@@ -141,24 +158,27 @@ class SinglePlayer {
 	constructor() {
 		this.isPlaying = ref(false);
 		this.currentAudio = null;
+		this.currentIndex = ref(null); // 新增：跟踪当前播放的索引
 	}
 
 	async playAudio(voiceUrl, text, character, dialogueElements, dialogueIndex) {
-		// 如果已经在播放，先停止当前播放
+		// 如果点击的是当前正在播放的音频，则停止播放
+		if (this.isPlaying.value && this.currentIndex.value === dialogueIndex) {
+			this.cleanup();
+			dialogueElements[dialogueIndex].classList.remove("playing");
+			return;
+		}
+
+		// 如果有其他音频在播放，先停止它
 		if (this.isPlaying.value) {
-			// 停止当前音频
-			if (this.currentAudio) {
-				this.currentAudio.pause();
-				this.currentAudio = null;
-			}
-			// 移除所有播放状态
+			this.cleanup();
 			dialogueElements.forEach((element) => {
 				element.classList.remove("playing");
 			});
-			this.isPlaying.value = false;
 		}
 
-		// 给当前播放的对话框添加 playing 类
+		// 开始新的播放
+		this.currentIndex.value = dialogueIndex;
 		dialogueElements[dialogueIndex].classList.add("playing");
 		this.isPlaying.value = true;
 
@@ -186,6 +206,7 @@ class SinglePlayer {
 			this.currentAudio.pause();
 			this.currentAudio = null;
 		}
+		this.currentIndex.value = null;
 	}
 }
 
@@ -216,15 +237,6 @@ onMounted(() => {
 	displayedDialogues.value = props.currentPractice.dialogues;
 });
 
-// 全局播放状态
-const isGlobalPlaying = ref(false);
-let currentPlayingIndex = 0;
-let globalAudioQueue = [];
-
-// 单独播放状态
-const isPlaying = ref(false);
-let currentAudio = null;
-
 const playAllDialogues = async () => {
 	if (globalPlayer.isPlaying.value) {
 		// 只暂停播放，不清理索引
@@ -246,24 +258,24 @@ const playAllDialogues = async () => {
 
 	globalPlayer.isPlaying.value = true;
 	// 如果没有暂停位置记录，从头开始播放
-	if (globalPlayer.currentIndex >= displayedDialogues.value.length) {
-		globalPlayer.currentIndex = 0;
+	if (globalPlayer.currentIndex.value >= displayedDialogues.value.length) {
+		globalPlayer.currentIndex.value = 0;
 	}
 
 	const playNext = async () => {
 		if (
-			globalPlayer.currentIndex >= displayedDialogues.value.length ||
+			globalPlayer.currentIndex.value >= displayedDialogues.value.length ||
 			!globalPlayer.isPlaying.value
 		) {
 			globalPlayer.cleanup();
 			return;
 		}
 
-		const dialogue = displayedDialogues.value[globalPlayer.currentIndex];
+		const dialogue = displayedDialogues.value[globalPlayer.currentIndex.value];
 		try {
 			// 获取当前对话框元素
 			const dialogueElements = document.querySelectorAll(".dialogue-wrapper");
-			const currentElement = dialogueElements[globalPlayer.currentIndex];
+			const currentElement = dialogueElements[globalPlayer.currentIndex.value];
 
 			// 滚动到当前对话框
 			if (
@@ -295,7 +307,7 @@ const playAllDialogues = async () => {
 			// 只给当前播放的对话框添加 playing 类
 			if (globalPlayer.isPlaying.value) {
 				const currentDialogueElement =
-					allDialogueElements[globalPlayer.currentIndex];
+					allDialogueElements[globalPlayer.currentIndex.value];
 				if (currentDialogueElement) {
 					currentDialogueElement.classList.add("playing");
 				}
@@ -309,7 +321,7 @@ const playAllDialogues = async () => {
 				);
 				if (globalPlayer.isPlaying.value) {
 					// 确保仍在全局播放状态
-					globalPlayer.currentIndex++;
+					globalPlayer.currentIndex.value++;
 					await playNext();
 				}
 			}
@@ -323,24 +335,18 @@ const playAllDialogues = async () => {
 };
 
 // 修改单独播放函数
-const playDialogueVoice = async (voiceUrl, text, character) => {
-	// 如果正在全局播放，不允许单独播放
+const playDialogueVoice = async (voiceUrl, text, character, index) => {
 	if (globalPlayer.isPlaying.value) {
 		return;
 	}
 
-	const currentDialogue = displayedDialogues.value.find(
-		(d) => d.english === text
-	);
-	const dialogueIndex = displayedDialogues.value.indexOf(currentDialogue);
 	const dialogueElements = document.querySelectorAll(".log-item");
-
 	await singlePlayer.playAudio(
 		voiceUrl,
 		text,
 		character,
 		dialogueElements,
-		dialogueIndex
+		index
 	);
 };
 
@@ -358,7 +364,13 @@ defineExpose({
 // 在组件更新时检查状态
 onUpdated(() => {
 	if (!globalPlayer.isPlaying.value && !singlePlayer.isPlaying.value) {
-		globalPlayer.cleanup();
+		// 只在播放完成时重置
+		if (globalPlayer.currentIndex.value >= displayedDialogues.value.length) {
+			globalPlayer.reset();
+		} else {
+			// 否则只清理播放状态，保持索引
+			globalPlayer.cleanup();
+		}
 		singlePlayer.cleanup();
 	}
 });
