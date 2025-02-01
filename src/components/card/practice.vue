@@ -126,6 +126,7 @@ class GlobalPlayer {
 			this.currentAudio.pause();
 			this.currentAudio = null;
 		}
+		// 清理时重置索引
 		this.currentIndex = 0;
 		// 移除所有对话框的 playing 类
 		const allDialogueElements = document.querySelectorAll(".log-item");
@@ -229,7 +230,17 @@ let currentAudio = null;
 
 const playAllDialogues = async () => {
 	if (globalPlayer.isPlaying.value) {
-		globalPlayer.cleanup();
+		// 只暂停播放，不清理索引
+		globalPlayer.isPlaying.value = false;
+		if (globalPlayer.currentAudio) {
+			globalPlayer.currentAudio.pause();
+			globalPlayer.currentAudio = null;
+		}
+		// 移除当前播放对话框的 playing 类
+		const allDialogueElements = document.querySelectorAll(".log-item");
+		allDialogueElements.forEach((element) => {
+			element.classList.remove("playing");
+		});
 		return;
 	}
 
