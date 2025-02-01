@@ -29,7 +29,7 @@
 							class="w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 shadow-lg"
 						>
 							<img
-								:src="`/assets/${dialogue.character.toLowerCase()}.png`"
+								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${dialogue.character.toLowerCase()}.png`"
 								:alt="dialogue.character"
 								class="w-full h-full object-cover"
 							/>
