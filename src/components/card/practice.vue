@@ -78,7 +78,7 @@
 								<i
 									class="bi text-lg"
 									:class="
-										singlePlayer.currentIndex === index &&
+										singlePlayer.currentIndex.value === index &&
 										singlePlayer.isPlaying.value
 											? 'bi-stop-circle'
 											: 'bi-play-circle'
