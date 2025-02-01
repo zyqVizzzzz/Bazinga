@@ -16,6 +16,8 @@ import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
 import GenKnowledge from "@/prompt/upload_knowledge.vue";
+import GenerateKnowledge from "@/prompt/generate_knowledge.vue";
+import GeneratePodcast from "@/prompt/generate_podcast.vue";
 
 const routes = [
 	{
@@ -92,6 +94,16 @@ const routes = [
 		path: "/gen_knowledge",
 		name: "gen_knowledge",
 		component: GenKnowledge,
+	},
+	{
+		path: "/generate-knowledge",
+		name: "generate-knowledge",
+		component: GenerateKnowledge,
+	},
+	{
+		path: "/generate-podcast",
+		name: "generate-podcast",
+		component: GeneratePodcast,
 	},
 ];
 

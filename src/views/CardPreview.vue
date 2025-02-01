@@ -13,7 +13,7 @@
 			<!-- key 用于触发动画，确保每次对话内容变化时都会有动画效果 -->
 			<div v-if="currentDialogue" :key="currentDialogue.id" class="relative">
 				<!-- 主卡片容器 -->
-				<div class="scene">
+				<div class="scene relative">
 					<div
 						class="card w-full bg-base-100 border-4 border-black manga-card"
 						:class="{ active: isFlipped }"
@@ -149,7 +149,9 @@
 									<div class="btn-face flex items-center justify-center">
 										<i
 											class="bi text-xl"
-											:class="showBazingaPlay ? 'bi-pause' : 'bi-play'"
+											:class="
+												showBazingaPlay ? 'bi-pause-fill' : 'bi-play-fill'
+											"
 										></i>
 									</div>
 								</div>
@@ -260,6 +262,40 @@
 										>
 									</div>
 								</div>
+							</div>
+						</button>
+					</div>
+				</div>
+
+				<!-- 右侧按钮 -->
+				<div
+					class="absolute -right-20 top-1/3 -translate-y-1/2 flex flex-col gap-4"
+				>
+					<div class="capsule-btn" @mouseleave="handleMouseLeave">
+						<button
+							class="capsule-top"
+							@mouseover="handleMouseOver('top')"
+							@click="generateKnowledge"
+						>
+							<div
+								class="btn-face capsule-face flex items-center justify-center"
+							>
+								<i class="bi bi-lightbulb text-xl"></i>
+							</div>
+						</button>
+						<div
+							class="capsule-divider"
+							:class="{ 'move-up': isDividerUp, 'move-down': isDividerDown }"
+						></div>
+						<button
+							class="capsule-bottom"
+							@mouseover="handleMouseOver('bottom')"
+							@click="generatePodcast"
+						>
+							<div
+								class="btn-face capsule-face flex items-center justify-center"
+							>
+								<i class="bi bi-mic text-xl"></i>
 							</div>
 						</button>
 					</div>
@@ -520,6 +556,19 @@ onBeforeRouteLeave(async (to, from, next) => {
 	next();
 });
 
+const generateKnowledge = () => {
+	console.log("generate knowledge");
+	router.push({
+		path: "/generate-knowledge",
+	});
+};
+
+const generatePodcast = () => {
+	console.log("generate podcast");
+	router.push({
+		path: "/generate-podcast",
+	});
+};
 const toggleTransMode = () => {
 	showTrans.value = !showTrans.value;
 };
@@ -695,6 +744,25 @@ const jumpToPageBlur = (isTrue) => {
 			currentPage.value = editCurrentPageNumber.value;
 		}
 	}
+};
+
+// 胶囊按钮动画
+const isDividerUp = ref(false);
+const isDividerDown = ref(false);
+
+const handleMouseOver = (position) => {
+	if (position === "top") {
+		isDividerDown.value = true;
+		isDividerUp.value = false;
+	} else {
+		isDividerUp.value = true;
+		isDividerDown.value = false;
+	}
+};
+
+const handleMouseLeave = () => {
+	isDividerUp.value = false;
+	isDividerDown.value = false;
 };
 </script>
 <style scoped>
@@ -1074,5 +1142,63 @@ const jumpToPageBlur = (isTrue) => {
 	background-color: #ddd;
 	border-color: #999;
 	color: #999;
+}
+
+.capsule-btn {
+	position: relative;
+	width: 4rem;
+	height: 8rem;
+	background: #f0f0f0;
+	border: 3px solid #333;
+	border-radius: 2rem;
+	overflow: hidden;
+}
+
+.capsule-top,
+.capsule-bottom {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	height: 50%;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+	z-index: 2;
+}
+
+.capsule-top {
+	top: 0;
+}
+
+.capsule-bottom {
+	bottom: 0;
+}
+
+.capsule-face {
+	border: none !important;
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+.capsule-divider {
+	position: absolute;
+	top: 50%;
+	left: -10%;
+	width: 120%;
+	height: 2px;
+	background: rgba(51, 51, 51, 0.7);
+	transform: rotate(-15deg);
+	transition: all 0.2s ease;
+}
+
+.capsule-divider.move-up {
+	top: 48%;
+	transform: rotate(-15deg) scaleX(1.1);
+}
+
+.capsule-divider.move-down {
+	top: 52%;
+	transform: rotate(-15deg) scaleX(1.1);
 }
 </style>
