@@ -230,6 +230,8 @@ onMounted(() => {
 	displayedDialogues.value = props.currentPractice.dialogues;
 });
 
+const emit = defineEmits(["play-complete"]);
+
 const playAllDialogues = async () => {
 	if (globalPlayer.isPlaying.value) {
 		// 只暂停播放，不清理索引
@@ -243,6 +245,7 @@ const playAllDialogues = async () => {
 		allDialogueElements.forEach((element) => {
 			element.classList.remove("playing");
 		});
+		emit("play-complete");
 		return;
 	}
 
@@ -261,6 +264,7 @@ const playAllDialogues = async () => {
 			!globalPlayer.isPlaying.value
 		) {
 			globalPlayer.cleanup();
+			emit("play-complete");
 			return;
 		}
 

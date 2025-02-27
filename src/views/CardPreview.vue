@@ -97,6 +97,7 @@
 								:currentPage="currentPage"
 								:showHints="showHints"
 								:showTranslation="showBazingaTrans"
+								@play-complete="handlePlayComplete"
 								class="practice-box text-left"
 							/>
 						</div>
@@ -597,9 +598,10 @@ const toggleTransMode = () => {
 
 const toggleBazingaTransMode = () => {
 	showBazingaTrans.value = !showBazingaTrans.value;
-	// if (practiceCard.value) {
-	// 	practiceCard.value.toggleTranslation();
-	// }
+};
+
+const handlePlayComplete = () => {
+	showBazingaPlay.value = false;
 };
 
 const toggleBazingaPlayMode = () => {
