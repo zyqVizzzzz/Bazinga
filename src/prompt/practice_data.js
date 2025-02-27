@@ -5,134 +5,82 @@ export const practiceData = {
 		{
 			character: "Jinji",
 			emoji: "happy",
-			english:
-				"Hey, everyone! Welcome back to Offbeat Banter, I’m your host Jinji! Today’s episode is gonna be super fun because I’ve got a super calm guy sitting next to me!",
-			chinese:
-				"大家好，欢迎来到《Offbeat Banter》，我是你们的主持人 Jinji！今天的节目一定超级有趣，因为我旁边坐着一个——超冷静的家伙！",
+			lines:
+				"Hey, everyone! Welcome back to Bazinga, I’m your host Jinji! Today’s vibe is super cool, and we’re diving into some dope English expressions. Imagine nailing these in real life—how cool would that be? I’ve got my robot buddy Muz here, and we’re gonna explore 'take it' and 'get your [something] over here'. Ready to vibe with us?",
+			chinese_lines:
+				"嘿，大家好！欢迎回到Bazinga，我是你们的主持人Jinji！今天的氛围超级酷，我们要聊一些超棒的英语表达。想象一下在现实生活中用这些表达有多酷？我旁边是我的机器人朋友Muz，我们要一起探索‘take it’和‘get your [something] over here’。准备好跟我们一起嗨了吗？",
 		},
 		{
-			character: "Muztag",
+			character: "Muz",
 			emoji: "neutral",
-			english:
-				"I have no interest in adding “fun” to your show. I’m just here as a guest.",
-			chinese: "我没有兴趣为你增加节目的“趣味性”，我只是在这里做客。",
+			lines:
+				"Greetings. I observe that Jinji is excited about these expressions. Let us begin with 'take it'. Premise: it is used in performance contexts. Inference: it signals a transition or handover. Conclusion: it serves as both a cue and encouragement. I am curious—why do humans embed support in such a short phrase?",
+			chinese_lines:
+				"大家好。我注意到Jinji对这些表达很兴奋。我们先从‘take it’开始。前提：它用于表演场合。推论：它标志着交接或转换。结论：它既是提示也是鼓励。我很好奇——为什么人类会在这么短的短语中融入支持？",
 		},
 		{
 			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Oh, don’t be so cold! Today, we’re gonna talk about some fun language quirks, like those funny expressions. You know I love digging into these!",
-			chinese:
-				"哦，别这么冷酷嘛！今天我们要聊聊语言中的一些有趣现象，像是那些很有趣的表达方式。你知道的，我喜欢探讨这些！",
+			emoji: "enthusiastic",
+			lines:
+				"OMG, Muz, that’s so spot on! ‘Take it’ is like a high-five in words—super quick but packs a punch. Picture this: you’re jamming with your band, and you yell ‘take it’ to pass the solo. It’s lit! What if you used it with friends, like ‘Yo, take it, tell your story!’—how fun is that?",
+			chinese_lines:
+				"天哪，Muz，你说得太对了！‘Take it’就像是用语言击掌——超级快但很有力。想象一下：你在乐队里嗨着，然后喊‘take it’把独奏交给别人，太燃了！如果跟朋友用呢？比如‘喂，take it，讲你的故事！’——是不是超有趣？",
 		},
 		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"If you define “fun” that way, I can understand. But from my perspective, the “fun” in these language quirks is, frankly, negligible.",
-			chinese:
-				"如果你觉得“fun”是“有趣”的定义，那我可以理解。但从我的角度来看，这些语言现象的“趣味性”实在是微乎其微。",
-		},
-		{
-			character: "Jinji",
+			character: "Muz",
 			emoji: "surprised",
-			english:
-				"Ha! See? You’re back to your cold mode again. Alright, I know you like to analyze things coolly, but today let’s take a less serious approach! Can you just relax a little?",
-			chinese:
-				"哈！你看！你又开始了你的冷静模式。好啦，我知道你喜欢冷静分析，但今天我们可以用点不那么严肃的方式来讨论！你能不能先放松一下？",
+			lines:
+				"Fascinating. Jinji suggests ‘take it’ can extend beyond performances. I analyze: it implies trust in the next person’s ability. However, I am puzzled—why say ‘take it’ instead of ‘please proceed’? Is this human preference for brevity over clarity? I compute it as efficient, yet oddly indirect.",
+			chinese_lines:
+				"有趣。Jinji建议‘take it’可以超出表演范围。我分析：它暗示对下一个人能力的信任。然而，我很困惑——为什么不说‘请继续’而是说‘take it’？这是人类偏好简洁胜过清晰吗？我认为这很高效，但又有点间接。",
 		},
 		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"I don’t need to relax, because I don’t think any of these language issues are worth getting worked up about.",
-			chinese: "我并不需要放松，因为我不认为任何这些语言问题值得紧张。",
+			character: "Jinji",
+			emoji: "curious",
+			lines:
+				"Ooh, good question, Muz! I think it’s just more chill—like, ‘take it’ feels hype and friendly, not stiff. Okay, next up: ‘get your [something] over here’. It’s so bossy but fun! Like, ‘Get your butt over here, we’re late!’ Why do you think we love yelling that?",
+			chinese_lines:
+				"哇，好问题，Muz！我觉得它更轻松——‘take it’听着很兴奋很友好，不死板。好了，接下来是‘get your [something] over here’。超有命令感但又好玩！比如‘快把你的屁股挪过来，我们迟到了！’你觉得为啥我们爱喊这个？",
+		},
+		{
+			character: "Muz",
+			emoji: "analytical",
+			lines:
+				"I process this. ‘Get your [something] over here’ is a command with urgency. Premise: it demands immediate action. Inference: the tone suggests authority or impatience. Conclusion: humans use it for efficiency and emotional impact. Jinji, do you mean ‘butt’ literally, or is this another confusing idiom?",
+			chinese_lines:
+				"我在处理这个。‘Get your [something] over here’是一个带有急迫感的命令。前提：它要求立即行动。推论：语气暗示权威或不耐烦。结论：人类用它来追求效率和情感冲击。Jinji，你说的‘butt’是字面意思，还是又一个让我困惑的习语？",
 		},
 		{
 			character: "Jinji",
 			emoji: "happy",
-			english:
-				"Haha, oh my gosh, you always analyze everything so precisely! But don’t you think “‘Scuse me” actually feels more casual? Sometimes we use it to make an apology feel lighthearted.",
-			chinese:
-				"哈哈，天哪，你总是把一切都分析得这么严谨！不过你不觉得“'Scuse me”反而给人一种很随意的感觉吗？有时候我们用这个来表示轻松的道歉。",
+			lines:
+				"Haha, Muz, you’re killing me! Nah, it’s just a vibe—means ‘you’ but sassier. I love how it’s so extra! Like, imagine your mom going, ‘Get your homework over here!’ It’s urgent but kinda playful. Muz, would you ever say it to a robot pal?",
+			chinese_lines:
+				"哈哈，Muz，你太逗了！不是啦，就是一种感觉——指的是‘你’，但更有态度。我超爱它的夸张感！想象你妈喊‘快把作业拿过来！’，很紧急但又有点好玩。Muz，你会跟机器人朋友这么说吗？",
 		},
 		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"“'Scuse me”? Short, concise, and efficient, but if you really want the other person to feel your genuine apology, perhaps “Excuse me” would be more appropriate.",
-			chinese:
-				"“'Scuse me”？简短、简洁，符合效率，但如果你真想让对方感到你真诚的歉意，或许“Excuse me”更为合适。",
-		},
-		{
-			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Exactly! You could call it a “soft bypass”. See, language is like that sometimes – we express ourselves casually without hurting anyone’s feelings.",
-			chinese:
-				"没错！你可以理解为“软性避开”。你看，语言有时就是这样，在不伤害别人感情的情况下，我们轻松表达。",
-		},
-		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"“Soft bypass” is a good term. I guess your understanding of many things has a “lively” style.",
-			chinese:
-				"“软性避开”是个不错的词语。我猜你对很多事情的理解都带有“跳脱”的风格。",
+			character: "Muz",
+			emoji: "gradual-understanding",
+			lines:
+				"I see. It is not literal but an enhancement of tone. Logical transition: it conveys personality alongside the command. Humor attempt: I might say, ‘Get your circuits over here,’ to a robot friend—but I suspect it lacks the ‘sass’. Jinji, your enthusiasm clarifies this human quirk for me.",
+			chinese_lines:
+				"我明白了。它不是字面意思，而是语气的增强。逻辑过渡：它在命令中传递个性。幽默尝试：我可能会对机器人朋友说‘快把你的电路拿过来’，但我怀疑它缺了那种‘态度’。Jinji，你的热情帮我弄清了这个人类怪癖。",
 		},
 		{
 			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Yes, I just love thinking outside the box! Now, let’s talk about the expression “How’s it goin’?”. What do you think about it? Is it good or bad?",
-			chinese:
-				"是的，我就是喜欢跳脱思维！好了，接下来我们讨论一下“最近咋样”这种表达吧！你觉得它好还是不好？",
+			emoji: "supportive",
+			lines:
+				"Aww, Muz, your robot sass is goals! So, fam, here’s the takeaway: ‘take it’ is your chill hype-up move, and ‘get your [something] over here’ is your sassy boss-up call. Try them out IRL—let us know how it goes! Catch you next time on Bazinga!",
+			chinese_lines:
+				"哇，Muz，你的机器人态度太棒了！所以，大家，重点来了：‘take it’是你轻松鼓舞的招数，‘get your [something] over here’是你带点态度的指挥。现实生活中试试看——告诉我们效果咋样！下次Bazinga见！",
 		},
 		{
-			character: "Muztag",
+			character: "Muz",
 			emoji: "neutral",
-			english:
-				"“How’s it goin’”? Simple, essentially asking about the other person’s state, but without delving too deep, maintaining social distance while keeping basic politeness.",
-			chinese:
-				"“最近咋样”？这很简单，基本上是询问对方的状况，但也不必过于深入，保持社交距离的同时又能保持基本的礼貌。",
-		},
-		{
-			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Ha! That’s the style I like! It’s casual, but it brings people closer together! Plus, it doesn’t come with too much pressure, perfect for any occasion!",
-			chinese:
-				"哈哈！这就是我喜欢的风格！它很随意，但又能拉近人们之间的距离！而且，它不需要太多压力，适合任何场合！",
-		},
-		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"You always manage to make simple things sound so enthusiastic, it’s quite impressive.",
-			chinese: "你总是能把简单的事情说得那么有热情，真让人佩服。",
-		},
-		{
-			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Hehe, thanks for the compliment! But maybe you could relax a little too? After all, we’re just chatting, and language can be casual!",
-			chinese:
-				"嘿嘿，谢谢夸奖！不过你是不是稍微也能放松一点？我们毕竟只是聊聊天，语言也可以是轻松的！",
-		},
-		{
-			character: "Muztag",
-			emoji: "neutral",
-			english:
-				"I’ll consider it, but I don’t believe that chatting and language must always be casual.",
-			chinese: "我会考虑一下，但我并不觉得聊天和语言必须是随意的。",
-		},
-		{
-			character: "Jinji",
-			emoji: "happy",
-			english:
-				"Oh well, it’s fine, we’re keeping it light today! Next time, we’ll dive deeper into these language phenomena!",
-			chinese:
-				"哎呀，没关系，今天我们就聊得这么轻松！下次我们再深入分析这些语言现象！",
+			lines:
+				"Agreed. These phrases optimize communication with distinct emotional layers. My conclusion: humans blend efficiency with expression seamlessly. I remain curious about further examples. Until next time, I bid you a logically pleasant day.",
+			chinese_lines:
+				"同意。这些短语优化了沟通，带有独特的情感层次。我的结论：人类无缝融合了效率与表达。我对更多例子仍感好奇。下次见，祝你们有一个逻辑上愉快的日子。",
 		},
 	],
 };

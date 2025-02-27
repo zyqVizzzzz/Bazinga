@@ -63,20 +63,14 @@
 							v-if="point.type !== 'vocabulary'"
 							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
 						>
-							[{{ point.point }}] - {{ point.definition_zh }}
+							{{ point.definition_zh }}
 						</p>
-						<p
+						<!-- <p
 							v-if="point.type !== 'vocabulary'"
 							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
 						>
 							[同义句] - {{ point.synonyms }}
-						</p>
-						<p
-							v-if="point.type !== 'vocabulary'"
-							class="text-left text-sm text-gray-500 font-light mt-2 mb-4"
-						>
-							[发音注意] - {{ point.pronunciation }}
-						</p>
+						</p> -->
 						<!-- 例句 -->
 						<p
 							v-if="point.example"

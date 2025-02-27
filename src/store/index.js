@@ -81,3 +81,19 @@ export const useNotebookStore = defineStore("notebook", {
 	},
 	// persist: true,
 });
+
+export const useDialogueStore = defineStore("dialogue", {
+	state: () => ({
+		currentDialogue: null,
+		currentKnowledge: null,
+	}),
+	actions: {
+		setCurrentDialogue(dialogue) {
+			this.currentDialogue = dialogue;
+		},
+		setCurrentKnowledge(knowledge) {
+			this.currentKnowledge = knowledge;
+		},
+	},
+	persist: true,
+});

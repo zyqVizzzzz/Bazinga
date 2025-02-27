@@ -29,7 +29,7 @@
 							class="w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 shadow-lg"
 						>
 							<img
-								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${dialogue.character.toLowerCase()}.png`"
+								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${dialogue.character.toLowerCase()}.jpg`"
 								:alt="dialogue.character"
 								class="w-full h-full object-cover"
 							/>
@@ -95,17 +95,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, onUpdated } from "vue";
-import apiClient from "@/api";
 import WordDictionary from "@/components/common/WordDictionary.vue";
-
-// 全局播放状态
-const isGlobalPlaying = ref(false);
-let currentPlayingIndex = 0;
-let globalAudioQueue = [];
-
-// 单独播放状态
-const isPlaying = ref(false);
-let currentAudio = null;
 
 // 全局播放器类
 class GlobalPlayer {
@@ -223,15 +213,18 @@ const props = defineProps({
 		type: Number,
 		required: true,
 	},
+	showHints: {
+		type: Boolean,
+		required: true,
+	},
+	showTranslation: {
+		type: Boolean,
+		required: true,
+	},
 });
 
 const displayedDialogues = ref([]);
 const praticeContainerRef = ref(null);
-const showTranslation = ref(false);
-
-const toggleTranslation = () => {
-	showTranslation.value = !showTranslation.value;
-};
 
 onMounted(() => {
 	displayedDialogues.value = props.currentPractice.dialogues;
@@ -357,7 +350,6 @@ onUnmounted(() => {
 });
 
 defineExpose({
-	toggleTranslation,
 	playAllDialogues,
 });
 

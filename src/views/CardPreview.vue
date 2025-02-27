@@ -96,6 +96,7 @@
 								:currentPractice="currentPractice"
 								:currentPage="currentPage"
 								:showHints="showHints"
+								:showTranslation="showBazingaTrans"
 								class="practice-box text-left"
 							/>
 						</div>
@@ -308,7 +309,12 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
-import { useLessonStore, useAppStore, useLoginStore } from "@/store";
+import {
+	useLessonStore,
+	useAppStore,
+	useLoginStore,
+	useDialogueStore,
+} from "@/store";
 import apiClient from "@/api";
 
 import KnowledgeCard from "@/components/card/knowledge.vue";
@@ -322,6 +328,7 @@ const isLogin = computed(() => loginStore.isLogin);
 
 const lessonStore = useLessonStore();
 const appStore = useAppStore();
+const dialogueStore = useDialogueStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -557,16 +564,31 @@ onBeforeRouteLeave(async (to, from, next) => {
 });
 
 const generateKnowledge = () => {
-	console.log("generate knowledge");
+	console.log("generate knowledge", currentDialogue.value);
+	dialogueStore.setCurrentDialogue(currentDialogue.value);
 	router.push({
 		path: "/generate-knowledge",
+		query: {
+			id: route.params.id,
+			season: route.params.season,
+			episode: route.params.episode,
+			scene: currentDialogueIndex.value,
+		},
 	});
 };
 
 const generatePodcast = () => {
-	console.log("generate podcast");
+	const currentPoint = currentKnowledgePoints.value;
+	console.log("generate podcast", currentPoint);
+	dialogueStore.setCurrentKnowledge(currentPoint);
 	router.push({
 		path: "/generate-podcast",
+		query: {
+			id: route.params.id,
+			season: route.params.season,
+			episode: route.params.episode,
+			scene: currentDialogueIndex.value,
+		},
 	});
 };
 const toggleTransMode = () => {
@@ -575,9 +597,9 @@ const toggleTransMode = () => {
 
 const toggleBazingaTransMode = () => {
 	showBazingaTrans.value = !showBazingaTrans.value;
-	if (practiceCard.value) {
-		practiceCard.value.toggleTranslation();
-	}
+	// if (practiceCard.value) {
+	// 	practiceCard.value.toggleTranslation();
+	// }
 };
 
 const toggleBazingaPlayMode = () => {

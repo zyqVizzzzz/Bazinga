@@ -20,16 +20,6 @@
 			/>
 		</div>
 
-		<div class="input-group">
-			<label for="sceneId">Scene ID:</label>
-			<input
-				id="sceneId"
-				v-model="formData.sceneId"
-				type="text"
-				placeholder="Enter scene ID"
-			/>
-		</div>
-
 		<button @click="handleSubmit">Submit</button>
 	</div>
 </template>
@@ -37,24 +27,37 @@
 <script setup>
 import { ref } from "vue";
 import apiClient from "@/api";
-import { scene1 } from "./02.js";
+import * as knowledgeData from "./02.js";
 
 const formData = ref({
 	catalogId: "67230dee6fc3d389ea1ffedf",
 	lessonId: "67230dee6fc3d389ea1ffee1",
-	sceneId: "Scene1",
 });
+
+const uploadProgress = ref(0);
+const totalScenes = Object.keys(knowledgeData).length;
 
 // 提交处理函数
 const handleSubmit = async () => {
 	try {
-		const response = await apiClient.post("/knowledge/upsert", {
-			...formData.value,
-			knowledge: scene1,
-		});
+		// 遍历所有场景并上传
+		for (const [key, data] of Object.entries(knowledgeData)) {
+			const sceneNumber = key.replace("scene", "");
+			uploadProgress.value = sceneNumber;
+
+			await apiClient.post("/knowledge/upsert", {
+				...formData.value,
+				sceneId: `Scene${sceneNumber}`,
+				knowledge: data,
+			});
+		}
+
+		alert("所有场景上传成功！");
 	} catch (error) {
 		console.error("Error uploading knowledge:", error);
-		alert("Upload failed: " + error.message);
+		alert(`上传失败: ${error.message}`);
+	} finally {
+		uploadProgress.value = 0;
 	}
 };
 </script>

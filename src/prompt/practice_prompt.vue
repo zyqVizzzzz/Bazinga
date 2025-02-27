@@ -59,6 +59,12 @@
 			>
 				提交
 			</button>
+			<button
+				@click="submitSingleContent"
+				class="bg-green-500 ml-2 text-white px-4 py-2 rounded-md hover:bg-green-600 mb-4"
+			>
+				校正
+			</button>
 		</div>
 
 		<div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -85,7 +91,6 @@ const extra = ref("");
 const step = ref("1");
 const dialogues_number = ref("5");
 const generatedContent = ref("");
-const submittedContent = ref("");
 
 // 生成内容方法
 const generateContent = async () => {
@@ -112,27 +117,41 @@ const transformData = (data) => {
 		explanation: item.definition_zh,
 	}));
 
-	// 创建输出对象
-	const output = {
-		controversy_scale: "1", // 默认值
-		daily_life_scale: "3", // 默认值
-		philosophy_scale: "1", // 默认值
-		emotion_scale: "1", // 默认值
-		keyword: keyword,
-		extra: extra.value || "", // 空字符串
-		step: step.value,
-		dialogues_number: dialogues_number.value,
-	};
+	const output = keyword;
 
 	return JSON.stringify(output, null, 2);
 };
 
+const VALID_EMOJIS = [
+	"happy",
+	"sad",
+	"angry",
+	"fearful",
+	"disgusted",
+	"surprised",
+	"neutral",
+];
+
 // 提交内容方法
 const submitContent = async () => {
-	console.log("准备提交的内容:", submittedContent.value);
-
 	// 转换内容
 	const practice = { ...practiceData };
+
+	// 处理对话数据格式
+	practice.dialogues = practice.dialogues.map((dialogue) => {
+		// 创建新的对话对象，使用解构赋值来排除不需要的字段
+		const { lines, chinese_lines, ...rest } = dialogue;
+		// 标准化 emoji，如果不在有效列表中则使用 neutral
+		const standardizedEmoji = VALID_EMOJIS.includes(dialogue.emoji)
+			? dialogue.emoji
+			: "neutral";
+		return {
+			...rest,
+			emoji: standardizedEmoji,
+			english: dialogue.lines || dialogue.english,
+			chinese: dialogue.chinese_lines || dialogue.chinese,
+		};
+	});
 
 	// 为每个对话生成语音URL
 	for (const dialogue of practice.dialogues) {
@@ -173,4 +192,38 @@ const submitContent = async () => {
 		console.error("提交数据失败:", error);
 	}
 };
+
+const submitSingleContent = async () => {
+	const dialogue = {
+		character: "Muz",
+		emoji: "surprised",
+		english:
+			"Trashing? As in, disposing of waste? But in this context, it means speaking negatively about someone. Fascinating. Humans have such vivid metaphors for expressing criticism. So, 'trashing' here is a colloquial way to admit to gossiping or disparaging someone.",
+		chinese:
+			"Trashing？就像处理垃圾一样？但在这种情况下，它意味着说别人的坏话。有趣。人类有如此生动的隐喻来表达批评。所以，这里的“trashing”是一种口语化的方式，承认自己在八卦或贬低某人。",
+	};
+	try {
+		// 使用文本转语音API生成URL
+		console.log({
+			text: dialogue.english,
+			role: dialogue.character,
+			emotion: dialogue.emoji,
+		});
+		const response = await apiClient.post("/voice/generate", {
+			text: dialogue.english,
+			role: dialogue.character,
+			emotion: dialogue.emoji,
+		});
+		if (response.data.code === 200) {
+			// 添加语音URL到对话数据中
+			dialogue.voiceUrl = response.data.data.audioUrl;
+			console.log(dialogue.voiceUrl);
+		}
+	} catch (error) {
+		console.error("生成语音URL失败:", error);
+	}
+};
 </script>
+<!-- 
+
+-->
