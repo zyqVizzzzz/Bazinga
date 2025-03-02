@@ -618,18 +618,6 @@ const togglePracticeMode = () => {
 const toggleListenMode = async () => {
 	lessonStore.setListenMode();
 	isListenMode.value = lessonStore.isListenMode;
-	if (isListenMode.value) {
-		showToast({
-			message: "语音模式开启",
-			disc: "点击对话内容即可朗读",
-			type: "info",
-		});
-	} else {
-		showToast({
-			message: "语音模式关闭",
-			type: "info",
-		});
-	}
 };
 
 // 高亮知识点相关nline
@@ -849,6 +837,7 @@ const handleMouseLeave = () => {
 
 .dialogue-box {
 	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
+	position: relative; /* 确保相对定位 */
 }
 
 .dialogue-box::before {

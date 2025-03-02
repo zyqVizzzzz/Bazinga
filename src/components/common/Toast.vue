@@ -67,6 +67,11 @@ const props = defineProps({
 		type: Number,
 		default: 3000,
 	},
+	position: {
+		type: String,
+		default: "top",
+		validator: (value) => ["top", "card-top"].includes(value),
+	},
 });
 
 const visible = ref(true);

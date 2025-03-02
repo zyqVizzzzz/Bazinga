@@ -8,6 +8,7 @@ export function showToast({
 	disc = "",
 	type = "info",
 	duration = 3000,
+	position = "top", // 添加 position 参数
 }) {
 	if (toastInstance) {
 		toastInstance.unmount(); // 移除已有的 Toast 实例
@@ -16,7 +17,14 @@ export function showToast({
 	const container = document.createElement("div");
 	document.body.appendChild(container);
 
-	toastInstance = createApp(Toast, { message, type, duration, disc });
+	// 将 position 传递给 Toast 组件
+	toastInstance = createApp(Toast, {
+		message,
+		type,
+		duration,
+		disc,
+		position,
+	});
 	toastInstance.mount(container);
 
 	setTimeout(() => {

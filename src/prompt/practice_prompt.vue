@@ -85,7 +85,7 @@ import { practiceData } from "./practice_data.js";
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67230dee6fc3d389ea1ffee1");
+const lessonId = ref("67b84db843370048fe40c8f0");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -195,12 +195,12 @@ const submitContent = async () => {
 
 const submitSingleContent = async () => {
 	const dialogue = {
-		character: "Muz",
-		emoji: "surprised",
+		character: "Jinji",
+		emoji: "happy",
 		english:
-			"Trashing? As in, disposing of waste? But in this context, it means speaking negatively about someone. Fascinating. Humans have such vivid metaphors for expressing criticism. So, 'trashing' here is a colloquial way to admit to gossiping or disparaging someone.",
+			"Aww, Muz, that’s a solid start! Maybe spice it up like, 'Oh no, Jinji, that test was brutal! Let’s study together, and I’ll hype you up to make you feel all better.' See? Extra love makes it pop!",
 		chinese:
-			"Trashing？就像处理垃圾一样？但在这种情况下，它意味着说别人的坏话。有趣。人类有如此生动的隐喻来表达批评。所以，这里的“trashing”是一种口语化的方式，承认自己在八卦或贬低某人。",
+			"哇，Muz，这开局很稳！也许可以加点料，比如，'天哪，Jinji，那考试太狠了！咱们一起学，我会给你打气让你感觉好起来。'看，多点爱就能更出彩！",
 	};
 	try {
 		// 使用文本转语音API生成URL
