@@ -66,7 +66,31 @@
 					<span v-else class="text-sm font-extralight text-gray-400">{{
 						dialogue.speaker
 					}}</span>
-					<span @click="speakText(dialogue.line)" v-html="dialogue.line"></span>
+					<span @click="speakText(dialogue.line)">
+						<span v-html="dialogue.line"></span>
+						<!-- 加载动画 -->
+						<span
+							v-if="loadingAudio && currentLoadingText === dialogue.line"
+							class="loading-dot ml-2 inline-flex items-center"
+						>
+							<span
+								class="animate-bounce inline-block w-1 h-1 bg-primary rounded-full"
+							></span>
+							<span
+								class="animate-bounce inline-block w-1 h-1 bg-primary rounded-full"
+								style="animation-delay: 0.2s"
+							></span>
+							<span
+								class="animate-bounce inline-block w-1 h-1 bg-primary rounded-full"
+								style="animation-delay: 0.4s"
+							></span>
+						</span>
+						<!-- 播放状态指示 -->
+						<i
+							v-if="currentPlayingText === dialogue.line"
+							class="bi bi-volume-up ml-2 text-primary"
+						></i>
+					</span>
 				</p>
 
 				<!-- 中文台词翻译 -->
@@ -81,7 +105,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onUnmounted } from "vue";
 import { useLessonStore } from "@/store";
 import { useRoute } from "vue-router";
 import apiClient from "@/api";
@@ -102,6 +126,9 @@ const showModeSwitch = ref(false);
 const showHeadphone = ref(false);
 const isClosing = ref(false);
 
+const loadingAudio = ref(false);
+const currentLoadingText = ref("");
+
 // 计算提示消息
 const switchMessage = computed(() => {
 	return isClosing.value ? "关闭语音模式" : "开启语音模式";
@@ -115,6 +142,12 @@ const switchDescription = computed(() => {
 // 转换文本为语音
 const speakText = async (text) => {
 	if (!lessonStore.isListenMode) {
+		return;
+	}
+
+	// 如果点击的是当前正在播放的文本，则停止播放
+	if (currentPlayingText.value === text) {
+		stopCurrentAudio();
 		return;
 	}
 
@@ -136,13 +169,18 @@ const speakText = async (text) => {
 		if (searchRes.data.code === 200 && searchRes.data.data.length > 0) {
 			const existingAudio = searchRes.data.data[0];
 			latestAudio.value = existingAudio.audioPath;
-			playAudio();
+			playAudio(text);
 		} else {
 			// 如果没找到记录，则进行新的转换
-			// const res = await apiClient.post(`/text-to-speech`, { text: cleanText });
+
+			// 设置加载状态和当前文本
+			loadingAudio.value = true;
+			currentLoadingText.value = text;
+
 			const resourceId = route.params.id;
 			const currentDialogueId =
 				route.params.season + "-" + route.params.episode;
+
 			try {
 				const res = await apiClient.post(`/audio`, {
 					text: cleanText,
@@ -152,15 +190,20 @@ const speakText = async (text) => {
 
 				if (res.data.code === 200) {
 					latestAudio.value = res.data.data.audioPath;
-					playAudio();
+					playAudio(text);
 				}
 			} catch (error) {
 				console.error("转换失败:", error);
 			} finally {
+				// 清除加载状态
+				loadingAudio.value = false;
+				currentLoadingText.value = "";
 			}
 		}
 	} catch (error) {
 		console.error("转换失败:", error);
+		loadingAudio.value = false;
+		currentLoadingText.value = "";
 	}
 };
 
@@ -173,17 +216,36 @@ const removeHtmlTags = (text) => {
 let audioObj = null;
 const latestAudio = ref("");
 const isPlaying = ref(false);
-// 自定义播放器方法
-const playAudio = () => {
+const currentPlayingText = ref(""); // 添加当前播放文本的引用
+
+// 停止当前播放的音频
+const stopCurrentAudio = () => {
+	if (audioObj) {
+		audioObj.pause();
+		audioObj.currentTime = 0;
+		isPlaying.value = false;
+		currentPlayingText.value = "";
+	}
+};
+
+// 播放音频
+const playAudio = (text) => {
 	if (!latestAudio.value) return;
+
+	// 如果有其他音频在播放，先停止它
+	if (isPlaying.value) {
+		stopCurrentAudio();
+	}
 
 	audioObj = new Audio(latestAudio.value);
 	audioObj.onended = () => {
 		isPlaying.value = false;
+		currentPlayingText.value = "";
 	};
 
 	audioObj.play();
 	isPlaying.value = true;
+	currentPlayingText.value = text;
 };
 
 const scrollToWord = (currentWord) => {
@@ -238,6 +300,11 @@ watch(
 		}, 1500);
 	}
 );
+
+// 组件卸载时清理
+onUnmounted(() => {
+	stopCurrentAudio();
+});
 </script>
 <style scoped>
 /* 听力模式激活时的背景样式 */
@@ -381,5 +448,33 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
 	opacity: 0;
+}
+
+.loading-dot {
+	gap: 2px;
+}
+
+.loading-dot span {
+	opacity: 0.6;
+}
+
+/* 自定义弹跳动画延迟，使点点更流畅 */
+@keyframes custom-bounce {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
+}
+
+.animate-bounce {
+	animation: custom-bounce 0.8s infinite;
+}
+
+.playing {
+	background-color: rgba(var(--primary-color-rgb), 0.05);
+	border-radius: 4px;
 }
 </style>

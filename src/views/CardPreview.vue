@@ -272,7 +272,7 @@
 				</div>
 
 				<!-- 右侧按钮 -->
-				<div
+				<!-- <div
 					class="absolute -right-20 top-1/3 -translate-y-1/2 flex flex-col gap-4"
 				>
 					<div class="capsule-btn" @mouseleave="handleMouseLeave">
@@ -303,7 +303,7 @@
 							</div>
 						</button>
 					</div>
-				</div>
+				</div> -->
 			</div>
 		</transition>
 	</div>

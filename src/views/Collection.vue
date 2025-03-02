@@ -84,11 +84,7 @@
 				:class="{ 'mb-10': !currentProgress.course }"
 			>
 				<h2 class="text-xl font-bold text-shadow-retro h-[30px]">
-					{{
-						viewMode === "gallery"
-							? currentSeason?.seasonNumber
-							: currentSeason?.seasonName
-					}}
+					{{ currentSeason?.seasonName || currentSeason?.seasonNumber }}
 					<div class="tooltip" data-tip="切换视图">
 						<span
 							@click="toggleViewMode"

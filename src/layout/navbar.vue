@@ -1,74 +1,55 @@
 <template>
 	<div
-		class="navbar bg-base-100 shadow-lg"
+		class="navbar retro-nav w-full"
 		style="z-index: 9999"
 		:style="{
 			background: isCategory || isProfile ? 'rgba(255,255,255,0.1)' : '#fff',
+			'border-radius': isCategory ? '0px' : '15px',
 		}"
 	>
-		<div class="flex-1">
-			<a
-				@click="goToHome"
-				class="nav-brand btn btn-ghost text-xxl hover:bg-transparent hover:text-inherit"
-			>
-				<!-- <img src="../assets/banner2.png" class="w-[144px]" alt="" /> -->
-				Bazinga
-			</a>
-		</div>
-		<div class="flex-none">
-			<ul class="menu menu-horizontal px-1">
-				<!-- 如果用户已登录，显示 Notebook 和 Profile -->
-				<li>
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToHome()"
-						>{{ t("nav.home") }}</a
-					>
-				</li>
-				<li>
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('collections')"
-						>{{ t("nav.collections") }}</a
-					>
-				</li>
-				<li>
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('notebook')"
-						>{{ t("nav.notes") }}</a
-					>
-				</li>
-				<li v-if="isLogin">
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('profile')"
-						>{{ t("nav.profile") }}</a
-					>
-				</li>
-				<!-- <li v-if="isLogin">
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="changeLanguage"
-					>
-						<i class="bi bi-translate text-xl"></i>
-					</a>
-				</li> -->
-				<li v-if="isLogin">
-					<a class="btn btn-white btn-ghost hover:text-inherit" @click="logout">
-						<i class="bi bi-box-arrow-right text-xl"></i>
-					</a>
-				</li>
-
-				<!-- 如果用户未登录，显示 Signup 和 Login -->
-				<li v-if="!isLogin">
-					<a
-						class="btn btn-white btn-ghost hover:text-inherit"
-						@click="goToLink('login')"
-						>{{ t("nav.login") }}</a
-					>
-				</li>
-			</ul>
+		<div class="container mx-auto px-4 flex justify-between items-center">
+			<div class="flex-none">
+				<a
+					@click="goToHome"
+					class="nav-brand btn btn-ghost hover:bg-transparent hover:text-inherit"
+				>
+					Bazinga!
+				</a>
+			</div>
+			<div class="flex-none">
+				<ul class="menu menu-horizontal gap-2">
+					<li>
+						<a class="retro-link" @click="goToHome()">
+							{{ t("nav.home") }}
+						</a>
+					</li>
+					<li>
+						<a class="retro-link" @click="goToLink('collections')">
+							{{ t("nav.collections") }}
+						</a>
+					</li>
+					<li>
+						<a class="retro-link" @click="goToLink('notebook')">
+							{{ t("nav.notes") }}
+						</a>
+					</li>
+					<li v-if="isLogin">
+						<a class="retro-link" @click="goToLink('profile')">
+							{{ t("nav.profile") }}
+						</a>
+					</li>
+					<li v-if="isLogin">
+						<a class="retro-link" @click="logout">
+							<i class="bi bi-box-arrow-right"></i>
+						</a>
+					</li>
+					<li v-if="!isLogin">
+						<a class="retro-link" @click="goToLink('login')">
+							{{ t("nav.login") }}
+						</a>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</div>
 </template>
@@ -137,15 +118,15 @@ onMounted(() => {
 });
 
 watch(
-	() => route.path,
-	(newPath, oldPath) => {
-		if (newPath.includes("collections")) {
+	() => route.name,
+	(newName, oldName) => {
+		if (newName === "Collection") {
 			isCategory.value = true;
 		} else {
 			isCategory.value = false;
 		}
 
-		if (newPath.includes("profile")) {
+		if (newName === "Profile") {
 			isProfile.value = true;
 		} else {
 			isProfile.value = false;
@@ -159,5 +140,90 @@ watch(
 }
 .nav-brand {
 	font-size: 24px;
+}
+
+.navbar {
+	height: 64px;
+	background: white;
+	/* border-bottom: 2px solid #e6e6e6; */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(8px);
+	/* border-radius: 15px; */
+}
+
+.container {
+	max-width: 1280px;
+	height: 100%;
+}
+
+.nav-brand {
+	font-size: 24px; /* 稍微减小字体大小 */
+	font-weight: bold;
+	transform: skew(-6deg);
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	padding: 0.5rem 1rem;
+	transition: all 0.3s ease;
+}
+
+.retro-link {
+	padding: 0.5rem 0.75rem !important; /* 减小内边距 */
+	font-size: 0.9rem; /* 稍微减小字体大小 */
+	font-weight: 600;
+	transform: skew(-6deg);
+	transition: all 0.3s ease;
+	background: transparent !important;
+	border: 2px solid transparent;
+	white-space: nowrap; /* 防止文字换行 */
+}
+
+.retro-link:hover {
+	transform: skew(-6deg) scale(1.05);
+	border: 2px solid #000;
+	background: #fff !important;
+	color: #222;
+}
+
+.retro-link::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 2px;
+	background: #666;
+	transform: scaleX(0);
+	transition: transform 0.3s ease;
+}
+
+.retro-link:hover::after {
+	transform: scaleX(1);
+}
+
+/* 添加自定义字体 */
+@font-face {
+	font-family: "ComicFont";
+	src: url("@/assets/fonts/comic.woff2") format("woff2");
+}
+
+.font-comic {
+	font-family: "ComicFont", system-ui, -apple-system, sans-serif;
+}
+
+/* 适配深色背景 */
+.navbar[data-theme="dark"] {
+	background: rgba(0, 0, 0, 0.8);
+	border-bottom: 4px solid #fff;
+}
+
+.navbar[data-theme="dark"] .retro-link {
+	color: #fff;
+}
+
+.navbar[data-theme="dark"] .retro-link:hover {
+	border-color: #fff;
+}
+
+.navbar[data-theme="dark"] .retro-link::after {
+	background: #fff;
 }
 </style>
