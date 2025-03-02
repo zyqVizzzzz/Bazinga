@@ -81,7 +81,28 @@
 			v-show="!localKnowledgePoints.length"
 			class="h-full min-h-[200px] p-6 bg-gray-50/50 rounded-l flex justify-center items-center"
 		>
-			<div>
+			<!-- 需要解锁的情况 -->
+			<div v-if="needUnlock" class="text-center">
+				<i class="bi bi-lock text-2xl text-gray-500 mb-3"></i>
+				<h3 class="text-gray-800 font-medium text-base mb-4">解锁知识点内容</h3>
+				<p class="text-gray-600 text-sm mb-4 max-w-xs">
+					本场景的知识点内容需要解锁《辛普森一家》资源包才能查看。解锁后可获得：
+				</p>
+				<ul class="text-gray-600 text-sm text-left list-disc list-inside mb-4">
+					<li>全部剧集的场景知识点解析</li>
+					<li>Bazinga 播客强化解读</li>
+				</ul>
+				<button
+					class="btn btn-sm btn-secondary text-white gap-2 hover:scale-105 transition-all duration-200 mt-2"
+					@click="handleUnlock"
+				>
+					<i class="bi bi-unlock text-xs"></i>
+					<span>解锁资源包 ¥19.9</span>
+				</button>
+			</div>
+
+			<!-- 真的没有知识点数据的情况 -->
+			<div v-else>
 				<i class="bi bi-folder2-open text-2xl text-gray-500"></i>
 				<p class="text-gray-800 text-sm mt-2">暂无知识点数据</p>
 			</div>
@@ -178,9 +199,18 @@ const props = defineProps({
 	currentCustomNotes: Array,
 	resourceId: String,
 	currentDialogueIndex: Number,
+	needUnlock: Boolean,
 });
-const emit = defineEmits(["on-slide-change", "on-toggle-hints", "update-note"]);
+const emit = defineEmits([
+	"on-slide-change",
+	"on-toggle-hints",
+	"update-note",
+	"unlock-package",
+]);
 
+const handleUnlock = () => {
+	emit("unlock-package");
+};
 const currentKnowledgeIndex = ref(0); // 当前知识点卡片索引
 const localKnowledgePoints = ref([]); // 创建局部的响应式数组
 const currentPoint = ref(null);

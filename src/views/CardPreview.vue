@@ -80,8 +80,10 @@
 											"
 											:currentDialogueIndex="currentDialogueIndex"
 											:resourceId="episodeId"
+											:needUnlock="needUnlock"
 											@on-slide-change="handleSlideChange"
 											@update-note="handleUpdateNote"
+											@unlock-package="handleUnlockPackage"
 										/>
 									</div>
 								</div>
@@ -366,6 +368,7 @@ const isListenMode = ref(false);
 const isLoading = ref(true);
 
 const guestNotAllow = ref(false);
+const needUnlock = ref(false); // 添加这个状态
 
 const { saveProgress } = useProgress(
 	appStore,
@@ -374,6 +377,17 @@ const { saveProgress } = useProgress(
 	currentPage,
 	route
 );
+
+const handleUnlockPackage = () => {
+	// 跳转到购买页面或打开购买对话框
+	router.push({
+		path: "/purchase",
+		query: {
+			catalogId: route.params.id,
+			returnTo: route.fullPath,
+		},
+	});
+};
 
 // 获取课程
 const getLesson = async () => {
@@ -414,15 +428,11 @@ const getLesson = async () => {
 			throw new Error(scriptRes.data.message || "Invalid lesson data");
 		}
 	} catch (error) {
-		console.error("Error loading lesson:", error.status);
+		console.error("Error loading lesson:", error);
 		isLoading.value = false;
-		if (error.status === 403) {
+		if (error === "Failed to load knowledge data") {
 			guestNotAllow.value = true;
 		} else {
-			showToast({
-				message: "加载失败，请刷新页面重试",
-				type: "error",
-			});
 		}
 	}
 };
@@ -464,6 +474,8 @@ const getKnowledge = async () => {
 			params: { catalogId: route.params.id, lessonId: route.query.sign },
 		});
 
+		console.log(res);
+
 		if (res.data.code === 200 && Array.isArray(res.data.data)) {
 			knowledges.value = res.data.data;
 			return true;
@@ -471,9 +483,11 @@ const getKnowledge = async () => {
 			throw new Error("Knowledge data is invalid");
 		}
 	} catch (error) {
-		console.error("Error fetching knowledge:", error);
-		knowledges.value = [];
-		return false;
+		if (error.status === 403) {
+			needUnlock.value = true;
+			knowledges.value = [];
+			return false;
+		}
 	}
 };
 
@@ -612,6 +626,14 @@ const toggleBazingaPlayMode = () => {
 };
 
 const togglePracticeMode = () => {
+	if (needUnlock.value) {
+		console.log("hello");
+		showToast({
+			message: "解锁资源包体验完整内容",
+			type: "warning",
+		});
+		return;
+	}
 	isFlipped.value = !isFlipped.value;
 };
 

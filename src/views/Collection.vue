@@ -63,8 +63,12 @@
 				</div>
 
 				<!-- 设置 -->
-				<!-- v-if="!isDefault" -->
-				<button @click="goToCollectionEdit" class="retro-btn-small mt-6">
+				<!--  -->
+				<button
+					v-if="!isDefault"
+					@click="goToCollectionEdit"
+					class="retro-btn-small mt-6"
+				>
 					<div class="btn-face">
 						<i class="bi bi-gear-fill text-lg"></i>
 					</div>
@@ -107,7 +111,7 @@
 			</div>
 			<!-- 剧集 -->
 			<template v-if="viewMode === 'gallery'">
-				<div class="grid grid-cols-3 md:grid-cols-4 gap-6">
+				<div class="grid grid-cols-3 md:grid-cols-4 gap-6 mb-10">
 					<div
 						v-for="(episode, index) in currentSeasonEpisodes"
 						:key="index"
@@ -128,7 +132,7 @@
 			</template>
 			<template v-else>
 				<!-- 列表视图 -->
-				<div class="flex flex-col space-y-4">
+				<div class="flex flex-col space-y-4 mb-10">
 					<div
 						v-for="(episode, index) in currentSeasonEpisodes"
 						:key="index"
