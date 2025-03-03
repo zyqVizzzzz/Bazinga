@@ -20,11 +20,11 @@
 			</div>
 		</Transition>
 
-		<Transition name="fade">
+		<!-- <Transition name="fade">
 			<div v-if="showHeadphone" class="headphone-background" aria-hidden="true">
 				<i class="bi bi-headphones"></i>
 			</div>
-		</Transition>
+		</Transition> -->
 
 		<div class="relative z-10">
 			<div v-for="(dialogue, index) in highlightedText" :key="index">
@@ -348,7 +348,7 @@ onUnmounted(() => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(255, 255, 255, 0.9);
+	background: rgba(255, 255, 255, 0.5);
 	z-index: 100;
 	backdrop-filter: blur(4px);
 }

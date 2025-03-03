@@ -41,7 +41,7 @@
 				</h2>
 
 				<!-- 难度等级 -->
-				<div class="retro-display-box w-3/5 mt-4">
+				<div class="retro-display-box w-3/5 mt-4 mb-4">
 					<div class="display-face p-4">
 						<div
 							class="font-semibold flex items-center justify-center text-gray-800"
@@ -59,6 +59,31 @@
 						>
 							{{ infoData.difficultyDetails }}
 						</p>
+					</div>
+				</div>
+
+				<!-- 资源包状态显示 -->
+				<div v-if="isDefault" class="package-status mt-6">
+					<div v-if="hasPackageAccess" class="retro-badge success">
+						<div class="badge-content">
+							<i class="bi bi-check-circle-fill text-xl"></i>
+							<span class="ml-2">已解锁全部内容</span>
+						</div>
+					</div>
+					<div v-else class="retro-promo" @click="handleUnlock">
+						<div class="promo-content">
+							<div class="promo-text">
+								<h3 class="font-bold">开通资源包解锁全部学习内容</h3>
+							</div>
+							<button class="unlock-btn">
+								<span class="price mr-2">¥14.9</span>
+								<!-- <i class="bi bi-unlock-fill"></i> -->
+								立即解锁
+							</button>
+						</div>
+						<!-- 装饰元素 -->
+						<div class="promo-decoration left-star">★</div>
+						<div class="promo-decoration right-star">★</div>
 					</div>
 				</div>
 
@@ -210,6 +235,8 @@ const isDefault = ref(true); // 是否是系统默认数据
 const currentProgress = ref({}); // 当前进度
 const viewMode = ref("gallery");
 
+const hasPackageAccess = ref(false); // 检测是否已购入资源包
+
 // 获取当前季的集数
 const currentSeason = computed(() => seasons.value[currentSeasonIndex.value]);
 const currentSeasonEpisodes = computed(() => {
@@ -260,10 +287,47 @@ const getUserProfile = async () => {
 	}
 };
 
+// 检查资源包访问权限
+const checkPackageAccess = async () => {
+	try {
+		if (!isLogin.value) {
+			hasPackageAccess.value = false;
+			return;
+		}
+
+		const res = await apiClient.get(`/users/catalog-access/${route.params.id}`);
+		if (res.data.code === 200) {
+			hasPackageAccess.value = res.data.data.hasAccess;
+		} else {
+			hasPackageAccess.value = false;
+		}
+	} catch (error) {
+		console.error("Failed to check package access:", error);
+		hasPackageAccess.value = false;
+	}
+};
+
 onMounted(async () => {
 	await loadCategoryData();
+	await checkPackageAccess();
 	isLogin.value && getUserProfile();
 });
+
+// 处理解锁点击
+const handleUnlock = () => {
+	if (!isLogin.value) {
+		router.push("/login");
+		return;
+	}
+
+	router.push({
+		path: "/purchase",
+		query: {
+			catalogId: route.params.id,
+			returnTo: route.fullPath,
+		},
+	});
+};
 
 const goToLessonProgress = () => {
 	router.push({
@@ -559,5 +623,136 @@ button:disabled {
 	position: relative;
 	display: inline-block;
 	padding: 0.5rem 2rem;
+}
+
+.package-status {
+	z-index: 10;
+	width: 100%;
+	max-width: 480px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+/* 已解锁状态 */
+.retro-badge.success {
+	width: 50%;
+	background: rgba(var(--accent-color-rgb), 0.6);
+	padding: 8px 16px;
+	border-radius: 8px;
+	border: 2px solid #fff;
+	box-shadow: 0 2px 0 #000, 2px 4px 8px rgba(0, 0, 0, 0.1);
+	margin: 0 auto;
+}
+
+.badge-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	font-weight: 500; /* 减小字重 */
+	font-size: 0.9rem; /* 减小字号 */
+}
+
+.badge-content i {
+	font-size: 0.9rem; /* 减小图标大小 */
+}
+/* 未解锁促销样式 */
+.retro-promo {
+	background: rgba(255, 255, 255, 0.95);
+	border: 3px solid #000;
+	border-radius: 12px;
+	padding: 16px 24px;
+	cursor: pointer;
+	position: relative;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 0 #000, 4px 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.retro-promo:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 0 #000, 4px 10px 20px rgba(0, 0, 0, 0.25);
+}
+.retro-promo:active {
+	transform: translateY(2px);
+	box-shadow: 0 2px 0 #000, 2px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.promo-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	color: #000;
+	gap: 16px;
+}
+
+.promo-text h3 {
+	color: #000;
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	white-space: nowrap; /* 确保文本不换行 */
+}
+
+.promo-price {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.unlock-btn {
+	display: flex;
+	align-items: center;
+	background: #ff4757;
+	color: white;
+	padding: 8px 16px;
+	border-radius: 8px;
+	border: 2px solid #000;
+	font-weight: 600;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 0 #000;
+	white-space: nowrap; /* 确保按钮内容不换行 */
+}
+
+.price {
+	font-weight: bold;
+	color: white; /* 改为白色以配合按钮背景 */
+	text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.unlock-btn:hover {
+	background: #ff5e76;
+	transform: translateY(-1px);
+}
+
+.unlock-btn:active {
+	transform: translateY(1px);
+	box-shadow: 0 1px 0 #000;
+}
+
+/* 装饰元素 */
+.promo-decoration {
+	position: absolute;
+	font-size: 1.5rem;
+	color: #ff4757;
+	animation: spin 4s linear infinite;
+}
+.left-star {
+	left: -10px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.right-star {
+	right: -10px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+@keyframes spin {
+	from {
+		transform: translateY(-50%) rotate(0deg);
+	}
+	to {
+		transform: translateY(-50%) rotate(360deg);
+	}
 }
 </style>

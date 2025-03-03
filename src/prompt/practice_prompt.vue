@@ -81,11 +81,36 @@
 <script setup>
 import { ref } from "vue";
 import apiClient from "@/api";
-import { practiceData } from "./practice_data.js";
+import {
+	scene1,
+	scene2,
+	scene3,
+	scene4,
+	scene5,
+	scene6,
+	scene7,
+	scene8,
+	scene9,
+	scene10,
+	scene11,
+	scene12,
+	scene13,
+	scene14,
+	scene15,
+	scene16,
+	scene17,
+	scene18,
+	scene19,
+	scene20,
+	scene21,
+	scene22,
+	scene23,
+	scene24,
+} from "./practice_data.js";
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67b84db843370048fe40c8f0");
+const lessonId = ref("67b84db843370048fe40c8f1");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -135,59 +160,74 @@ const VALID_EMOJIS = [
 // 提交内容方法
 const submitContent = async () => {
 	// 转换内容
-	const practice = { ...practiceData };
+	const scenes = [
+		{ data: scene16, id: 16 },
+		{ data: scene17, id: 17 },
+		{ data: scene18, id: 16 },
+		{ data: scene19, id: 19 },
+		{ data: scene20, id: 20 },
+		{ data: scene24, id: 24 },
+	];
 
-	// 处理对话数据格式
-	practice.dialogues = practice.dialogues.map((dialogue) => {
-		// 创建新的对话对象，使用解构赋值来排除不需要的字段
-		const { lines, chinese_lines, ...rest } = dialogue;
-		// 标准化 emoji，如果不在有效列表中则使用 neutral
-		const standardizedEmoji = VALID_EMOJIS.includes(dialogue.emoji)
-			? dialogue.emoji
-			: "neutral";
-		return {
-			...rest,
-			emoji: standardizedEmoji,
-			english: dialogue.lines || dialogue.english,
-			chinese: dialogue.chinese_lines || dialogue.chinese,
-		};
-	});
-
-	// 为每个对话生成语音URL
-	for (const dialogue of practice.dialogues) {
-		try {
-			// 使用文本转语音API生成URL
-			console.log({
-				text: dialogue.english,
-				role: dialogue.character,
-				emotion: dialogue.emoji,
-			});
-			const response = await apiClient.post("/voice/generate", {
-				text: dialogue.english,
-				role: dialogue.character,
-				emotion: dialogue.emoji,
-			});
-			if (response.data.code === 200) {
-				// 添加语音URL到对话数据中
-				dialogue.voiceUrl = response.data.data.audioUrl;
-			}
-		} catch (error) {
-			console.error("生成语音URL失败:", error);
-		}
-	}
-
-	// 输出转换后的数据
-	console.log("转换后的数据:", practice);
 	try {
-		await apiClient.post(
-			`/knowledge/${catalogId.value}/${lessonId.value}/Scene${parseInt(
-				sceneId.value
-			)}/practice`,
-			{
-				practice,
+		// 遍历所有场景
+		for (const scene of scenes) {
+			// 为当前场景创建新的 practice 对象
+			const practice = {
+				conversation_id: `NS20480324`,
+				theme: `Video Game Night`,
+				dialogues: scene.data.map((dialogue) => {
+					// 标准化 emoji
+					const standardizedEmoji = VALID_EMOJIS.includes(dialogue.emoji)
+						? dialogue.emoji
+						: "neutral";
+
+					return {
+						character: dialogue.character,
+						emoji: standardizedEmoji,
+						english: dialogue.lines,
+						chinese: dialogue.chinese_lines,
+					};
+				}),
+			};
+
+			// 为每个对话生成语音URL
+			for (const dialogue of practice.dialogues) {
+				try {
+					console.log({
+						text: dialogue.english,
+						role: dialogue.character,
+						emotion: dialogue.emoji,
+					});
+					const response = await apiClient.post("/voice/generate", {
+						text: dialogue.english,
+						role: dialogue.character,
+						emotion: dialogue.emoji,
+					});
+					if (response.data.code === 200) {
+						dialogue.voiceUrl = response.data.data.audioUrl;
+					}
+				} catch (error) {
+					console.error("生成语音URL失败:", error);
+				}
 			}
-		);
-		localStorage.setItem("sceneId", "");
+
+			// 提交当前场景数据
+			try {
+				await apiClient.post(
+					`/knowledge/${catalogId.value}/${lessonId.value}/Scene${scene.id}/practice`,
+					{
+						practice,
+					}
+				);
+				console.log(`Scene ${scene.id} submitted successfully`);
+			} catch (error) {
+				console.error(`Scene ${scene.id} submission failed:`, error);
+			}
+		}
+
+		// 所有场景处理完成
+		alert("所有场景数据提交完成！");
 	} catch (error) {
 		console.error("提交数据失败:", error);
 	}
@@ -195,12 +235,12 @@ const submitContent = async () => {
 
 const submitSingleContent = async () => {
 	const dialogue = {
-		character: "Jinji",
-		emoji: "happy",
+		character: "Muz",
+		emoji: "neutral",
 		english:
-			"Aww, Muz, that’s a solid start! Maybe spice it up like, 'Oh no, Jinji, that test was brutal! Let’s study together, and I’ll hype you up to make you feel all better.' See? Extra love makes it pop!",
-		chinese:
-			"哇，Muz，这开局很稳！也许可以加点料，比如，'天哪，Jinji，那考试太狠了！咱们一起学，我会给你打气让你感觉好起来。'看，多点爱就能更出彩！",
+			"Agreed, Jinji. These expressions enhance both emotional impact and conversational flow. Listeners, deploy them wisely to optimize your human interactions.",
+		chinese_lines:
+			"同意，Jinji。这些表达增强了情感影响和对话流畅性。听众们，聪明地使用它们来优化你们的人际互动吧。",
 	};
 	try {
 		// 使用文本转语音API生成URL

@@ -31,7 +31,7 @@ import * as knowledgeData from "./02.js";
 
 const formData = ref({
 	catalogId: "67230dee6fc3d389ea1ffedf",
-	lessonId: "67230dee6fc3d389ea1ffee1",
+	lessonId: "67b84db843370048fe40c8f1",
 });
 
 const uploadProgress = ref(0);
