@@ -81,6 +81,14 @@ const routes = [
 		component: Membership,
 	},
 	{
+		path: "/purchase",
+		name: "Purchase",
+		component: () => import("@/views/Purchase.vue"),
+		meta: {
+			requiresAuth: true,
+		},
+	},
+	{
 		path: "/test",
 		name: "Test",
 		component: Test,

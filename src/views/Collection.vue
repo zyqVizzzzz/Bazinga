@@ -701,7 +701,7 @@ button:disabled {
 .unlock-btn {
 	display: flex;
 	align-items: center;
-	background: #ff4757;
+	background: var(--secondary-color);
 	color: white;
 	padding: 8px 16px;
 	border-radius: 8px;
@@ -719,7 +719,7 @@ button:disabled {
 }
 
 .unlock-btn:hover {
-	background: #ff5e76;
+	background: rgba(var(--secondary-color-rgb), 0.95);
 	transform: translateY(-1px);
 }
 
@@ -732,7 +732,7 @@ button:disabled {
 .promo-decoration {
 	position: absolute;
 	font-size: 1.5rem;
-	color: #ff4757;
+	color: var(--secondary-color);
 	animation: spin 4s linear infinite;
 }
 .left-star {
