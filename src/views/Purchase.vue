@@ -71,14 +71,25 @@
 				<p>加载中...</p>
 			</div>
 		</div>
+
+		<!-- 添加二维码弹窗 -->
+		<div v-if="showQRCode" class="qr-code-modal">
+			<div class="modal-content">
+				<div class="close" @click="closeQRCode">&times;</div>
+				<h3 class="text-xl font-bold mb-4">请使用支付宝扫码支付</h3>
+				<canvas id="qrcode" class="qr-code-img mb-4"></canvas>
+				<p class="text-gray-600">支付完成后将自动跳转</p>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
+import QRCode from "qrcode"; // 需要安装：npm install qrcode
 
 const route = useRoute();
 const router = useRouter();
@@ -113,19 +124,34 @@ const fetchProductInfo = async () => {
 const handlePurchase = async () => {
 	if (isProcessing.value) return;
 
+	console.log({
+		amount: productInfo.value.price,
+		paymentMethod: paymentMethod.value,
+	});
+
 	try {
 		isProcessing.value = true;
 		// 创建订单
-		const res = await apiClient.post("/purchases/create", {
-			catalogId: route.query.catalogId,
+		const res = await apiClient.post("/payments/create", {
+			catalogId: route.query.catalogId, // 添加 catalogId
+			amount: productInfo.value.price,
 			paymentMethod: paymentMethod.value,
 		});
 
 		if (res.data.code === 200) {
-			// 显示支付二维码
-			qrCodeUrl.value = res.data.data.qrCode;
 			showQRCode.value = true;
-			// 开始轮询支付状态
+			// 确保 DOM 已更新后再生成二维码
+			await nextTick();
+			const canvas = document.getElementById("qrcode");
+			await QRCode.toCanvas(canvas, res.data.data.qrCode, {
+				width: 200,
+				margin: 2,
+				color: {
+					dark: "#000",
+					light: "#fff",
+				},
+			});
+
 			startCheckPaymentStatus(res.data.data.orderId);
 		} else {
 			showToast({ message: res.data.message, type: "error" });
@@ -140,16 +166,18 @@ const handlePurchase = async () => {
 
 // 轮询检查支付状态
 const startCheckPaymentStatus = (orderId) => {
+	if (checkPaymentTimer) {
+		clearInterval(checkPaymentTimer);
+	}
+
 	checkPaymentTimer = setInterval(async () => {
 		try {
-			const res = await apiClient.get(`/purchases/status/${orderId}`);
-			if (res.data.code === 200) {
-				if (res.data.data.status === "paid") {
-					clearInterval(checkPaymentTimer);
-					showQRCode.value = false;
-					showToast({ message: "支付成功", type: "success" });
-					goBack();
-				}
+			const res = await apiClient.get(`/payments/status/${orderId}`);
+			if (res.data.code === 200 && res.data.data.success) {
+				clearInterval(checkPaymentTimer);
+				showQRCode.value = false;
+				showToast({ message: "支付成功", type: "success" });
+				goBack();
 			}
 		} catch (error) {
 			console.error("Check payment status failed:", error);
@@ -166,6 +194,15 @@ const goBack = () => {
 	}
 };
 
+// 关闭二维码弹窗
+const closeQRCode = () => {
+	showQRCode.value = false;
+	if (checkPaymentTimer) {
+		clearInterval(checkPaymentTimer);
+		checkPaymentTimer = null;
+	}
+};
+
 onMounted(() => {
 	if (!route.query.catalogId) {
 		showToast({ message: "无效的商品信息", type: "error" });
@@ -173,6 +210,13 @@ onMounted(() => {
 		return;
 	}
 	fetchProductInfo();
+});
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+	if (checkPaymentTimer) {
+		clearInterval(checkPaymentTimer);
+	}
 });
 </script>
 
