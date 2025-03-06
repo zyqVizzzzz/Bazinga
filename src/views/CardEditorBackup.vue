@@ -27,26 +27,6 @@
 						</div>
 					</button>
 				</div>
-
-				<div class="tooltip" data-tip="一键生成知识点">
-					<button
-						class="retro-btn"
-						@click="openKnowledgeModal"
-						:disabled="generateAllLoading"
-					>
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i v-if="!generateAllLoading" class="bi bi-magic text-lg"></i>
-									<span
-										v-else
-										class="loading loading-spinner loading-xs"
-									></span>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
 			</div>
 			<div class="editor-container text-sm mt-4 relative">
 				<div class="text-sm rounded shadow-editor" style="overflow-y: auto">
@@ -108,19 +88,48 @@
 										class="input input-bordered input-sm w-full max-w-xs"
 									/>
 								</div>
-								<div class="mb-2">
-									<label for="word_zh" class="text-xs pb-1 ml-1 block"
-										>释义:</label
+								<!-- <div class="mb-2">
+									<label for="type" class="text-xs pb-1 ml-1 block"
+										>类型:</label
 									>
-									<input
-										type="text"
-										v-model="editedFields.word_zh"
-										id="word_zh"
-										placeholder="请输入中文释义"
-										class="input input-bordered input-sm w-full max-w-xs"
-									/>
+									<select
+										v-model="editedFields.type"
+										id="type"
+										class="select select-bordered select-sm w-full max-w-xs"
+									>
+										<option value="">请选择类型</option>
+										<option value="vocabulary">词汇</option>
+										<option value="phrase">短语</option>
+										<option value="daily">日常用语</option>
+									</select>
+								</div> -->
+								<div class="flex items-center justify-between space-x-2 mb-2">
+									<div>
+										<label for="pos" class="text-xs pb-1 ml-1 block"
+											>词性:</label
+										>
+										<input
+											type="text"
+											v-model="editedFields.pos"
+											id="pos"
+											placeholder="请输入词性"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+									</div>
+									<div>
+										<label for="word_zh" class="text-xs pb-1 ml-1 block"
+											>释义:</label
+										>
+										<input
+											type="text"
+											v-model="editedFields.word_zh"
+											id="word_zh"
+											placeholder="请输入中文释义"
+											class="input input-bordered input-sm w-full max-w-xs"
+										/>
+									</div>
 								</div>
-								<div class="mb-2">
+								<div class="mb-2" v-if="editedFields.type !== 'vocabulary'">
 									<label for="definition_zh" class="text-xs pb-1 ml-1 block"
 										>详细释义:</label
 									>
@@ -132,26 +141,17 @@
 									></textarea>
 								</div>
 
-								<div class="mb-2">
-									<label for="synonyms" class="text-xs pb-1 ml-1 block"
-										>近义词/句:</label
-									>
-									<textarea
-										v-model="editedFields.synonyms"
-										id="synonyms"
-										placeholder="请输入近义词"
-										class="textarea textarea-bordered w-full max-w-xs p-2"
-									></textarea>
-								</div>
-
-								<div class="flex flex-col mb-2">
-									<label for="note" class="text-xs pb-1 ml-1 block"
-										>扩展信息:</label
+								<div
+									class="flex flex-col mb-2"
+									v-if="editedFields.type === 'vocabulary'"
+								>
+									<label for="prefix" class="text-xs pb-1 ml-1 block"
+										>词根 & 词缀分析:</label
 									>
 									<div class="flex items-center space-x-2">
 										<textarea
-											v-model="editedFields.note"
-											id="note"
+											v-model="editedFields.etymology"
+											id="etymology"
 											placeholder="请输入词根词缀分析"
 											class="textarea textarea-bordered w-full p-2"
 										></textarea>
@@ -190,7 +190,6 @@
 								</div>
 							</div>
 							<!-- 编辑表单结束 -->
-
 							<!-- 知识点列表 -->
 							<div v-else>
 								<div
@@ -234,14 +233,6 @@
 				</div>
 			</div>
 		</div>
-		<KnowledgeGenerator
-			ref="knowledgeGeneratorRef"
-			:editor="editor"
-			:currentKnowledge="currentKnowledge"
-			:shouldTranslate="shouldTranslate"
-			:boldKnowledgeWords="boldKnowledgeWords"
-			@update:currentKnowledge="currentKnowledge = $event"
-		/>
 	</div>
 </template>
 <script setup>
@@ -253,7 +244,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useAppStore } from "@/store";
 import { exampleText, exampleTextZh } from "@/constants/Example.js";
 import { TranslateTool } from "../utils/translateTool";
-import KnowledgeGenerator from "@/components/cardEditor/KnowledgeGenerator.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -269,10 +259,7 @@ const scriptJson = ref(null);
 
 const existingBoldWords = new Set();
 
-const generateLoading = ref(false); // 生成单个知识点状态变量
-const translateLoading = ref(false); // 一键翻译状态变量
-
-const knowledgeGeneratorRef = ref(null); // 知识点生成器引用
+const generateLoading = ref(false);
 
 // 在组件setup最开始就定义这个函数
 const preventDefaultEnter = (event) => {
@@ -425,6 +412,13 @@ const initDialogues = async () => {
 	} catch (err) {}
 };
 
+const generateKnowledge2 = async (word) => {
+	const res = await apiClient.get(`/dictionary/${word}`);
+	if (res.data.code === 200) {
+		editedFields.value.pos = res.data.data.pos[0].type;
+	}
+};
+
 const generateKnowledge = async (word) => {
 	generateLoading.value = true;
 	try {
@@ -435,29 +429,20 @@ const generateKnowledge = async (word) => {
 			generateLoading.value = false;
 			editedFields.value.type = res.data.data.type;
 			editedFields.value.word_zh = res.data.data.word_zh;
-			editedFields.value.note = res.data.data.note;
+			editedFields.value.etymology = res.data.data.etymology;
 			editedFields.value.definition_zh =
 				res.data.data.word_zh + "；" + res.data.data.definition_zh;
 			editedFields.value.example = res.data.data.example;
 			editedFields.value.example_zh = res.data.data.example_zh;
-			editedFields.value.synonyms = res.data.data.synonyms;
+			res.data.data.pos && (editedFields.value.pos = res.data.data.pos);
+			res.data.data.symbol &&
+				(editedFields.value.symbol = res.data.data.symbol);
 		} else {
 			generateLoading.value = false;
 		}
 	} catch (err) {
 		showToast({ message: "网络错误，请重试！", type: "warning" });
 		generateLoading.value = false;
-	}
-};
-
-// 添加打开模态框的方法
-const generateAllLoading = ref(false);
-const openKnowledgeModal = async () => {
-	try {
-		generateAllLoading.value = true;
-		await knowledgeGeneratorRef.value.openModal();
-	} finally {
-		generateAllLoading.value = false;
 	}
 };
 
@@ -494,78 +479,6 @@ const shouldTranslate = (text) => {
 	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
 	const chinesePercentage = (chineseChars / totalChars) * 100;
 	return chinesePercentage <= 10; // 中文比例低于10%
-};
-
-// 一键翻译功能
-const translateAllContent = async () => {
-	try {
-		translateLoading.value = true;
-
-		// 获取编辑器内容
-		const savedData = await editor.value.save();
-		const blocks = savedData.blocks;
-
-		// 找出所有英文段落（非空且不是标题的段落）
-		const englishBlocks = blocks.filter(
-			(block) =>
-				block.type === "paragraph" &&
-				block.data.text.trim() &&
-				!block.data.text.startsWith("#") &&
-				shouldTranslate(block.data.text)
-		);
-
-		// 批量翻译（可以考虑分批处理以避免请求过大）
-		const batchSize = 100;
-		const newBlocks = [...blocks];
-
-		for (let i = 0; i < englishBlocks.length; i += batchSize) {
-			const batch = englishBlocks.slice(i, i + batchSize);
-			const textsToTranslate = batch.map((block) => cleanText(block.data.text));
-
-			console.log(textsToTranslate);
-
-			// 批量翻译请求
-			const response = await apiClient.post("/translation/batch", {
-				texts: textsToTranslate,
-				source: "en",
-				target: "zh",
-			});
-
-			// 处理翻译结果
-			if (response.data.code === 200) {
-				const translations = response.data.data.translations;
-
-				// 将翻译结果插入到原文后面
-				batch.forEach((block, index) => {
-					const blockIndex = blocks.indexOf(block);
-					if (blockIndex !== -1 && translations[index]) {
-						// 在原文后插入翻译
-						newBlocks.splice(blockIndex + 1, 0, {
-							type: "paragraph",
-							data: {
-								text: translations[index],
-							},
-						});
-					}
-				});
-			}
-		}
-
-		// 处理连续空行
-		const processedBlocks = removeConsecutiveEmptyLines(newBlocks);
-
-		// 更新编辑器内容
-		await editor.value.render({
-			blocks: processedBlocks,
-		});
-
-		showToast({ message: "翻译完成", type: "success" });
-	} catch (error) {
-		console.error("Translation failed:", error);
-		showToast({ message: "翻译失败，请重试", type: "error" });
-	} finally {
-		translateLoading.value = false;
-	}
 };
 
 const cleanText = (text) => {
@@ -719,13 +632,13 @@ const startEditing = (item) => {
 	editedFields.value = {
 		origin: itemWithoutScenes.origin,
 		word: itemWithoutScenes.word,
+		pos: itemWithoutScenes.pos,
 		word_zh: itemWithoutScenes.word_zh,
 		example: itemWithoutScenes.example,
 		example_zh: itemWithoutScenes.example_zh,
 		type: itemWithoutScenes.type,
 		definition_zh: itemWithoutScenes.definition_zh,
-		note: itemWithoutScenes.note,
-		synonyms: itemWithoutScenes.synonyms,
+		etymology: itemWithoutScenes.etymology,
 	};
 };
 
@@ -739,13 +652,36 @@ function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
 				origin: boldText,
 				from: "knowledges",
 				word: boldText,
+				book: "",
 				definition: "",
 				definition_zh: "",
 				example: "",
 				example_zh: "",
-				type: "daily_expression",
+				pos: "",
+				symbols: "",
+				system: {
+					affixAnalysis: {
+						suffix: "",
+						suffixMeaning: "",
+						suffixMeaning_zh: "",
+						prefix: "",
+						prefixMeaning: "",
+						prefixMeaning_zh: "",
+					},
+					rootAnalysis: { root: "", meaning: "", meaning_zh: "" },
+					wordInflections: {
+						baseForm: "",
+						baseForm_zh: "原型",
+						presentParticiple: "",
+						pastParticiple_zh: "过去分词",
+						pastTense: "",
+						pastTense_zh: "过去式",
+						presentParticiple: "",
+						presentParticiple_zh: "现在分词",
+					},
+				},
+				type: "vocabulary",
 				word_zh: "",
-				synonyms: "",
 				scenes: new Set([currentSceneId]),
 			});
 			existingBoldWords.add(boldText.toLowerCase());
@@ -882,8 +818,7 @@ const saveKnowledge = () => {
 			example_zh: editedFields.value.example_zh,
 			type: editedFields.value.type,
 			definition_zh: editedFields.value.definition_zh,
-			note: editedFields.value.note,
-			synonyms: editedFields.value.synonyms,
+			etymology: editedFields.value.etymology,
 			// 保持原有的场景关联
 			scenes: originalScenes,
 		};

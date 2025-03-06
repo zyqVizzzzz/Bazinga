@@ -185,7 +185,7 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face flex items-center justify-center">
-										<i class="bi bi-joystick text-xl"></i>
+										<Podcast />
 									</div>
 								</div>
 							</div>
@@ -320,6 +320,7 @@ import {
 } from "@/store";
 import apiClient from "@/api";
 
+import Podcast from "@/components/icons/Podcast.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
