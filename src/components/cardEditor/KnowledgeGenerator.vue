@@ -2,10 +2,10 @@
 	<div>
 		<!-- 知识点生成模态框 -->
 		<dialog id="knowledge_modal" class="modal">
-			<div class="modal-box w-11/12 max-w-5xl">
+			<div class="modal-box w-11/12 max-w-5xl border border-4 border-black">
 				<div class="flex justify-between items-center mb-6">
-					<h3 class="text-lg font-bold">智能工作台</h3>
-					<form method="dialog">
+					<h3 class="text-lg font-bold">Bazinga！</h3>
+					<form method="dialog" @submit="handleDialogClose">
 						<button class="btn btn-sm btn-circle btn-ghost">
 							<i class="bi bi-x-lg"></i>
 						</button>
@@ -85,7 +85,9 @@
 						<div class="flex gap-4 h-[50vh] mb-4">
 							<!-- 左侧场景内容 -->
 							<div class="w-1/2 overflow-y-auto">
-								<div class="border p-4 rounded-md bg-paper text-sm">
+								<div
+									class="p-4 rounded-md bg-line text-sm text-left min-h-full"
+								>
 									<p v-for="(line, idx) in selectedSceneContent" :key="idx">
 										{{ line }}
 									</p>
@@ -94,16 +96,41 @@
 
 							<!-- 右侧动态组件区域 -->
 							<div class="w-1/2">
-								<component
-									:is="currentTabComponent"
-									:scene-content="selectedSceneContent"
-									:selected-scene-index="selectedSceneIndex"
-									:should-translate="shouldTranslate"
-									:current-knowledge="currentKnowledge"
-									:editor="editor"
-									:bold-knowledge-words="boldKnowledgeWords"
-									@update:knowledge="updateKnowledge"
-								/>
+								<div v-show="currentTab === 'knowledge'" class="h-full">
+									<KnowledgeTab
+										ref="knowledgeTabRef"
+										:scene-content="selectedSceneContent"
+										:selected-scene-index="selectedSceneIndex"
+										:should-translate="shouldTranslate"
+										:current-knowledge="currentKnowledge"
+										:editor="editor"
+										:bold-knowledge-words="boldKnowledgeWords"
+										@update:knowledge="updateKnowledge"
+									/>
+								</div>
+								<div v-show="currentTab === 'translate'" class="h-full">
+									<TranslateTab
+										ref="tabRefs.translate"
+										:scene-content="selectedSceneContent"
+										:selected-scene-index="selectedSceneIndex"
+										:should-translate="shouldTranslate"
+										:editor="editor"
+									/>
+								</div>
+								<div v-show="currentTab === 'sitcom'" class="h-full">
+									<SitcomTab
+										ref="tabRefs.sitcom"
+										:scene-content="selectedSceneContent"
+										:selected-scene-index="selectedSceneIndex"
+									/>
+								</div>
+								<div v-show="currentTab === 'podcast'" class="h-full">
+									<PodcastTab
+										ref="tabRefs.podcast"
+										:scene-content="selectedSceneContent"
+										:selected-scene-index="selectedSceneIndex"
+									/>
+								</div>
 							</div>
 						</div>
 
@@ -143,7 +170,7 @@
 					</div>
 				</div>
 			</div>
-			<form method="dialog" class="modal-backdrop">
+			<form method="dialog" class="modal-backdrop" @submit="handleDialogClose">
 				<button>关闭</button>
 			</form>
 		</dialog>
@@ -151,7 +178,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, shallowRef } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import KnowledgeTab from "./tab/KnowledgeTab.vue";
@@ -179,33 +206,33 @@ const switchTab = (tab) => {
 	currentTab.value = tab;
 };
 
-// 动态组件
-const currentTabComponent = computed(() => {
-	const tabs = {
-		knowledge: KnowledgeTab,
-		translate: TranslateTab,
-		sitcom: SitcomTab,
-		podcast: PodcastTab,
-	};
-	return tabs[currentTab.value];
-});
+// 各个tab组件的实例引用
+const tabRefs = {
+	knowledge: ref(null),
+	translate: ref(null),
+	sitcom: ref(null),
+	podcast: ref(null),
+};
+const knowledgeTabRef = ref(null);
 
-// 提供给父组件调用的方法，用于打开模态框
+// 打开模态框(提供给父组件)
 const openModal = async () => {
 	try {
-		// 获取编辑器内容
 		const savedData = await props.editor.save();
-
-		// 解析场景
 		parseScenes(savedData.blocks);
 
-		// 如果有场景，默认选择第一个
 		if (scenesList.value.length > 0) {
 			selectScene(0);
 		}
 
-		// 打开模态框
-		document.getElementById("knowledge_modal").showModal();
+		const modal = document.getElementById("knowledge_modal");
+		if (modal) {
+			// 使用正确的 ref 引用
+			if (knowledgeTabRef.value) {
+				knowledgeTabRef.value.setParentKnowledge(props.currentKnowledge);
+			}
+			modal.showModal();
+		}
 	} catch (error) {
 		console.error("Failed to open knowledge modal:", error);
 		showToast({ message: "获取编辑器内容失败", type: "error" });
@@ -245,11 +272,30 @@ const parseScenes = (blocks) => {
 const selectScene = (index) => {
 	selectedSceneIndex.value = index;
 	selectedSceneContent.value = scenesList.value[index].content;
+
+	// 切换场景时更新 KnowledgeTab 的已有知识点
+	if (knowledgeTabRef.value) {
+		const sceneId = `Scene${index + 1}`;
+		// 过滤出属于当前场景的知识点
+		const sceneKnowledge = new Map(
+			Array.from(props.currentKnowledge.entries()).filter(
+				([_, value]) => value.scenes && value.scenes.has(sceneId)
+			)
+		);
+		knowledgeTabRef.value.setParentKnowledge(sceneKnowledge);
+	}
 };
 
 // 更新知识点
 const updateKnowledge = (updatedKnowledge) => {
 	emit("update:currentKnowledge", updatedKnowledge);
+};
+
+// 添加对话框关闭处理
+const handleDialogClose = () => {
+	if (knowledgeTabRef.value) {
+		knowledgeTabRef.value.clearAllKnowledge();
+	}
 };
 
 // 暴露方法给父组件

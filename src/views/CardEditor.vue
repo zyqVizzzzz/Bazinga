@@ -28,7 +28,7 @@
 					</button>
 				</div>
 
-				<div class="tooltip" data-tip="一键生成知识点">
+				<div class="tooltip" data-tip="智能工作台">
 					<button
 						class="retro-btn"
 						@click="openKnowledgeModal"
@@ -235,6 +235,7 @@
 			</div>
 		</div>
 		<KnowledgeGenerator
+			v-if="editor"
 			ref="knowledgeGeneratorRef"
 			:editor="editor"
 			:currentKnowledge="currentKnowledge"

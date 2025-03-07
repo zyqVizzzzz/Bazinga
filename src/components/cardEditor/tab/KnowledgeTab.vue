@@ -36,8 +36,6 @@
 					<option value="Qwen/QwQ-32B-Preview">通义千问</option>
 				</select>
 			</div>
-
-			<!-- 右侧生成按钮 -->
 		</div>
 
 		<!-- 知识点列表 -->
@@ -46,35 +44,84 @@
 			<div
 				class="flex flex-col items-center justify-center gap-4 h-full"
 				:class="{
-					'absolute inset-0 z-10': generatedKnowledge.length > 0 && generating,
+					'absolute inset-0 z-10':
+						(getCurrentSceneKnowledge().length > 0 ||
+							parentKnowledge.size > 0) &&
+						generating,
 				}"
 				:style="
-					generatedKnowledge.length > 0 && generating
+					(getCurrentSceneKnowledge().length > 0 || parentKnowledge.size > 0) &&
+					generating
 						? 'background-color: rgba(255, 255, 255, 0.7);'
 						: ''
 				"
-				v-if="generatedKnowledge.length === 0 || generating"
+				v-if="
+					(getCurrentSceneKnowledge().length === 0 &&
+						parentKnowledge.size === 0) ||
+					generating
+				"
 			>
-				<!-- <span class="text-gray-500">暂无知识点<br />点击下方按钮自动生成</span> -->
 				<button
 					@click="generateKnowledge"
 					class="btn btn-circle btn-secondary w-16 h-16 text-white"
 					:disabled="generating"
-					:class="{ 'opacity-80': generatedKnowledge.length > 0 }"
+					:class="{
+						'opacity-80':
+							getCurrentSceneKnowledge().length > 0 || parentKnowledge.size > 0,
+					}"
 				>
 					<i v-if="!generating" class="bi bi-book text-xl"></i>
 					<span v-else class="loading loading-spinner loading-md"></span>
 				</button>
 			</div>
-			<div v-if="generatedKnowledge.length > 0" class="space-y-2">
+
+			<!-- 内容区域 -->
+			<div
+				v-if="parentKnowledge.size > 0 || getCurrentSceneKnowledge().length > 0"
+				class="space-y-4"
+			>
+				<!-- 已有知识点列表 -->
+				<div v-if="parentKnowledge.size > 0" class="mb-4">
+					<div class="text-sm font-medium text-gray-500 mb-2 pl-2">
+						已有知识点
+					</div>
+					<div class="space-y-2">
+						<div
+							v-for="(item, idx) in Array.from(parentKnowledge.values())"
+							:key="'parent-' + idx"
+							class="parent-knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+							@click="showKnowledgeDetail(item, idx, true)"
+						>
+							<div class="font-medium">{{ item.word }}</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 分隔线，只在两种知识点都存在时显示 -->
 				<div
-					v-for="(item, idx) in generatedKnowledge"
-					:key="idx"
-					class="knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-secondary/5"
-					:class="['animate-fade-in']"
-					@click="!generating && showKnowledgeDetail(item, idx)"
+					class="divider my-2"
+					v-if="parentKnowledge.size > 0 && generatedKnowledge.length > 0"
 				>
-					<div class="font-medium">{{ item.word }}</div>
+					新生成的知识点
+				</div>
+
+				<!-- 生成的知识点列表 -->
+				<div v-if="generatedKnowledge.length > 0" class="space-y-2">
+					<div
+						class="text-sm font-medium text-gray-500 mb-2 pl-2"
+						v-if="parentKnowledge.size === 0"
+					>
+						生成的知识点
+					</div>
+					<div
+						v-for="(item, idx) in getCurrentSceneKnowledge()"
+						:key="idx"
+						class="knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+						:class="['animate-fade-in']"
+						@click="!generating && showKnowledgeDetail(item, idx)"
+					>
+						<div class="font-medium">{{ item.word }}</div>
+					</div>
 				</div>
 
 				<!-- 再次生成按钮，仅在生成完成后显示 -->
@@ -161,7 +208,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from "vue";
+import { ref, onMounted, reactive, watch } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
@@ -185,6 +232,7 @@ const props = defineProps({
 	editor: {
 		type: Object,
 		required: true,
+		default: null, // 允许为 null
 	},
 	boldKnowledgeWords: {
 		type: Function,
@@ -204,18 +252,43 @@ const options = reactive({
 
 // 状态变量
 const generating = ref(false);
-const generatedKnowledge = ref([]);
+const generatedKnowledge = ref([]); // 当前场景的生成知识点
 const selectedKnowledge = ref(null);
+const selectedKnowledgeIndex = ref(-1); // 添加这一行
 
-// 随机获取词云项目大小
-const getRandomSize = () => {
-	const sizes = ["text-sm", "text-base", "text-lg", "text-xl"];
-	return sizes[Math.floor(Math.random() * sizes.length)];
+// 父组件知识点状态
+const parentKnowledge = ref(new Map());
+// 标记是否来自父组件的状态
+const isFromParent = ref(false);
+
+// 场景知识点缓存，存储每个场景的生成知识点
+const sceneGeneratedKnowledge = ref(new Map());
+
+const initSceneKnowledge = () => {
+	// 加载当前场景的知识点
+	generatedKnowledge.value =
+		sceneGeneratedKnowledge.value.get(props.selectedSceneIndex) || [];
+};
+// 在组件挂载时调用
+onMounted(() => {
+	initSceneKnowledge();
+});
+
+// 获取当前场景的知识点
+const getCurrentSceneKnowledge = () => {
+	return sceneGeneratedKnowledge.value.get(props.selectedSceneIndex) || [];
 };
 
 // 显示知识点详情
-const showKnowledgeDetail = (item, index) => {
+const showKnowledgeDetail = (item, index, isParent = false) => {
 	selectedKnowledge.value = item;
+	selectedKnowledgeIndex.value = index;
+	isFromParent.value = isParent;
+};
+
+// 添加设置父组件知识点的方法
+const setParentKnowledge = (knowledge) => {
+	parentKnowledge.value = knowledge;
 };
 
 // 生成知识点
@@ -227,6 +300,7 @@ const generateKnowledge = async () => {
 
 	try {
 		generating.value = true;
+		generatedKnowledge.value = []; // 清空当前场景的知识点
 
 		// 获取当前场景的英文内容（过滤掉中文和空行）
 		const sceneContent = props.sceneContent
@@ -279,13 +353,17 @@ const generateKnowledge = async () => {
 			}
 		}
 
-		if (generatedKnowledge.value.length === 0) {
-			showToast({ message: "未能生成知识点", type: "warning" });
-		} else {
+		if (generatedKnowledge.value.length > 0) {
+			// 将生成的知识点缓存到对应场景
+			sceneGeneratedKnowledge.value.set(props.selectedSceneIndex, [
+				...generatedKnowledge.value,
+			]);
 			showToast({
 				message: `成功生成 ${generatedKnowledge.value.length} 个知识点`,
 				type: "success",
 			});
+		} else {
+			showToast({ message: "未能生成知识点", type: "warning" });
 		}
 	} catch (error) {
 		console.error("Failed to generate scene knowledge:", error);
@@ -326,23 +404,42 @@ const fallbackExtractPhrases = (text) => {
 const addToKnowledge = (item) => {
 	// 检查是否已存在
 	if (props.currentKnowledge.has(item.word)) {
-		showToast({ message: "该知识点已存在", type: "info" });
+		// 如果已存在，检查是否在当前场景中
+		const existingItem = props.currentKnowledge.get(item.word);
+		const currentSceneId = `Scene${props.selectedSceneIndex + 1}`;
+
+		if (existingItem.scenes.has(currentSceneId)) {
+			showToast({ message: "该知识点已在当前场景中", type: "info" });
+			return;
+		}
+
+		// 如果知识点存在但不在当前场景，则添加当前场景
+		const updatedKnowledge = new Map(props.currentKnowledge);
+		const updatedItem = { ...existingItem };
+		updatedItem.scenes.add(currentSceneId);
+		updatedKnowledge.set(item.word, updatedItem);
+
+		emit("update:knowledge", updatedKnowledge);
+
+		// 如果不是来自父组件的知识点，则从生成的知识点中移除
+		if (!isFromParent.value) {
+			removeFromGeneratedKnowledge(item);
+			// 立即更新父组件知识点列表显示
+			parentKnowledge.value = new Map(updatedKnowledge);
+		}
+
+		showToast({ message: "知识点已添加到当前场景", type: "success" });
 		return;
 	}
 
-	// 获取当前场景ID
-	const sceneId = `Scene${props.selectedSceneIndex + 1}`;
-
-	// 创建新的知识点Map
+	// 如果是新知识点，创建新的记录
+	const currentSceneId = `Scene${props.selectedSceneIndex + 1}`;
 	const updatedKnowledge = new Map(props.currentKnowledge);
-
-	// 添加到知识点集合
 	updatedKnowledge.set(item.word, {
 		...item,
-		scenes: new Set([sceneId]),
+		scenes: new Set([currentSceneId]),
 	});
 
-	// 通过事件更新父组件中的知识点
 	emit("update:knowledge", updatedKnowledge);
 
 	// 更新编辑器中的加粗效果
@@ -350,18 +447,75 @@ const addToKnowledge = (item) => {
 		props.boldKnowledgeWords(updatedKnowledge, props.editor);
 	}
 
+	// 如果不是来自父组件的知识点，则从生成的知识点中移除
+	if (!isFromParent.value) {
+		removeFromGeneratedKnowledge(item);
+		// 立即更新父组件知识点列表显示
+		parentKnowledge.value = new Map(updatedKnowledge);
+	}
+
 	showToast({ message: "知识点已添加", type: "success" });
+};
+
+// 更新父组件知识点列表
+const updateParentKnowledge = (knowledge) => {
+	// 更新本地的父组件知识点状态
+	parentKnowledge.value = new Map(knowledge);
+};
+
+// 清空所有缓存
+const clearAllKnowledge = () => {
+	generatedKnowledge.value = [];
+	sceneGeneratedKnowledge.value.clear();
 };
 
 // 清空生成的知识点
 const clearKnowledge = () => {
 	generatedKnowledge.value = [];
+	sceneGeneratedKnowledge.value.delete(props.selectedSceneIndex);
 };
+
+// 从生成的知识点中移除
+const removeFromGeneratedKnowledge = (item) => {
+	// 获取当前场景的知识点
+	const currentSceneKnowledge =
+		sceneGeneratedKnowledge.value.get(props.selectedSceneIndex) || [];
+
+	// 过滤掉要移除的知识点
+	const updatedKnowledge = currentSceneKnowledge.filter(
+		(k) => k.word !== item.word
+	);
+
+	// 更新场景知识点缓存
+	sceneGeneratedKnowledge.value.set(props.selectedSceneIndex, updatedKnowledge);
+
+	// 更新当前显示的知识点
+	generatedKnowledge.value = updatedKnowledge;
+
+	// 关闭抽屉
+	selectedKnowledge.value = null;
+	selectedKnowledgeIndex.value = -1;
+};
+
+watch(
+	() => props.selectedSceneIndex,
+	(newIndex) => {
+		// 清空选中的知识点
+		selectedKnowledge.value = null;
+		selectedKnowledgeIndex.value = -1;
+
+		// 加载当前场景的知识点
+		generatedKnowledge.value =
+			sceneGeneratedKnowledge.value.get(newIndex) || [];
+	}
+);
 
 // 暴露方法给父组件
 defineExpose({
 	generateKnowledge,
 	clearKnowledge,
+	clearAllKnowledge,
+	setParentKnowledge,
 });
 </script>
 <style scoped>
@@ -379,7 +533,7 @@ defineExpose({
 .generate-again-btn {
 	animation: fadeIn 0.5s ease-in-out;
 	animation-fill-mode: both;
-	animation-delay: 1.2s; /* 比最后一个知识点多延迟0.2秒 */
+	animation-delay: 0.1s; /* 比最后一个知识点多延迟0.2秒 */
 }
 
 @keyframes fadeIn {
@@ -392,8 +546,15 @@ defineExpose({
 		transform: translateY(0);
 	}
 }
+/* 为已有知识点添加不同的动画延迟 */
+.parent-knowledge-item:nth-child(1) {
+	animation-delay: 0.05s;
+}
+.parent-knowledge-item:nth-child(2) {
+	animation-delay: 0.1s;
+}
 
-/* 为词云项目添加不同的动画延迟 */
+/* 为新生成知识点添加不同的动画延迟 */
 .knowledge-item:nth-child(1) {
 	animation-delay: 0.1s;
 }
