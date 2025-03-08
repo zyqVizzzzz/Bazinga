@@ -2,7 +2,6 @@
 	<div class="flex flex-col h-full">
 		<!-- 顶部控制区域 -->
 		<div class="mb-4">
-			<!-- 左侧配置选项 -->
 			<div class="flex flex-wrap gap-2">
 				<select
 					v-model="options.difficulty"
@@ -272,11 +271,29 @@ const initSceneKnowledge = () => {
 // 在组件挂载时调用
 onMounted(() => {
 	initSceneKnowledge();
+	// 如果已有父组件知识点，需要过滤当前场景的知识点
+	if (props.currentKnowledge && props.currentKnowledge.size > 0) {
+		filterParentKnowledgeByScene(props.currentKnowledge);
+	}
 });
 
 // 获取当前场景的知识点
 const getCurrentSceneKnowledge = () => {
 	return sceneGeneratedKnowledge.value.get(props.selectedSceneIndex) || [];
+};
+
+// 根据当前场景过滤父组件知识点
+const filterParentKnowledgeByScene = (knowledge) => {
+	const currentSceneId = `Scene${props.selectedSceneIndex + 1}`;
+	const filteredKnowledge = new Map();
+
+	knowledge.forEach((item, key) => {
+		if (item.scenes && item.scenes.has(currentSceneId)) {
+			filteredKnowledge.set(key, item);
+		}
+	});
+
+	parentKnowledge.value = filteredKnowledge;
 };
 
 // 显示知识点详情
@@ -286,9 +303,10 @@ const showKnowledgeDetail = (item, index, isParent = false) => {
 	isFromParent.value = isParent;
 };
 
-// 添加设置父组件知识点的方法
+// 设置父组件知识点
 const setParentKnowledge = (knowledge) => {
-	parentKnowledge.value = knowledge;
+	// 过滤当前场景的知识点
+	filterParentKnowledgeByScene(knowledge);
 };
 
 // 生成知识点
@@ -507,7 +525,23 @@ watch(
 		// 加载当前场景的知识点
 		generatedKnowledge.value =
 			sceneGeneratedKnowledge.value.get(newIndex) || [];
+
+		// 根据新场景过滤父组件知识点
+		if (props.currentKnowledge) {
+			filterParentKnowledgeByScene(props.currentKnowledge);
+		}
 	}
+);
+
+// 监听 currentKnowledge
+watch(
+	() => props.currentKnowledge,
+	(newKnowledge) => {
+		if (newKnowledge) {
+			filterParentKnowledgeByScene(newKnowledge);
+		}
+	},
+	{ deep: true }
 );
 
 // 暴露方法给父组件
