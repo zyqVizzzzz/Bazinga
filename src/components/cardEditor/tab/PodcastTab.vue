@@ -10,8 +10,8 @@
 						:key="key"
 						class="mb-2 p-2 bg-white/50 rounded cursor-pointer relative"
 						:class="{
-							'selected-knowledge': selectedKnowledges.includes(key),
 							'saved-knowledge': savedPodcasts.has(key),
+							'selected-knowledge': selectedKnowledges.includes(key),
 							'hover:bg-white/70': !selectedKnowledges.includes(key),
 						}"
 						@click="toggleKnowledge(key)"
@@ -23,14 +23,6 @@
 						<!-- 已保存标识 -->
 						<div v-if="savedPodcasts.has(key)" class="absolute top-1 right-1">
 							<span class="badge badge-xs badge-success"></span>
-						</div>
-						<!-- 查看详情按钮 -->
-						<div
-							v-if="savedPodcasts.has(key)"
-							class="mt-2 text-right"
-							@click.stop="viewPodcastDetail(key)"
-						>
-							<button class="btn btn-xs btn-outline">查看详情</button>
 						</div>
 					</div>
 				</div>
@@ -66,7 +58,7 @@
 						class="btn btn-sm btn-primary text-white"
 						:disabled="generating || saving"
 					>
-						<i v-if="!saving" class="bi bi-save"></i>
+						<i v-if="!saving" class="bi bi-floppy"></i>
 						<span v-else class="loading loading-spinner loading-sm"></span>
 						<span class="ml-1">保存</span>
 					</button>
@@ -79,9 +71,9 @@
 						class="btn btn-sm btn-secondary text-white"
 						:disabled="generating"
 					>
-						<i v-if="!generating" class="bi bi-send"></i>
+						<i v-if="!generating" class="bi bi-arrow-clockwise"></i>
 						<span v-else class="loading loading-spinner loading-sm"></span>
-						<span class="ml-1">重新生成</span>
+						<!-- <span class="ml-1">重新生成</span> -->
 					</button>
 				</div>
 			</div>
@@ -152,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed, watch } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
@@ -178,9 +170,22 @@ onMounted(() => {
 	loadSavedPodcasts();
 });
 
+// 计算属性：是否有已保存的知识点
+const hasSavedKnowledge = computed(() => {
+	return savedPodcasts.value.size > 0;
+});
+
 // 加载已保存的播客数据
-const loadSavedPodcasts = async () => {
+const loadSavedPodcasts = async (sceneIndex = null) => {
 	try {
+		// 清空之前保存的播客数据
+		savedPodcasts.value.clear();
+
+		// 如果指定了场景索引，也清空该场景的缓存
+		if (sceneIndex !== null && scenePodcastCache.value.has(sceneIndex)) {
+			scenePodcastCache.value.delete(sceneIndex);
+		}
+
 		// 从URL获取资源ID
 		const resourceId = window.location.pathname.split("/").pop() || "";
 		if (!resourceId) return;
@@ -194,6 +199,11 @@ const loadSavedPodcasts = async () => {
 
 			// 将播客数据保存到本地Map中
 			podcasts.forEach((podcast) => {
+				// 只加载当前场景的播客，如果提供了场景索引
+				if (sceneIndex !== null && podcast.sceneId !== sceneIndex.toString()) {
+					return;
+				}
+
 				// 根据knowledge查找对应的key
 				for (const [key, value] of props.currentKnowledge.entries()) {
 					if (value.word === podcast.knowledge) {
@@ -252,6 +262,7 @@ const podcastUrl = ref("");
 const podcastScript = ref([]);
 const saving = ref(false);
 const savedPodcasts = ref(new Map()); // 保存已生成的播客脚本
+const scenePodcastCache = ref(new Map()); // 场景缓存，存储每个场景的播客内容
 
 // 生成播客
 const generatePodcast = async () => {
@@ -297,10 +308,68 @@ const generatePodcast = async () => {
 	}
 };
 
-// 清空播客内容
+// 监听场景索引变化，自动切换显示内容
+watch(
+	() => props.selectedSceneIndex,
+	(newIndex, oldIndex) => {
+		// 保存当前场景的内容到缓存
+		if (
+			oldIndex !== undefined &&
+			(podcastUrl.value || podcastScript.value.length)
+		) {
+			scenePodcastCache.value.set(oldIndex, {
+				url: podcastUrl.value,
+				script: [...podcastScript.value],
+				selectedKey:
+					selectedKnowledges.value.length > 0
+						? selectedKnowledges.value[0]
+						: null,
+			});
+		}
+
+		// 清空当前显示
+		clearCurrentDisplay();
+
+		// 从缓存恢复新场景的内容
+		if (scenePodcastCache.value.has(newIndex)) {
+			const cachedData = scenePodcastCache.value.get(newIndex);
+			podcastUrl.value = cachedData.url;
+			podcastScript.value = [...cachedData.script];
+
+			// 如果有选中的知识点，恢复选中状态
+			if (
+				cachedData.selectedKey &&
+				props.currentKnowledge.has(cachedData.selectedKey)
+			) {
+				selectedKnowledges.value = [cachedData.selectedKey];
+			}
+		}
+	},
+	{ immediate: false }
+);
+
+// 清空当前显示内容（不影响缓存）
+const clearCurrentDisplay = () => {
+	podcastUrl.value = "";
+	podcastScript.value = [];
+	selectedKnowledges.value = [];
+};
+
+// 清空播客内容（同时清除缓存）
 const clearPodcast = () => {
 	podcastUrl.value = "";
 	podcastScript.value = [];
+
+	// 清除当前场景的缓存
+	if (scenePodcastCache.value.has(props.selectedSceneIndex)) {
+		scenePodcastCache.value.delete(props.selectedSceneIndex);
+	}
+};
+
+// 清空选中的知识点
+const clearSelectedKnowledges = () => {
+	selectedKnowledges.value = [];
+	clearPodcast(); // 同时清空播客内容和缓存
 };
 
 // 保存播客
@@ -363,37 +432,26 @@ const savePodcast = async () => {
 	}
 };
 
-// 查看播客详情
-const viewPodcastDetail = (key) => {
-	if (!savedPodcasts.value.has(key)) return;
-
-	const podcastData = savedPodcasts.value.get(key);
-	// 这里可以实现查看详情的逻辑，例如打开一个模态框
-	// 或者跳转到详情页面
-	console.log("查看播客详情:", key, podcastData);
-
-	// 临时方案：直接加载该播客内容
-	podcastScript.value = podcastData.script;
-	podcastUrl.value = podcastData.audioUrl || "";
-};
-
 // 暴露方法给父组件
 defineExpose({
 	generatePodcast,
 	clearPodcast,
+	clearSelectedKnowledges,
+	loadSavedPodcasts,
 });
 </script>
 <style scoped>
+/* 提高selected-knowledge的优先级 */
 .selected-knowledge {
-	background-color: rgba(255, 255, 255, 0.8);
-	border: 2px solid #333;
-	box-shadow: 2px 2px 0 #333;
-	transform: translate(-1px, -1px);
+	background-color: rgba(255, 255, 255, 0.8) !important;
+	border: 2px solid #333 !important;
+	box-shadow: 2px 2px 0 #333 !important;
+	transform: translate(-1px, -1px) !important;
 }
 
 .selected-knowledge:active {
-	transform: translate(0, 0);
-	box-shadow: 0 0 0 #333;
+	transform: translate(0, 0) !important;
+	box-shadow: 0 0 0 #333 !important;
 }
 
 .saved-knowledge {
@@ -427,19 +485,6 @@ defineExpose({
 	font-size: 1rem;
 	text-indent: 0;
 	padding: 0 1rem;
-}
-
-.podcast-paragraph p {
-	/* font-family: system-ui, -apple-system, "Segoe UI", sans-serif; */
-	/* hyphens: auto; */
-}
-
-/* 添加响应式字体大小 */
-@media (max-width: 768px) {
-	.podcast-paragraph {
-		/* font-size: 1rem;
-		padding: 0 0.5rem; */
-	}
 }
 
 /* 优化文本选择效果 */

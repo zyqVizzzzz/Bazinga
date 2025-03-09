@@ -124,7 +124,7 @@
 											class="scene-container cursor-pointer w-20 h-12 rounded-lg transition-colors flex items-center justify-center"
 											:class="
 												selectedSceneIndex === index
-													? 'bg-primary/20 border-2 border-primary'
+													? 'bg-primary/20 border-2 border-gray-800'
 													: 'bg-gray-100 hover:bg-gray-200'
 											"
 										>
@@ -272,6 +272,16 @@ const selectScene = (index) => {
 			)
 		);
 		knowledgeTabRef.value.setParentKnowledge(sceneKnowledge);
+	}
+
+	// 重置 PodcastTab 组件状态
+	if (tabRefs.podcast.value) {
+		// 清空播客内容
+		tabRefs.podcast.value.clearPodcast();
+		// 清空选中的知识点
+		tabRefs.podcast.value.clearSelectedKnowledges();
+		// 重新加载当前场景的已保存播客
+		tabRefs.podcast.value.loadSavedPodcasts(index);
 	}
 };
 
