@@ -200,14 +200,14 @@ watch(
 }
 
 /* 添加自定义字体 */
-@font-face {
+/* @font-face {
 	font-family: "ComicFont";
 	src: url("@/assets/fonts/comic.woff2") format("woff2");
 }
 
 .font-comic {
 	font-family: "ComicFont", system-ui, -apple-system, sans-serif;
-}
+} */
 
 /* 适配深色背景 */
 .navbar[data-theme="dark"] {
