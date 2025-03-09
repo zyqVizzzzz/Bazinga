@@ -31,14 +31,6 @@
 					<option value="medium">中等</option>
 					<option value="long">详细</option>
 				</select>
-
-				<select
-					v-model="options.model"
-					class="select select-bordered select-sm"
-				>
-					<option value="deepseek-ai/DeepSeek-V2.5">DeepSeek</option>
-					<option value="Qwen/QwQ-32B-Preview">通义千问</option>
-				</select>
 			</div>
 		</div>
 

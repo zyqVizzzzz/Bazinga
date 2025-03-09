@@ -1,207 +1,213 @@
 <template>
-	<div class="flex flex-col h-full">
-		<!-- 顶部控制区域 -->
-		<div class="mb-4">
-			<div class="flex flex-wrap gap-2">
-				<select
-					v-model="options.difficulty"
-					class="select select-bordered select-sm"
-				>
-					<option value="beginner">初级</option>
-					<option value="intermediate">中级</option>
-					<option value="advanced">高级</option>
-				</select>
-
-				<select
-					v-model="options.direction"
-					class="select select-bordered select-sm"
-				>
-					<option value="spoken">日常口语</option>
-					<option value="written">书面表达</option>
-				</select>
-
-				<select
-					v-model="options.maxPhrases"
-					class="select select-bordered select-sm"
-				>
-					<option v-for="n in 10" :key="n" :value="n">{{ n }}个短语</option>
-				</select>
-
-				<select
-					v-model="options.model"
-					class="select select-bordered select-sm"
-				>
-					<option value="deepseek-ai/DeepSeek-V2.5">DeepSeek</option>
-					<option value="Qwen/QwQ-32B-Preview">通义千问</option>
-				</select>
+	<div class="flex gap-4 w-full h-full">
+		<!-- 左侧场景内容 -->
+		<div class="w-1/2 overflow-y-auto">
+			<div class="p-4 rounded-md bg-line text-sm text-left min-h-full">
+				<p v-for="(line, idx) in sceneContent" :key="idx">
+					{{ line }}
+				</p>
 			</div>
 		</div>
+		<div class="w-1/2 flex flex-col">
+			<!-- 顶部控制区域 -->
+			<div class="mb-4">
+				<div class="flex flex-wrap gap-2">
+					<select
+						v-model="options.difficulty"
+						class="select select-bordered select-sm"
+					>
+						<option value="beginner">初级</option>
+						<option value="intermediate">中级</option>
+						<option value="advanced">高级</option>
+					</select>
 
-		<!-- 知识点列表 -->
-		<div class="flex-1 overflow-y-auto relative">
-			<!-- 空状态和按钮组合 -->
-			<div
-				class="flex flex-col items-center justify-center gap-4 h-full"
-				:class="{
-					'absolute inset-0 z-10':
-						(getCurrentSceneKnowledge().length > 0 ||
-							parentKnowledge.size > 0) &&
-						generating,
-				}"
-				:style="
-					(getCurrentSceneKnowledge().length > 0 || parentKnowledge.size > 0) &&
-					generating
-						? 'background-color: rgba(255, 255, 255, 0.7);'
-						: ''
-				"
-				v-if="
-					(getCurrentSceneKnowledge().length === 0 &&
-						parentKnowledge.size === 0) ||
-					generating
-				"
-			>
-				<button
-					@click="generateKnowledge"
-					class="btn btn-circle btn-secondary w-16 h-16 text-white"
-					:disabled="generating"
-					:class="{
-						'opacity-80':
-							getCurrentSceneKnowledge().length > 0 || parentKnowledge.size > 0,
-					}"
-				>
-					<i v-if="!generating" class="bi bi-book text-xl"></i>
-					<span v-else class="loading loading-spinner loading-md"></span>
-				</button>
+					<select
+						v-model="options.direction"
+						class="select select-bordered select-sm"
+					>
+						<option value="spoken">口语</option>
+						<option value="written">语法</option>
+					</select>
+
+					<select
+						v-model="options.maxPhrases"
+						class="select select-bordered select-sm"
+					>
+						<option v-for="n in 10" :key="n" :value="n">{{ n }}个短语</option>
+					</select>
+				</div>
 			</div>
 
-			<!-- 内容区域 -->
-			<div
-				v-if="parentKnowledge.size > 0 || getCurrentSceneKnowledge().length > 0"
-				class="space-y-4"
-			>
-				<!-- 已有知识点列表 -->
-				<div v-if="parentKnowledge.size > 0" class="mb-4">
-					<div class="text-sm font-medium text-gray-500 mb-2 pl-2">
-						已有知识点
+			<!-- 知识点列表 -->
+			<div class="flex-1 overflow-y-auto relative">
+				<!-- 空状态和按钮组合 -->
+				<div
+					class="flex flex-col items-center justify-center gap-4 h-full"
+					:class="{
+						'absolute inset-0 z-10':
+							(getCurrentSceneKnowledge().length > 0 ||
+								parentKnowledge.size > 0) &&
+							generating,
+					}"
+					:style="
+						(getCurrentSceneKnowledge().length > 0 ||
+							parentKnowledge.size > 0) &&
+						generating
+							? 'background-color: rgba(255, 255, 255, 0.7);'
+							: ''
+					"
+					v-if="
+						(getCurrentSceneKnowledge().length === 0 &&
+							parentKnowledge.size === 0) ||
+						generating
+					"
+				>
+					<button
+						@click="generateKnowledge"
+						class="btn btn-circle btn-secondary w-16 h-16 text-white"
+						:disabled="generating"
+						:class="{
+							'opacity-80':
+								getCurrentSceneKnowledge().length > 0 ||
+								parentKnowledge.size > 0,
+						}"
+					>
+						<i v-if="!generating" class="bi bi-send text-xl"></i>
+						<span v-else class="loading loading-spinner loading-md"></span>
+					</button>
+				</div>
+
+				<!-- 内容区域 -->
+				<div
+					v-if="
+						parentKnowledge.size > 0 || getCurrentSceneKnowledge().length > 0
+					"
+					class="space-y-4"
+				>
+					<!-- 已有知识点列表 -->
+					<div v-if="parentKnowledge.size > 0" class="mb-4">
+						<div class="text-sm font-medium text-gray-500 mb-2 pl-2">
+							已有知识点
+						</div>
+						<div class="space-y-2">
+							<div
+								v-for="(item, idx) in Array.from(parentKnowledge.values())"
+								:key="'parent-' + idx"
+								class="parent-knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+								@click="showKnowledgeDetail(item, idx, true)"
+							>
+								<div class="font-medium">{{ item.word }}</div>
+							</div>
+						</div>
 					</div>
-					<div class="space-y-2">
+
+					<!-- 分隔线，只在两种知识点都存在时显示 -->
+					<div
+						class="divider my-2"
+						v-if="parentKnowledge.size > 0 && generatedKnowledge.length > 0"
+					>
+						新生成的知识点
+					</div>
+
+					<!-- 生成的知识点列表 -->
+					<div v-if="generatedKnowledge.length > 0" class="space-y-2">
 						<div
-							v-for="(item, idx) in Array.from(parentKnowledge.values())"
-							:key="'parent-' + idx"
-							class="parent-knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
-							@click="showKnowledgeDetail(item, idx, true)"
+							class="text-sm font-medium text-gray-500 mb-2 pl-2"
+							v-if="parentKnowledge.size === 0"
+						>
+							生成的知识点
+						</div>
+						<div
+							v-for="(item, idx) in getCurrentSceneKnowledge()"
+							:key="idx"
+							class="knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+							:class="['animate-fade-in']"
+							@click="!generating && showKnowledgeDetail(item, idx)"
 						>
 							<div class="font-medium">{{ item.word }}</div>
 						</div>
 					</div>
-				</div>
 
-				<!-- 分隔线，只在两种知识点都存在时显示 -->
-				<div
-					class="divider my-2"
-					v-if="parentKnowledge.size > 0 && generatedKnowledge.length > 0"
-				>
-					新生成的知识点
-				</div>
-
-				<!-- 生成的知识点列表 -->
-				<div v-if="generatedKnowledge.length > 0" class="space-y-2">
+					<!-- 再次生成按钮，仅在生成完成后显示 -->
 					<div
-						class="text-sm font-medium text-gray-500 mb-2 pl-2"
-						v-if="parentKnowledge.size === 0"
+						v-if="!generating"
+						class="flex justify-center my-4 transition-all"
+						:class="['generate-again-btn']"
 					>
-						生成的知识点
-					</div>
-					<div
-						v-for="(item, idx) in getCurrentSceneKnowledge()"
-						:key="idx"
-						class="knowledge-item border rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
-						:class="['animate-fade-in']"
-						@click="!generating && showKnowledgeDetail(item, idx)"
-					>
-						<div class="font-medium">{{ item.word }}</div>
-					</div>
-				</div>
-
-				<!-- 再次生成按钮，仅在生成完成后显示 -->
-				<div
-					v-if="!generating"
-					class="flex justify-center my-4 transition-all"
-					:class="['generate-again-btn']"
-				>
-					<button
-						@click="generateKnowledge"
-						class="btn btn-circle btn-secondary text-white h-12 w-12 mt-2"
-						:disabled="generating"
-					>
-						<i v-if="!generating" class="bi bi-book text-sm"></i>
-						<span v-else class="loading loading-spinner loading-md"></span>
-					</button>
-				</div>
-			</div>
-
-			<div
-				class="knowledge-drawer fixed right-0 top-0 h-full bg-white shadow-xl z-10 overflow-y-auto"
-				:class="selectedKnowledge ? 'w-80' : 'w-0'"
-			>
-				<div class="p-4" v-if="selectedKnowledge">
-					<div class="flex justify-between items-center mb-4 pb-2 border-b">
-						<h3 class="text-lg font-bold">{{ selectedKnowledge.word }}</h3>
 						<button
-							class="btn btn-sm btn-circle"
-							@click="
-								selectedKnowledge = null;
-								selectedKnowledgeIndex = -1;
-							"
+							@click="generateKnowledge"
+							class="btn btn-circle btn-secondary text-white h-12 w-12 mt-2"
+							:disabled="generating"
 						>
-							<i class="bi bi-x"></i>
-						</button>
-					</div>
-
-					<div class="mb-4 text-left pb-2">
-						<div class="text-sm text-gray-500 mb-1">中文翻译</div>
-						<div class="text-sm">{{ selectedKnowledge.word_zh }}</div>
-					</div>
-					<div
-						class="mb-4 text-left pb-2"
-						v-if="selectedKnowledge.definition_zh"
-					>
-						<div class="text-sm text-gray-500 mb-1">释义</div>
-						<div class="text-sm">{{ selectedKnowledge.definition_zh }}</div>
-					</div>
-					<div class="mb-4 text-left pb-2" v-if="selectedKnowledge.synonyms">
-						<div class="text-sm text-gray-500 mb-1">近义表达</div>
-						<div class="text-sm">{{ selectedKnowledge.synonyms }}</div>
-					</div>
-					<div class="mb-4 text-left pb-2" v-if="selectedKnowledge.example">
-						<div class="text-sm text-gray-500 mb-1">例句</div>
-						<div class="text-sm">{{ selectedKnowledge.example }}</div>
-						<div class="text-sm">{{ selectedKnowledge.example_zh }}</div>
-					</div>
-					<div class="flex justify-center mt-8">
-						<button
-							@click="addToKnowledge(selectedKnowledge)"
-							class="btn btn-sm btn-secondary text-white"
-						>
-							<i
-								class="bi bi-plus-circle mr-1"
-								style="position: relative; top: 1px"
-							></i>
-							添加到知识点
+							<i v-if="!generating" class="bi bi-send text-sm"></i>
+							<span v-else class="loading loading-spinner loading-md"></span>
 						</button>
 					</div>
 				</div>
-			</div>
 
-			<!-- 半透明遮罩，点击关闭抽屉 -->
-			<div
-				v-if="selectedKnowledge"
-				class="fixed inset-0 bg-black/20 z-5"
-				@click="
-					selectedKnowledge = null;
-					selectedKnowledgeIndex = -1;
-				"
-			></div>
+				<div
+					class="knowledge-drawer fixed right-0 top-0 h-full bg-white shadow-xl z-10 overflow-y-auto"
+					:class="selectedKnowledge ? 'w-80' : 'w-0'"
+				>
+					<div class="p-4" v-if="selectedKnowledge">
+						<div class="flex justify-between items-center mb-4 pb-2 border-b">
+							<h3 class="text-lg font-bold">{{ selectedKnowledge.word }}</h3>
+							<button
+								class="btn btn-sm btn-circle"
+								@click="
+									selectedKnowledge = null;
+									selectedKnowledgeIndex = -1;
+								"
+							>
+								<i class="bi bi-x"></i>
+							</button>
+						</div>
+
+						<div class="mb-4 text-left pb-2">
+							<div class="text-sm text-gray-500 mb-1">中文翻译</div>
+							<div class="text-sm">{{ selectedKnowledge.word_zh }}</div>
+						</div>
+						<div
+							class="mb-4 text-left pb-2"
+							v-if="selectedKnowledge.definition_zh"
+						>
+							<div class="text-sm text-gray-500 mb-1">释义</div>
+							<div class="text-sm">{{ selectedKnowledge.definition_zh }}</div>
+						</div>
+						<div class="mb-4 text-left pb-2" v-if="selectedKnowledge.synonyms">
+							<div class="text-sm text-gray-500 mb-1">近义表达</div>
+							<div class="text-sm">{{ selectedKnowledge.synonyms }}</div>
+						</div>
+						<div class="mb-4 text-left pb-2" v-if="selectedKnowledge.example">
+							<div class="text-sm text-gray-500 mb-1">例句</div>
+							<div class="text-sm">{{ selectedKnowledge.example }}</div>
+							<div class="text-sm">{{ selectedKnowledge.example_zh }}</div>
+						</div>
+						<div class="flex justify-center mt-8">
+							<button
+								@click="addToKnowledge(selectedKnowledge)"
+								class="btn btn-sm btn-secondary text-white"
+							>
+								<i
+									class="bi bi-plus-circle mr-1"
+									style="position: relative; top: 1px"
+								></i>
+								添加到知识点
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- 半透明遮罩，点击关闭抽屉 -->
+				<div
+					v-if="selectedKnowledge"
+					class="fixed inset-0 bg-black/20 z-5"
+					@click="
+						selectedKnowledge = null;
+						selectedKnowledgeIndex = -1;
+					"
+				></div>
+			</div>
 		</div>
 	</div>
 </template>

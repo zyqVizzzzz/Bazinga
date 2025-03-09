@@ -103,14 +103,11 @@ import {
 	scene19,
 	scene20,
 	scene21,
-	scene22,
-	scene23,
-	scene24,
 } from "./practice_data.js";
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("6753be1abad0eab36ddef057");
+const lessonId = ref("67b86cd8e93057b3448b2615");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -161,12 +158,27 @@ const VALID_EMOJIS = [
 const submitContent = async () => {
 	// 转换内容
 	const scenes = [
+		{ data: scene1, id: 1 },
+		{ data: scene2, id: 2 },
+		{ data: scene3, id: 3 },
+		{ data: scene4, id: 4 },
+		{ data: scene5, id: 5 },
+		{ data: scene6, id: 6 },
+		{ data: scene7, id: 7 },
+		{ data: scene8, id: 8 },
+		{ data: scene9, id: 9 },
+		{ data: scene10, id: 10 },
+		{ data: scene11, id: 11 },
+		{ data: scene12, id: 12 },
+		{ data: scene13, id: 13 },
+		{ data: scene14, id: 14 },
+		{ data: scene15, id: 15 },
 		{ data: scene16, id: 16 },
 		{ data: scene17, id: 17 },
-		{ data: scene18, id: 16 },
+		{ data: scene18, id: 18 },
 		{ data: scene19, id: 19 },
 		{ data: scene20, id: 20 },
-		{ data: scene24, id: 24 },
+		{ data: scene21, id: 21 },
 	];
 
 	try {
@@ -180,6 +192,8 @@ const submitContent = async () => {
 					// 标准化 emoji
 					const standardizedEmoji = VALID_EMOJIS.includes(dialogue.emoji)
 						? dialogue.emoji
+						: dialogue.character === "Jinji"
+						? "happy"
 						: "neutral";
 
 					return {

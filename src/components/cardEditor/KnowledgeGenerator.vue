@@ -25,39 +25,8 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face">
-											<i class="bi bi-book text-lg"></i>
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-
-						<div class="tooltip tooltip-right" data-tip="全文翻译">
-							<button
-								class="retro-btn"
-								:class="{ 'btn-active': currentTab === 'translate' }"
-								@click="switchTab('translate')"
-							>
-								<div class="btn-shadow">
-									<div class="btn-edge">
-										<div class="btn-face">
-											<i class="bi bi-translate text-lg"></i>
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-
-						<div class="tooltip tooltip-right" data-tip="生成情景剧">
-							<button
-								class="retro-btn"
-								:class="{ 'btn-active': currentTab === 'sitcom' }"
-								@click="switchTab('sitcom')"
-							>
-								<div class="btn-shadow">
-									<div class="btn-edge">
-										<div class="btn-face">
-											<i class="bi bi-camera-reels text-lg"></i>
+											<!-- <i class="bi bi-book text-lg"></i> -->
+											<KnowledgeIcon />
 										</div>
 									</div>
 								</div>
@@ -73,7 +42,23 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face">
-											<i class="bi bi-mic text-lg"></i>
+											<PodcastIcon />
+										</div>
+									</div>
+								</div>
+							</button>
+						</div>
+
+						<div class="tooltip tooltip-right" data-tip="生成情景剧">
+							<button
+								class="retro-btn"
+								:class="{ 'btn-active': currentTab === 'sitcom' }"
+								@click="switchTab('sitcom')"
+							>
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">
+											<SitcomIcon />
 										</div>
 									</div>
 								</div>
@@ -83,50 +68,40 @@
 					<div class="flex-1">
 						<!-- 中间内容区域 -->
 						<div class="flex gap-4 h-[50vh] mb-4">
-							<!-- 左侧场景内容 -->
-							<div class="w-1/2 overflow-y-auto">
-								<div
-									class="p-4 rounded-md bg-line text-sm text-left min-h-full"
-								>
-									<p v-for="(line, idx) in selectedSceneContent" :key="idx">
-										{{ line }}
-									</p>
-								</div>
+							<div v-show="currentTab === 'knowledge'" class="w-full">
+								<KnowledgeTab
+									ref="knowledgeTabRef"
+									:scene-content="selectedSceneContent"
+									:selected-scene-index="selectedSceneIndex"
+									:should-translate="shouldTranslate"
+									:current-knowledge="currentKnowledge"
+									:editor="editor"
+									:bold-knowledge-words="boldKnowledgeWords"
+									@update:knowledge="updateKnowledge"
+								/>
+							</div>
+							<div v-show="currentTab === 'podcast'" class="w-full">
+								<PodcastTab
+									ref="tabRefs.podcast"
+									:scene-content="selectedSceneContent"
+									:selected-scene-index="selectedSceneIndex"
+									:current-knowledge="currentSceneKnowledge"
+								/>
 							</div>
 
-							<!-- 右侧动态组件区域 -->
-							<div class="w-1/2">
-								<div v-show="currentTab === 'knowledge'" class="h-full">
-									<KnowledgeTab
-										ref="knowledgeTabRef"
-										:scene-content="selectedSceneContent"
-										:selected-scene-index="selectedSceneIndex"
-										:should-translate="shouldTranslate"
-										:current-knowledge="currentKnowledge"
-										:editor="editor"
-										:bold-knowledge-words="boldKnowledgeWords"
-										@update:knowledge="updateKnowledge"
-									/>
+							<div v-show="currentTab === 'sitcom'" class="flex gap-4 w-full">
+								<div class="w-1/2 overflow-y-auto">
+									<div
+										class="p-4 rounded-md bg-line text-sm text-left min-h-full"
+									>
+										<p v-for="(line, idx) in selectedSceneContent" :key="idx">
+											{{ line }}
+										</p>
+									</div>
 								</div>
-								<div v-show="currentTab === 'translate'" class="h-full">
-									<TranslateTab
-										ref="tabRefs.translate"
-										:scene-content="selectedSceneContent"
-										:selected-scene-index="selectedSceneIndex"
-										:should-translate="shouldTranslate"
-										:editor="editor"
-									/>
-								</div>
-								<div v-show="currentTab === 'sitcom'" class="h-full">
+								<div class="w-1/2">
 									<SitcomTab
 										ref="tabRefs.sitcom"
-										:scene-content="selectedSceneContent"
-										:selected-scene-index="selectedSceneIndex"
-									/>
-								</div>
-								<div v-show="currentTab === 'podcast'" class="h-full">
-									<PodcastTab
-										ref="tabRefs.podcast"
 										:scene-content="selectedSceneContent"
 										:selected-scene-index="selectedSceneIndex"
 									/>
@@ -178,13 +153,15 @@
 </template>
 
 <script setup>
-import { ref, shallowRef } from "vue";
+import { ref, computed } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import KnowledgeTab from "./tab/KnowledgeTab.vue";
-import TranslateTab from "./tab/TranslateTab.vue";
 import SitcomTab from "./tab/SitcomTab.vue";
 import PodcastTab from "./tab/PodcastTab.vue";
+import PodcastIcon from "@/components/icons/Podcast.vue";
+import KnowledgeIcon from "@/components/icons/Knowledge.vue";
+import SitcomIcon from "@/components/icons/Sitcom.vue";
 
 const props = defineProps({
 	editor: Object,
@@ -214,6 +191,18 @@ const tabRefs = {
 	podcast: ref(null),
 };
 const knowledgeTabRef = ref(null);
+
+// 获取当前场景的知识点
+const currentSceneKnowledge = computed(() => {
+	if (!props.currentKnowledge) return new Map();
+
+	const sceneId = `Scene${selectedSceneIndex.value + 1}`;
+	return new Map(
+		Array.from(props.currentKnowledge.entries()).filter(
+			([_, value]) => value.scenes && value.scenes.has(sceneId)
+		)
+	);
+});
 
 // 打开模态框(提供给父组件)
 const openModal = async () => {
