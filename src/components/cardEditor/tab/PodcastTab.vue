@@ -209,6 +209,7 @@ const loadSavedPodcasts = async (sceneIndex = null) => {
 					if (value.word === podcast.knowledge) {
 						savedPodcasts.value.set(key, {
 							script: podcast.script,
+							chineseScript: podcast.chineseScript || [],
 							audioUrl: podcast.audioPath || "",
 							timestamp: podcast.createdAt,
 							id: podcast._id,
@@ -241,6 +242,7 @@ const toggleKnowledge = (key) => {
 			// 加载该知识点的播客内容
 			const podcastData = savedPodcasts.value.get(key);
 			podcastScript.value = podcastData.script;
+			podcastChineseScript.value = podcastData.chineseScript || [];
 			podcastUrl.value = podcastData.audioUrl || "";
 		} else {
 			// 如果没有保存的内容，清空当前显示
@@ -260,6 +262,7 @@ const options = reactive({
 const generating = ref(false);
 const podcastUrl = ref("");
 const podcastScript = ref([]);
+const podcastChineseScript = ref([]);
 const saving = ref(false);
 const savedPodcasts = ref(new Map()); // 保存已生成的播客脚本
 const scenePodcastCache = ref(new Map()); // 场景缓存，存储每个场景的播客内容
@@ -293,6 +296,10 @@ const generatePodcast = async () => {
 			const podcastData = response.data.data.podcast;
 			// 将播客脚本内容转换为数组形式
 			podcastScript.value = podcastData.map((item) => item.lines);
+			// 保存中文脚本内容
+			podcastChineseScript.value = podcastData.map(
+				(item) => item.chinese_lines || ""
+			);
 			generating.value = false;
 			showToast({ message: "播客生成完成", type: "success" });
 		}
@@ -320,6 +327,7 @@ watch(
 			scenePodcastCache.value.set(oldIndex, {
 				url: podcastUrl.value,
 				script: [...podcastScript.value],
+				chineseScript: [...podcastChineseScript.value],
 				selectedKey:
 					selectedKnowledges.value.length > 0
 						? selectedKnowledges.value[0]
@@ -335,6 +343,9 @@ watch(
 			const cachedData = scenePodcastCache.value.get(newIndex);
 			podcastUrl.value = cachedData.url;
 			podcastScript.value = [...cachedData.script];
+			podcastChineseScript.value = cachedData.chineseScript
+				? [...cachedData.chineseScript]
+				: [];
 
 			// 如果有选中的知识点，恢复选中状态
 			if (
@@ -352,6 +363,7 @@ watch(
 const clearCurrentDisplay = () => {
 	podcastUrl.value = "";
 	podcastScript.value = [];
+	podcastChineseScript.value = [];
 	selectedKnowledges.value = [];
 };
 
@@ -359,6 +371,7 @@ const clearCurrentDisplay = () => {
 const clearPodcast = () => {
 	podcastUrl.value = "";
 	podcastScript.value = [];
+	podcastChineseScript.value = [];
 
 	// 清除当前场景的缓存
 	if (scenePodcastCache.value.has(props.selectedSceneIndex)) {
@@ -396,6 +409,7 @@ const savePodcast = async () => {
 			knowledge: knowledge.word, // 知识点英文单词
 			resourceId: window.location.pathname.split("/").pop() || "", // 从URL获取资源ID
 			script: podcastScript.value, // 播客脚本内容
+			chineseScript: podcastChineseScript.value,
 			audioPath: podcastUrl.value || "", // 音频路径，可能为空
 			sceneId: props.selectedSceneIndex.toString(), // 当前场景ID
 			options: {
@@ -412,6 +426,7 @@ const savePodcast = async () => {
 			// 保存成功后，更新本地缓存
 			savedPodcasts.value.set(key, {
 				script: [...podcastScript.value],
+				chineseScript: [...podcastChineseScript.value],
 				audioUrl: podcastUrl.value,
 				timestamp: new Date().toISOString(),
 				id: response.data.data.id, // 保存返回的ID，便于后续操作
