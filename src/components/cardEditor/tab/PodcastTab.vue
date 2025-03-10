@@ -120,20 +120,58 @@
 						v-if="podcastScript.length"
 						class="border p-4 rounded-md bg-gray-50"
 					>
-						<h5
-							class="font-medium mb-4 text-sm flex justify-center items-center gap-2"
-						>
-							脚本预览
-						</h5>
+						<!-- 语言切换选项 -->
+						<div class="flex justify-center items-center mb-4">
+							<!-- <h5 class="font-medium text-sm">脚本预览</h5> -->
+
+							<!-- 药丸式语言切换按钮组 -->
+							<div
+								class="flex rounded-full overflow-hidden border border-gray-800 border-2 text-xs"
+							>
+								<button
+									class="px-3 py-1 transition-colors"
+									:class="
+										displayOptions.showEnglish
+											? 'bg-primary text-white'
+											: 'bg-white hover:bg-gray-100'
+									"
+									@click="toggleLanguage('english')"
+								>
+									英文
+								</button>
+								<button
+									class="px-3 py-1 transition-colors"
+									:class="
+										displayOptions.showChinese
+											? 'bg-secondary text-white'
+											: 'bg-white hover:bg-gray-100'
+									"
+									@click="toggleLanguage('chinese')"
+								>
+									中文
+								</button>
+							</div>
+						</div>
+						<!-- 播客内容显示区域 -->
 						<div
 							v-for="(paragraph, idx) in podcastScript"
 							:key="idx"
 							class="podcast-paragraph mb-8 last:mb-0"
 						>
+							<!-- 英文内容 -->
 							<p
+								v-if="displayOptions.showEnglish"
 								class="text-gray-700 text-sm leading-8 text-justify first-letter:text-2xl"
 							>
 								{{ paragraph }}
+							</p>
+
+							<!-- 中文内容 -->
+							<p
+								v-if="displayOptions.showChinese && podcastChineseScript[idx]"
+								class="text-gray-600 text-sm leading-7 text-justify mt-2 italic"
+							>
+								{{ podcastChineseScript[idx] }}
 							</p>
 						</div>
 					</div>
@@ -168,11 +206,6 @@ const selectedKnowledges = ref([]);
 
 onMounted(() => {
 	loadSavedPodcasts();
-});
-
-// 计算属性：是否有已保存的知识点
-const hasSavedKnowledge = computed(() => {
-	return savedPodcasts.value.size > 0;
 });
 
 // 加载已保存的播客数据
@@ -267,6 +300,29 @@ const saving = ref(false);
 const savedPodcasts = ref(new Map()); // 保存已生成的播客脚本
 const scenePodcastCache = ref(new Map()); // 场景缓存，存储每个场景的播客内容
 
+// 显示选项
+const displayOptions = reactive({
+	showEnglish: true,
+	showChinese: false,
+});
+
+// 切换语言显示
+const toggleLanguage = (lang) => {
+	if (lang === "english") {
+		displayOptions.showEnglish = !displayOptions.showEnglish;
+		// 确保至少有一个选项被选中
+		if (!displayOptions.showEnglish && !displayOptions.showChinese) {
+			displayOptions.showChinese = true;
+		}
+	} else if (lang === "chinese") {
+		displayOptions.showChinese = !displayOptions.showChinese;
+		// 确保至少有一个选项被选中
+		if (!displayOptions.showEnglish && !displayOptions.showChinese) {
+			displayOptions.showEnglish = true;
+		}
+	}
+};
+
 // 生成播客
 const generatePodcast = async () => {
 	if (selectedKnowledges.value.length === 0) {
@@ -332,6 +388,7 @@ watch(
 					selectedKnowledges.value.length > 0
 						? selectedKnowledges.value[0]
 						: null,
+				displayOptions: { ...displayOptions }, // 保存显示选项
 			});
 		}
 
@@ -346,6 +403,12 @@ watch(
 			podcastChineseScript.value = cachedData.chineseScript
 				? [...cachedData.chineseScript]
 				: [];
+
+			// 恢复显示选项
+			if (cachedData.displayOptions) {
+				displayOptions.showEnglish = cachedData.displayOptions.showEnglish;
+				displayOptions.showChinese = cachedData.displayOptions.showChinese;
+			}
 
 			// 如果有选中的知识点，恢复选中状态
 			if (

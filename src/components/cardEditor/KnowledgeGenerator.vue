@@ -2,7 +2,9 @@
 	<div>
 		<!-- 知识点生成模态框 -->
 		<dialog id="knowledge_modal" class="modal">
-			<div class="modal-box w-11/12 max-w-5xl border border-4 border-black">
+			<div
+				class="modal-box w-11/12 max-w-5xl border border-4 border-black max-h-[90vh]"
+			>
 				<div class="flex justify-between items-center mb-6">
 					<h3 class="text-lg font-bold">Bazinga！</h3>
 					<form method="dialog" @submit="handleDialogClose">
@@ -67,7 +69,7 @@
 					</div>
 					<div class="flex-1">
 						<!-- 中间内容区域 -->
-						<div class="flex gap-4 h-[50vh] mb-4">
+						<div class="flex gap-4 h-[65vh] mb-4">
 							<div v-show="currentTab === 'knowledge'" class="w-full">
 								<KnowledgeTab
 									ref="knowledgeTabRef"
