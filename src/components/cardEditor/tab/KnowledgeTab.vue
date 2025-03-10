@@ -1,14 +1,14 @@
 <template>
 	<div class="flex gap-4 w-full h-full">
 		<!-- 左侧场景内容 -->
-		<div class="w-1/2 overflow-y-auto">
+		<div class="w-3/5 overflow-y-auto">
 			<div class="p-4 rounded-md bg-line text-sm text-left min-h-full">
 				<p v-for="(line, idx) in sceneContent" :key="idx">
 					{{ line }}
 				</p>
 			</div>
 		</div>
-		<div class="w-1/2 flex flex-col">
+		<div class="w-2/5 flex flex-col">
 			<!-- 顶部控制区域 -->
 			<div class="mb-4">
 				<div class="flex flex-wrap gap-2">

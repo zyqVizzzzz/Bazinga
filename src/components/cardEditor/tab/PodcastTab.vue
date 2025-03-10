@@ -1,7 +1,7 @@
 <template>
 	<div class="flex gap-4 w-full h-full">
 		<!-- 左侧知识点列表 -->
-		<div class="w-1/2 overflow-y-auto">
+		<div class="w-2/5 overflow-y-auto">
 			<div class="p-4 rounded-md bg-line text-sm text-left min-h-full">
 				<h4 class="text-center mb-4">请选择知识点</h4>
 				<div v-if="currentKnowledge.size > 0">
@@ -22,7 +22,15 @@
 						</div>
 						<!-- 已保存标识 -->
 						<div v-if="savedPodcasts.has(key)" class="absolute top-1 right-1">
-							<span class="badge badge-xs badge-success"></span>
+							<span class="badge badge-xs badge-success">
+								<!-- 音频标识 -->
+								<i
+									v-if="
+										savedPodcasts.has(key) && savedPodcasts.get(key).audioUrl
+									"
+									class="bi bi-music-note-beamed text-xs text-white"
+								></i>
+							</span>
 						</div>
 					</div>
 				</div>
@@ -33,7 +41,7 @@
 		</div>
 
 		<!-- 右侧播客内容 -->
-		<div class="w-1/2 flex flex-col h-full">
+		<div class="w-3/5 flex flex-col h-full">
 			<!-- 顶部控制区域 -->
 			<div class="mb-4 flex justify-between items-center">
 				<!-- 左侧配置选项 -->
@@ -61,6 +69,16 @@
 						<i v-if="!saving" class="bi bi-floppy"></i>
 						<span v-else class="loading loading-spinner loading-sm"></span>
 						<span class="ml-1">保存</span>
+					</button>
+					<button
+						v-if="podcastScript.length && selectedKnowledges.length > 0"
+						@click="generateAudio"
+						class="btn btn-sm btn-primary text-white"
+						:disabled="generating || saving || generatingAudio"
+					>
+						<i v-if="!generatingAudio" class="bi bi-music-note-beamed"></i>
+						<span v-else class="loading loading-spinner loading-sm"></span>
+						<span class="ml-1">生成音频</span>
 					</button>
 					<button
 						v-if="
@@ -107,10 +125,12 @@
 				</div>
 				<div v-else class="space-y-4">
 					<!-- 音频播放器 -->
-					<div v-if="podcastUrl" class="border p-4 rounded-md bg-gray-50">
-						<h5 class="font-medium mb-2">音频播放</h5>
-						<audio controls class="w-full">
-							<source :src="podcastUrl" type="audio/mpeg" />
+					<div
+						v-if="getCurrentPodcastAudioUrl()"
+						class="border p-4 rounded-md bg-gray-50"
+					>
+						<audio controls class="w-full" ref="audioElement">
+							<source :src="getCurrentPodcastAudioUrl()" type="audio/mpeg" />
 							您的浏览器不支持音频播放
 						</audio>
 					</div>
@@ -276,7 +296,20 @@ const toggleKnowledge = (key) => {
 			const podcastData = savedPodcasts.value.get(key);
 			podcastScript.value = podcastData.script;
 			podcastChineseScript.value = podcastData.chineseScript || [];
+			// 更新当前播放的音频URL（兼容旧代码）
 			podcastUrl.value = podcastData.audioUrl || "";
+
+			// 如果有音频元素，更新其src
+			if (audioElement.value) {
+				// 需要延迟一下以确保DOM已更新
+				setTimeout(() => {
+					if (audioElement.value.querySelector("source")) {
+						audioElement.value.querySelector("source").src =
+							getCurrentPodcastAudioUrl();
+						audioElement.value.load(); // 重新加载音频
+					}
+				}, 0);
+			}
 		} else {
 			// 如果没有保存的内容，清空当前显示
 			clearPodcast();
@@ -293,12 +326,15 @@ const options = reactive({
 
 // 状态变量
 const generating = ref(false);
+const generatingAudio = ref(false); // 新增音频生成状态
 const podcastUrl = ref("");
 const podcastScript = ref([]);
 const podcastChineseScript = ref([]);
 const saving = ref(false);
 const savedPodcasts = ref(new Map()); // 保存已生成的播客脚本
 const scenePodcastCache = ref(new Map()); // 场景缓存，存储每个场景的播客内容
+const audioPlayer = ref(null); // 音频播放器引用
+const audioElement = ref(null); // 音频元素引用
 
 // 显示选项
 const displayOptions = reactive({
@@ -371,6 +407,107 @@ const generatePodcast = async () => {
 	}
 };
 
+// 生成音频
+const generateAudio = async () => {
+	if (!podcastScript.value.length || selectedKnowledges.value.length === 0) {
+		showToast({ message: "没有可转换的播客内容", type: "warning" });
+		return;
+	}
+
+	try {
+		generatingAudio.value = true;
+
+		// 获取当前选中的知识点信息
+		const key = selectedKnowledges.value[0];
+		const knowledge = props.currentKnowledge.get(key);
+
+		if (!knowledge) {
+			showToast({ message: "知识点信息不完整", type: "error" });
+			return;
+		}
+
+		// 准备发送到后端的数据
+		const audioData = {
+			knowledge: knowledge.word,
+			script: podcastScript.value.join("\n"), // 将脚本内容合并为一个字符串
+			voice: options.voice,
+			speed: options.speed,
+			resourceId: window.location.pathname.split("/").pop() || "",
+			sceneId: props.selectedSceneIndex.toString(),
+		};
+
+		console.log(audioData);
+		// return;
+
+		// 调用后端接口生成音频
+		const response = await apiClient.post(
+			"/podcasts/generate-audio",
+			audioData
+		);
+
+		if (response.data.code === 200) {
+			// 更新音频URL
+			podcastUrl.value = response.data.data.result.audioUrl;
+
+			// 如果已保存，更新保存的数据
+			if (savedPodcasts.value.has(key)) {
+				const savedData = savedPodcasts.value.get(key);
+				savedData.audioUrl = podcastUrl.value;
+				savedPodcasts.value.set(key, savedData);
+			} else {
+				// 如果尚未保存，创建一个临时的保存数据
+				savedPodcasts.value.set(key, {
+					script: [...podcastScript.value],
+					chineseScript: [...podcastChineseScript.value],
+					audioUrl: podcastUrl.value,
+					timestamp: new Date().toISOString(),
+				});
+			}
+
+			// 更新缓存
+			if (scenePodcastCache.value.has(props.selectedSceneIndex)) {
+				const cachedData = scenePodcastCache.value.get(
+					props.selectedSceneIndex
+				);
+				cachedData.url = podcastUrl.value;
+				scenePodcastCache.value.set(props.selectedSceneIndex, cachedData);
+			}
+
+			// 强制更新UI
+			savedPodcasts.value = new Map(savedPodcasts.value);
+
+			showToast({ message: "音频生成成功", type: "success" });
+		} else {
+			throw new Error(response.data.message || "音频生成失败");
+		}
+	} catch (error) {
+		console.error("生成音频失败:", error);
+		showToast({
+			message: error.response?.data?.message || "生成音频失败",
+			type: "error",
+		});
+	} finally {
+		generatingAudio.value = false;
+	}
+};
+
+// 获取当前选中知识点的音频URL
+const getCurrentPodcastAudioUrl = () => {
+	if (selectedKnowledges.value.length === 0) {
+		return "";
+	}
+
+	const key = selectedKnowledges.value[0];
+
+	// 如果知识点已保存且有音频URL，返回保存的URL
+	if (savedPodcasts.value.has(key) && savedPodcasts.value.get(key).audioUrl) {
+		return savedPodcasts.value.get(key).audioUrl;
+	}
+
+	// 否则返回当前的podcastUrl（兼容旧代码）
+	return false;
+};
+
 // 监听场景索引变化，自动切换显示内容
 watch(
 	() => props.selectedSceneIndex,
@@ -408,6 +545,10 @@ watch(
 			if (cachedData.displayOptions) {
 				displayOptions.showEnglish = cachedData.displayOptions.showEnglish;
 				displayOptions.showChinese = cachedData.displayOptions.showChinese;
+			} else {
+				// 如果没有缓存的显示选项，使用默认值
+				displayOptions.showEnglish = true;
+				displayOptions.showChinese = false;
 			}
 
 			// 如果有选中的知识点，恢复选中状态
