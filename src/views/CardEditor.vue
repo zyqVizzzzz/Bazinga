@@ -246,7 +246,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
@@ -271,9 +271,14 @@ const scriptJson = ref(null);
 const existingBoldWords = new Set();
 
 const generateLoading = ref(false); // 生成单个知识点状态变量
-const translateLoading = ref(false); // 一键翻译状态变量
-
 const knowledgeGeneratorRef = ref(null); // 知识点生成器引用
+
+const generateAllLoading = ref(false);
+const isSaved = ref(false);
+
+// 添加自动保存状态变量
+const autoSaving = ref(false);
+const lastSavedTime = ref(null);
 
 // 在组件setup最开始就定义这个函数
 const preventDefaultEnter = (event) => {
@@ -452,7 +457,6 @@ const generateKnowledge = async (word) => {
 };
 
 // 添加打开模态框的方法
-const generateAllLoading = ref(false);
 const openKnowledgeModal = async () => {
 	try {
 		generateAllLoading.value = true;
@@ -495,78 +499,6 @@ const shouldTranslate = (text) => {
 	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
 	const chinesePercentage = (chineseChars / totalChars) * 100;
 	return chinesePercentage <= 10; // 中文比例低于10%
-};
-
-// 一键翻译功能
-const translateAllContent = async () => {
-	try {
-		translateLoading.value = true;
-
-		// 获取编辑器内容
-		const savedData = await editor.value.save();
-		const blocks = savedData.blocks;
-
-		// 找出所有英文段落（非空且不是标题的段落）
-		const englishBlocks = blocks.filter(
-			(block) =>
-				block.type === "paragraph" &&
-				block.data.text.trim() &&
-				!block.data.text.startsWith("#") &&
-				shouldTranslate(block.data.text)
-		);
-
-		// 批量翻译（可以考虑分批处理以避免请求过大）
-		const batchSize = 100;
-		const newBlocks = [...blocks];
-
-		for (let i = 0; i < englishBlocks.length; i += batchSize) {
-			const batch = englishBlocks.slice(i, i + batchSize);
-			const textsToTranslate = batch.map((block) => cleanText(block.data.text));
-
-			console.log(textsToTranslate);
-
-			// 批量翻译请求
-			const response = await apiClient.post("/translation/batch", {
-				texts: textsToTranslate,
-				source: "en",
-				target: "zh",
-			});
-
-			// 处理翻译结果
-			if (response.data.code === 200) {
-				const translations = response.data.data.translations;
-
-				// 将翻译结果插入到原文后面
-				batch.forEach((block, index) => {
-					const blockIndex = blocks.indexOf(block);
-					if (blockIndex !== -1 && translations[index]) {
-						// 在原文后插入翻译
-						newBlocks.splice(blockIndex + 1, 0, {
-							type: "paragraph",
-							data: {
-								text: translations[index],
-							},
-						});
-					}
-				});
-			}
-		}
-
-		// 处理连续空行
-		const processedBlocks = removeConsecutiveEmptyLines(newBlocks);
-
-		// 更新编辑器内容
-		await editor.value.render({
-			blocks: processedBlocks,
-		});
-
-		showToast({ message: "翻译完成", type: "success" });
-	} catch (error) {
-		console.error("Translation failed:", error);
-		showToast({ message: "翻译失败，请重试", type: "error" });
-	} finally {
-		translateLoading.value = false;
-	}
 };
 
 const cleanText = (text) => {
@@ -614,12 +546,12 @@ const saveDialogue = async (isCustom = false) => {
 
 		// 保存所有对话的知识点
 		if (currentKnowledge.value.size > 0) {
-			await saveAllKnowledge();
+			// 传递isCustom参数，表示是否为用户手动保存
+			await saveAllKnowledge(isCustom);
 		}
 	}
 };
 
-const isSaved = ref(false);
 const uploadScripts = async (jsonData, isCustom = false) => {
 	const catalogId = route.params.id;
 	const season = route.params.season;
@@ -706,6 +638,7 @@ const getDefaultJson = () => {
 	currentDialogue.value = defaultData[0];
 	totalDialogues.value = defaultData[0].length;
 };
+
 const getDefaultKnowledge = () => {
 	currentKnowledge.value = new Map();
 };
@@ -762,6 +695,7 @@ function checkBoldText(content) {
 	let currentSceneId = null;
 	const currentBoldWordsByScene = new Map();
 	const updatedKnowledge = new Map();
+	let knowledgeChanged = false;
 
 	// 首先通过扫描找出所有场景标题的位置和对应的场景ID
 	const titleIndices = content.blocks
@@ -829,6 +763,7 @@ function checkBoldText(content) {
 			} else {
 				// 添加新的知识点
 				addBoldWordsToKnowledge([word], sceneId);
+				knowledgeChanged = true;
 				// 将新添加的知识点复制到updatedKnowledge中
 				const newKnowledge = currentKnowledge.value.get(word);
 				if (newKnowledge) {
@@ -843,13 +778,20 @@ function checkBoldText(content) {
 		if (knowledge.scenes.size === 0) {
 			updatedKnowledge.delete(word);
 			existingBoldWords.delete(word.toLowerCase());
+			knowledgeChanged = true;
 		}
 	}
 
 	console.log("Final updated knowledge:", updatedKnowledge);
 
 	// 更新知识点集合
+	const oldSize = currentKnowledge.value.size;
 	currentKnowledge.value = updatedKnowledge;
+
+	// 如果知识点发生变化，自动保存
+	if (knowledgeChanged || oldSize !== updatedKnowledge.size) {
+		autoSaveAllKnowledge();
+	}
 }
 
 function extractBoldWords(text) {
@@ -863,7 +805,7 @@ function extractBoldWords(text) {
 }
 
 // 临时保存单个知识点
-const saveKnowledge = () => {
+const saveKnowledge = async () => {
 	try {
 		// 获取原始单词，用于在 Map 中查找和更新
 		const originalWord = editedFields.value.origin;
@@ -876,8 +818,6 @@ const saveKnowledge = () => {
 		const updatedKnowledge = {
 			origin: editedFields.value.origin,
 			word: editedFields.value.word,
-			pos: editedFields.value.pos,
-			symbols: editedFields.value.symbol,
 			word_zh: editedFields.value.word_zh,
 			example: editedFields.value.example,
 			example_zh: editedFields.value.example_zh,
@@ -902,13 +842,17 @@ const saveKnowledge = () => {
 		// 退出编辑模式
 		isEditing.value = false;
 
-		// 可选：更新编辑器中的加粗效果
+		// 更新编辑器中的加粗效果
 		if (editor.value) {
 			boldKnowledgeWords(
 				Array.from(currentKnowledge.value.values()),
 				editor.value
 			);
 		}
+		console.log("1");
+		// 自动保存所有知识点
+		await autoSaveAllKnowledge();
+		console.log("2");
 
 		// showToast({ message: "知识点已更新", type: "success" });
 	} catch (error) {
@@ -916,9 +860,12 @@ const saveKnowledge = () => {
 	}
 };
 
-// 保存所有知识点的方法
-const saveAllKnowledge = async () => {
+const autoSaveAllKnowledge = async () => {
+	if (autoSaving.value) return; // 防止重复保存
+
 	try {
+		autoSaving.value = true;
+
 		// 按场景ID重组知识点数据
 		const sceneKnowledgeMap = new Map();
 
@@ -956,17 +903,47 @@ const saveAllKnowledge = async () => {
 		const response = await apiClient.post("/knowledge/bulk", bulkData);
 
 		if (response.data.code === 200) {
-			showToast({ message: "卡片保存成功", type: "success" });
+			lastSavedTime.value = new Date();
+			// 静默保存，不显示提示
+			// showToast({ message: "卡片已自动保存", type: "success" });
 
-			// 刷新知识点数据
-			await initKnowledges();
+			// 更新编辑器内容
+			await saveDialogue(false);
 		}
 	} catch (error) {
+		console.error("自动保存失败:", error);
+		// 静默失败，不显示提示
+		// showToast({
+		//   message: error.response?.data?.message || "自动保存失败",
+		//   type: "error",
+		// });
+	} finally {
+		autoSaving.value = false;
+	}
+};
+
+// 保存所有知识点的方法
+const saveAllKnowledge = async (isCustom = false) => {
+	try {
+		await autoSaveAllKnowledge();
+
+		// 只有在用户手动保存时才显示提示
+		if (isCustom) {
+			showToast({ message: "卡片保存成功", type: "success" });
+		}
+
+		// 刷新知识点数据
+		await initKnowledges();
+	} catch (error) {
 		console.error("Failed to save knowledge:", error);
-		showToast({
-			message: error.response?.data?.message || "卡片保存失败",
-			type: "error",
-		});
+
+		// 错误提示也只在用户手动保存时显示
+		if (isCustom) {
+			showToast({
+				message: error.response?.data?.message || "卡片保存失败",
+				type: "error",
+			});
+		}
 	}
 };
 
@@ -1283,6 +1260,16 @@ function parseDialogueLine(line, tag) {
 
 	return { speaker, text };
 }
+
+watch(
+	() => currentKnowledge.value.size,
+	async (newSize, oldSize) => {
+		if (newSize !== oldSize && oldSize > 0) {
+			// 知识点数量变化时自动保存
+			await autoSaveAllKnowledge();
+		}
+	}
+);
 </script>
 <style scoped>
 .editor-box {
