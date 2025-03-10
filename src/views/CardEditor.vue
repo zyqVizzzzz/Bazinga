@@ -473,6 +473,10 @@ onMounted(async () => {
 			capture: true,
 		});
 	}
+
+	// 添加全局快捷键监听
+	document.addEventListener("keydown", handleKeyboardShortcuts);
+
 	if (route.query.mode === "edit") {
 		getDefaultJson();
 		getDefaultKnowledge();
@@ -484,14 +488,26 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-	// 记得移除事件监听
+	// 移除事件监听
 	const editorElement = document.getElementById("editor");
 	if (editorElement) {
 		editorElement.removeEventListener("keydown", preventDefaultEnter, {
 			capture: true,
 		});
 	}
+
+	// 移除全局快捷键监听
+	document.removeEventListener("keydown", handleKeyboardShortcuts);
 });
+
+// 快捷键处理函数
+const handleKeyboardShortcuts = (event) => {
+	// 检测 Ctrl+S 或 Cmd+S
+	if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+		event.preventDefault(); // 阻止浏览器默认的保存行为
+		saveDialogue(true); // 调用保存函数，传入 true 表示用户手动保存
+	}
+};
 
 // 文本检测函数：中文字符比例小于 10% 则翻译
 const shouldTranslate = (text) => {
