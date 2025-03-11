@@ -2,100 +2,58 @@
 	<div class="scroll-container" ref="praticeContainerRef">
 		<div class="space-y-8">
 			<div
-				class="terminal-prompt my-6 text-left relative p-4 bg-gray-600/20 rounded-lg shadow-lg"
+				class="podcast-header my-6 text-left relative p-4 bg-white border-2 border-black rounded-lg shadow-custom"
 			>
-				<span class="text-accent">@Bazinga</span>
-				<span class="text-accent mr-2">:</span>
-				<span class="text-gray-400">~/episode/{{ props.currentPage }}</span>
-				<span class="text-gray-400">$</span>
-				<span class="text-gray-200 ml-2"
-					>run {{ currentPractice.conversation_id }}.sh</span
-				>
-			</div>
-
-			<!-- 对话历史 -->
-			<div class="space-y-8">
-				<div
-					v-for="(dialogue, index) in displayedDialogues"
-					:key="index"
-					class="dialogue-wrapper flex items-start gap-4"
-					:class="{
-						'animate-fade-in': index === displayedDialogues.length - 1,
-						'flex-row-reverse': dialogue.character === 'Jinji',
-					}"
-				>
-					<div class="avatar-wrapper flex flex-col items-center gap-2">
-						<div
-							class="w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 shadow-lg"
-						>
-							<img
-								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${dialogue.character.toLowerCase()}.jpg`"
-								:alt="dialogue.character"
-								class="w-full h-full object-cover"
-							/>
-						</div>
-						<span class="text-accent text-sm font-medium">{{
-							dialogue.character
-						}}</span>
+				<div class="podcast-title flex items-center">
+					<div class="podcast-icon mr-3">
+						<PodcastIcon />
 					</div>
-					<div class="flex-1 max-w-[70%]">
-						<div
-							class="log-item rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl relative group"
-							:class="{
-								'bg-primary/10 border-primary rounded-tr-sm':
-									dialogue.character === 'User',
-								'bg-accent/10 border-accent rounded-tl-sm':
-									dialogue.character !== 'User',
-							}"
-						>
-							<div class="flex-1">
-								<div class="text-gray-100 text-md leading-relaxed">
-									<span v-html="highlightWords(dialogue.english)"></span>
-								</div>
-								<div
-									class="text-gray-400 text-sm pt-3 border-t border-gray-700/30 transition-all duration-300"
-									v-if="showTranslation"
-									:class="{ 'opacity-0': !showTranslation }"
-								>
-									{{ dialogue.chinese }}
-								</div>
-							</div>
-							<button
-								class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-accent hover:text-accent/80"
-								@click="
-									playDialogueVoice(
-										dialogue.voiceUrl,
-										dialogue.english,
-										dialogue.character,
-										index
-									)
-								"
-								:disabled="globalPlayer.isPlaying.value"
-								:class="{
-									'cursor-not-allowed opacity-50': globalPlayer.isPlaying.value,
-								}"
-							>
-								<i
-									class="bi text-lg"
-									:class="
-										singlePlayer.currentIndex.value === index &&
-										singlePlayer.isPlaying.value
-											? 'bi-stop-circle'
-											: 'bi-play-circle'
-									"
-								></i>
-							</button>
+					<div class="flex-1">
+						<h3 class="font-bold text-lg text-black">
+							Ayyyyyo! Welcome Back To BAZINGA ! ! !
+						</h3>
+						<div class="flex items-center text-sm text-gray-600">
+							<span>第{{ props.currentPage }}期</span>
+							<!-- <span class="mx-2">•</span> -->
+							<!-- <span>{{ currentPractice.conversation_id }}</span> -->
 						</div>
+					</div>
+					<div
+						class="podcast-badge px-2 py-1 bg-secondary/10 border border-secondary/30 rounded-md text-xs font-medium text-secondary transform rotate-2"
+					>
+						BAZINGA DAILY
 					</div>
 				</div>
 			</div>
+
+			<!-- 对话历史 -->
+			<PodcastCustom
+				v-if="podcastData && podcastData.length > 0"
+				:podcastData="podcastData"
+				:showTranslation="showTranslation"
+				:isGlobalPlaying="globalPlayer.isPlaying.value"
+				@play-dialogue="handlePlayDialogue"
+				ref="podcastCustomRef"
+			/>
+			<PodcastFeatured
+				v-else
+				:dialogues="displayedDialogues"
+				:showTranslation="showTranslation"
+				:isGlobalPlaying="globalPlayer.isPlaying.value"
+				@play-dialogue="handlePlayDialogue"
+				ref="podcastFeaturedRef"
+			/>
 		</div>
 	</div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, onUpdated } from "vue";
-import WordDictionary from "@/components/common/WordDictionary.vue";
+import { ref, onMounted, onUnmounted, onUpdated, watch } from "vue";
+import PodcastIcon from "@/components/icons/Podcast.vue";
+import PodcastFeatured from "@/components/card/PodcastFeatured.vue";
+import PodcastCustom from "@/components/card/PodcastCustom.vue";
+import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
 
 // 全局播放器类
 class GlobalPlayer {
@@ -203,6 +161,8 @@ class SinglePlayer {
 // 创建播放器实例
 const globalPlayer = new GlobalPlayer();
 const singlePlayer = new SinglePlayer();
+const podcastFeaturedRef = ref(null);
+const podcastCustomRef = ref(null);
 
 const props = defineProps({
 	currentPractice: {
@@ -225,12 +185,45 @@ const props = defineProps({
 
 const displayedDialogues = ref([]);
 const praticeContainerRef = ref(null);
+const podcastData = ref(null);
 
 onMounted(() => {
+	console.log("pre");
 	displayedDialogues.value = props.currentPractice.dialogues;
+	// 如果没有对话数据，尝试获取播客数据
+	if (!props.currentPractice || !props.currentPractice.conversation_id) {
+		console.log("in");
+		fetchPodcastData();
+	}
 });
 
 const emit = defineEmits(["play-complete"]);
+
+// 获取播客数据的方法
+const fetchPodcastData = async () => {
+	try {
+		// 从URL中获取当前资源ID
+		const urlParams = new URLSearchParams(window.location.search);
+		const resourceId = urlParams.get("sign");
+
+		if (!resourceId) {
+			console.error("无法获取资源ID");
+			return;
+		}
+
+		console.log(resourceId);
+
+		const response = await apiClient.get(`/podcasts/resource/${resourceId}`);
+
+		if (response.data.code === 200 && response.data.data.podcasts) {
+			podcastData.value = response.data.data.podcasts;
+			console.log("获取到播客数据:", podcastData.value);
+			// 这里暂时不进行后续操作，等待进一步指示
+		}
+	} catch (error) {
+		console.error("获取播客数据失败:", error);
+	}
+};
 
 const playAllDialogues = async () => {
 	if (globalPlayer.isPlaying.value) {
@@ -331,13 +324,38 @@ const playAllDialogues = async () => {
 	await playNext();
 };
 
-// 修改单独播放函数
-const playDialogueVoice = async (voiceUrl, text, character, index) => {
+// 处理子组件的播放请求
+const handlePlayDialogue = async ({
+	voiceUrl,
+	text,
+	character,
+	index,
+	isPlaying,
+	currentPlayingIndex,
+}) => {
 	if (globalPlayer.isPlaying.value) {
 		return;
 	}
 
 	const dialogueElements = document.querySelectorAll(".log-item");
+
+	// 如果点击的是当前正在播放的音频，则停止播放
+	if (isPlaying && currentPlayingIndex === index) {
+		singlePlayer.cleanup();
+		// 根据当前激活的组件更新状态
+		if (podcastData.value && podcastData.value.length > 0) {
+			if (podcastCustomRef.value) {
+				podcastCustomRef.value.setPlayingState(false, null);
+			}
+		} else {
+			if (podcastFeaturedRef.value) {
+				podcastFeaturedRef.value.setPlayingState(false, null);
+			}
+		}
+		return;
+	}
+
+	// 开始播放
 	await singlePlayer.playAudio(
 		voiceUrl,
 		text,
@@ -345,16 +363,23 @@ const playDialogueVoice = async (voiceUrl, text, character, index) => {
 		dialogueElements,
 		index
 	);
+
+	// 播放完成后更新子组件状态
+	if (podcastData.value && podcastData.value.length > 0) {
+		if (podcastCustomRef.value) {
+			podcastCustomRef.value.setPlayingState(false, null);
+		}
+	} else {
+		if (podcastFeaturedRef.value) {
+			podcastFeaturedRef.value.setPlayingState(false, null);
+		}
+	}
 };
 
 // 在组件卸载时清理资源
 onUnmounted(() => {
 	globalPlayer.cleanup();
 	singlePlayer.cleanup();
-});
-
-defineExpose({
-	playAllDialogues,
 });
 
 // 在组件更新时检查状态
@@ -370,27 +395,22 @@ onUpdated(() => {
 		singlePlayer.cleanup();
 	}
 });
-const highlightWords = (text) => {
-	return text
-		.split(/\s+/)
-		.map((word, index) => {
-			return `<span class="word-highlight cursor-pointer hover:text-accent transition-colors duration-200" data-word-index="${index}" @click="showWordDefinition(word)">${word}</span>`;
-		})
-		.join(" ");
-};
 
-const showWordDefinition = async (word) => {
-	const dictionaryPopup = document.createElement("div");
-	const app = createApp(WordDictionary, {
-		word,
-		onClose: () => {
-			document.body.removeChild(dictionaryPopup);
-		},
-	});
-	dictionaryPopup.id = "word-dictionary-popup";
-	document.body.appendChild(dictionaryPopup);
-	app.mount("#word-dictionary-popup");
-};
+// 监听 currentPractice 变化，如果为空则尝试获取播客数据
+watch(
+	() => props.currentPractice,
+	(newVal) => {
+		if (!newVal || !newVal.conversation_id) {
+			fetchPodcastData();
+		}
+	},
+	{ immediate: true }
+);
+
+defineExpose({
+	playAllDialogues,
+	fetchPodcastData, // 导出获取播客数据的方法
+});
 </script>
 
 <style scoped>
@@ -412,45 +432,47 @@ const showWordDefinition = async (word) => {
 	overscroll-behavior-y: contain;
 }
 
-.dialogue-wrapper {
+/* 播客标题区域的特殊样式 */
+.podcast-header {
 	position: relative;
+	overflow: hidden;
 }
 
-.log-item {
-	padding: 1.5rem;
-	background: rgba(var(--accent-color-rgb), 0.05);
-	border-left: 4px solid var(--accent-color);
-	text-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.3);
-	transform-origin: bottom;
+.podcast-header::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		rgba(0, 0, 0, 0.03) 10px,
+		rgba(0, 0, 0, 0.03) 12px
+	);
+	z-index: 0;
 }
 
-.log-item.playing {
-	animation: borderPulse 2s infinite;
+.podcast-header > * {
+	position: relative;
+	z-index: 1;
 }
 
-@keyframes borderPulse {
-	0% {
-		border-left-color: var(--accent-color);
-	}
-	50% {
-		border-left-color: transparent;
-	}
-	100% {
-		border-left-color: var(--accent-color);
-	}
-}
-.animate-fade-in {
-	animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.podcast-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	background-color: white;
+	border: 2px solid black;
+	border-radius: 50%;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
+.shadow-custom {
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 </style>

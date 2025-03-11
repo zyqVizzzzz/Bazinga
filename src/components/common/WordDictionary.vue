@@ -1,9 +1,9 @@
 <template>
 	<div
-		class="word-dictionary-popup bg-base-100 rounded-lg shadow-xl border border-accent/20 p-4 max-w-md"
+		class="word-dictionary-popup bg-base-100 rounded-lg shadow-xl border border-primary/20 p-4 max-w-md"
 	>
 		<div class="flex justify-between items-center mb-4">
-			<h3 class="text-xl font-bold text-accent">{{ word }}</h3>
+			<h3 class="text-xl font-bold text-primary">{{ word }}</h3>
 			<button @click="$emit('close')" class="text-gray-400 hover:text-gray-200">
 				<i class="bi bi-x-lg"></i>
 			</button>
@@ -23,7 +23,7 @@
 				<span class="text-gray-400">[{{ wordData.phonetic }}]</span>
 				<button
 					@click="playPronunciation"
-					class="text-accent hover:text-accent/80"
+					class="text-primary hover:text-primary/80"
 				>
 					<i class="bi bi-volume-up"></i>
 				</button>
@@ -48,7 +48,7 @@
 			<div class="flex justify-end mt-4">
 				<button
 					@click="toggleSaveWord"
-					class="btn btn-sm btn-outline btn-accent"
+					class="btn btn-sm btn-outline btn-primary"
 					:class="{ 'btn-active': isSaved }"
 				>
 					<i
@@ -145,6 +145,6 @@ const toggleSaveWord = async () => {
 .definition-item {
 	padding: 8px;
 	border-radius: 4px;
-	background: rgba(var(--accent-color-rgb), 0.05);
+	background: rgba(var(--primary-color-rgb), 0.05);
 }
 </style>

@@ -203,6 +203,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from "vue";
+import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
@@ -220,6 +221,9 @@ const props = defineProps({
 		required: true,
 	},
 });
+
+const router = useRouter();
+const route = useRoute();
 
 // 选中的知识点
 const selectedKnowledges = ref([]);
@@ -611,17 +615,21 @@ const savePodcast = async () => {
 		// 准备发送到后端的数据
 		const podcastData = {
 			knowledge: knowledge.word, // 知识点英文单词
-			resourceId: window.location.pathname.split("/").pop() || "", // 从URL获取资源ID
+			resourceId: route.query.sign || "", // 从URL获取资源ID
 			script: podcastScript.value, // 播客脚本内容
 			chineseScript: podcastChineseScript.value,
 			audioPath: podcastUrl.value || "", // 音频路径，可能为空
-			sceneId: props.selectedSceneIndex.toString(), // 当前场景ID
+			sceneId: (props.selectedSceneIndex + 1).toString(), // 当前场景ID
 			options: {
 				voice: options.voice,
 				speed: options.speed,
 				model: options.model,
 			},
 		};
+
+		console.log(podcastData.sceneId, route.query.sign);
+
+		// return;
 
 		// 保存播客
 		const response = await apiClient.post("/podcasts/save", podcastData);

@@ -93,7 +93,6 @@
 						<!-- 背面内容 -->
 						<div class="back" v-if="!isLoading">
 							<PracticeCard
-								v-if="currentPractice.conversation_id"
 								ref="practiceCard"
 								:currentPractice="currentPractice"
 								:currentPage="currentPage"
@@ -270,40 +269,6 @@
 						</button>
 					</div>
 				</div>
-
-				<!-- 右侧按钮 -->
-				<!-- <div
-					class="absolute -right-20 top-1/3 -translate-y-1/2 flex flex-col gap-4"
-				>
-					<div class="capsule-btn" @mouseleave="handleMouseLeave">
-						<button
-							class="capsule-top"
-							@mouseover="handleMouseOver('top')"
-							@click="generateKnowledge"
-						>
-							<div
-								class="btn-face capsule-face flex items-center justify-center"
-							>
-								<i class="bi bi-lightbulb text-xl"></i>
-							</div>
-						</button>
-						<div
-							class="capsule-divider"
-							:class="{ 'move-up': isDividerUp, 'move-down': isDividerDown }"
-						></div>
-						<button
-							class="capsule-bottom"
-							@mouseover="handleMouseOver('bottom')"
-							@click="generatePodcast"
-						>
-							<div
-								class="btn-face capsule-face flex items-center justify-center"
-							>
-								<i class="bi bi-mic text-xl"></i>
-							</div>
-						</button>
-					</div>
-				</div> -->
 			</div>
 		</transition>
 	</div>
@@ -332,7 +297,6 @@ const isLogin = computed(() => loginStore.isLogin);
 
 const lessonStore = useLessonStore();
 const appStore = useAppStore();
-const dialogueStore = useDialogueStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -503,14 +467,14 @@ const isKnowledgeReady = computed(() => {
 	);
 });
 
-// 获取当前nline
+// 获取当前dialog
 const currentDialogue = computed(() => {
 	return dialogues.value.length > 0
 		? dialogues.value[currentDialogueIndex.value]
 		: {};
 });
 
-// 获取当前nline的知识点
+// 获取当前对话的知识点
 const currentKnowledgePoints = computed(() => {
 	if (
 		!knowledges.value ||
@@ -522,7 +486,7 @@ const currentKnowledgePoints = computed(() => {
 	return knowledges.value[currentDialogueIndex.value]?.knowledge || [];
 });
 
-// 动态获取当前nline的练习题
+// 动态获取当前对话的练习题
 const currentPractice = computed(() => {
 	if (
 		!knowledges.value ||
@@ -579,34 +543,6 @@ onBeforeRouteLeave(async (to, from, next) => {
 	next();
 });
 
-const generateKnowledge = () => {
-	console.log("generate knowledge", currentDialogue.value);
-	dialogueStore.setCurrentDialogue(currentDialogue.value);
-	router.push({
-		path: "/generate-knowledge",
-		query: {
-			id: route.params.id,
-			season: route.params.season,
-			episode: route.params.episode,
-			scene: currentDialogueIndex.value,
-		},
-	});
-};
-
-const generatePodcast = () => {
-	const currentPoint = currentKnowledgePoints.value;
-	console.log("generate podcast", currentPoint);
-	dialogueStore.setCurrentKnowledge(currentPoint);
-	router.push({
-		path: "/generate-podcast",
-		query: {
-			id: route.params.id,
-			season: route.params.season,
-			episode: route.params.episode,
-			scene: currentDialogueIndex.value,
-		},
-	});
-};
 const toggleTransMode = () => {
 	showTrans.value = !showTrans.value;
 };
@@ -780,25 +716,6 @@ const jumpToPageBlur = (isTrue) => {
 		}
 	}
 };
-
-// 胶囊按钮动画
-const isDividerUp = ref(false);
-const isDividerDown = ref(false);
-
-const handleMouseOver = (position) => {
-	if (position === "top") {
-		isDividerDown.value = true;
-		isDividerUp.value = false;
-	} else {
-		isDividerUp.value = true;
-		isDividerDown.value = false;
-	}
-};
-
-const handleMouseLeave = () => {
-	isDividerUp.value = false;
-	isDividerDown.value = false;
-};
 </script>
 <style scoped>
 .scene {
@@ -813,7 +730,7 @@ const handleMouseLeave = () => {
 	overflow: hidden;
 }
 
-/* 可以添加缩放效果 */
+/* 缩放效果 */
 .manga-card.active .front {
 	transform: translateY(-100%) scale(0.95);
 }
@@ -860,7 +777,7 @@ const handleMouseLeave = () => {
 
 .dialogue-box {
 	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
-	position: relative; /* 确保相对定位 */
+	position: relative;
 }
 
 .dialogue-box::before {
@@ -900,31 +817,46 @@ const handleMouseLeave = () => {
 .back {
 	position: absolute;
 	width: 100%;
-	height: 100%; /* 使用100%而不是min-height */
+	height: 100%;
 	transform: translateY(100%) scale(0.95);
-	background-color: rgba(12, 12, 12, 0.75);
-	color: var(--accent-color);
-	animation: crt-flicker 0.15s infinite;
-	box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.1);
-	display: flex; /* 添加flex布局 */
+	background-color: white;
+	color: #333;
+	display: flex;
 	flex-direction: column;
 	transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 4px 4px 0 rgba(var(--secondary-color-rgb), 0.3);
 }
 
 .back::before {
-	content: " ";
-	display: block;
+	content: "";
 	position: absolute;
 	top: 0;
 	left: 0;
-	bottom: 0;
-	right: 0;
-	background: linear-gradient(
-		to bottom,
-		rgba(18, 16, 16, 0) 50%,
-		rgba(0, 0, 0, 0.1) 50%
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.1) 2px,
+		rgba(0, 0, 0, 0.03) 4px
 	);
-	background-size: 100% 4px;
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+/* 添加播客元素 - 音波装饰 */
+.back::after {
+	content: "";
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+	width: 120px;
+	height: 60px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 60' fill='rgba(0,0,0,0.1)'%3E%3Cpath d='M10,30 Q30,5 40,30 Q50,55 60,30 Q70,5 80,30 Q90,55 100,30 Q110,5 120,30'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-size: contain;
+	opacity: 0.5;
 	pointer-events: none;
 }
 
@@ -1178,63 +1110,5 @@ const handleMouseLeave = () => {
 	background-color: #ddd;
 	border-color: #999;
 	color: #999;
-}
-
-.capsule-btn {
-	position: relative;
-	width: 4rem;
-	height: 8rem;
-	background: #f0f0f0;
-	border: 3px solid #333;
-	border-radius: 2rem;
-	overflow: hidden;
-}
-
-.capsule-top,
-.capsule-bottom {
-	position: absolute;
-	left: 0;
-	width: 100%;
-	height: 50%;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	transition: all 0.2s;
-	z-index: 2;
-}
-
-.capsule-top {
-	top: 0;
-}
-
-.capsule-bottom {
-	bottom: 0;
-}
-
-.capsule-face {
-	border: none !important;
-	background: transparent !important;
-	box-shadow: none !important;
-}
-
-.capsule-divider {
-	position: absolute;
-	top: 50%;
-	left: -10%;
-	width: 120%;
-	height: 2px;
-	background: rgba(51, 51, 51, 0.7);
-	transform: rotate(-15deg);
-	transition: all 0.2s ease;
-}
-
-.capsule-divider.move-up {
-	top: 48%;
-	transform: rotate(-15deg) scaleX(1.1);
-}
-
-.capsule-divider.move-down {
-	top: 52%;
-	transform: rotate(-15deg) scaleX(1.1);
 }
 </style>
