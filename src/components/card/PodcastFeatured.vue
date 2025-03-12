@@ -1,6 +1,28 @@
 <template>
 	<div class="space-y-8">
 		<div
+			class="podcast-header my-4 text-left relative p-3 bg-white border-2 border-black rounded-lg shadow-custom"
+		>
+			<div class="podcast-title flex items-center">
+				<div class="podcast-icon mr-3">
+					<PodcastIcon />
+				</div>
+				<div class="flex-1">
+					<h3 class="font-bold text-black">
+						Ayyyyyo! Welcome Back To BAZINGA ! ! !
+					</h3>
+					<div class="flex items-center text-sm text-gray-600">
+						<span>第{{ props.currentPage }}期</span>
+					</div>
+				</div>
+				<div
+					class="podcast-badge px-2 py-1 bg-secondary/10 border border-secondary/30 rounded-md text-xs font-medium text-secondary transform rotate-2"
+				>
+					BAZINGA DAILY
+				</div>
+			</div>
+		</div>
+		<div
 			v-for="(dialogue, index) in dialogues"
 			:key="index"
 			class="dialogue-wrapper flex items-start gap-4"
@@ -77,6 +99,7 @@
 
 <script setup>
 import { ref } from "vue";
+import PodcastIcon from "@/components/icons/Podcast.vue";
 
 const props = defineProps({
 	dialogues: {
@@ -89,6 +112,10 @@ const props = defineProps({
 	},
 	isGlobalPlaying: {
 		type: Boolean,
+		required: true,
+	},
+	currentPage: {
+		type: Number,
 		required: true,
 	},
 });
@@ -156,6 +183,50 @@ defineExpose({
 </script>
 
 <style scoped>
+/* 播客标题区域的特殊样式 */
+.podcast-header {
+	position: relative;
+	overflow: hidden;
+}
+
+.podcast-header::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		rgba(0, 0, 0, 0.03) 10px,
+		rgba(0, 0, 0, 0.03) 12px
+	);
+	z-index: 0;
+}
+
+.podcast-header > * {
+	position: relative;
+	z-index: 1;
+}
+
+.podcast-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	background-color: white;
+	border: 2px solid black;
+	border-radius: 50%;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.shadow-custom {
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
 .dialogue-wrapper {
 	position: relative;
 }

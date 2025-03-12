@@ -1,31 +1,6 @@
 <template>
 	<div class="scroll-container" ref="praticeContainerRef">
 		<div class="space-y-8">
-			<div
-				class="podcast-header my-6 text-left relative p-4 bg-white border-2 border-black rounded-lg shadow-custom"
-			>
-				<div class="podcast-title flex items-center">
-					<div class="podcast-icon mr-3">
-						<PodcastIcon />
-					</div>
-					<div class="flex-1">
-						<h3 class="font-bold text-lg text-black">
-							Ayyyyyo! Welcome Back To BAZINGA ! ! !
-						</h3>
-						<div class="flex items-center text-sm text-gray-600">
-							<span>第{{ props.currentPage }}期</span>
-							<!-- <span class="mx-2">•</span> -->
-							<!-- <span>{{ currentPractice.conversation_id }}</span> -->
-						</div>
-					</div>
-					<div
-						class="podcast-badge px-2 py-1 bg-secondary/10 border border-secondary/30 rounded-md text-xs font-medium text-secondary transform rotate-2"
-					>
-						BAZINGA DAILY
-					</div>
-				</div>
-			</div>
-
 			<!-- 对话历史 -->
 			<PodcastCustom
 				v-if="podcastData && podcastData.length > 0"
@@ -33,14 +8,16 @@
 				:showTranslation="showTranslation"
 				:isGlobalPlaying="globalPlayer.isPlaying.value"
 				@play-dialogue="handlePlayDialogue"
+				:currentPage="currentPage"
 				ref="podcastCustomRef"
 			/>
 			<PodcastFeatured
-				v-else
+				v-if="displayedDialogues && displayedDialogues.length > 0"
 				:dialogues="displayedDialogues"
 				:showTranslation="showTranslation"
 				:isGlobalPlaying="globalPlayer.isPlaying.value"
 				@play-dialogue="handlePlayDialogue"
+				:currentPage="currentPage"
 				ref="podcastFeaturedRef"
 			/>
 		</div>
@@ -49,11 +26,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, onUpdated, watch } from "vue";
-import PodcastIcon from "@/components/icons/Podcast.vue";
 import PodcastFeatured from "@/components/card/PodcastFeatured.vue";
 import PodcastCustom from "@/components/card/PodcastCustom.vue";
 import apiClient from "@/api";
-import { showToast } from "@/components/common/toast.js";
 
 // 全局播放器类
 class GlobalPlayer {
@@ -188,13 +163,7 @@ const praticeContainerRef = ref(null);
 const podcastData = ref(null);
 
 onMounted(() => {
-	console.log("pre");
 	displayedDialogues.value = props.currentPractice.dialogues;
-	// 如果没有对话数据，尝试获取播客数据
-	if (!props.currentPractice || !props.currentPractice.conversation_id) {
-		console.log("in");
-		fetchPodcastData();
-	}
 });
 
 const emit = defineEmits(["play-complete"]);
@@ -211,14 +180,11 @@ const fetchPodcastData = async () => {
 			return;
 		}
 
-		console.log(resourceId);
-
-		const response = await apiClient.get(`/podcasts/resource/${resourceId}`);
-
+		const response = await apiClient.get(
+			`/podcasts/resource/${resourceId}/scene/${props.currentPage}`
+		);
 		if (response.data.code === 200 && response.data.data.podcasts) {
 			podcastData.value = response.data.data.podcasts;
-			console.log("获取到播客数据:", podcastData.value);
-			// 这里暂时不进行后续操作，等待进一步指示
 		}
 	} catch (error) {
 		console.error("获取播客数据失败:", error);
@@ -376,6 +342,23 @@ const handlePlayDialogue = async ({
 	}
 };
 
+// 添加一个重置播放器状态的方法
+const resetPlayerState = () => {
+	// 重置全局播放器
+	globalPlayer.cleanup();
+	singlePlayer.cleanup();
+
+	// 重置自定义播客组件
+	if (podcastCustomRef.value) {
+		podcastCustomRef.value.resetPlayer();
+	}
+
+	// 重置特色播客组件
+	if (podcastFeaturedRef.value) {
+		podcastFeaturedRef.value.setPlayingState(false, null);
+	}
+};
+
 // 在组件卸载时清理资源
 onUnmounted(() => {
 	globalPlayer.cleanup();
@@ -386,7 +369,6 @@ onUnmounted(() => {
 onUpdated(() => {
 	if (!globalPlayer.isPlaying.value && !singlePlayer.isPlaying.value) {
 		// 只在播放完成时重置
-		// 添加安全检查，确保 displayedDialogues.value 存在且是数组
 		if (
 			displayedDialogues.value &&
 			Array.isArray(displayedDialogues.value) &&
@@ -401,20 +383,35 @@ onUpdated(() => {
 	}
 });
 
-// 监听 currentPractice 变化，如果为空则尝试获取播客数据
+// 监听 currentPage 变化
 watch(
-	() => props.currentPractice,
-	(newVal) => {
-		if (!newVal || !newVal.conversation_id) {
-			fetchPodcastData();
+	() => props.currentPage,
+	(newPage, oldPage) => {
+		console.log("Practice 组件检测到页面变更为:", newPage);
+		// 只有当页面真正变化时才重新获取数据
+		if (newPage !== oldPage) {
+			// 重置播放器状态
+			globalPlayer.cleanup();
+			singlePlayer.cleanup();
+
+			// 如果没有对话数据，尝试获取播客数据
+			if (!props.currentPractice || !props.currentPractice.conversation_id) {
+				fetchPodcastData();
+			}
+
+			// 如果有自定义播客组件，重置它
+			if (podcastCustomRef.value) {
+				podcastCustomRef.value.resetPlayer();
+			}
 		}
 	},
-	{ immediate: true }
+	{ immediate: true } // 添加立即执行选项
 );
 
 defineExpose({
 	playAllDialogues,
-	fetchPodcastData, // 导出获取播客数据的方法
+	fetchPodcastData,
+	resetPlayerState,
 });
 </script>
 
@@ -435,49 +432,5 @@ defineExpose({
 	-webkit-overflow-scrolling: touch;
 	scroll-behavior: smooth;
 	overscroll-behavior-y: contain;
-}
-
-/* 播客标题区域的特殊样式 */
-.podcast-header {
-	position: relative;
-	overflow: hidden;
-}
-
-.podcast-header::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 10px,
-		rgba(0, 0, 0, 0.03) 10px,
-		rgba(0, 0, 0, 0.03) 12px
-	);
-	z-index: 0;
-}
-
-.podcast-header > * {
-	position: relative;
-	z-index: 1;
-}
-
-.podcast-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	background-color: white;
-	border: 2px solid black;
-	border-radius: 50%;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.shadow-custom {
-	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 </style>
