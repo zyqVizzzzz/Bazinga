@@ -12,7 +12,7 @@
 								<span>Scene {{ props.currentPage }}</span>
 							</div>
 						</div>
-						<div class="podcast-badge">BAZINGA DAILY</div>
+						<div class="podcast-badge">BAZINGA PODCAST</div>
 					</div>
 				</div>
 				<!-- 播放器区域 -->
@@ -173,7 +173,6 @@
 </template>
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
-import PodcastIcon from "@/components/icons/Podcast.vue";
 
 // 定义组件接收的props
 const props = defineProps({
@@ -586,7 +585,6 @@ defineExpose({
 	background-color: rgba(255, 255, 255, 0.7);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	overflow-y: auto;
-	min-height: 100px;
 	max-height: 600px;
 }
 

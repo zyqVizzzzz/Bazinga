@@ -12,7 +12,7 @@
 				ref="podcastCustomRef"
 			/>
 			<PodcastFeatured
-				v-if="displayedDialogues && displayedDialogues.length > 0"
+				v-else-if="displayedDialogues && displayedDialogues.length > 0"
 				:dialogues="displayedDialogues"
 				:showTranslation="showTranslation"
 				:isGlobalPlaying="globalPlayer.isPlaying.value"
@@ -20,6 +20,29 @@
 				:currentPage="currentPage"
 				ref="podcastFeaturedRef"
 			/>
+			<div
+				v-else
+				class="empty-state p-6 text-center rounded-lg shadow-custom flex flex-col items-center justify-center min-h-[300px]"
+			>
+				<button
+					class="text-gray-800 hover:text-gray-400/80 transition-colors mb-2"
+					@click="playWelcomeAudio"
+					:disabled="isWelcomePlaying"
+				>
+					<i
+						class="bi text-3xl"
+						:class="isWelcomePlaying ? 'bi-stop-circle' : 'bi-play-circle'"
+					></i>
+				</button>
+				<h3 class="text-xl font-bold mb-2">
+					Welcome back to Bazinga, I'm your host Jinji!
+				</h3>
+				<p class="text-gray-600 max-w-md">Today's vibe is super cool!</p>
+				<p class="text-gray-400 text-sm mt-4 max-w-md">
+					当前场景还没有播客哦～ 点击下方
+					<i class="bi bi-pencil-square"></i> 按钮，创建你的播客吧！
+				</p>
+			</div>
 		</div>
 	</div>
 </template>
@@ -162,6 +185,10 @@ const displayedDialogues = ref([]);
 const praticeContainerRef = ref(null);
 const podcastData = ref(null);
 
+// 欢迎语音播放状态
+const isWelcomePlaying = ref(false);
+const welcomeAudio = ref(null);
+
 onMounted(() => {
 	displayedDialogues.value = props.currentPractice.dialogues;
 });
@@ -188,6 +215,36 @@ const fetchPodcastData = async () => {
 		}
 	} catch (error) {
 		console.error("获取播客数据失败:", error);
+	}
+};
+
+// 播放欢迎语音
+const playWelcomeAudio = async () => {
+	if (isWelcomePlaying.value) {
+		if (welcomeAudio.value) {
+			welcomeAudio.value.pause();
+			welcomeAudio.value = null;
+		}
+		isWelcomePlaying.value = false;
+		return;
+	}
+
+	try {
+		welcomeAudio.value = new Audio(
+			"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/voices/1741776721502_Jinji_eoe54.mp3"
+		);
+		isWelcomePlaying.value = true;
+
+		welcomeAudio.value.onended = () => {
+			isWelcomePlaying.value = false;
+			welcomeAudio.value = null;
+		};
+
+		await welcomeAudio.value.play();
+	} catch (error) {
+		console.error("欢迎语音播放失败:", error);
+		isWelcomePlaying.value = false;
+		welcomeAudio.value = null;
 	}
 };
 
@@ -363,6 +420,10 @@ const resetPlayerState = () => {
 onUnmounted(() => {
 	globalPlayer.cleanup();
 	singlePlayer.cleanup();
+	if (welcomeAudio.value) {
+		welcomeAudio.value.pause();
+		welcomeAudio.value = null;
+	}
 });
 
 // 在组件更新时检查状态

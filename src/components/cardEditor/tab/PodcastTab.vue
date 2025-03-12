@@ -91,7 +91,6 @@
 					>
 						<i v-if="!generating" class="bi bi-arrow-clockwise"></i>
 						<span v-else class="loading loading-spinner loading-sm"></span>
-						<!-- <span class="ml-1">重新生成</span> -->
 					</button>
 				</div>
 			</div>
@@ -239,12 +238,12 @@ const loadSavedPodcasts = async (sceneIndex = null) => {
 		savedPodcasts.value.clear();
 
 		// 如果指定了场景索引，也清空该场景的缓存
-		if (sceneIndex !== null && scenePodcastCache.value.has(sceneIndex)) {
-			scenePodcastCache.value.delete(sceneIndex);
-		}
+		// if (sceneIndex !== null && scenePodcastCache.value.has(sceneIndex)) {
+		// 	scenePodcastCache.value.delete(sceneIndex);
+		// }
 
 		// 从URL获取资源ID
-		const resourceId = window.location.pathname.split("/").pop() || "";
+		const resourceId = route.query.sign || "";
 		if (!resourceId) return;
 
 		// 调用后端接口获取已保存的播客列表
@@ -256,8 +255,14 @@ const loadSavedPodcasts = async (sceneIndex = null) => {
 
 			// 将播客数据保存到本地Map中
 			podcasts.forEach((podcast) => {
-				// 只加载当前场景的播客，如果提供了场景索引
-				if (sceneIndex !== null && podcast.sceneId !== sceneIndex.toString()) {
+				// 修改：使用当前场景索引+1来匹配sceneId
+				const currentSceneId =
+					sceneIndex !== null
+						? (sceneIndex + 1).toString()
+						: (props.selectedSceneIndex + 1).toString();
+
+				// 只加载当前场景的播客
+				if (podcast.sceneId !== currentSceneId) {
 					return;
 				}
 
@@ -298,6 +303,7 @@ const toggleKnowledge = (key) => {
 		if (savedPodcasts.value.has(key)) {
 			// 加载该知识点的播客内容
 			const podcastData = savedPodcasts.value.get(key);
+			console.log(podcastData);
 			podcastScript.value = podcastData.script;
 			podcastChineseScript.value = podcastData.chineseScript || [];
 			// 更新当前播放的音频URL（兼容旧代码）
@@ -436,12 +442,11 @@ const generateAudio = async () => {
 			script: podcastScript.value.join("\n"), // 将脚本内容合并为一个字符串
 			voice: options.voice,
 			speed: options.speed,
-			resourceId: window.location.pathname.split("/").pop() || "",
+			resourceId: route.query.sign || "",
 			sceneId: props.selectedSceneIndex.toString(),
 		};
 
 		console.log(audioData);
-		// return;
 
 		// 调用后端接口生成音频
 		const response = await apiClient.post(
@@ -453,34 +458,10 @@ const generateAudio = async () => {
 			// 更新音频URL
 			podcastUrl.value = response.data.data.result.audioUrl;
 
-			// 如果已保存，更新保存的数据
-			if (savedPodcasts.value.has(key)) {
-				const savedData = savedPodcasts.value.get(key);
-				savedData.audioUrl = podcastUrl.value;
-				savedPodcasts.value.set(key, savedData);
-			} else {
-				// 如果尚未保存，创建一个临时的保存数据
-				savedPodcasts.value.set(key, {
-					script: [...podcastScript.value],
-					chineseScript: [...podcastChineseScript.value],
-					audioUrl: podcastUrl.value,
-					timestamp: new Date().toISOString(),
-				});
-			}
+			// 自动保存播客内容
+			await savePodcast();
 
-			// 更新缓存
-			if (scenePodcastCache.value.has(props.selectedSceneIndex)) {
-				const cachedData = scenePodcastCache.value.get(
-					props.selectedSceneIndex
-				);
-				cachedData.url = podcastUrl.value;
-				scenePodcastCache.value.set(props.selectedSceneIndex, cachedData);
-			}
-
-			// 强制更新UI
-			savedPodcasts.value = new Map(savedPodcasts.value);
-
-			showToast({ message: "音频生成成功", type: "success" });
+			showToast({ message: "音频生成并保存成功", type: "success" });
 		} else {
 			throw new Error(response.data.message || "音频生成失败");
 		}
@@ -515,7 +496,7 @@ const getCurrentPodcastAudioUrl = () => {
 // 监听场景索引变化，自动切换显示内容
 watch(
 	() => props.selectedSceneIndex,
-	(newIndex, oldIndex) => {
+	async (newIndex, oldIndex) => {
 		// 保存当前场景的内容到缓存
 		if (
 			oldIndex !== undefined &&
@@ -529,12 +510,15 @@ watch(
 					selectedKnowledges.value.length > 0
 						? selectedKnowledges.value[0]
 						: null,
-				displayOptions: { ...displayOptions }, // 保存显示选项
+				displayOptions: { ...displayOptions },
 			});
 		}
 
 		// 清空当前显示
 		clearCurrentDisplay();
+
+		// 重新加载新场景的播客数据
+		await loadSavedPodcasts(newIndex);
 
 		// 从缓存恢复新场景的内容
 		if (scenePodcastCache.value.has(newIndex)) {
@@ -550,7 +534,6 @@ watch(
 				displayOptions.showEnglish = cachedData.displayOptions.showEnglish;
 				displayOptions.showChinese = cachedData.displayOptions.showChinese;
 			} else {
-				// 如果没有缓存的显示选项，使用默认值
 				displayOptions.showEnglish = true;
 				displayOptions.showChinese = false;
 			}
@@ -564,7 +547,7 @@ watch(
 			}
 		}
 	},
-	{ immediate: false }
+	{ immediate: true }
 );
 
 // 清空当前显示内容（不影响缓存）

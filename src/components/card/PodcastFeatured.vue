@@ -18,7 +18,7 @@
 				<div
 					class="podcast-badge px-2 py-1 bg-secondary/10 border border-secondary/30 rounded-md text-xs font-medium text-secondary transform rotate-2"
 				>
-					BAZINGA DAILY
+					BAZINGA PODCAST
 				</div>
 			</div>
 		</div>

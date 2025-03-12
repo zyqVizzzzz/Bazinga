@@ -249,12 +249,11 @@ const submitContent = async () => {
 
 const submitSingleContent = async () => {
 	const dialogue = {
-		character: "Muz",
-		emoji: "neutral",
+		character: "Jinji",
+		emoji: "happy",
 		english:
-			"Agreed, Jinji. These expressions enhance both emotional impact and conversational flow. Listeners, deploy them wisely to optimize your human interactions.",
-		chinese_lines:
-			"同意，Jinji。这些表达增强了情感影响和对话流畅性。听众们，聪明地使用它们来优化你们的人际互动吧。",
+			"Hey everyone, Welcome back to Bazinga! I'm your host Jinji! Today's vibe is super cool.",
+		chinese_lines: "",
 	};
 	try {
 		// 使用文本转语音API生成URL
