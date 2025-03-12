@@ -386,7 +386,12 @@ onUnmounted(() => {
 onUpdated(() => {
 	if (!globalPlayer.isPlaying.value && !singlePlayer.isPlaying.value) {
 		// 只在播放完成时重置
-		if (globalPlayer.currentIndex.value >= displayedDialogues.value.length) {
+		// 添加安全检查，确保 displayedDialogues.value 存在且是数组
+		if (
+			displayedDialogues.value &&
+			Array.isArray(displayedDialogues.value) &&
+			globalPlayer.currentIndex.value >= displayedDialogues.value.length
+		) {
 			globalPlayer.reset();
 		} else {
 			// 否则只清理播放状态，保持索引

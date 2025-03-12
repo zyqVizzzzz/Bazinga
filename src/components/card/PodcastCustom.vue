@@ -10,8 +10,24 @@
 				class="knowledge-card"
 			>
 				<div class="card-content">
-					<h3 class="card-title">知识点 {{ index + 1 }}</h3>
+					<div
+						class="host-info"
+						v-if="podcast.options && podcast.options.voice"
+					>
+						host - {{ podcast.options.voice }}
+					</div>
 					<p class="card-text">{{ podcast.knowledge || "暂无知识点描述" }}</p>
+					<div class="play-icon">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							width="24"
+							height="24"
+						>
+							<path d="M8 5v14l11-7z" />
+						</svg>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -86,7 +102,6 @@ defineExpose({
 .podcast-custom-container {
 	width: 100%;
 	padding: 16px;
-	background-color: #f9f9f9;
 	border-radius: 8px;
 }
 
@@ -102,7 +117,7 @@ defineExpose({
 }
 
 .single-item .knowledge-card {
-	height: 300px;
+	height: 200px; /* 从300px减小到200px */
 }
 
 /* 2-3个项目时的样式 */
@@ -111,7 +126,7 @@ defineExpose({
 }
 
 .few-items .knowledge-card {
-	height: 250px;
+	height: 180px; /* 从250px减小到180px */
 }
 
 /* 4-6个项目时的样式 */
@@ -120,7 +135,7 @@ defineExpose({
 }
 
 .medium-items .knowledge-card {
-	height: 220px;
+	height: 160px; /* 从220px减小到160px */
 }
 
 /* 7-9个项目时的样式 */
@@ -129,7 +144,7 @@ defineExpose({
 }
 
 .many-items .knowledge-card {
-	height: 200px;
+	height: 150px; /* 从200px减小到150px */
 }
 
 /* 10个以上项目时的样式 */
@@ -138,7 +153,7 @@ defineExpose({
 }
 
 .grid-items .knowledge-card {
-	height: 180px;
+	height: 140px; /* 从180px减小到140px */
 }
 
 .knowledge-card {
@@ -164,15 +179,46 @@ defineExpose({
 	flex-direction: column;
 }
 
-.card-title {
-	font-size: 18px;
-	font-weight: 600;
-	margin-bottom: 8px;
-	color: #333;
+.play-icon {
+	position: absolute;
+	bottom: 12px;
+	right: 12px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.05);
+	border-radius: 50%;
+	transition: all 0.3s ease;
+}
+
+.host-info {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	font-size: 12px;
+	color: #888;
+	padding: 2px 6px;
+	background-color: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+	font-weight: 500;
+	max-width: calc(100% - 60px);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	z-index: 1;
+}
+
+.knowledge-card:hover .play-icon {
+	color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.1);
+	transform: scale(1.1);
 }
 
 .card-text {
-	font-size: 14px;
+	font-size: 16px;
 	color: #666;
 	line-height: 1.5;
 	flex: 1;
