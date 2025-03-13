@@ -84,30 +84,32 @@ import apiClient from "@/api";
 import {
 	scene1,
 	scene2,
-	scene3,
-	scene4,
-	scene5,
-	scene6,
-	scene7,
-	scene8,
-	scene9,
-	scene10,
-	scene11,
-	scene12,
-	scene13,
-	scene14,
-	scene15,
-	scene16,
-	scene17,
-	scene18,
-	scene19,
-	scene20,
-	scene21,
+	// scene3,
+	// scene4,
+	// scene5,
+	// scene6,
+	// scene7,
+	// scene8,
+	// scene9,
+	// scene10,
+	// scene11,
+	// scene12,
+	// scene13,
+	// scene14,
+	// scene15,
+	// scene16,
+	// scene17,
+	// scene18,
+	// scene19,
+	// scene20,
+	// scene21,
+	// scene22,
+	// scene23,
 } from "./practice_data.js";
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67b86cd8e93057b3448b2615");
+const lessonId = ref("67b86d75e93057b3448b2657");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -160,25 +162,27 @@ const submitContent = async () => {
 	const scenes = [
 		{ data: scene1, id: 1 },
 		{ data: scene2, id: 2 },
-		{ data: scene3, id: 3 },
-		{ data: scene4, id: 4 },
-		{ data: scene5, id: 5 },
-		{ data: scene6, id: 6 },
-		{ data: scene7, id: 7 },
-		{ data: scene8, id: 8 },
-		{ data: scene9, id: 9 },
-		{ data: scene10, id: 10 },
-		{ data: scene11, id: 11 },
-		{ data: scene12, id: 12 },
-		{ data: scene13, id: 13 },
-		{ data: scene14, id: 14 },
-		{ data: scene15, id: 15 },
-		{ data: scene16, id: 16 },
-		{ data: scene17, id: 17 },
-		{ data: scene18, id: 18 },
-		{ data: scene19, id: 19 },
-		{ data: scene20, id: 20 },
-		{ data: scene21, id: 21 },
+		// { data: scene3, id: 3 },
+		// { data: scene4, id: 4 },
+		// { data: scene5, id: 5 },
+		// { data: scene6, id: 6 },
+		// { data: scene7, id: 7 },
+		// { data: scene8, id: 8 },
+		// { data: scene9, id: 9 },
+		// { data: scene10, id: 10 },
+		// { data: scene11, id: 11 },
+		// { data: scene12, id: 12 },
+		// { data: scene13, id: 13 },
+		// { data: scene14, id: 14 },
+		// { data: scene15, id: 15 },
+		// { data: scene16, id: 16 },
+		// { data: scene17, id: 17 },
+		// { data: scene18, id: 18 },
+		// { data: scene19, id: 19 },
+		// { data: scene20, id: 20 },
+		// { data: scene21, id: 21 },
+		// { data: scene22, id: 22 },
+		// { data: scene23, id: 23 },
 	];
 
 	try {
@@ -249,11 +253,10 @@ const submitContent = async () => {
 
 const submitSingleContent = async () => {
 	const dialogue = {
-		character: "Jinji",
-		emoji: "happy",
 		english:
-			"Hey everyone, Welcome back to Bazinga! I'm your host Jinji! Today's vibe is super cool.",
-		chinese_lines: "",
+			"Yup, and it’s so flexible! You can slap it on anything—like 'how was your trip?' or 'how was your class?' It’s basically the ultimate convo starter, no cap!",
+		character: "Jinji",
+		emoji: "surprised",
 	};
 	try {
 		// 使用文本转语音API生成URL

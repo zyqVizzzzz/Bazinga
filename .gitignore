@@ -11,7 +11,7 @@ node_modules
 dist
 db_backup
 public/*
-prompt
+/src/prompt
 dist-ssr
 *.local
 .env
