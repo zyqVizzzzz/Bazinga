@@ -205,6 +205,10 @@ import { ref, reactive, onMounted, computed, watch } from "vue";
 import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { usePointsStore } from "@/store/index";
+
+// 积分相关的状态管理
+const pointsStore = usePointsStore();
 
 const props = defineProps({
 	sceneContent: {
@@ -403,6 +407,7 @@ const generatePodcast = async () => {
 				(item) => item.chinese_lines || ""
 			);
 			generating.value = false;
+			pointsStore.updatePoints(-10);
 			showToast({ message: "播客生成完成", type: "success" });
 		}
 	} catch (error) {
@@ -460,6 +465,8 @@ const generateAudio = async () => {
 
 			// 自动保存播客内容
 			await savePodcast();
+
+			pointsStore.updatePoints(-20);
 
 			showToast({ message: "音频生成并保存成功", type: "success" });
 		} else {

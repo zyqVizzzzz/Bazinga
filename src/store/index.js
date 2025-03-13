@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import apiClient from "@/api";
 
 export const useAppStore = defineStore("app", {
 	state: () => ({
@@ -93,6 +94,31 @@ export const useDialogueStore = defineStore("dialogue", {
 		},
 		setCurrentKnowledge(knowledge) {
 			this.currentKnowledge = knowledge;
+		},
+	},
+	persist: true,
+});
+
+export const usePointsStore = defineStore("points", {
+	state: () => ({
+		points: 0,
+	}),
+	actions: {
+		setPoints(points) {
+			this.points = points;
+		},
+		updatePoints(delta) {
+			this.points += delta;
+		},
+		async fetchPoints() {
+			try {
+				const response = await apiClient.get("/points");
+				console.log(response.data.data);
+				return response.data.data.points;
+			} catch (error) {
+				console.error("Failed to fetch points:", error);
+				return this.points; // 如果获取失败，返回当前值
+			}
 		},
 	},
 	persist: true,

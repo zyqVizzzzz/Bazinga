@@ -6,7 +6,28 @@
 				class="modal-box w-11/12 max-w-5xl border border-4 border-black max-h-[90vh]"
 			>
 				<div class="flex justify-between items-center mb-6">
-					<h3 class="text-lg font-bold">Bazinga！</h3>
+					<div class="flex items-center gap-4">
+						<h3 class="text-lg font-bold">Bazinga！</h3>
+						<div
+							class="points-badge flex items-center gap-1 px-2 py-0.5 rounded-full"
+						>
+							<span class="text-sm font-bold text-secondary">积分：</span>
+							<span class="text-secondary font-bold text-sm tracking-wider">{{
+								points
+							}}</span>
+							<transition name="points-change">
+								<span
+									v-if="showPointsChange"
+									:class="[
+										'points-change-indicator',
+										pointsChange > 0 ? 'text-success' : 'text-error',
+									]"
+								>
+									{{ pointsChange > 0 ? "+" : "" }}{{ pointsChange }}
+								</span>
+							</transition>
+						</div>
+					</div>
 					<form method="dialog" @submit="handleDialogClose">
 						<button class="btn btn-sm btn-circle btn-ghost">
 							<i class="bi bi-x-lg"></i>
@@ -155,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import KnowledgeTab from "./tab/KnowledgeTab.vue";
@@ -164,6 +185,7 @@ import PodcastTab from "./tab/PodcastTab.vue";
 import PodcastIcon from "@/components/icons/Podcast.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import SitcomIcon from "@/components/icons/Sitcom.vue";
+import { usePointsStore } from "@/store/index";
 
 const props = defineProps({
 	editor: Object,
@@ -184,6 +206,12 @@ const currentTab = ref("knowledge");
 const switchTab = (tab) => {
 	currentTab.value = tab;
 };
+
+// 积分相关的状态管理
+const pointsStore = usePointsStore();
+const points = computed(() => pointsStore.points);
+const pointsChange = ref(0);
+const showPointsChange = ref(false);
 
 // 各个tab组件的实例引用
 const tabRefs = {
@@ -222,6 +250,10 @@ const openModal = async () => {
 			if (knowledgeTabRef.value) {
 				knowledgeTabRef.value.setParentKnowledge(props.currentKnowledge);
 			}
+			// 强制更新当前积分
+			pointsStore.$patch({
+				points: await pointsStore.fetchPoints(),
+			});
 			modal.showModal();
 		}
 	} catch (error) {
@@ -298,6 +330,23 @@ const handleDialogClose = () => {
 		knowledgeTabRef.value.clearAllKnowledge();
 	}
 };
+
+// 监听积分变化
+watch(
+	() => pointsStore.points,
+	(newPoints, oldPoints) => {
+		if (oldPoints !== undefined) {
+			const change = newPoints - oldPoints;
+			pointsChange.value = change;
+			showPointsChange.value = true;
+
+			// 3秒后隐藏变动提示
+			setTimeout(() => {
+				showPointsChange.value = false;
+			}, 3000);
+		}
+	}
+);
 
 // 暴露方法给父组件
 defineExpose({
@@ -391,5 +440,79 @@ defineExpose({
 		rgba(var(--primary-color-rgb), 0.1) 2px,
 		rgba(var(--primary-color-rgb), 0.1) 4px
 	);
+}
+
+/* 积分徽章样式 */
+.points-badge {
+	position: relative;
+	background: linear-gradient(145deg, #1a1a1a, #252525);
+	border: 2px solid #ff7c9c;
+	letter-spacing: 1px;
+	box-shadow: 0 0 15px rgba(255, 124, 156, 0.4),
+		inset 0 0 8px rgba(255, 124, 156, 0.2);
+	transform: skew(-5deg);
+	backdrop-filter: blur(5px);
+	-webkit-font-smoothing: antialiased;
+}
+
+.points-badge::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(
+		to bottom,
+		rgba(255, 255, 255, 0.03),
+		transparent
+	);
+	pointer-events: none;
+}
+
+.points-change-indicator {
+	position: absolute;
+	top: -16px;
+	right: 0;
+	font-size: 0.8rem;
+	font-weight: 800;
+	transform: skew(5deg);
+	text-shadow: 0 0 8px currentColor;
+	animation: float-up 0.3s ease-out;
+}
+
+/* 积分变动动画 */
+@keyframes float-up {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.points-change-enter-active,
+.points-change-leave-active {
+	transition: all 0.3s ease;
+}
+
+.points-change-enter-from {
+	opacity: 0;
+	transform: translateY(10px);
+}
+
+.points-change-leave-to {
+	opacity: 0;
+	transform: translateY(-10px);
+}
+
+.text-success {
+	color: #4caf50;
+}
+
+.text-error {
+	color: #f44336;
 }
 </style>

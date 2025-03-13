@@ -216,6 +216,10 @@
 import { ref, onMounted, reactive, watch } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { usePointsStore } from "@/store/index";
+
+// 积分相关的状态管理
+const pointsStore = usePointsStore();
 
 const props = defineProps({
 	sceneContent: {
@@ -365,6 +369,8 @@ const generateKnowledge = async () => {
 						word_zh: res.data.data.word_zh || phrase, // 如果没有翻译，使用原文
 						...res.data.data,
 					});
+
+					pointsStore.updatePoints(-1);
 				}
 			} catch (err) {
 				console.error(`Failed to generate knowledge for "${phrase}":`, err);

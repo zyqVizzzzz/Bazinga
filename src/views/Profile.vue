@@ -320,8 +320,6 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-import { useI18n } from "vue-i18n";
-import avatar from "@/assets/avatar.jpg";
 import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
 
@@ -329,8 +327,10 @@ import AvatarUpload from "@/components/profile/avatar-upload.vue";
 import PasswordEdit from "../components/profile/password-edit.vue";
 import EmailEdit from "../components/profile/email-edit.vue";
 import Footer from "../layout/footer.vue";
+import { usePointsStore } from "@/store/index";
 
-const { t, locale } = useI18n();
+// 积分相关的状态管理
+const pointsStore = usePointsStore();
 
 const router = useRouter();
 const errorMessage = ref("");
@@ -436,6 +436,7 @@ const handleCheckIn = async () => {
 			// 更新用户积分
 			user.value.points = (user.value.points || 0) + 20;
 			checkInStatus.value.hasChecked = true;
+			pointsStore.updatePoints(20);
 			showToast({ message: "签到成功！获得20积分", type: "success" });
 		}
 	} catch (error) {
