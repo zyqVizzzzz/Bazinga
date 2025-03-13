@@ -34,9 +34,42 @@
 							</p>
 						</div>
 
+						<!-- 签到按钮 -->
+						<div class="check-in-container mt-4 relative">
+							<button
+								@click="handleCheckIn"
+								:disabled="checkInStatus.hasChecked"
+								class="check-in-button"
+								:class="{ checked: checkInStatus.hasChecked }"
+							>
+								<div class="button-content">
+									<div class="check-in-icon">
+										<i
+											class="bi"
+											:class="
+												checkInStatus.hasChecked
+													? 'bi-check-circle-fill'
+													: 'bi-gift-fill'
+											"
+										></i>
+									</div>
+									<div class="check-in-text">
+										{{
+											checkInStatus.hasChecked ? "今日已签到" : "每日签到 +20"
+										}}
+									</div>
+								</div>
+								<div class="glitch-effect"></div>
+							</button>
+							<div class="points-display" v-if="user.points !== undefined">
+								<span class="points-value">当前积分：{{ user.points }}</span>
+								<!-- <span class="points-label">积分</span> -->
+							</div>
+						</div>
+
 						<!-- 状态条 -->
 						<div class="progress-info mt-4 space-y-4">
-							<div class="progress-bar relative">
+							<!-- <div class="progress-bar relative">
 								<p class="text-xs text-gray-700 mb-1">
 									{{ t("profile.story_progress") }}
 								</p>
@@ -49,7 +82,7 @@
 								<div
 									class="barcode-progress bg-secondary secondary-progress"
 								></div>
-							</div>
+							</div> -->
 						</div>
 					</div>
 					<div
@@ -314,6 +347,12 @@ const signatureRule = {
 	maxLength: helpers.withMessage("个性签名不能超过140个字符", maxLength(140)),
 };
 
+// 签到状态
+const checkInStatus = ref({
+	hasChecked: false,
+	loading: false,
+});
+
 const rules = computed(() => ({
 	tempNickname: nicknameRule,
 	tempSignature: signatureRule,
@@ -385,6 +424,43 @@ const linkToMembership = () => {
 	router.push("/membership");
 };
 
+// 处理签到
+const handleCheckIn = async () => {
+	if (checkInStatus.value.hasChecked || checkInStatus.value.loading) return;
+
+	try {
+		checkInStatus.value.loading = true;
+		const response = await apiClient.post("/points/check-in");
+
+		if (response.data.data) {
+			// 更新用户积分
+			user.value.points = (user.value.points || 0) + 20;
+			checkInStatus.value.hasChecked = true;
+			showToast({ message: "签到成功！获得20积分", type: "success" });
+		}
+	} catch (error) {
+		showToast({
+			message: error.response?.data?.message || "签到失败，请稍后再试",
+			type: "error",
+		});
+	} finally {
+		checkInStatus.value.loading = false;
+	}
+};
+
+// 获取签到状态
+const getCheckInStatus = async () => {
+	try {
+		const response = await apiClient.get("/points/check-in/status");
+		if (response.data.code === 200) {
+			checkInStatus.value.hasChecked = response.data.data.hasChecked;
+			console.log(checkInStatus.value);
+		}
+	} catch (error) {
+		console.error("获取签到状态失败", error);
+	}
+};
+
 const isEditing = ref(false);
 
 const toggleEdit = () => {
@@ -434,6 +510,7 @@ const prevProgress = () => {
 onMounted(async () => {
 	await getUserProfile();
 	await getUserLearnInfo();
+	await getCheckInStatus();
 });
 </script>
 
@@ -706,12 +783,12 @@ onMounted(async () => {
 	transform: rotate(15deg);
 	border-radius: 4px;
 	font-family: monospace;
-	/* 可选：添加一些效果使其更突出 */
+	/* 添加一些效果使其更突出 */
 	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 	transition: all 0.3s ease;
 }
 
-/* 可选：添加悬停效果 */
+/* 添加悬停效果 */
 .date-stamp:hover {
 	transform: rotate(10deg) scale(1.05);
 	box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.15);
@@ -995,5 +1072,139 @@ onMounted(async () => {
 	color: #666;
 	min-width: 40px;
 	text-align: center;
+}
+
+/* 签到按钮样式 */
+.check-in-container {
+	margin: 1rem 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+}
+
+.check-in-button {
+	position: relative;
+	width: 100%;
+	padding: 0.55rem 1rem;
+	background: linear-gradient(
+		135deg,
+		var(--secondary-color),
+		rgba(var(--secondary-color-rgb), 0.5)
+	);
+	border: 3px solid #000;
+	border-radius: 8px;
+	color: white;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	overflow: hidden;
+	transition: all 0.3s;
+	transform: rotate(-2deg) scale(1.05);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+	z-index: 1;
+}
+
+.check-in-button:hover:not(:disabled) {
+	transform: rotate(0deg) scale(1.1);
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+}
+
+.check-in-button:active:not(:disabled) {
+	transform: rotate(0deg) scale(1);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.9);
+}
+
+.button-content {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.check-in-icon {
+	font-size: 1.2rem;
+}
+
+.check-in-text {
+	font-size: 0.9rem;
+	font-weight: bold;
+}
+
+.glitch-effect {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(255, 255, 255, 0.1),
+		rgba(255, 255, 255, 0.1) 10px,
+		transparent 10px,
+		transparent 20px
+	);
+	z-index: 1;
+	opacity: 0.5;
+	mix-blend-mode: overlay;
+}
+
+.check-in-button.checked {
+	background: linear-gradient(
+		135deg,
+		var(--primary-color),
+		rgba(var(--secondary-color-rgb), 0.4)
+	);
+	opacity: 0.8;
+	transform: rotate(0deg) scale(1);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.check-in-button:disabled {
+	cursor: not-allowed;
+}
+
+.points-display {
+	margin-top: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	background: rgba(0, 0, 0, 0.1);
+	color: #333;
+	padding: 0.25rem 0.75rem;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.points-value {
+	font-weight: bold;
+	font-size: 1rem;
+	color: #222;
+}
+
+.points-label {
+	font-size: 0.8rem;
+	opacity: 0.9;
+}
+
+/* 添加一些动画效果 */
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.02);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.check-in-button:not(.checked):not(:disabled) {
+	animation: pulse 1.5s infinite;
 }
 </style>

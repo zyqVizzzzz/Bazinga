@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full mx-auto px-4 mt-40 flex items-center justify-center">
+	<div class="w-full mx-auto px-4 my-10 flex items-center justify-center">
 		<div class="retro-card w-full max-w-sm">
 			<div class="card-shadow">
 				<div class="card-edge">
@@ -159,6 +159,31 @@
 								</div>
 							</div>
 
+							<div class="form-control">
+								<label class="retro-label">
+									<span class="label-text">内测码:</span>
+								</label>
+								<div class="retro-input-wrapper">
+									<input
+										type="text"
+										v-model="formData.invitationCode"
+										class="retro-input text-sm"
+										:class="{ 'border-red-500': v$.invitationCode.$error }"
+										placeholder="请输入内测码"
+										required
+										autocomplete="off"
+										autocorrect="off"
+										spellcheck="false"
+									/>
+								</div>
+								<div
+									class="text-red-500 text-xs mt-1"
+									v-if="v$.invitationCode.$error"
+								>
+									{{ v$.invitationCode.$errors[0].$message }}
+								</div>
+							</div>
+
 							<!-- 提交按钮 -->
 							<div class="flex justify-center mt-6">
 								<button class="retro-btn-large" @click="register">
@@ -208,6 +233,7 @@ const formData = ref({
 	password: "",
 	confirmPassword: "",
 	verificationCode: "",
+	invitationCode: "",
 });
 const errorMessage = ref("");
 const cooldown = ref(0);
@@ -255,6 +281,9 @@ const rules = computed(() => ({
 			"验证码格式不正确",
 			(value) => value.length === 6
 		),
+	},
+	invitationCode: {
+		required: helpers.withMessage("请输入内测码", required),
 	},
 }));
 
@@ -326,7 +355,6 @@ const passwordStrength = computed(() => {
 
 // 注册
 const register = async () => {
-	console.log("inter");
 	try {
 		const isFormValid = await v$.value.$validate();
 		if (!isFormValid) {
@@ -342,6 +370,7 @@ const register = async () => {
 			email: formData.value.email,
 			password: formData.value.password,
 			verificationCode: formData.value.verificationCode,
+			invitationCode: formData.value.invitationCode,
 		});
 
 		// 根据你的后端响应格式调整
@@ -352,10 +381,9 @@ const register = async () => {
 			errorMessage.value = response.data.data || response.data.message;
 		}
 	} catch (error) {
-		console.error("Registration error:", error);
 		if (error.response?.data) {
-			errorMessage.value =
-				error.response.data.data || error.response.data.message;
+			errorMessage.value = error.response.data.message;
+			showToast({ message: errorMessage.value, type: "error" });
 		} else {
 			errorMessage.value = t("signup.error");
 		}

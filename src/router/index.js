@@ -18,6 +18,7 @@ import GenPractice from "@/prompt/practice_prompt.vue";
 import GenKnowledge from "@/prompt/upload_knowledge.vue";
 import GenerateKnowledge from "@/prompt/generate_knowledge.vue";
 import GeneratePodcast from "@/prompt/generate_podcast.vue";
+import GenerateInvitation from "@/prompt/generate_invitation.vue";
 
 const routes = [
 	{
@@ -112,6 +113,11 @@ const routes = [
 		path: "/generate-podcast",
 		name: "generate-podcast",
 		component: GeneratePodcast,
+	},
+	{
+		path: "/generate-invitation",
+		name: "generate-invitation",
+		component: GenerateInvitation,
 	},
 ];
 

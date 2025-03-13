@@ -212,16 +212,14 @@ import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
 import { useAppStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
-import { hexToRgba, formatNumber } from "@/utils";
 import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
-import { canAccessResource } from "@/utils";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 const userInfo = computed(() => loginStore.userInfo);
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const appStore = useAppStore();
 const router = useRouter();
