@@ -116,7 +116,7 @@
 			<div class="stat-title text-sm text-gray-600 mb-1">已生成知识点</div>
 			<div class="flex items-center justify-between">
 				<div class="stat-value text-2xl font-bold">
-					{{ statistics.notesCount || 0 }}
+					{{ statistics.knowledgeCount || 0 }}
 				</div>
 				<!-- 迷你条形图：最近7天笔记创建趋势 -->
 				<div class="mini-chart">
@@ -153,13 +153,11 @@ const props = defineProps({
 
 // 获取笔记图表数据
 const getNotesChartData = () => {
-	// 如果有真实API数据，使用真实数据
 	if (props.statistics && props.statistics.dailyNotesCount) {
 		return props.statistics.dailyNotesCount;
 	}
-
-	// 否则生成假数据：最近7天的笔记数量
-	return [3, 5, 2, 7, 4, 6, 5];
+	// 没有数据时返回空数组
+	return [0, 0, 0, 0, 0, 0, 0];
 };
 
 // 获取最大值，用于计算条形高度

@@ -30,9 +30,20 @@
 					</div>
 					<div>
 						<button
-							class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm transition-colors"
+							class="px-4 py-2 bg-white border-2 border-black text-sm font-medium hover:bg-gray-100 transition-colors flex items-center gap-1"
 							@click="$emit('close')"
+							style="
+								position: relative;
+								border-radius: 4px;
+								box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+								transition: all 0.2s ease;
+							"
+							onmouseover="this.style.transform='rotate(0deg) translateY(-2px)'; this.style.boxShadow='3px 3px 0 rgba(0, 0, 0, 0.3)';"
+							onmouseout="this.style.transform=''; this.style.boxShadow='2px 2px 0 rgba(0, 0, 0, 0.2)';"
+							onmousedown="this.style.transform='translateY(1px)'; this.style.boxShadow='1px 1px 0 rgba(0, 0, 0, 0.3)';"
+							onmouseup="this.style.transform=''; this.style.boxShadow='2px 2px 0 rgba(0, 0, 0, 0.2)';"
 						>
+							<i class="bi bi-arrow-left"></i>
 							返回
 						</button>
 					</div>
