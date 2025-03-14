@@ -112,57 +112,87 @@
 					<div class="flip-card" :class="{ active: isEditing }">
 						<!-- 正面：学习报告 -->
 						<div class="front">
-							<div class="dashboard-container p-6">
+							<div class="log-card-inner">
 								<!-- 标题区域 -->
-								<div
-									class="dashboard-header flex justify-between items-center mb-6"
-								>
-									<h2 class="text-2xl font-bold">Bazinga_Log</h2>
+								<div class="notebook-title">
+									<h2 class="sketch-title">Bazinga_Log</h2>
 									<div class="date-stamp">{{ getCurrentDate() }}</div>
 								</div>
-								<div class="stats-cards grid grid-cols-2 gap-4 mb-6">
-									<div
-										class="stat-card bg-white p-4 rounded-lg shadow-md border-l-4 border-primary"
-									>
-										<div class="stat-icon text-primary mb-2">
-											<i class="bi bi-book-fill text-2xl"></i>
-										</div>
-										<div class="stat-title text-sm text-gray-500">单词收藏</div>
-										<div class="stat-value text-3xl font-bold">
-											{{ statistics.wordsCount || 0 }}
-										</div>
-										<div class="stat-desc text-xs text-gray-400">
-											重点单词: {{ statistics.importantWordsCount || 0 }}
+
+								<!-- 学习数据卡片 -->
+								<div class="study-note collection-note">
+									<div class="paper-clip"></div>
+									<h3>已创建合集</h3>
+									<p class="stat-number">
+										{{ statistics.catalogsCount }}<span class="unit">个</span>
+									</p>
+									<div class="mini-graph"></div>
+								</div>
+
+								<div class="study-note word-note">
+									<div class="tape-section"></div>
+									<h3>单词收藏</h3>
+									<p class="stat-number">
+										{{ statistics.wordsCount }}<span class="unit">词</span>
+									</p>
+									<div class="progress-indicator">
+										<span class="completed"
+											>重点单词: {{ statistics.importantWordsCount }}</span
+										>
+									</div>
+								</div>
+
+								<!-- 最近学习进度 -->
+								<div class="study-note recent-progress">
+									<div class="push-pin"></div>
+									<h3 class="mb-2">学习进度</h3>
+									<div v-if="statistics.learningProgress?.length > 0">
+										<p class="manga-title">
+											《{{
+												statistics.learningProgress[currentIndex].courseName
+											}}》
+										</p>
+										<p class="chapter">
+											{{ statistics.learningProgress[currentIndex].season }}E{{
+												formatEpisode(
+													statistics.learningProgress[currentIndex].episode
+												)
+											}}
+										</p>
+										<div class="progress-nav">
+											<button
+												class="nav-btn prev"
+												@click="prevProgress"
+												:disabled="currentIndex === 0"
+											>
+												<i class="bi bi-chevron-left"></i>
+											</button>
+											<span class="progress-indicator" style="margin-top: 0"
+												>{{ currentIndex + 1 }}/{{
+													statistics.learningProgress.length
+												}}</span
+											>
+											<button
+												class="nav-btn next"
+												@click="nextProgress"
+												:disabled="
+													currentIndex >= statistics.learningProgress.length - 1
+												"
+											>
+												<i class="bi bi-chevron-right"></i>
+											</button>
 										</div>
 									</div>
-									<div
-										class="stat-card bg-white p-4 rounded-lg shadow-md border-l-4 border-secondary"
-									>
-										<div class="stat-icon text-secondary mb-2">
-											<i class="bi bi-collection-fill text-2xl"></i>
-										</div>
-										<div class="stat-title text-sm text-gray-500">创建合集</div>
-										<div class="stat-value text-3xl font-bold">
-											{{ statistics.catalogsCount || 0 }}
-										</div>
-										<div class="stat-desc text-xs text-gray-400">
-											总计 {{ statistics.catalogsCount || 0 }} 个合集
-										</div>
-									</div>
-									<div
-										class="stat-card bg-white p-4 rounded-lg shadow-md border-l-4 border-accent"
-									>
-										<div class="stat-icon text-accent mb-2">
-											<i class="bi bi-mic-fill text-2xl"></i>
-										</div>
-										<div class="stat-title text-sm text-gray-500">生成播客</div>
-										<div class="stat-value text-3xl font-bold">
-											{{ statistics.podcastCount || 0 }}
-										</div>
-										<div class="stat-desc text-xs text-gray-400">
-											总时长: {{ formatDuration(statistics.podcastDuration) }}
-										</div>
-									</div>
+								</div>
+
+								<!-- 随机装饰元素 -->
+								<div class="doodle star-1"></div>
+								<div class="doodle circle-1"></div>
+								<div class="doodle arrow-1"></div>
+
+								<div class="edit-profile-link" @click="editProfile">
+									<i class="bi bi-pencil"></i>
+									编辑个人资料
 								</div>
 							</div>
 						</div>
@@ -368,17 +398,6 @@ const saveProfileChanges = async () => {
 const user = ref({
 	// avatarUrl: avatar,
 });
-
-// 格式化时长
-const formatDuration = (minutes) => {
-	if (!minutes) return "0分钟";
-	if (minutes < 60) return `${minutes}分钟`;
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-	return `${hours}小时${
-		remainingMinutes > 0 ? ` ${remainingMinutes}分钟` : ""
-	}`;
-};
 
 const getUserProfile = async () => {
 	try {

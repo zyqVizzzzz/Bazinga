@@ -13,28 +13,45 @@
 					@click="goToHome"
 					class="nav-brand btn btn-ghost hover:bg-transparent hover:text-inherit"
 				>
-					Bazinga!
+					<img src="/logo-trans@4x.png" alt="Bazinga Logo" class="logo-image" />
+					azinga!
 				</a>
 			</div>
 			<div class="flex-none">
 				<ul class="menu menu-horizontal gap-2">
 					<li>
-						<a class="retro-link" @click="goToHome()">
+						<a
+							class="retro-link"
+							:class="{ active: route.path === '/' }"
+							@click="goToHome()"
+						>
 							{{ t("nav.home") }}
 						</a>
 					</li>
 					<li>
-						<a class="retro-link" @click="goToLink('collections')">
+						<a
+							class="retro-link"
+							:class="{ active: route.path === '/collections' }"
+							@click="goToLink('collections')"
+						>
 							{{ t("nav.collections") }}
 						</a>
 					</li>
 					<li>
-						<a class="retro-link" @click="goToLink('notebook')">
+						<a
+							class="retro-link"
+							:class="{ active: route.path === '/notebook' }"
+							@click="goToLink('notebook')"
+						>
 							{{ t("nav.notes") }}
 						</a>
 					</li>
 					<li v-if="isLogin">
-						<a class="retro-link" @click="goToLink('profile')">
+						<a
+							class="retro-link"
+							:class="{ active: route.path === '/profile' }"
+							@click="goToLink('profile')"
+						>
 							{{ t("nav.profile") }}
 						</a>
 					</li>
@@ -142,6 +159,15 @@ watch(
 	font-size: 24px;
 }
 
+.logo-image {
+	height: 28px;
+	width: auto;
+	object-fit: contain;
+	transform: rotate(8deg); /* 添加倾斜和旋转效果，与文字风格匹配 */
+	transition: all 0.3s ease; /* 添加过渡效果 */
+	margin-right: -8px;
+}
+
 .navbar {
 	height: 64px;
 	background: white;
@@ -199,7 +225,23 @@ watch(
 	transform: scaleX(1);
 }
 
-/* 适配深色背景 */
+.retro-link.active {
+	transform: skew(-6deg) scale(1.05);
+	border: 2px solid #000;
+	background: #fff !important;
+	color: #222 !important;
+}
+
+.retro-link.active::after {
+	transform: scaleX(1);
+}
+
+/* 适配深色背景时的激活状态 */
+.navbar[data-theme="dark"] .retro-link.active {
+	border-color: #fff;
+	color: #fff;
+}
+
 .navbar[data-theme="dark"] {
 	background: rgba(0, 0, 0, 0.8);
 	border-bottom: 4px solid #fff;
