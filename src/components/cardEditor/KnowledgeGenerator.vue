@@ -134,33 +134,27 @@
 
 						<!-- 底部场景列表 -->
 						<div class="border-t pt-4">
-							<div class="flex items-center justify-between">
-								<div class="flex gap-2 overflow-x-auto pb-2 flex-1">
+							<div class="flex items-center">
+								<div class="flex flex-wrap gap-2 pb-2 w-full">
 									<div
 										v-for="(scene, index) in scenesList"
 										:key="index"
-										class="flex flex-col items-center gap-2"
+										class="flex flex-col items-center"
 									>
 										<!-- 场景色块 -->
 										<div
 											@click="selectScene(index)"
-											class="scene-container cursor-pointer w-20 h-12 rounded-lg transition-colors flex items-center justify-center"
+											class="scene-container cursor-pointer w-16 h-10 rounded-lg transition-colors flex items-center justify-center"
 											:class="
 												selectedSceneIndex === index
 													? 'bg-primary/20 border-2 border-gray-800'
 													: 'bg-gray-100 hover:bg-gray-200'
 											"
 										>
-											<div class="text-sm font-medium text-gray-600">
+											<div class="text-xs font-medium text-gray-600">
 												场景 {{ index + 1 }}
 											</div>
 										</div>
-										<!-- 场景标题 -->
-										<!-- <div
-											class="text-xs text-gray-600 w-32 truncate text-center"
-										>
-											{{ scene.title }}
-										</div> -->
 									</div>
 								</div>
 							</div>

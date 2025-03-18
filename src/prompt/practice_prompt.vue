@@ -109,7 +109,7 @@ import {
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67b86d75e93057b3448b2657");
+const lessonId = ref("67230dee6fc3d389ea1ffee1");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");

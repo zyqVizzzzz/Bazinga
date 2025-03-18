@@ -277,12 +277,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
-import {
-	useLessonStore,
-	useAppStore,
-	useLoginStore,
-	useDialogueStore,
-} from "@/store";
+import { useLessonStore, useAppStore, useLoginStore } from "@/store";
 import apiClient from "@/api";
 
 import Podcast from "@/components/icons/Podcast.vue";
@@ -439,8 +434,6 @@ const getKnowledge = async () => {
 			params: { catalogId: route.params.id, lessonId: route.query.sign },
 		});
 
-		console.log(res);
-
 		if (res.data.code === 200 && Array.isArray(res.data.data)) {
 			knowledges.value = res.data.data;
 			return true;
@@ -530,9 +523,9 @@ const editCard = () => {
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
 	lessonStore.closeListenMode();
-	if (route.params.id === "67230dee6fc3d389ea1ffedf") {
-		isDefault.value = true;
-	}
+	// if (route.params.id === "67230dee6fc3d389ea1ffedf") {
+	// 	isDefault.value = true;
+	// }
 	isLoading.value = true;
 	await getLesson();
 });

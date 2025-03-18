@@ -4,112 +4,159 @@
 		<div class="word-header">
 			<div class="word-title">
 				<span class="word-text">{{ selectedNote.word }}</span>
-				<button class="pronunciation-btn">
-					<i class="bi bi-volume-down text-3xl"></i>
+				<div class="flex items-center gap-2">
+					<button
+						v-if="hasPodcast"
+						class="podcast-btn"
+						@click="showPodcastModal = true"
+						title="查看播客内容"
+					>
+						<!-- <i class="bi bi-mic-fill text-secondary text-lg"></i> -->
+						<PodcastIcon />
+					</button>
+				</div>
+			</div>
+			<div class="flex items-center gap-2">
+				<!-- <button class="bookmark-btn" @click="toggleImportantBadge">
+					<i
+						class="text-xl"
+						:class="[
+							'bi',
+							selectedNote.isImportant ? 'bi-star-fill' : 'bi-star',
+						]"
+					></i>
+				</button> -->
+				<button
+					class="delete-btn px-3 py-1 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+					@click="handleDelete"
+					title="删除笔记"
+				>
+					删除
 				</button>
 			</div>
-			<button class="bookmark-btn" @click="toggleImportantBadge">
-				<i
-					class="text-xl"
-					:class="['bi', selectedNote.isImportant ? 'bi-star-fill' : 'bi-star']"
-				></i>
-			</button>
 		</div>
 
-		<!-- 基本释义 -->
-		<div class="content-section">
-			<p class="definition-text text-sm mb-2">
-				<span v-if="selectedNote.symbols">{{ selectedNote.symbols }}；</span>
-				{{ selectedNote.pos }} {{ selectedNote.word_zh }}；
-			</p>
-			<p class="explanation-text text-sm">{{ selectedNote.definition_zh }}</p>
-		</div>
+		<div class="pt-2 pb-4 space-y-4">
+			<!-- 中文释义 -->
+			<div class="text-sm text-gray-500 text-left">
+				{{ selectedNote.word_zh }}
+			</div>
 
-		<!-- 详细解释 -->
-		<div class="content-section" v-if="selectedNote.etymology">
-			<!-- 词根词缀分析 -->
-			<div class="word-analysis">
-				<!-- 词根 -->
-				<div class="analysis-item">
-					<span class="text-primary"
-						>[词根 & 词缀分析]
-						<span class="text-gray-600 ml-2">{{
-							selectedNote.etymology
-						}}</span></span
+			<!-- 分割线 -->
+			<div class="border-b border-gray-200"></div>
+
+			<!-- 详细释义 -->
+			<div>
+				<h4 class="font-medium mb-2 text-left">释义</h4>
+				<p class="text-sm text-gray-600 text-left">
+					{{ selectedNote.definition_zh }}
+				</p>
+			</div>
+
+			<!-- 同义词 -->
+			<div v-if="selectedNote.synonyms">
+				<h4 class="font-medium mb-2 text-left">同义词</h4>
+				<ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+					<li
+						v-for="(synonym, index) in selectedNote.synonyms.split('|')"
+						:key="index"
+						class="text-left"
 					>
-				</div>
+						{{ synonym.trim() }}
+					</li>
+				</ol>
+			</div>
+
+			<!-- 例句 -->
+			<div v-if="selectedNote.example" class="space-y-1">
+				<h4 class="font-medium mb-2 text-left">例句</h4>
+				<p class="text-sm text-gray-600 text-left">
+					{{ selectedNote.example }}
+				</p>
+				<p class="text-sm text-gray-500 text-left">
+					{{ selectedNote.example_zh }}
+				</p>
+			</div>
+
+			<!-- 笔记 -->
+			<div v-if="selectedNote.note">
+				<h4 class="font-medium mb-2 text-left">补充说明</h4>
+				<p class="text-sm text-gray-600 text-left">
+					{{ selectedNote.note }}
+				</p>
 			</div>
 		</div>
 
-		<!-- 变形 -->
-		<div class="content-section" v-if="selectedNote?.system?.wordInflections">
-			<div class="inflections-grid">
-				<div
-					class="inflection-item text-gray-600 mb-2"
-					v-for="field in processedFields"
-					:key="field.key"
-				>
-					<span>[{{ field.label }}] : </span>
-					<span class="form">{{ field.form }}</span>
-				</div>
-			</div>
-		</div>
-
-		<!-- 例句 -->
-		<div class="content-section">
-			<div class="example-box">
-				<p class="example text-sm">{{ selectedNote.example }}</p>
-				<p class="translation text-sm">{{ selectedNote.example_zh }}</p>
-			</div>
-		</div>
-
-		<!-- 注释编辑区 -->
-		<div class="content-section" v-if="selectedNote.comment || showEditModal">
-			<div v-if="showEditModal" class="note-edit-area">
-				<textarea
-					v-model="commentContent"
-					class="retro-textarea text-sm"
-					placeholder="请输入补充注释"
-					rows="4"
-				></textarea>
-			</div>
-			<div v-else class="note-content" v-html="formattedComment"></div>
-		</div>
-
-		<!-- 按钮区 -->
-		<div class="button-group">
-			<!-- <button
-				class="retro-btn primary"
-				:class="{ 'w-2/3': showEditModal, 'w-full': !showEditModal }"
-				@click="toggleEditModal"
+		<dialog id="podcast_modal" class="modal" :open="showPodcastModal">
+			<div
+				class="modal-box max-w-2xl border-2 border-gray-800"
+				style="background-color: var(--milk-color)"
 			>
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">
-							{{ showEditModal ? "提交注释" : "补充注释" }}
-						</div>
-					</div>
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="font-bold text-lg text-secondary">
+						{{ podcastData?.knowledge }}
+					</h3>
+					<button
+						class="btn btn-sm btn-circle"
+						@click="showPodcastModal = false"
+					>
+						<i class="bi bi-x-lg"></i>
+					</button>
 				</div>
-			</button> -->
 
-			<button
-				v-if="showEditModal"
-				class="retro-btn w-1/3"
-				@click="cancelEditModal"
-			>
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">取消编辑</div>
-					</div>
+				<!-- 音频播放器 -->
+				<div class="mb-4">
+					<audio
+						v-if="podcastData?.audioPath"
+						controls
+						class="w-full"
+						:src="podcastData.audioPath"
+					></audio>
 				</div>
-			</button>
-		</div>
+
+				<!-- 文本切换按钮 -->
+				<div class="flex justify-center gap-4 mb-4">
+					<button
+						class="btn btn-sm"
+						:class="{ 'btn-secondary': !showChinese }"
+						@click="showChinese = false"
+					>
+						English
+					</button>
+					<button
+						class="btn btn-sm"
+						:class="{ 'btn-secondary': showChinese }"
+						@click="showChinese = true"
+					>
+						中文
+					</button>
+				</div>
+
+				<!-- 文本内容 -->
+				<div class="space-y-4 text-left">
+					<p
+						v-for="(text, index) in showChinese
+							? podcastData?.chineseScript
+							: podcastData?.script"
+						:key="index"
+						class="text-sm text-gray-600"
+					>
+						{{ text }}
+					</p>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>close</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 <script setup>
 import { ref, toRefs, computed, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
+import { generateTextHash } from "@/utils";
+import PodcastIcon from "@/components/icons/Podcast.vue";
 
 const props = defineProps({
 	selectedNote: Object,
@@ -118,99 +165,37 @@ const { selectedNote } = toRefs(props);
 
 const emit = defineEmits(["on-close-blink", "on-add-point"]);
 
-const commentContent = ref(""); // 初始文本
-
 const showEditModal = ref(false);
+const showPodcastModal = ref(false);
+const showChinese = ref(false);
+const podcastData = ref(null);
+const hasPodcast = ref(false);
 
-const toggleEditModal = async () => {
-	if (!showEditModal.value) {
-		// 显示编辑模式，并将 <br> 转换为 \n
-		showEditModal.value = true;
-		if (selectedNote.value.comment) {
-			commentContent.value = selectedNote.value.comment.replace(/<br>/g, "\n");
-		}
-	} else {
-		try {
-			await updateComment();
-			showEditModal.value = false;
-		} catch (error) {
-			console.error("Failed to update comment:", error);
-		}
-	}
+// 去除HTML标签的辅助函数
+const removeHtmlTags = (text) => {
+	return text.replace(/<[^>]*>/g, "");
 };
 
-const wordInflections = computed(() => {
-	const result = [];
-	const inflections = selectedNote.value.system?.wordInflections || {};
-
-	// 获取所有键名
-	const keys = Object.keys(inflections);
-
-	// 找出所有不带_zh后缀的基础键名
-	const baseKeys = keys.filter((key) => !key.endsWith("_zh"));
-
-	// 处理每个基础键值对
-	baseKeys.forEach((baseKey) => {
-		const zhKey = `${baseKey}_zh`;
-
-		// 只有当同时存在英文和中文键时才添加
-		if (inflections[zhKey]) {
-			result.push({
-				key: baseKey,
-				label: inflections[zhKey], // 中文标签
-				form: inflections[baseKey], // 英文内容
-			});
+// 检查是否有关联播客
+const checkPodcast = async () => {
+	if (!selectedNote.value?.word) return;
+	const cleanText = removeHtmlTags(selectedNote.value?.word).trim();
+	try {
+		const textHash = generateTextHash(cleanText);
+		const res = await apiClient.get(`/podcasts/search?knowledge=${textHash}`);
+		if (res.data.code === 200 && res.data.data.podcasts.length) {
+			hasPodcast.value = true;
+			podcastData.value = res.data.data.podcasts[0];
+		} else {
+			hasPodcast.value = false;
+			podcastData.value = null;
 		}
-	});
-
-	return result;
-});
-
-const processedFields = computed(() => {
-	const result = [];
-
-	// 获取所有键名
-	const inflections = selectedNote.value.system?.wordInflections || {};
-
-	// 获取所有键名
-	const keys = Object.keys(inflections);
-
-	// 找出所有不带_zh后缀的基础键名
-	const baseKeys = keys.filter((key) => !key.endsWith("_zh"));
-
-	// 处理每个基础键值对
-	baseKeys.forEach((baseKey) => {
-		const zhKey = `${baseKey}_zh`;
-
-		// 只有当同时存在英文和中文键时才添加
-		if (inflections[zhKey]) {
-			result.push({
-				key: baseKey,
-				label: inflections[zhKey], // 中文标签
-				form: inflections[baseKey], // 英文内容
-			});
-		}
-	});
-
-	return result;
-});
-
-const updateComment = async () => {
-	const result = commentContent.value.replace(/\n/g, "<br>");
-	const commitObj = { ...selectedNote.value, comment: result };
-
-	const res = await apiClient.put(
-		`/lesson-notes/${selectedNote.value.resourceId}`,
-		commitObj
-	);
-	if (res.data.code === 200) {
-		return res.data.data;
-	} else {
-		showToast({ message: res.data.message, type: "error" });
+	} catch (error) {
+		console.error("检查播客失败:", error);
+		hasPodcast.value = false;
+		podcastData.value = null;
 	}
 };
-
-const isFill = ref(false);
 
 const toggleImportantBadge = async () => {
 	if (!selectedNote.value.isImportant) {
@@ -240,44 +225,11 @@ const toggleImportantBadge = async () => {
 	}
 };
 
-const cancelEditModal = () => {
-	showEditModal.value = false;
-	if (selectedNote.value.comment) {
-		commentContent.value = selectedNote.value.comment.replace(/<br>/g, "\n");
-	}
-};
-
-// 计算属性：将换行符转换为 p 标签
-const formattedComment = computed(() => {
-	if (selectedNote.value.comment) {
-		return selectedNote.value.comment
-			.split("<br>")
-			.filter((line) => line.trim() !== "")
-			.map((line, index, arr) => {
-				const nextLine = arr[index + 1] || "";
-				const isDoubleBreak = selectedNote.value.comment.includes(
-					`${line}\n\n${nextLine}`
-				);
-				const paddingClass = isDoubleBreak ? "pb-3" : "pb-1";
-				return `<p class="${paddingClass}">${line}</p>`;
-			})
-			.join("");
-	} else {
-		return "";
-	}
-});
-
 watch(
-	() => selectedNote.value,
-	(newValue) => {
-		if (newValue) {
-			// isFill.value = newValue.isImportant;
-			showEditModal.value = false;
-			if (newValue.comment) {
-				commentContent.value = newValue.comment.replace(/<br>/g, "\n");
-			} else {
-				commentContent.value = newValue.comment;
-			}
+	() => selectedNote.value?.word,
+	(newWord) => {
+		if (newWord) {
+			checkPodcast();
 		}
 	}
 );
@@ -482,5 +434,53 @@ watch(
 
 .retro-edit-card::-webkit-scrollbar-thumb:hover {
 	background: rgba(0, 0, 0, 0.3);
+}
+
+.podcast-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+	padding: 4px;
+	border-radius: 50%;
+}
+
+.podcast-btn:hover {
+	transform: scale(1.1);
+	background-color: rgba(var(--secondary-color-rgb), 0.1);
+}
+
+.modal-box {
+	max-height: 80vh;
+	overflow-y: auto;
+}
+
+.modal-box::-webkit-scrollbar {
+	width: 8px;
+}
+
+.modal-box::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.05);
+	border-radius: 4px;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+}
+
+.modal-box::-webkit-scrollbar-thumb:hover {
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.delete-btn {
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+	font-weight: 500;
+}
+
+.delete-btn:hover {
+	color: #ef4444;
 }
 </style>

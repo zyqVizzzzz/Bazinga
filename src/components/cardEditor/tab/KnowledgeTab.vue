@@ -26,7 +26,7 @@
 						class="select select-bordered select-sm"
 					>
 						<option value="spoken">口语</option>
-						<option value="written">语法</option>
+						<option value="grammar">语法</option>
 					</select>
 
 					<select
@@ -337,9 +337,13 @@ const generateKnowledge = async () => {
 				return line.trim() && props.shouldTranslate(line);
 			})
 			.map((line) => {
-				// 移除所有 HTML 标签
-				return line.replace(/<\/?[^>]+(>|$)/g, "");
+				// 移除所有 HTML 标签和方括号内的内容
+				return line
+					.replace(/<\/?[^>]+(>|$)/g, "")
+					.replace(/\[[^\]]*\]/g, "") // 移除 [] 中的内容
+					.trim(); // 移除可能产生的多余空格
 			})
+			.filter((line) => line) // 过滤掉可能变成空的行
 			.join(" ");
 
 		if (!sceneContent) {

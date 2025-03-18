@@ -1,232 +1,147 @@
 <template>
-	<div class="container w-full mx-auto my-10 p-4">
+	<div class="container w-full mx-auto mt-10 pt-2">
 		<div class="flex editor-box">
-			<div
-				class="optionbox-container option-group flex-col justify-between space-y-4"
-			>
-				<div class="tooltip" data-tip="退出">
-					<button class="retro-btn" @click="backToPreview">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-box-arrow-left text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-
-				<div class="tooltip" data-tip="保存">
-					<button class="retro-btn" @click="saveDialogue(true)">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-floppy text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-
-				<div class="tooltip" data-tip="智能工作台">
-					<button
-						class="retro-btn"
-						@click="openKnowledgeModal"
-						:disabled="generateAllLoading"
-					>
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i v-if="!generateAllLoading" class="bi bi-magic text-lg"></i>
-									<span
-										v-else
-										class="loading loading-spinner loading-xs"
-									></span>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-			</div>
-			<div class="editor-container text-sm mt-4 relative">
-				<div class="text-sm rounded shadow-editor" style="overflow-y: auto">
+			<div class="editor-container text-sm relative w-1/2">
+				<div
+					class="editor-wrapper text-sm rounded shadow-editor"
+					style="overflow-y: auto"
+				>
 					<div id="editor" class="editorjs-container"></div>
 				</div>
 			</div>
-			<div
-				class="toolbox-container w-2/5 mt-4 border border-gray-100 shadow-xl rounded-xl shadow-knowledge"
-			>
-				<!-- 顶部装饰条 -->
+			<div class="right-panel w-1/2">
 				<div
-					class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20"
-				></div>
-
-				<div class="relative w-full max-w-2xl mx-auto">
-					<div class="relative">
-						<div class="decorated-card py-6 px-4">
-							<div
-								v-if="!isEditing"
-								class="flex items-center justify-between space-x-2 ml-3 mb-2 text-lg font-bold gradient-to-r from-primary to-secondary"
-							>
-								知识点
-							</div>
-
-							<!-- 编辑表单 -->
-							<div
-								v-if="isEditing"
-								class="text-gray-800 text-sm mb-2 text-left relative group"
-							>
-								<div
-									class="mb-4 font-bold text-base text-left flex justify-between pl-1"
-								>
-									<span class="transition-opacity duration-200">
-										{{ editedFields.origin }}
-										<div class="tooltip" data-tip="自动生成知识点">
-											<button
-												@click="generateKnowledge(editedFields.origin)"
-												class="btn btn-ghost btn-xs text-secondary text-sm"
-											>
-												<!-- 自动生成知识点 -->
-												<i v-if="!generateLoading" class="bi bi-lightning"></i>
-												<span
-													v-else
-													class="loading loading-spinner loading-xs"
-												></span>
-											</button>
+					class="option-group flex items-center justify-between p-4 border-b border-gray-100"
+				>
+					<div class="text-lg font-bold relative top-[-2px]">卡片编辑器</div>
+					<div class="flex space-x-4 relative top-[2px]">
+						<div class="tooltip" data-tip="退出">
+							<button class="retro-btn" @click="backToPreview">
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">
+											<i class="bi bi-box-arrow-left text-lg"></i>
 										</div>
-									</span>
-								</div>
-								<div class="mb-2">
-									<label for="word" class="text-xs pb-1 ml-1 block"
-										>知识点:</label
-									>
-									<input
-										type="text"
-										v-model="editedFields.word"
-										id="word"
-										placeholder="请输入知识点"
-										class="input input-bordered input-sm w-full max-w-xs"
-									/>
-								</div>
-								<div class="mb-2">
-									<label for="word_zh" class="text-xs pb-1 ml-1 block"
-										>释义:</label
-									>
-									<input
-										type="text"
-										v-model="editedFields.word_zh"
-										id="word_zh"
-										placeholder="请输入中文释义"
-										class="input input-bordered input-sm w-full max-w-xs"
-									/>
-								</div>
-								<div class="mb-2">
-									<label for="definition_zh" class="text-xs pb-1 ml-1 block"
-										>详细释义:</label
-									>
-									<textarea
-										v-model="editedFields.definition_zh"
-										id="definition_zh"
-										placeholder="请输入详细释义"
-										class="textarea textarea-bordered w-full p-2"
-									></textarea>
-								</div>
-
-								<div class="mb-2">
-									<label for="synonyms" class="text-xs pb-1 ml-1 block"
-										>近义词/句:</label
-									>
-									<textarea
-										v-model="editedFields.synonyms"
-										id="synonyms"
-										placeholder="请输入近义词"
-										class="textarea textarea-bordered w-full max-w-xs p-2"
-									></textarea>
-								</div>
-
-								<div class="flex flex-col mb-2">
-									<label for="note" class="text-xs pb-1 ml-1 block"
-										>扩展信息:</label
-									>
-									<div class="flex items-center space-x-2">
-										<textarea
-											v-model="editedFields.note"
-											id="note"
-											placeholder="请输入词根词缀分析"
-											class="textarea textarea-bordered w-full p-2"
-										></textarea>
 									</div>
 								</div>
-								<div class="mb-2">
-									<label for="type" class="text-xs pb-1 ml-1 block"
-										>例句:</label
-									>
-									<textarea
-										v-model="editedFields.example"
-										id="example"
-										placeholder="请输入例句"
-										class="textarea textarea-bordered w-full max-w-xs p-2"
-									></textarea>
-								</div>
-								<div class="mb-2">
-									<textarea
-										v-model="editedFields.example_zh"
-										id="example_zh"
-										placeholder="请输入例句释义"
-										class="textarea textarea-bordered w-full p-2"
-									></textarea>
-								</div>
+							</button>
+						</div>
 
-								<div class="flex justify-end space-x-2 mt-6">
-									<button
-										@click="saveKnowledge"
-										class="btn btn-sm btn-secondary text-white"
-									>
-										保存
-									</button>
-									<button @click="cancelEdit" class="btn btn-sm btn-ghost">
-										取消
-									</button>
+						<div class="tooltip" data-tip="保存">
+							<button class="retro-btn" @click="saveDialogue(true)">
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">
+											<i class="bi bi-floppy text-lg"></i>
+										</div>
+									</div>
 								</div>
-							</div>
-							<!-- 编辑表单结束 -->
+							</button>
+						</div>
 
-							<!-- 知识点列表 -->
-							<div v-else>
+						<div class="tooltip" data-tip="生成器">
+							<button
+								class="retro-btn"
+								@click="openKnowledgeModal"
+								:disabled="generateAllLoading"
+							>
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">
+											<i
+												v-if="!generateAllLoading"
+												class="bi bi-magic text-lg"
+											></i>
+											<span
+												v-else
+												class="loading loading-spinner loading-xs"
+											></span>
+										</div>
+									</div>
+								</div>
+							</button>
+						</div>
+
+						<!-- 新增说明指南按钮 -->
+						<div class="tooltip" data-tip="使用指南">
+							<button class="retro-btn" @click="openGuideModal">
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">
+											<i class="bi bi-question-circle text-lg"></i>
+										</div>
+									</div>
+								</div>
+							</button>
+						</div>
+					</div>
+				</div>
+				<div
+					class="toolbox-container mt-4 border border-gray-100 shadow-xl rounded-xl shadow-knowledge sticky top-[15%]"
+				>
+					<div class="relative w-full max-w-2xl mx-auto">
+						<div class="relative">
+							<div class="decorated-card py-6 px-4">
 								<div
-									v-for="(item, index) in Array.from(currentKnowledge.values())"
-									:key="item.word"
-									class="group relative p-2 py-1 rounded-lg hover:bg-gray-50/70 transition-all duration-200"
+									class="flex items-center justify-between space-x-2 ml-3 mb-4"
 								>
+									<select
+										v-model="currentSceneIndex"
+										class="select select-sm select-bordered w-32 mr-4"
+										@change="handleSceneChange"
+									>
+										<option
+											v-for="(scene, index) in scenes"
+											:key="index"
+											:value="index"
+										>
+											场景 {{ index + 1 }}
+										</option>
+									</select>
+								</div>
+
+								<!-- 场景内容显示区 -->
+								<div class="scene-content space-y-4">
 									<div
-										class="flex items-center justify-between cursor-pointer"
-										@click="startEditing(item)"
+										class="scene-title pl-2 text-base font-medium mb-2 text-left text-xl"
 									>
-										<div class="flex-1 text-left">
-											<span class="font-medium text-sm">{{ item.word }}</span>
-										</div>
-
-										<!-- 操作按钮 -->
-										<div class="transition-opacity duration-200">
-											<button
-												@click="startEditing(item)"
-												class="btn btn-ghost btn-xs"
-											>
-												<i
-													class="bi bi-pencil-square text-secondary text-sm"
-												></i>
-											</button>
-										</div>
+										{{ currentScene?.title }}
 									</div>
-								</div>
 
-								<!-- 空状态 -->
-								<div
-									v-if="currentKnowledge.size === 0"
-									class="text-gray-500 text-sm my-8 text-center flex flex-col items-center space-y-2"
-								>
-									<i class="bi bi-inbox text-3xl text-gray-300"></i>
-									<span>暂无词汇</span>
+									<!-- 原文显示区 -->
+									<div class="original-text space-y-2">
+										<template
+											v-for="(block, index) in currentSceneBlocks"
+											:key="index"
+										>
+											<!-- 工具栏 -->
+											<div
+												v-if="selectedBlockIndex === index && !block.isTitle"
+												class="text-toolbox"
+											>
+												<button @click="translateBlock(index)">
+													<i class="bi bi-translate"></i> 翻译
+												</button>
+												<button @click="generateKnowledgeFromBlock(block)">
+													<i class="bi bi-lightbulb"></i> 生成知识点
+												</button>
+											</div>
+											<div
+												class="text-sm p-2 rounded hover:bg-gray-50 cursor-pointer text-left"
+												:class="{
+													'font-bold': block.isTitle,
+													'translated-text': block.isTranslated,
+													'knowledge-block': block.isKnowledge,
+												}"
+												@click="handleBlockClick(index, block)"
+												v-html="
+													block.isKnowledge
+														? block.text
+														: block.displayText || block.text
+												"
+											></div>
+										</template>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -234,44 +149,71 @@
 				</div>
 			</div>
 		</div>
-		<KnowledgeGenerator
+		<!-- <KnowledgeGenerator
 			v-if="editor"
 			ref="knowledgeGeneratorRef"
 			:editor="editor"
 			:currentKnowledge="currentKnowledge"
 			:shouldTranslate="shouldTranslate"
-			:boldKnowledgeWords="boldKnowledgeWords"
 			@update:currentKnowledge="currentKnowledge = $event"
-		/>
+		/> -->
+
+		<!-- 使用指南弹窗 -->
+		<dialog id="guide_modal" class="modal">
+			<div class="modal-box w-11/12 max-w-3xl">
+				<h3 class="font-bold text-lg mb-4">编辑器使用指南</h3>
+				<div class="space-y-2">
+					<div
+						v-for="(item, index) in guideItems"
+						:key="index"
+						class="card bg-base-100 shadow-sm"
+					>
+						<div class="card-body p-2">
+							<div class="flex items-start">
+								<div class="text-left w-full">
+									<h4 class="font-medium">
+										{{ index + 1 + ". " + item.title }}
+									</h4>
+									<p class="text-sm mt-1">{{ item.description }}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-action">
+					<form method="dialog">
+						<button class="btn">关闭</button>
+					</form>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>关闭</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
 import { useRoute, useRouter } from "vue-router";
 import { useAppStore } from "@/store";
 import { exampleText, exampleTextZh } from "@/constants/Example.js";
-import { TranslateTool } from "../utils/translateTool";
 import KnowledgeGenerator from "@/components/cardEditor/KnowledgeGenerator.vue";
+import { v4 as uuidv4 } from "uuid";
 
 const route = useRoute();
 const router = useRouter();
 const editor = ref(null);
 const totalDialogues = ref(0); // 总对话数
-const isEditing = ref(false); // 当前正在编辑的索引
-const editedFields = ref({});
 
 const currentDialogueIndex = ref(0); // 当前对话索引
 const currentDialogue = ref({}); // 当前对话
 const currentKnowledge = ref(new Map()); // 当前知识点
 const scriptJson = ref(null);
 
-const existingBoldWords = new Set();
-
-const generateLoading = ref(false); // 生成单个知识点状态变量
-const knowledgeGeneratorRef = ref(null); // 知识点生成器引用
+// const knowledgeGeneratorRef = ref(null); // 知识点生成器引用
 
 const generateAllLoading = ref(false);
 const isSaved = ref(false);
@@ -280,100 +222,728 @@ const isSaved = ref(false);
 const autoSaving = ref(false);
 const lastSavedTime = ref(null);
 
-// 在组件setup最开始就定义这个函数
-const preventDefaultEnter = (event) => {
-	if (
-		event.key === "Enter" &&
-		!event.shiftKey &&
-		!event.ctrlKey &&
-		!event.altKey
-	) {
-		event.preventDefault();
-		event.stopPropagation();
+const scenes = ref([]);
+const currentSceneIndex = ref(0);
+const currentScene = ref(null);
+const currentSceneBlocks = ref([]);
+
+const selectedBlockIndex = ref(null);
+
+// 添加新的数据结构
+const blocksMap = ref(new Map()); // 存储所有块的数据，键为唯一ID
+const sceneStructure = ref([]); // 存储场景结构，包含块ID的引用
+
+const updateCurrentScene = async () => {
+	if (!editor.value) return;
+
+	const content = await editor.value.save();
+	const editorBlocks = content.blocks;
+
+	// 第一步：保存当前场景的所有块数据
+	if (currentSceneBlocks.value && currentSceneBlocks.value.length > 0) {
+		currentSceneBlocks.value.forEach((block) => {
+			if (block.id) {
+				blocksMap.value.set(block.id, { ...block });
+			} else if (block.originalIndex) {
+				// 兼容旧数据，使用originalIndex作为ID
+				block.id = block.originalIndex;
+				blocksMap.value.set(block.id, { ...block });
+			}
+		});
+	}
+
+	// 第二步：解析编辑器内容，生成新的场景结构
+	const newScenes = [];
+	let currentScene = null;
+
+	// 找出所有场景标题和原文块
+	for (let i = 0; i < editorBlocks.length; i++) {
+		const block = editorBlocks[i];
+		const text = block.data.text;
+
+		// 检查是否是标题
+		if (text.startsWith("#")) {
+			currentScene = {
+				index: newScenes.length,
+				title: text.replace("#", "").trim(),
+				blockIds: [], // 存储块ID而不是块内容
+			};
+			newScenes.push(currentScene);
+			continue;
+		}
+
+		if (!currentScene) continue;
+
+		// 为原文块创建或查找唯一ID
+		let blockId = block.id || `editor-block-${uuidv4()}`;
+
+		// 尝试通过内容匹配找到现有块
+		if (!blocksMap.value.has(blockId)) {
+			const cleanText = text.replace(/<\/?[^>]+(>|$)/g, "");
+
+			// 尝试通过内容匹配找到现有块
+			let matchFound = false;
+			for (const [id, existingBlock] of blocksMap.value.entries()) {
+				if (!existingBlock.isTranslated && !existingBlock.isKnowledge) {
+					const existingText = existingBlock.text.replace(
+						/<\/?[^>]+(>|$)/g,
+						""
+					);
+
+					// 使用相似度匹配
+					if (
+						existingText === cleanText ||
+						existingText.includes(cleanText) ||
+						cleanText.includes(existingText)
+					) {
+						blockId = id; // 使用现有块的ID
+						matchFound = true;
+						break;
+					}
+
+					// 如果没有直接匹配，尝试词汇相似度匹配
+					const oldWords = existingText
+						.toLowerCase()
+						.split(/\s+/)
+						.filter((w) => w.length > 0);
+					const newWords = cleanText
+						.toLowerCase()
+						.split(/\s+/)
+						.filter((w) => w.length > 0);
+
+					// 计算共同单词数量
+					const commonWords = oldWords.filter((word) =>
+						newWords.includes(word)
+					);
+
+					// 如果共同单词占比超过60%，认为是同一个块
+					const similarity =
+						commonWords.length / Math.max(oldWords.length, newWords.length);
+					if (similarity > 0.6) {
+						blockId = id; // 使用现有块的ID
+						matchFound = true;
+						break;
+					}
+				}
+			}
+
+			// 如果没有找到匹配，创建新块
+			if (!matchFound) {
+				console.log(`未找到匹配，创建新块: ${blockId}`);
+			}
+		}
+
+		// 如果是新块，创建并存储
+		if (!blocksMap.value.has(blockId)) {
+			blocksMap.value.set(blockId, {
+				id: blockId,
+				text: text.replace(/<\/?[^>]+(>|$)/g, ""),
+				isTitle: false,
+				editorId: block.id, // 保存编辑器块ID以便后续匹配
+				originalIndex: blockId, // 兼容旧代码
+			});
+		} else {
+			// 更新现有块的文本内容
+			const existingBlock = blocksMap.value.get(blockId);
+			const oldText = existingBlock.text;
+			existingBlock.text = text.replace(/<\/?[^>]+(>|$)/g, "");
+			existingBlock.editorId = block.id;
+
+			// 如果文本内容发生变化，需要重新应用知识点高亮
+			if (oldText !== existingBlock.text) {
+				// 更新 displayText
+				if (existingBlock.displayText) {
+					// 重新应用知识点高亮
+					applyKnowledgeHighlight(existingBlock, currentSceneIndex.value);
+				} else {
+					// 如果没有 displayText，直接使用 text
+					existingBlock.displayText = existingBlock.text;
+				}
+
+				// 强制更新右侧面板中对应的块
+				const blockIndex = currentSceneBlocks.value.findIndex(
+					(b) => b.id === blockId || b.originalIndex === blockId
+				);
+				if (blockIndex >= 0) {
+					// 使用解构和重新赋值来触发响应式更新
+					const updatedBlock = { ...existingBlock };
+					currentSceneBlocks.value[blockIndex] = updatedBlock;
+
+					// 强制触发视图更新
+					currentSceneBlocks.value = [...currentSceneBlocks.value];
+				}
+			}
+		}
+
+		// 将块ID添加到场景结构中
+		currentScene.blockIds.push(blockId);
+	}
+
+	// 第三步：更新场景数据
+	sceneStructure.value = newScenes;
+
+	// 如果是初始化阶段，不更新场景数据
+	if (scenes.value.length === 0) {
+		return;
+	}
+
+	// 第四步：更新当前场景的显示
+	if (newScenes.length > 0) {
+		// 确保当前场景索引有效
+		if (currentSceneIndex.value >= newScenes.length) {
+			currentSceneIndex.value = newScenes.length - 1;
+		}
+
+		// 更新场景数组
+		scenes.value = newScenes.map((scene) => ({
+			...scene,
+			blocks: [], // 暂时清空blocks，后面会重建
+		}));
+
+		// 更新当前场景
+		currentScene.value = scenes.value[currentSceneIndex.value];
+
+		// 重建当前场景的块数组
+		const newSceneBlocks = [];
+		const currentSceneStructure = sceneStructure.value[currentSceneIndex.value];
+
+		if (currentSceneStructure && currentSceneStructure.blockIds) {
+			// 遍历当前场景的所有块ID
+			for (const blockId of currentSceneStructure.blockIds) {
+				// 获取原文块
+				const originalBlock = blocksMap.value.get(blockId);
+				if (originalBlock) {
+					// 添加原文块
+					newSceneBlocks.push({ ...originalBlock });
+
+					// 检查是否有对应的翻译块
+					const translationId = `translation-${blockId}`;
+					if (blocksMap.value.has(translationId)) {
+						// 添加翻译块
+						newSceneBlocks.push({ ...blocksMap.value.get(translationId) });
+					}
+
+					// 检查是否有对应的知识点块
+					const knowledgeId = `knowledge-${blockId}`;
+					if (blocksMap.value.has(knowledgeId)) {
+						// 添加知识点块
+						newSceneBlocks.push({ ...blocksMap.value.get(knowledgeId) });
+					}
+				}
+			}
+		}
+
+		// 更新当前场景块数组
+		currentSceneBlocks.value = newSceneBlocks;
 	}
 };
 
-// 初始化 editorjs
-const initEditorJS = async () => {
-	if (!scriptJson.value) return;
-	console.log("Initializing EditorJS...");
-	const blocks = await initEditorBlocks(scriptJson.value);
-
-	editor.value = new EditorJS({
-		holder: "editor",
-		placeholder: "",
-		data: { blocks },
-		tools: {
-			translate: {
-				class: TranslateTool,
-				config: {
-					onAction: handleInlineToolAction,
-				},
-				inlineToolbar: true,
-			},
-		},
-		inlineToolbar: ["bold", "italic", "translate"],
-		onReady: () => {
-			boldKnowledgeWords(currentKnowledge.value, editor.value);
-			const editorElement = document.getElementById("editor");
-			if (editorElement) {
-				editorElement.addEventListener("keydown", handleEnterKey, {
-					capture: true,
-				});
-			}
-		},
-		onChange: async () => {
-			const content = await editor.value.save();
-			checkBoldText(content, currentKnowledge.value);
-		},
-		// 添加默认配置确保空行可编辑
-		defaultBlock: "paragraph",
-		minHeight: 0,
-	});
+// 处理文本块点击
+const handleBlockClick = (index, block) => {
+	if (block.isTitle || block.isTranslated || block.isKnowledge) {
+		selectedBlockIndex.value = null;
+		return;
+	}
+	selectedBlockIndex.value = index;
 };
 
-const handleInlineToolAction = async ({ type, text, blockIndex }) => {
-	if (type !== "translate") return;
+// 知识点按钮的点击处理函数
+const handleKnowledgeButtonClick = (event) => {
+	// 检查点击的是否是知识点按钮
+	const detailBtn = event.target.closest(".knowledge-detail-btn");
+	const deleteBtn = event.target.closest(".knowledge-delete-btn");
 
-	// 使用你现有的翻译逻辑
-	const separator = " ||| ";
+	if (detailBtn || deleteBtn) {
+		// 阻止事件冒泡，避免触发其他点击事件
+		event.stopPropagation();
+
+		// 获取知识点关键词
+		const word = detailBtn
+			? detailBtn.getAttribute("data-word")
+			: deleteBtn.getAttribute("data-word");
+
+		if (detailBtn) {
+			// 处理详情按钮点击
+			showKnowledgeDetail(word);
+		} else if (deleteBtn) {
+			// 处理删除按钮点击
+			deleteKnowledge(word);
+		}
+	}
+};
+
+// 显示知识点详情
+const showKnowledgeDetail = (word) => {
+	const knowledge = currentKnowledge.value.get(word);
+	if (knowledge) {
+		// 这里可以实现显示详情的逻辑，例如打开一个模态框
+		showToast({ message: `查看知识点详情: ${word}`, type: "info" });
+		console.log("知识点详情:", knowledge);
+	}
+};
+
+// 删除知识点
+const deleteKnowledge = (word) => {
+	// 从当前知识点Map中删除
+	if (currentKnowledge.value.has(word)) {
+		currentKnowledge.value.delete(word);
+
+		// 更新所有包含该知识点的块
+		updateBlocksAfterKnowledgeDelete(word);
+
+		showToast({ message: `已删除知识点: ${word}`, type: "success" });
+	}
+};
+
+// 更新删除知识点后的块
+const updateBlocksAfterKnowledgeDelete = (word) => {
+	// 遍历所有场景
+	scenes.value.forEach((scene, sceneIndex) => {
+		const sceneId = `Scene${sceneIndex + 1}`;
+
+		// 获取当前场景的块
+		const sceneBlocks =
+			sceneIndex === currentSceneIndex.value
+				? currentSceneBlocks.value
+				: scene.blocks;
+
+		// 更新原文块中的高亮
+		sceneBlocks.forEach((block) => {
+			if (
+				!block.isTitle &&
+				!block.isTranslated &&
+				!block.isKnowledge &&
+				block.displayText
+			) {
+				// 移除该知识点的高亮
+				const regex = new RegExp(
+					`<mark class="pink">\\b${word}\\b</mark>`,
+					"gi"
+				);
+				block.displayText = block.displayText.replace(regex, word);
+			}
+
+			// 如果是知识点块，需要检查是否包含被删除的知识点
+			if (block.isKnowledge) {
+				// 获取块的ID
+				const blockId = block.id || block.originalIndex;
+				if (blockId && blockId.startsWith("knowledge-")) {
+					const originalId = blockId.replace("knowledge-", "");
+					const originalBlock = blocksMap.value.get(originalId);
+
+					if (originalBlock) {
+						// 重新生成知识点显示内容
+						// 这里需要获取该块关联的所有知识点，然后排除被删除的知识点
+						// 简化处理：直接从当前场景中查找与该原文块关联的知识点
+						const relatedKnowledge = [];
+						Array.from(currentKnowledge.value.values()).forEach((k) => {
+							if (
+								k.scenes &&
+								k.scenes.has(sceneId) &&
+								originalBlock.text.toLowerCase().includes(k.word.toLowerCase())
+							) {
+								relatedKnowledge.push(k);
+							}
+						});
+
+						if (relatedKnowledge.length > 0) {
+							// 更新知识点块内容
+							block.text = formatKnowledgeDisplay(relatedKnowledge);
+						} else {
+							// 如果没有关联知识点了，标记该块待删除
+							block.toBeRemoved = true;
+						}
+					}
+				}
+			}
+		});
+
+		// 删除标记为待删除的知识点块
+		if (sceneIndex === currentSceneIndex.value) {
+			currentSceneBlocks.value = currentSceneBlocks.value.filter(
+				(block) => !block.toBeRemoved
+			);
+		} else {
+			scene.blocks = scene.blocks.filter((block) => !block.toBeRemoved);
+		}
+	});
+
+	// 强制更新视图
+	currentSceneBlocks.value = [...currentSceneBlocks.value];
+};
+
+// 点击事件处理器
+const handleClickOutside = (event) => {
+	// 检查点击是否在文本块或工具栏内部
+	const isClickOnBlock = event.target.closest(".text-sm.p-2.rounded");
+	const isClickOnToolbox = event.target.closest(".text-toolbox");
+
+	if (!isClickOnBlock && !isClickOnToolbox) {
+		selectedBlockIndex.value = null;
+	}
+};
+
+// 修改翻译块函数
+const translateBlock = async (index) => {
+	const block = currentSceneBlocks.value[index];
+	if (!block || block.isTranslated) return;
 
 	try {
-		// 获取编辑器内容
-		const savedData = await editor.value.save();
-		const blocks = savedData.blocks;
-
-		// 只翻译选中的文本
-		if (shouldTranslate(text)) {
-			const cleanedText = cleanText(text);
-
-			const response = await apiClient.post("/translation", {
-				text: cleanedText,
-				source: "en",
-				target: "zh",
-			});
-
-			const translatedText = response.data.data.translatedText;
-
-			// 在当前块后插入翻译
-			const newBlocks = [...blocks];
-			newBlocks.splice(blockIndex + 1, 0, {
-				type: "paragraph",
-				data: {
-					text: translatedText,
-				},
-			});
-
-			// 处理连续空行
-			const processedBlocks = removeConsecutiveEmptyLines(newBlocks);
-
-			// 更新编辑器内容
-			await editor.value.render({
-				blocks: processedBlocks,
-			});
+		// 确保块有ID
+		const blockId = block.id || block.originalIndex;
+		if (!blockId) {
+			console.error("无法翻译：块没有ID");
+			return;
 		}
+
+		// 检查是否已有翻译块
+		const translationId = `translation-${blockId}`;
+		const hasExistingTranslation = blocksMap.value.has(translationId);
+
+		const response = await apiClient.post("/translation", {
+			text: block.text,
+			source: "en",
+			target: "zh",
+		});
+
+		const translatedText = response.data.data.translatedText;
+
+		// 创建或更新翻译块
+		const translationBlock = {
+			id: translationId,
+			text: translatedText,
+			isTitle: false,
+			isTranslated: true,
+			originalId: blockId, // 关联到原文块
+			originalIndex: blockId, // 兼容旧代码
+		};
+
+		// 保存到blocksMap
+		blocksMap.value.set(translationId, translationBlock);
+
+		// 如果已有翻译块，则更新内容；否则插入新的翻译块
+		if (hasExistingTranslation) {
+			// 找到现有翻译块的位置
+			const existingIndex = currentSceneBlocks.value.findIndex(
+				(b) => b.id === translationId || b.originalIndex === translationId
+			);
+			if (existingIndex >= 0) {
+				currentSceneBlocks.value[existingIndex].text = translatedText;
+			}
+		} else {
+			// 在当前块后插入翻译文本
+			currentSceneBlocks.value.splice(index + 1, 0, translationBlock);
+		}
+
+		showToast({ message: "翻译成功", type: "success" });
 	} catch (error) {
 		console.error("Translation failed:", error);
+		showToast({ message: "翻译失败，请重试", type: "error" });
+	}
+};
+
+// 修改生成知识点函数
+const generateKnowledgeFromBlock = async (block) => {
+	if (!block) return;
+
+	try {
+		generateAllLoading.value = true;
+
+		// 确保块有ID
+		const blockId = block.id || block.originalIndex;
+		if (!blockId) {
+			console.error("无法生成知识点：块没有ID");
+			return;
+		}
+
+		// 提取关键词
+		const keyPhrases = await extractKeyPhrases(block.text);
+		const generatedKnowledgeItems = [];
+
+		for (const phrase of keyPhrases) {
+			try {
+				const res = await apiClient.post("/knowledge/generate", {
+					word: phrase,
+				});
+
+				if (res.data.code === 200) {
+					// 将新生成的知识点添加到列表
+					generatedKnowledgeItems.push(res.data.data);
+
+					// 同时添加到当前知识点Map中
+					if (!currentKnowledge.value.has(res.data.data.word)) {
+						const sceneId = `Scene${currentSceneIndex.value + 1}`;
+						currentKnowledge.value.set(res.data.data.word, {
+							...res.data.data,
+							scenes: new Set([sceneId]),
+						});
+					}
+				}
+			} catch (err) {
+				console.error(`Failed to generate knowledge for "${phrase}":`, err);
+			}
+		}
+
+		// 高亮原文中的知识点
+		let highlightedText = block.text;
+		generatedKnowledgeItems.forEach((item) => {
+			const word = item.word;
+			const regex = new RegExp(`\\b${word}\\b`, "gi");
+			highlightedText = highlightedText.replace(regex, (match) => {
+				return `<mark class="pink">${match}</mark>`;
+			});
+		});
+
+		// 更新原文块的displayText
+		const originalBlock = blocksMap.value.get(blockId) || block;
+		if (originalBlock) {
+			originalBlock.displayText = highlightedText;
+
+			// 更新当前显示的块
+			const blockIndex = currentSceneBlocks.value.findIndex(
+				(b) => b.id === blockId || b.originalIndex === blockId
+			);
+			if (blockIndex >= 0) {
+				currentSceneBlocks.value[blockIndex].displayText = highlightedText;
+			}
+		}
+
+		// 创建知识点块
+		if (generatedKnowledgeItems.length > 0) {
+			const knowledgeId = `knowledge-${blockId}`;
+			const knowledgeBlock = {
+				id: knowledgeId,
+				text: formatKnowledgeDisplay(generatedKnowledgeItems),
+				isTitle: false,
+				isKnowledge: true,
+				originalId: blockId,
+				originalIndex: blockId, // 兼容旧代码
+			};
+
+			// 保存到blocksMap
+			blocksMap.value.set(knowledgeId, knowledgeBlock);
+
+			// 检查是否已有知识点块
+			const existingIndex = currentSceneBlocks.value.findIndex(
+				(b) => b.id === knowledgeId || b.originalIndex === knowledgeId
+			);
+
+			if (existingIndex >= 0) {
+				// 更新现有知识点块
+				currentSceneBlocks.value[existingIndex].text = knowledgeBlock.text;
+			} else {
+				// 找到原文块和可能的翻译块
+				const originalIndex = currentSceneBlocks.value.findIndex(
+					(b) => b.id === blockId || b.originalIndex === blockId
+				);
+				if (originalIndex >= 0) {
+					// 检查下一个块是否是翻译块
+					const nextIndex = originalIndex + 1;
+					const hasTranslation =
+						nextIndex < currentSceneBlocks.value.length &&
+						currentSceneBlocks.value[nextIndex].isTranslated;
+
+					// 确定插入位置
+					const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
+
+					// 插入知识点块
+					currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
+				}
+			}
+		}
+
+		showToast({ message: "知识点生成成功", type: "success" });
+	} catch (error) {}
+};
+
+// 格式化知识点显示
+const formatKnowledgeDisplay = (knowledgeItems) => {
+	return knowledgeItems
+		.map((item) => {
+			return `<div class="knowledge-item p-1">
+			<div class="flex justify-between">
+				<span class="font-bold">${item.word}</span>
+				<div class="flex items-center">
+					<span class="text-gray-600 mr-2">${item.word_zh}</span>
+					<button class="knowledge-btn knowledge-detail-btn" data-word="${item.word}" title="详情">
+						<i class="bi bi-info-circle"></i>
+					</button>
+					<button class="knowledge-btn knowledge-delete-btn" data-word="${item.word}" title="删除">
+						<i class="bi bi-trash"></i>
+					</button>
+				</div>
+			</div>
+		</div>`;
+		})
+		.join("");
+};
+
+// 提取关键词或短语
+const extractKeyPhrases = async (text) => {
+	// 使用辅助方法计算合适的关键词数量
+	const maxPhrases = calculateMaxPhrases(text);
+	const options = { maxPhrases };
+	try {
+		const response = await apiClient.post("/translation/extract-key-phrases", {
+			text,
+			options,
+		});
+
+		if (response.data.code === 200) {
+			return response.data.data.phrases;
+		}
+
+		// return fallbackExtractPhrases(text);
+	} catch (error) {
+		console.error("Failed to extract key phrases:", error);
+		// return fallbackExtractPhrases(text);
+	}
+};
+
+// 根据文本长度计算合适的知识点数量
+const calculateMaxPhrases = (text) => {
+	// 计算单词数量（按空格分割）
+	const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
+	// 根据单词数量动态计算关键词数量
+	if (wordCount <= 25) {
+		return 1;
+	} else if (wordCount <= 50) {
+		return 2;
+	} else if (wordCount <= 100) {
+		return 3;
+	} else if (wordCount <= 200) {
+		return 4;
+	} else {
+		return 5;
+	}
+};
+
+// 重构场景切换处理方法
+const handleSceneChange = () => {
+	if (scenes.value.length > 0) {
+		currentScene.value = scenes.value[currentSceneIndex.value];
+
+		// 使用场景结构和blocksMap重建当前场景的块数组
+		const newSceneBlocks = [];
+		const currentSceneStructure = sceneStructure.value[currentSceneIndex.value];
+
+		if (currentSceneStructure && currentSceneStructure.blockIds) {
+			// 遍历当前场景的所有块ID
+			for (const blockId of currentSceneStructure.blockIds) {
+				// 获取原文块
+				const originalBlock = blocksMap.value.get(blockId);
+				if (originalBlock) {
+					// 添加原文块 - 使用深拷贝确保不共享引用
+					const clonedOriginalBlock = JSON.parse(JSON.stringify(originalBlock));
+					newSceneBlocks.push(clonedOriginalBlock);
+
+					// 检查是否有对应的翻译块
+					const translationId = `translation-${blockId}`;
+					if (blocksMap.value.has(translationId)) {
+						// 添加翻译块 - 使用深拷贝确保不共享引用
+						const translationBlock = blocksMap.value.get(translationId);
+						newSceneBlocks.push(JSON.parse(JSON.stringify(translationBlock)));
+					}
+
+					// 检查是否有对应的知识点块
+					const knowledgeId = `knowledge-${blockId}`;
+					if (blocksMap.value.has(knowledgeId)) {
+						// 添加知识点块 - 使用深拷贝确保不共享引用
+						const knowledgeBlock = blocksMap.value.get(knowledgeId);
+						newSceneBlocks.push(JSON.parse(JSON.stringify(knowledgeBlock)));
+					}
+				}
+			}
+		}
+
+		// 更新当前场景块数组
+		currentSceneBlocks.value = newSceneBlocks;
+
+		// 滚动到选中场景的位置
+		const editorBlock = document.querySelector(
+			`.ce-block:nth-child(${currentScene.value.index + 1})`
+		);
+		if (editorBlock) {
+			editorBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	}
+};
+
+// 使用指南数据
+const guideItems = ref([
+	{
+		title: "卡片标题",
+		description: "每张卡片的标题请以 # 开头",
+	},
+	{
+		title: "标准格式",
+		description:
+			"英文段落 + 中文段落 + 空行 = 一个完整的段落。中文翻译紧邻英文段落",
+	},
+	{
+		title: "保存",
+		description:
+			"点击左侧「保存」按钮，或输入 Command/Ctrl + s，完成保存。同时，编辑器有自动保存功能。",
+	},
+	{
+		title: "知识点",
+		description:
+			"选中单词，选择粗体，或输入 Command/Ctrl + b，可将选中部分加入右侧知识点列表",
+	},
+	{
+		title: "旁白/注释",
+		description:
+			"选中段落，选择斜体，或输入 Command/ctrl + i，可以将该段落标记为旁白或注释",
+	},
+	{
+		title: "翻译",
+		description: "选中段落，选择翻译，完成翻译",
+	},
+	{
+		title: "对白标记",
+		description: "用'[]'标记说话者，标记该段落为对白",
+	},
+	{
+		title: "生成器",
+		description:
+			"点击左侧「生成器」按钮，试试自动生成知识点、播客、情景剧等功能...",
+	},
+]);
+
+// 优化编辑器初始化逻辑
+const initEditorJS = async () => {
+	console.log("Initializing EditorJS...");
+	if (!scriptJson.value) return;
+
+	try {
+		const blocks = await initEditorBlocks(scriptJson.value);
+
+		// 销毁现有编辑器实例（如果存在）
+		if (editor.value) {
+			await editor.value.destroy();
+		}
+
+		editor.value = new EditorJS({
+			holder: "editor",
+			placeholder: "请在此编辑文本...",
+			data: { blocks },
+			inlineToolbar: [],
+			onReady: async () => {
+				console.log("编辑器准备就绪");
+				await updateCurrentScene();
+			},
+			onChange: async (api, event) => {
+				// 立即更新当前场景
+				await updateCurrentScene();
+				// 强制刷新右侧面板
+				currentSceneBlocks.value = JSON.parse(
+					JSON.stringify(currentSceneBlocks.value)
+				);
+			},
+		});
+	} catch (error) {
+		console.error("初始化编辑器失败:", error);
+		showToast({ message: "初始化编辑器失败，请刷新页面重试", type: "error" });
 	}
 };
 
@@ -425,146 +995,559 @@ const initDialogues = async () => {
 				];
 			totalDialogues.value =
 				res.data.data.scriptData.scenes[0].dialogues.length;
+
+			// 初始化右侧面板的场景数据，包括原文和翻译
+			initRightPanelScenes(res.data.data.scriptData);
 		} else {
 			throw new Error("课程信息不完整或未找到");
 		}
 	} catch (err) {}
 };
 
-const generateKnowledge = async (word) => {
-	generateLoading.value = true;
-	try {
-		const res = await apiClient.post("/knowledge/generate", {
-			word,
-		});
-		if (res.data.code === 200) {
-			generateLoading.value = false;
-			editedFields.value.type = res.data.data.type;
-			editedFields.value.word_zh = res.data.data.word_zh;
-			editedFields.value.note = res.data.data.note;
-			editedFields.value.definition_zh =
-				res.data.data.word_zh + "；" + res.data.data.definition_zh;
-			editedFields.value.example = res.data.data.example;
-			editedFields.value.example_zh = res.data.data.example_zh;
-			editedFields.value.synonyms = res.data.data.synonyms;
-		} else {
-			generateLoading.value = false;
+// 初始化右侧面板的场景数据
+const initRightPanelScenes = (scriptData) => {
+	const newScenes = [];
+
+	scriptData.scenes[0].dialogues.forEach((dialogue, dialogueIndex) => {
+		// 创建新场景
+		const scene = {
+			index: dialogueIndex,
+			title: dialogue.title,
+			blockIds: [], // 存储块ID而不是块内容
+			blocks: [], // 兼容现有代码
+		};
+
+		// 处理每组文本，添加原文和翻译到右侧面板
+		for (let i = 0; i < dialogue.text.length; i++) {
+			const [speaker, text] = dialogue.text[i];
+			const textZhPair = dialogue.text_zh[i] || ["", ""];
+			const [speakerZh, textZh] = textZhPair;
+
+			// 添加英文原文块
+			const originalText =
+				speaker === "narration"
+					? `<i>${text}</i>`
+					: speaker
+					? `[${speaker}] ${text}`
+					: text;
+
+			// 创建唯一ID
+			const blockId = `block_${dialogueIndex}_${i}`;
+
+			// 创建原文块
+			const originalBlock = {
+				id: blockId,
+				text: originalText,
+				isTitle: false,
+				originalIndex: blockId, // 兼容旧代码
+			};
+
+			// 保存到blocksMap
+			blocksMap.value.set(blockId, originalBlock);
+
+			// 添加到场景结构
+			scene.blockIds.push(blockId);
+
+			// 添加到blocks数组（兼容现有代码）
+			scene.blocks.push(originalBlock);
+
+			// 如果有中文翻译，也添加到右侧面板
+			if (textZh && textZh.trim() !== "") {
+				const translatedText = speakerZh ? `[${speakerZh}] ${textZh}` : textZh;
+				const translationId = `translation-${blockId}`;
+
+				// 创建翻译块
+				const translationBlock = {
+					id: translationId,
+					text: translatedText,
+					isTitle: false,
+					isTranslated: true,
+					originalId: blockId,
+					originalIndex: blockId, // 兼容旧代码
+				};
+
+				// 保存到blocksMap
+				blocksMap.value.set(translationId, translationBlock);
+
+				// 添加到blocks数组（兼容现有代码）
+				scene.blocks.push(translationBlock);
+			}
 		}
-	} catch (err) {
-		showToast({ message: "网络错误，请重试！", type: "warning" });
-		generateLoading.value = false;
+
+		newScenes.push(scene);
+	});
+
+	// 更新场景数据
+	scenes.value = newScenes;
+	sceneStructure.value = newScenes.map((scene) => ({
+		index: scene.index,
+		title: scene.title,
+		blockIds: scene.blockIds,
+	}));
+
+	// 设置当前场景
+	if (newScenes.length > 0) {
+		currentScene.value = newScenes[currentSceneIndex.value];
+		currentSceneBlocks.value = [...currentScene.value.blocks];
 	}
+};
+
+// 初始化知识点显示
+const initKnowledgeDisplay = async () => {
+	try {
+		// 确保知识点数据已加载
+		if (currentKnowledge.value.size === 0) {
+			await initKnowledges();
+		}
+
+		// 遍历所有场景
+		scenes.value.forEach((scene, sceneIndex) => {
+			const sceneId = `Scene${sceneIndex + 1}`;
+
+			// 获取当前场景的块
+			const sceneBlocks =
+				sceneIndex === currentSceneIndex.value
+					? currentSceneBlocks.value
+					: scene.blocks;
+
+			// 创建一个映射，将每个知识点关联到对应的原文块
+			const knowledgeByWord = new Map();
+
+			// 收集该场景的所有知识点
+			Array.from(currentKnowledge.value.values()).forEach((knowledge) => {
+				if (knowledge.scenes && knowledge.scenes.has(sceneId)) {
+					// 将知识点按关键词分组
+					const word = knowledge.word;
+					if (!knowledgeByWord.has(word)) {
+						knowledgeByWord.set(word, []);
+					}
+					knowledgeByWord.get(word).push(knowledge);
+				}
+			});
+
+			// 如果场景有知识点，为每个原文块检查是否有对应的知识点
+			if (knowledgeByWord.size > 0) {
+				// 从后向前遍历，避免插入时索引变化
+				for (let i = sceneBlocks.length - 1; i >= 0; i--) {
+					const block = sceneBlocks[i];
+
+					// 跳过非原文块（标题、翻译、已有知识点）
+					if (block.isTitle || block.isTranslated || block.isKnowledge) {
+						continue;
+					}
+
+					// 确保块有ID
+					const blockId = block.id || block.originalIndex;
+					if (!blockId) continue;
+
+					// 检查这个原文块中是否包含任何知识点关键词
+					const blockText = block.text.toLowerCase();
+					const matchedKnowledge = [];
+
+					// 收集所有匹配的知识点
+					knowledgeByWord.forEach((items, word) => {
+						if (blockText.includes(word.toLowerCase())) {
+							matchedKnowledge.push(...items);
+
+							// 在原文中高亮知识点（只在右侧面板显示）
+							const regex = new RegExp(`\\b${word}\\b`, "gi");
+							if (!block.displayText) {
+								block.displayText = block.text;
+							}
+							block.displayText = block.displayText.replace(regex, (match) => {
+								return `<mark class="pink">${match}</mark>`;
+							});
+						}
+					});
+
+					// 如果找到匹配的知识点，在原文块后插入知识点块
+					if (matchedKnowledge.length > 0) {
+						// 检查下一个块是否是翻译块
+						const nextIndex = i + 1;
+						const hasTranslation =
+							nextIndex < sceneBlocks.length &&
+							sceneBlocks[nextIndex].isTranslated;
+
+						// 确定插入位置：如果有翻译块，则在翻译块后面插入；否则在当前块后面插入
+						const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
+
+						// 创建知识点展示块
+						const knowledgeId = `knowledge-${blockId}`;
+						const knowledgeBlock = {
+							id: knowledgeId,
+							text: formatKnowledgeDisplay(matchedKnowledge),
+							isTitle: false,
+							isKnowledge: true,
+							originalId: blockId,
+							originalIndex: blockId, // 兼容旧代码
+						};
+
+						// 保存到blocksMap
+						blocksMap.value.set(knowledgeId, knowledgeBlock);
+
+						// 在确定的位置插入知识点块
+						if (sceneIndex === currentSceneIndex.value) {
+							currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
+						} else {
+							scene.blocks.splice(insertIndex, 0, knowledgeBlock);
+						}
+					}
+				}
+			}
+		});
+	} catch (error) {
+		console.error("初始化知识点显示失败:", error);
+	}
+};
+
+// 编辑器块初始化
+const initEditorBlocks = (scriptData) => {
+	const blocks = [];
+	const dialogues = scriptData.scenes[0].dialogues;
+
+	// 清空现有的blocksMap，准备重新初始化
+	blocksMap.value.clear();
+
+	dialogues.forEach((dialogue, dialogueIndex) => {
+		// 添加标题
+		const titleId = `title_${dialogueIndex}`;
+		const titleBlock = {
+			type: "paragraph",
+			data: { text: `# ${dialogue.title}` },
+			id: titleId, // 为编辑器块添加唯一ID
+		};
+		blocks.push(titleBlock);
+
+		// 保存标题块到blocksMap
+		blocksMap.value.set(titleId, {
+			id: titleId,
+			text: `# ${dialogue.title}`,
+			isTitle: true,
+		});
+
+		// 处理每组文本，只添加英文原文
+		for (let i = 0; i < dialogue.text.length; i++) {
+			const [speaker, text] = dialogue.text[i];
+
+			// 创建唯一ID
+			const blockId = `block_${dialogueIndex}_${i}`;
+
+			// 格式化文本
+			const formattedText =
+				speaker === "narration"
+					? `<i>${text}</i>`
+					: speaker
+					? `[${speaker}] ${text}`
+					: text;
+
+			// 创建编辑器块
+			const editorBlock = {
+				type: "paragraph",
+				data: { text: formattedText },
+				id: blockId, // 为编辑器块添加唯一ID
+			};
+			blocks.push(editorBlock);
+
+			// 保存原文块到blocksMap
+			blocksMap.value.set(blockId, {
+				id: blockId,
+				text: formattedText,
+				isTitle: false,
+				originalIndex: blockId, // 兼容旧代码
+			});
+
+			// 如果有翻译，也保存到blocksMap
+			const [speakerZh, textZh] = dialogue.text_zh[i] || ["", ""];
+			if (textZh && textZh.trim() !== "") {
+				const translationId = `translation-${blockId}`;
+				const translatedText = speakerZh ? `[${speakerZh}] ${textZh}` : textZh;
+
+				blocksMap.value.set(translationId, {
+					id: translationId,
+					text: translatedText,
+					isTitle: false,
+					isTranslated: true,
+					originalId: blockId,
+					originalIndex: blockId, // 兼容旧代码
+				});
+			}
+		}
+	});
+
+	return blocks;
 };
 
 // 添加打开模态框的方法
 const openKnowledgeModal = async () => {
-	try {
-		generateAllLoading.value = true;
-		await knowledgeGeneratorRef.value.openModal();
-	} finally {
-		generateAllLoading.value = false;
-	}
+	// try {
+	// 	generateAllLoading.value = true;
+	// 	await knowledgeGeneratorRef.value.openModal();
+	// } finally {
+	// 	generateAllLoading.value = false;
+	// }
 };
 
 onMounted(async () => {
-	const editorElement = document.getElementById("editor");
-	if (editorElement) {
-		editorElement.addEventListener("keydown", preventDefaultEnter, {
-			capture: true,
-		});
-	}
-
-	// 添加全局快捷键监听
-	document.addEventListener("keydown", handleKeyboardShortcuts);
-
 	if (route.query.mode === "edit") {
 		getDefaultJson();
 		getDefaultKnowledge();
 	} else {
-		await initDialogues(); // 先初始化对话数据
-		await initKnowledges(); // 再初始化知识点数据
+		try {
+			await initDialogues(); // 先初始化对话数据
+			await initKnowledges(); // 再初始化知识点数据
+			await initKnowledgeDisplay(); // 初始化知识点显示
+		} catch (error) {
+			handleApiError(error, "初始化数据失败");
+		}
 	}
-	initEditorJS(); // 最后初始化编辑器
+
+	await initEditorJS(); // 最后初始化编辑器
+
+	// 点击事件监听
+	document.addEventListener("click", handleClickOutside);
+
+	// 知识点按钮的事件委托
+	document.addEventListener("click", handleKnowledgeButtonClick);
 });
 
-onBeforeUnmount(() => {
-	// 移除事件监听
-	const editorElement = document.getElementById("editor");
-	if (editorElement) {
-		editorElement.removeEventListener("keydown", preventDefaultEnter, {
-			capture: true,
-		});
-	}
-
-	// 移除全局快捷键监听
-	document.removeEventListener("keydown", handleKeyboardShortcuts);
-});
-
-// 快捷键处理函数
-const handleKeyboardShortcuts = (event) => {
-	// 检测 Ctrl+S 或 Cmd+S
-	if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-		event.preventDefault(); // 阻止浏览器默认的保存行为
-		saveDialogue(true); // 调用保存函数，传入 true 表示用户手动保存
-	}
-};
-
-// 文本检测函数：中文字符比例小于 10% 则翻译
-const shouldTranslate = (text) => {
-	const totalChars = text.length;
-	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
-	const chinesePercentage = (chineseChars / totalChars) * 100;
-	return chinesePercentage <= 10; // 中文比例低于10%
-};
-
-const cleanText = (text) => {
-	let cleanedText = text.replace(/<\/?[^>]+(>|$)/g, "");
-	cleanedText = cleanedText.replace(/\[[^\]]*\]/g, "");
-	return cleanedText.trim();
-};
-
-const removeConsecutiveEmptyLines = (blocks) => {
-	return blocks.filter((block, index, arr) => {
-		const currentIsEmpty = !block.data.text
-			.replace(/[\u200B-\u200D\uFEFF]/g, "")
-			.trim();
-		const prevIsEmpty =
-			index > 0 &&
-			!arr[index - 1].data.text.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-
-		// 保留非空行，或者是第一个空行
-		return !currentIsEmpty || !prevIsEmpty;
-	});
-};
-
-const cancelEdit = () => {
-	isEditing.value = false;
-	editedFields.value = {};
-};
-
+// 保存
 const saveDialogue = async (isCustom = false) => {
-	const savedData = await editor.value.save();
-	const outputDialogues = processDialogueData(savedData, route);
+	try {
+		// 从右侧面板提取原文
+		const outputDialogues = processSceneData();
 
-	if (outputDialogues.length > 0) {
-		const updatedJson = {
-			...scriptJson.value,
-			scenes: [
-				{
-					...scriptJson.value.scenes[0],
-					dialogues: outputDialogues,
-				},
-			],
+		if (outputDialogues.length > 0) {
+			// 在保存前记录当前的编辑状态
+			const currentEditorContent = editor.value
+				? await editor.value.save()
+				: null;
+
+			const updatedJson = {
+				...scriptJson.value,
+				scenes: [
+					{
+						...scriptJson.value.scenes[0],
+						dialogues: outputDialogues,
+					},
+				],
+			};
+
+			// 上传脚本
+			await uploadScripts(updatedJson, isCustom);
+			scriptJson.value = updatedJson;
+
+			// 保存知识点
+			await saveAllKnowledge(isCustom); // 不显示额外的成功提示
+
+			if (isCustom) {
+				isSaved.value = true; // 标记为已保存
+				showToast({ message: "脚本保存成功", type: "success" });
+			}
+
+			// 记录最后保存时间
+			lastSavedTime.value = new Date();
+		} else {
+			if (isCustom) {
+				showToast({ message: "没有内容可保存", type: "warning" });
+			}
+		}
+	} catch (error) {
+		console.error("保存脚本失败:", error);
+		if (isCustom) {
+			showToast({ message: "保存失败，请重试", type: "error" });
+		}
+	}
+};
+
+// 处理场景数据
+function processSceneData() {
+	const outputDialogues = [];
+
+	// 确保scenes.value存在且有内容
+	if (!scenes.value || scenes.value.length === 0) {
+		console.warn("没有场景数据可处理");
+		return outputDialogues;
+	}
+
+	// 遍历所有场景
+	scenes.value.forEach((scene, sceneIndex) => {
+		// 创建新场景对象
+		const dialogue = {
+			id: `Scene${sceneIndex + 1}`,
+			season: route.params.season,
+			episode: route.params.episode,
+			title: scene.title || `场景${sceneIndex + 1}`,
+			img: "",
+			text: [],
+			text_zh: [],
 		};
 
-		await uploadScripts(updatedJson, isCustom);
-		scriptJson.value = updatedJson;
+		// 获取当前场景的所有块ID
+		const blockIds = scene.blockIds || [];
 
-		// 保存所有对话的知识点
-		if (currentKnowledge.value.size > 0) {
-			// 传递isCustom参数，表示是否为用户手动保存
-			await saveAllKnowledge(isCustom);
+		// 处理场景内的文本块
+		for (let i = 0; i < blockIds.length; i++) {
+			const blockId = blockIds[i];
+			const block = blocksMap.value.get(blockId);
+
+			if (!block) continue;
+
+			// 清除原文中的高亮标记，使用原始text而不是displayText
+			let cleanText = block.text;
+			// 移除所有<mark class="pink">标签
+			cleanText = cleanText.replace(/<mark class="pink">(.*?)<\/mark>/g, "$1");
+
+			// 检查是否有对应的翻译块
+			const translationId = `translation-${blockId}`;
+			const translationBlock = blocksMap.value.get(translationId);
+
+			// 解析原文
+			const englishLine = parseDialogueLine(cleanText, "en");
+			dialogue.text.push([englishLine.speaker, englishLine.text]);
+
+			// 如果有翻译，添加翻译；否则添加空翻译
+			if (translationBlock) {
+				const chineseLine = parseDialogueLine(translationBlock.text, "zh");
+				dialogue.text_zh.push([chineseLine.speaker, chineseLine.text]);
+			} else {
+				dialogue.text_zh.push(["", ""]);
+			}
 		}
+
+		// 只有当场景有内容时才添加到输出
+		if (dialogue.text.length > 0) {
+			outputDialogues.push(dialogue);
+		}
+	});
+
+	return outputDialogues;
+}
+
+// 保存所有知识点的方法
+const saveAllKnowledge = async (isCustom = false) => {
+	try {
+		await autoSaveAllKnowledge();
+
+		// 只有在用户手动保存时才显示提示
+		if (isCustom) {
+			showToast({ message: "卡片保存成功", type: "success" });
+		}
+
+		// 刷新知识点数据
+		await initKnowledges();
+	} catch (error) {
+		console.error("Failed to save knowledge:", error);
+
+		// 错误提示也只在用户手动保存时显示
+		if (isCustom) {
+			showToast({
+				message: error.response?.data?.message || "卡片保存失败",
+				type: "error",
+			});
+		}
+	}
+};
+
+// 自动保存知识点的方法也需要修改
+const autoSaveAllKnowledge = async () => {
+	if (autoSaving.value) return; // 防止重复保存
+
+	try {
+		autoSaving.value = true;
+
+		// 按场景ID重组知识点数据
+		const sceneKnowledgeMap = new Map();
+
+		// 遍历所有知识点，按场景分组
+		Array.from(currentKnowledge.value.values()).forEach((knowledge) => {
+			// 确保我们有一个scenes集合
+			if (knowledge.scenes) {
+				knowledge.scenes.forEach((sceneId) => {
+					if (!sceneKnowledgeMap.has(sceneId)) {
+						sceneKnowledgeMap.set(sceneId, []);
+					}
+					// 创建知识点副本，排除scenes属性
+					const { scenes, ...knowledgeData } = knowledge;
+					sceneKnowledgeMap.get(sceneId).push(knowledgeData);
+				});
+			}
+		});
+
+		// 收集右侧面板生成的知识点
+		scenes.value.forEach((scene, index) => {
+			const sceneId = `Scene${index + 1}`;
+
+			// 确保该场景在知识点映射中有一个条目
+			if (!sceneKnowledgeMap.has(sceneId)) {
+				sceneKnowledgeMap.set(sceneId, []);
+			}
+
+			// 从场景块中提取知识点
+			const sceneBlocks =
+				index === currentSceneIndex.value
+					? currentSceneBlocks.value
+					: scene.blocks;
+
+			const knowledgeBlocks = sceneBlocks.filter((block) => block.isKnowledge);
+
+			// 如果有知识点块但对应场景没有知识点数据，尝试从块中提取
+			if (
+				knowledgeBlocks.length > 0 &&
+				sceneKnowledgeMap.get(sceneId).length === 0
+			) {
+				// 这里可以添加从知识点块中提取知识点数据的逻辑
+				// 暂时不实现，因为我们已经在生成知识点时添加到了currentKnowledge中
+			}
+		});
+
+		// 准备批量保存的数据，格式与后端接口匹配
+		const outputDialogues = processSceneData();
+
+		// 创建要发送的数据项
+		const items = [];
+
+		// 遍历所有对话场景
+		outputDialogues.forEach((dialogue) => {
+			const sceneId = dialogue.id;
+			const sceneKnowledge = sceneKnowledgeMap.get(sceneId) || [];
+
+			// 创建场景数据项
+			const item = {
+				sceneId: sceneId,
+			};
+
+			// 只有当有知识点时才添加knowledge字段
+			if (sceneKnowledge.length > 0) {
+				item.knowledge = sceneKnowledge;
+			}
+
+			// 保持原有practice字段不变
+			if (dialogue.practice) {
+				item.practice = dialogue.practice;
+			}
+
+			// 添加到items数组
+			items.push(item);
+		});
+
+		const bulkData = {
+			catalogId: route.params.id,
+			lessonId: route.query.sign,
+			items: items,
+		};
+
+		// 调用现有的批量保存接口
+		const response = await apiClient.post("/knowledge/bulk", bulkData);
+
+		if (response.data.code === 200) {
+			lastSavedTime.value = new Date();
+			console.log("知识点自动保存成功", new Date().toLocaleTimeString());
+		}
+	} catch (error) {
+		console.error("自动保存失败:", error);
+		// 静默失败，不显示提示
+	} finally {
+		autoSaving.value = false;
 	}
 };
 
@@ -615,7 +1598,6 @@ const backToPreview = () => {
 	const episode = route.params.episode;
 	const sign = route.query.sign;
 	const mode = route.query?.mode;
-	console.log(isSaved.value, mode);
 	if (mode === "edit" && !isSaved.value) {
 		router.replace("/collections/" + courseId);
 		return;
@@ -636,7 +1618,7 @@ const getDefaultJson = () => {
 			id: "Scene1",
 			season: season,
 			episode: episode,
-			title: "卡片编辑器使用说明",
+			title: "编辑器使用说明",
 			img: "",
 			text: exampleText,
 			text_zh: exampleTextZh,
@@ -659,596 +1641,9 @@ const getDefaultKnowledge = () => {
 	currentKnowledge.value = new Map();
 };
 
-// 编辑区域
-const startEditing = (item) => {
-	isEditing.value = true;
-	// 由于 item 仍然包含所有必要的字段，只是多了一个 scenes 字段
-	// 创建一个新对象，排除 scenes 字段
-	const { scenes, ...itemWithoutScenes } = item;
-
-	editedFields.value = {
-		origin: itemWithoutScenes.origin,
-		word: itemWithoutScenes.word,
-		word_zh: itemWithoutScenes.word_zh,
-		example: itemWithoutScenes.example,
-		example_zh: itemWithoutScenes.example_zh,
-		type: itemWithoutScenes.type,
-		definition_zh: itemWithoutScenes.definition_zh,
-		note: itemWithoutScenes.note,
-		synonyms: itemWithoutScenes.synonyms,
-	};
-};
-
-function addBoldWordsToKnowledge(newBoldWords, currentSceneId) {
-	newBoldWords.forEach((boldText) => {
-		const existingKnowledge = currentKnowledge.value.get(boldText);
-
-		if (!existingKnowledge) {
-			// 创建新的知识点
-			currentKnowledge.value.set(boldText, {
-				origin: boldText,
-				from: "knowledges",
-				word: boldText,
-				definition: "",
-				definition_zh: "",
-				example: "",
-				example_zh: "",
-				type: "daily_expression",
-				word_zh: "",
-				synonyms: "",
-				scenes: new Set([currentSceneId]),
-			});
-			existingBoldWords.add(boldText.toLowerCase());
-		} else {
-			// 更新现有知识点的场景列表
-			existingKnowledge.scenes.add(currentSceneId);
-		}
-	});
-}
-
-function checkBoldText(content) {
-	console.log("Original content:", content);
-	let currentSceneId = null;
-	const currentBoldWordsByScene = new Map();
-	const updatedKnowledge = new Map();
-	let knowledgeChanged = false;
-
-	// 首先通过扫描找出所有场景标题的位置和对应的场景ID
-	const titleIndices = content.blocks
-		.map((block, index) => ({ text: block.data.text, index }))
-		.filter(({ text }) => text.startsWith("#"))
-		.map(({ index }, sceneNum) => ({
-			index,
-			sceneId: `Scene${sceneNum + 1}`,
-		}));
-
-	// 扫描文档，按场景收集加粗的单词
-	content.blocks.forEach((block, blockIndex) => {
-		// 找出当前块属于哪个场景
-		const currentScene = titleIndices.find((title, index) => {
-			const nextTitle = titleIndices[index + 1];
-			return (
-				blockIndex >= title.index &&
-				(!nextTitle || blockIndex < nextTitle.index)
-			);
-		});
-
-		if (currentScene) {
-			currentSceneId = currentScene.sceneId;
-			if (!currentBoldWordsByScene.has(currentSceneId)) {
-				currentBoldWordsByScene.set(currentSceneId, new Set());
-			}
-		}
-
-		// 如果是标题行，跳过加粗词收集
-		if (block.data.text.startsWith("#")) {
-			return;
-		}
-
-		// 在场景内且是段落时，收集加粗单词
-		if (
-			currentSceneId &&
-			block.type === "paragraph" &&
-			block.data.text.trim()
-		) {
-			const boldWords = extractBoldWords(block.data.text);
-			console.log("Found bold words:", boldWords, "in scene:", currentSceneId);
-			boldWords.forEach((word) => {
-				currentBoldWordsByScene.get(currentSceneId).add(word);
-			});
-		}
-	});
-
-	console.log("Words by scene:", currentBoldWordsByScene);
-
-	// 保留现有知识点的其他信息
-	currentKnowledge.value.forEach((knowledge, word) => {
-		const updatedKnowledgeItem = {
-			...knowledge,
-			scenes: new Set(), // 重置场景集合
-		};
-		updatedKnowledge.set(word, updatedKnowledgeItem);
-	});
-
-	// 更新知识点的场景关联
-	for (const [sceneId, sceneWords] of currentBoldWordsByScene.entries()) {
-		sceneWords.forEach((word) => {
-			if (updatedKnowledge.has(word)) {
-				// 更新现有知识点的场景
-				updatedKnowledge.get(word).scenes.add(sceneId);
-			} else {
-				// 添加新的知识点
-				addBoldWordsToKnowledge([word], sceneId);
-				knowledgeChanged = true;
-				// 将新添加的知识点复制到updatedKnowledge中
-				const newKnowledge = currentKnowledge.value.get(word);
-				if (newKnowledge) {
-					updatedKnowledge.set(word, newKnowledge);
-				}
-			}
-		});
-	}
-
-	// 删除没有场景关联的知识点
-	for (const [word, knowledge] of updatedKnowledge.entries()) {
-		if (knowledge.scenes.size === 0) {
-			updatedKnowledge.delete(word);
-			existingBoldWords.delete(word.toLowerCase());
-			knowledgeChanged = true;
-		}
-	}
-
-	console.log("Final updated knowledge:", updatedKnowledge);
-
-	// 更新知识点集合
-	const oldSize = currentKnowledge.value.size;
-	currentKnowledge.value = updatedKnowledge;
-
-	// 如果知识点发生变化，自动保存
-	if (knowledgeChanged || oldSize !== updatedKnowledge.size) {
-		autoSaveAllKnowledge();
-	}
-}
-
-function extractBoldWords(text) {
-	const boldMatches = text.match(/<b>(.*?)<\/b>/g);
-	if (!boldMatches) return [];
-
-	// 清除标签并返回纯文本的加粗项，移除首尾空格
-	return boldMatches.map((boldTag) =>
-		boldTag.replace(/<\/?[^>]+(>|$)/g, "").trim()
-	);
-}
-
-// 临时保存单个知识点
-const saveKnowledge = async () => {
-	try {
-		// 获取原始单词，用于在 Map 中查找和更新
-		const originalWord = editedFields.value.origin;
-
-		// 获取原始知识点的场景信息
-		const originalScenes =
-			currentKnowledge.value.get(originalWord)?.scenes || new Set();
-
-		// 创建更新后的知识点对象
-		const updatedKnowledge = {
-			origin: editedFields.value.origin,
-			word: editedFields.value.word,
-			word_zh: editedFields.value.word_zh,
-			example: editedFields.value.example,
-			example_zh: editedFields.value.example_zh,
-			type: editedFields.value.type,
-			definition_zh: editedFields.value.definition_zh,
-			note: editedFields.value.note,
-			synonyms: editedFields.value.synonyms,
-			// 保持原有的场景关联
-			scenes: originalScenes,
-		};
-
-		// 如果单词被修改了，需要删除旧的记录
-		if (originalWord !== editedFields.value.word) {
-			currentKnowledge.value.delete(originalWord);
-			existingBoldWords.delete(originalWord.toLowerCase());
-		}
-
-		// 更新 Map 中的知识点
-		currentKnowledge.value.set(editedFields.value.word, updatedKnowledge);
-		existingBoldWords.add(editedFields.value.word.toLowerCase());
-
-		// 退出编辑模式
-		isEditing.value = false;
-
-		// 更新编辑器中的加粗效果
-		if (editor.value) {
-			boldKnowledgeWords(
-				Array.from(currentKnowledge.value.values()),
-				editor.value
-			);
-		}
-		console.log("1");
-		// 自动保存所有知识点
-		await autoSaveAllKnowledge();
-		console.log("2");
-
-		// showToast({ message: "知识点已更新", type: "success" });
-	} catch (error) {
-		showToast({ message: "知识点更新失败", type: "error" });
-	}
-};
-
-const autoSaveAllKnowledge = async () => {
-	if (autoSaving.value) return; // 防止重复保存
-
-	try {
-		autoSaving.value = true;
-
-		// 按场景ID重组知识点数据
-		const sceneKnowledgeMap = new Map();
-
-		// 遍历所有知识点，按场景分组
-		Array.from(currentKnowledge.value.values()).forEach((knowledge) => {
-			// 确保我们有一个scenes集合
-			if (knowledge.scenes) {
-				knowledge.scenes.forEach((sceneId) => {
-					if (!sceneKnowledgeMap.has(sceneId)) {
-						sceneKnowledgeMap.set(sceneId, []);
-					}
-					// 创建知识点副本，排除scenes属性
-					const { scenes, ...knowledgeData } = knowledge;
-					sceneKnowledgeMap.get(sceneId).push(knowledgeData);
-				});
-			}
-		});
-
-		// 准备批量保存的数据，格式与后端接口匹配
-		const bulkData = {
-			catalogId: route.params.id,
-			lessonId: route.query.sign,
-			items: scriptJson.value.scenes[0].dialogues.map((dialogue) => ({
-				sceneId: dialogue.id,
-				// 只在有知识点时才包含knowledge字段
-				...(sceneKnowledgeMap.get(dialogue.id)?.length > 0 && {
-					knowledge: sceneKnowledgeMap.get(dialogue.id),
-				}),
-				// 保持原有practice字段不变
-				...(dialogue.practice && { practice: dialogue.practice }),
-			})),
-		};
-
-		// 调用现有的批量保存接口
-		const response = await apiClient.post("/knowledge/bulk", bulkData);
-
-		if (response.data.code === 200) {
-			lastSavedTime.value = new Date();
-			// 静默保存，不显示提示
-			// showToast({ message: "卡片已自动保存", type: "success" });
-
-			// 更新编辑器内容
-			await saveDialogue(false);
-		}
-	} catch (error) {
-		console.error("自动保存失败:", error);
-		// 静默失败，不显示提示
-		// showToast({
-		//   message: error.response?.data?.message || "自动保存失败",
-		//   type: "error",
-		// });
-	} finally {
-		autoSaving.value = false;
-	}
-};
-
-// 保存所有知识点的方法
-const saveAllKnowledge = async (isCustom = false) => {
-	try {
-		await autoSaveAllKnowledge();
-
-		// 只有在用户手动保存时才显示提示
-		if (isCustom) {
-			showToast({ message: "卡片保存成功", type: "success" });
-		}
-
-		// 刷新知识点数据
-		await initKnowledges();
-	} catch (error) {
-		console.error("Failed to save knowledge:", error);
-
-		// 错误提示也只在用户手动保存时显示
-		if (isCustom) {
-			showToast({
-				message: error.response?.data?.message || "卡片保存失败",
-				type: "error",
-			});
-		}
-	}
-};
-
-// 处理回车键
-const handleEnterKey = async (e) => {
-	if (e.key === "Enter" && !e.shiftKey) {
-		e.preventDefault();
-
-		const selection = window.getSelection();
-		const currentElement = selection.focusNode;
-		const currentBlock =
-			currentElement.nodeType === 3
-				? currentElement.parentElement.closest(".ce-block")
-				: currentElement.closest(".ce-block");
-
-		if (!currentBlock) return;
-
-		// 获取当前块的索引
-		const editorBlocks = Array.from(document.querySelectorAll(".ce-block"));
-		const currentBlockIndex = editorBlocks.indexOf(currentBlock);
-
-		// 使用 API 直接插入新块
-		await editor.value.blocks.insert(
-			"paragraph",
-			{
-				text: "\u200B",
-			},
-			{},
-			currentBlockIndex + 1,
-			true // focus 参数设为 true，这样会自动聚焦到新块
-		);
-
-		// 如果自动聚焦没有生效，我们再手动设置
-		setTimeout(() => {
-			const targetBlock = document.querySelector(
-				`.ce-block:nth-child(${currentBlockIndex + 2}) .ce-paragraph`
-			);
-
-			if (
-				targetBlock &&
-				(!targetBlock.textContent || targetBlock.textContent === "\u200B")
-			) {
-				// 确保块有内容
-				if (!targetBlock.firstChild) {
-					targetBlock.appendChild(document.createTextNode("\u200B"));
-				}
-
-				// 设置光标
-				const range = document.createRange();
-				const sel = window.getSelection();
-
-				range.setStart(targetBlock.firstChild, 0);
-				range.collapse(true);
-
-				sel.removeAllRanges();
-				sel.addRange(range);
-
-				// 平滑滚动到新位置
-				targetBlock.scrollIntoView({ behavior: "smooth", block: "nearest" });
-			}
-		}, 10);
-	}
-};
-
-// 保存时的处理逻辑
-function processDialogueData(savedData, route) {
-	const outputDialogues = [];
-	let currentDialogue = null;
-	let currentPair = [];
-
-	// 获取所有场景标题的位置
-	const titleBlocks = savedData.blocks
-		.map((block, index) => ({ text: block.data.text, index }))
-		.filter(({ text }) => text.startsWith("#"));
-
-	// 为每个场景处理内容
-	titleBlocks.forEach((titleBlock, sceneIndex) => {
-		const nextTitleBlock = titleBlocks[sceneIndex + 1];
-		const sceneEndIndex = nextTitleBlock
-			? nextTitleBlock.index
-			: savedData.blocks.length;
-		const sceneBlocks = savedData.blocks.slice(titleBlock.index, sceneEndIndex);
-
-		// 创建新场景
-		currentDialogue = {
-			id: `Scene${sceneIndex + 1}`,
-			season: route.params.season,
-			episode: route.params.episode,
-			title: sceneBlocks[0].data.text
-				.replace(/^#\s*/, "")
-				.replace(/<\/?b>/g, "")
-				.trim(),
-			img: "",
-			text: [],
-			text_zh: [],
-		};
-
-		// 处理场景内的对话
-		let currentPair = [];
-		sceneBlocks.slice(1).forEach((block) => {
-			// 跳过标题块
-			const line = block.data.text;
-			const isEmptyLine = !line.replace(/\u200B/g, "").trim();
-
-			if (isEmptyLine) {
-				if (currentPair.length > 0) {
-					processPair(currentPair, currentDialogue);
-					currentPair = [];
-				}
-			} else {
-				currentPair.push(line);
-				if (currentPair.length === 2) {
-					processPair(currentPair, currentDialogue);
-					currentPair = [];
-				}
-			}
-		});
-
-		// 处理最后一对未处理的对话
-		if (currentPair.length > 0) {
-			processPair(currentPair, currentDialogue);
-		}
-
-		outputDialogues.push(currentDialogue);
-	});
-
-	return outputDialogues;
-}
-
-function processPair(pair, dialogue) {
-	if (pair.length === 1) {
-		// 单行，作为英文处理，添加空中文
-		const englishLine = parseDialogueLine(pair[0], "en");
-		dialogue.text.push([englishLine.speaker, englishLine.text]);
-		dialogue.text_zh.push(["", ""]);
-	} else if (pair.length === 2) {
-		// 双行，第一行为英文，第二行为中文
-		const englishLine = parseDialogueLine(pair[0], "en");
-		const chineseLine = parseDialogueLine(pair[1], "zh");
-		dialogue.text.push([englishLine.speaker, englishLine.text]);
-		dialogue.text_zh.push([chineseLine.speaker, chineseLine.text]);
-	}
-}
-
-// 标记知识点单词，仅加粗每个知识点单词的全局第一个匹配项
-const boldKnowledgeWords = async (knowledges = [], editorInstance) => {
-	const content = await editorInstance.save();
-	let currentSceneId = null;
-	const sceneKnowledgeMap = new Map();
-	const sceneBoldedWords = new Set();
-
-	knowledges.forEach((knowledge) => {
-		if (knowledge.scenes) {
-			knowledge.scenes.forEach((sceneId) => {
-				if (!sceneKnowledgeMap.has(sceneId)) {
-					sceneKnowledgeMap.set(sceneId, new Set());
-				}
-				sceneKnowledgeMap.get(sceneId).add(knowledge.word);
-			});
-		}
-	});
-
-	// 先找出所有场景标题，并建立映射关系
-	const titleIndices = content.blocks
-		.map((block, index) => ({ text: block.data.text, index }))
-		.filter(({ text }) => text.startsWith("#"))
-		.map(({ index }, sceneNum) => ({
-			index,
-			sceneId: `Scene${sceneNum + 1}`,
-		}));
-
-	const newBlocks = content.blocks.map((block, blockIndex) => {
-		// 查找当前块属于哪个场景
-		const currentScene = titleIndices.find((title, index) => {
-			const nextTitle = titleIndices[index + 1];
-			return (
-				blockIndex >= title.index &&
-				(!nextTitle || blockIndex < nextTitle.index)
-			);
-		});
-
-		if (currentScene) {
-			currentSceneId = currentScene.sceneId;
-		}
-
-		// 如果是标题行，移除加粗标签并返回
-		if (block.data.text.startsWith("#")) {
-			block.data.text = block.data.text.replace(/<\/?b>/g, "");
-			return block;
-		}
-
-		// 处理普通内容行
-		if (
-			block.type === "paragraph" &&
-			block.data.text.trim() &&
-			currentSceneId
-		) {
-			const sceneKnowledge = sceneKnowledgeMap.get(currentSceneId);
-
-			if (sceneKnowledge) {
-				let text = block.data.text.replace(/<\/?b>/g, "");
-
-				sceneKnowledge.forEach((word) => {
-					if (!sceneBoldedWords.has(word)) {
-						const regExp = new RegExp(`\\b${word}\\b`, "i");
-						const match = text.match(regExp);
-
-						if (match) {
-							text = text.replace(regExp, `<b>${match[0]}</b>`);
-							sceneBoldedWords.add(word);
-						}
-					}
-				});
-
-				block.data.text = text;
-			}
-		}
-		return block;
-	});
-
-	await editorInstance.render({ blocks: newBlocks });
-};
-
-// 初始化编辑器数据时还原段落分隔
-const initEditorBlocks = (scriptData) => {
-	const blocks = [];
-	const dialogues = scriptData.scenes[0].dialogues;
-
-	dialogues.forEach((dialogue, dialogueIndex) => {
-		// 添加标题
-		blocks.push({
-			type: "paragraph",
-			data: { text: `# ${dialogue.title}` },
-		});
-
-		// 标题后添加一个空行
-		blocks.push({
-			type: "paragraph",
-			data: { text: "\u200B" },
-		});
-
-		// 处理每组文本
-		for (let i = 0; i < dialogue.text.length; i++) {
-			const [speaker, text] = dialogue.text[i];
-			const [speakerZh, textZh] = dialogue.text_zh[i];
-
-			// 添加英文行
-			blocks.push({
-				type: "paragraph",
-				data: {
-					text:
-						speaker === "narration"
-							? `<i>${text}</i>`
-							: speaker
-							? `[${speaker}] ${text}`
-							: text,
-				},
-			});
-
-			// 添加中文行
-			blocks.push({
-				type: "paragraph",
-				data: {
-					text:
-						speakerZh === "narration"
-							? `<i>${textZh}</i>`
-							: speakerZh
-							? `[${speakerZh}] ${textZh}`
-							: textZh || "", // 如果没有中文内容，用空字符串
-				},
-			});
-
-			// 只在每组英文+中文后添加一个空行
-			blocks.push({
-				type: "paragraph",
-				data: { text: "\u200B" },
-			});
-		}
-
-		// 只在对话之间添加一个空行（不需要额外的空行，因为每组后已经有一个空行）
-		if (dialogueIndex < dialogues.length - 1) {
-			blocks.push({
-				type: "paragraph",
-				data: { text: "\u200B" },
-			});
-		}
-	});
-
-	return blocks;
+// 打开使用指南弹窗
+const openGuideModal = () => {
+	document.getElementById("guide_modal").showModal();
 };
 
 // 更新 parseDialogueLine 函数来保留文本中的 # 符号
@@ -1277,14 +1672,78 @@ function parseDialogueLine(line, tag) {
 	return { speaker, text };
 }
 
-watch(
-	() => currentKnowledge.value.size,
-	async (newSize, oldSize) => {
-		if (newSize !== oldSize && oldSize > 0) {
-			// 知识点数量变化时自动保存
-			await autoSaveAllKnowledge();
+// 添加一个新的辅助函数来应用知识点高亮
+// 在 script setup 部分的其他函数附近添加
+const applyKnowledgeHighlight = (block, sceneIndex) => {
+	// 获取场景ID
+	const sceneId = `Scene${sceneIndex + 1}`;
+
+	// 初始化 displayText 为原始文本
+	block.displayText = block.text;
+
+	// 收集该场景的所有知识点
+	const matchedKnowledge = [];
+	Array.from(currentKnowledge.value.values()).forEach((knowledge) => {
+		if (knowledge.scenes && knowledge.scenes.has(sceneId)) {
+			const word = knowledge.word;
+			// 使用不区分大小写的包含检查
+			if (block.text.toLowerCase().includes(word.toLowerCase())) {
+				matchedKnowledge.push(knowledge);
+			}
 		}
+	});
+
+	// 应用高亮
+	if (matchedKnowledge.length > 0) {
+		matchedKnowledge.forEach((knowledge) => {
+			const word = knowledge.word;
+			// 使用单词边界正则表达式确保只匹配完整单词
+			const regex = new RegExp(`\\b${word}\\b`, "gi");
+			const beforeHighlight = block.displayText;
+			block.displayText = block.displayText.replace(regex, (match) => {
+				return `<mark class="pink">${match}</mark>`;
+			});
+
+			if (beforeHighlight === block.displayText) {
+				// 尝试不使用单词边界的匹配
+				const simpleRegex = new RegExp(word, "gi");
+				block.displayText = block.displayText.replace(simpleRegex, (match) => {
+					return `<mark class="pink">${match}</mark>`;
+				});
+			}
+		});
 	}
+
+	return block;
+};
+
+// 监听 blocksMap 变化，更新知识点高亮
+watch(
+	blocksMap.value,
+	() => {
+		// 遍历当前场景的所有块
+		currentSceneBlocks.value.forEach((block, index) => {
+			// 只处理原文块（非标题、非翻译、非知识点）
+			if (!block.isTitle && !block.isTranslated && !block.isKnowledge) {
+				// 确保块有 ID
+				const blockId = block.id || block.originalIndex;
+				if (!blockId) return;
+
+				// 获取 blocksMap 中的原始块
+				const originalBlock = blocksMap.value.get(blockId);
+
+				// 如果 blocksMap 中的块文本与当前块不同，更新当前块
+				if (originalBlock && originalBlock.text !== block.text) {
+					// 更新文本
+					block.text = originalBlock.text;
+
+					// 重新应用知识点高亮
+					applyKnowledgeHighlight(block, currentSceneIndex.value);
+				}
+			}
+		});
+	},
+	{ deep: true }
 );
 </script>
 <style scoped>
@@ -1304,19 +1763,6 @@ watch(
 	flex-direction: column;
 	gap: 1rem;
 }
-
-/* 复古按钮样式 */
-/* .optionbox-container button {
-	position: relative;
-	width: 3rem;
-	height: 3rem;
-	border: 2px solid #333;
-	background: white;
-	border-radius: 8px;
-	cursor: pointer;
-	transition: all 0.2s;
-	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
-} */
 
 .retro-btn {
 	position: relative;
@@ -1383,6 +1829,22 @@ watch(
 	transform: translateY(0);
 }
 
+.editor-wrapper {
+	height: 100%;
+	overflow-y: auto;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+}
+
+.editor-wrapper::-webkit-scrollbar {
+	display: none; /* Chrome, Safari and Opera */
+}
+
+.editorjs-container {
+	padding: 2rem;
+	min-height: 100%;
+}
+
 /* .optionbox-container button:hover {
 	transform: translate(2px, 2px);
 	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
@@ -1395,27 +1857,35 @@ watch(
 
 /* 编辑器容器 */
 .editor-container {
-	width: 100%;
 	text-align: left;
-	min-height: 500px;
+	height: calc(100vh - 150px);
+	border: 3px solid #333;
+	border-radius: 12px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+	overflow: hidden;
+}
+
+.editorjs-container {
+	padding: 2rem;
+	height: 100%;
+	overflow-y: auto;
+	background-size: 100% 24px;
+}
+
+.right-panel {
+	position: relative;
+	height: fit-content;
+}
+
+.option-group {
 	border: 3px solid #333;
 	border-radius: 12px;
 	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-.editorjs-container {
-	padding: 2rem;
-	min-height: 500px;
-	background-size: 100% 24px;
-}
-
 /* 工具箱容器 */
 .toolbox-container {
-	margin-top: 20px;
-	position: sticky;
-	top: 5%;
-	right: 0;
-	height: calc(100vh - 200px);
+	height: calc(100vh - 250px);
 	overflow-y: auto;
 	border: 3px solid #333;
 	border-radius: 12px;
@@ -1489,5 +1959,82 @@ watch(
 .btn-ghost:hover {
 	background: rgba(var(--secondary-color-rgb), 0.1);
 	transform: translateY(-1px);
+}
+
+.text-toolbox {
+	display: flex;
+	gap: 0.5rem;
+	padding: 0.25rem;
+	background-color: #f3f4f6;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.375rem;
+	margin-bottom: 0.5rem;
+}
+
+.text-toolbox button {
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
+	border-radius: 0.25rem;
+	background-color: white;
+	border: 1px solid #d1d5db;
+	cursor: pointer;
+}
+
+.text-toolbox button:hover {
+	background-color: #f9fafb;
+}
+
+.translated-text {
+	color: #4b5563;
+	font-style: italic;
+	background-color: #f8fafc;
+	margin-top: -0.5rem !important; /* 添加负的上边距，使翻译文本向上移动 */
+	padding-top: 0.25rem; /* 添加上内边距，保持文本不会太靠近原文 */
+}
+
+.original-text
+	.text-sm.p-2.rounded:not(.translated-text):not(.knowledge-block) {
+	margin-bottom: 0.25rem; /* 减小原文块的下边距 */
+}
+
+.knowledge-block {
+	cursor: default;
+	background-color: rgba(var(--secondary-color-rgb), 0.02);
+	border-radius: 0.5rem;
+	margin: 0.75rem 0;
+	border-left: 4px solid var(--secondary-color); /* 添加左侧边框 */
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+}
+</style>
+<style>
+/* 知识点按钮样式 - 全局定义以应用于动态生成的内容 */
+.knowledge-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	margin-left: 4px;
+	transition: all 0.2s;
+}
+
+.knowledge-btn:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.knowledge-detail-btn {
+	color: #3b82f6; /* 蓝色 */
+}
+
+.knowledge-delete-btn {
+	color: #ef4444; /* 红色 */
+}
+
+.knowledge-btn i {
+	font-size: 14px;
 }
 </style>

@@ -1,11 +1,76 @@
 <template>
 	<div class="retro-notebook">
-		<!-- 笔记本标题 -->
-		<div class="notebook-header">
-			<div class="paper-clip"></div>
-			<h2 class="text-2xl font-bold text-gray-800 text-left">
-				{{ isImportantMode ? t("notes.starlist") : t("notes.vocabulary") }}
-			</h2>
+		<!-- 搜索框区域 -->
+		<div class="flex justify-between items-center mb-4 px-2">
+			<div class="search-area">
+				<div class="search-box flex items-center space-x-2 relative">
+					<div class="retro-input-wrapper">
+						<input
+							v-model="searchQuery"
+							type="text"
+							class="retro-input"
+							@input="onInputWord"
+							@keydown.enter="searchWord"
+							:placeholder="t('notes.searchInput')"
+						/>
+					</div>
+
+					<!-- 联想框 -->
+					<div
+						v-if="suggestions.length"
+						class="suggestions-box"
+						style="margin-left: 0; margin-top: 8px"
+					>
+						<div class="suggestions-shadow">
+							<div class="suggestions-edge">
+								<div class="suggestions-face">
+									<ul>
+										<li
+											v-for="(suggestion, index) in suggestions"
+											:key="index"
+											@click="selectSuggestion(suggestion)"
+											class="suggestion-item text-left"
+										>
+											{{ suggestion }}
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div
+				class="pagination-controls static transform-none flex items-center gap-4"
+			>
+				<button
+					class="retro-btn"
+					@click="prevPage"
+					:disabled="currentPage === 1"
+				>
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">&lt;</div>
+						</div>
+					</div>
+				</button>
+
+				<div class="page-indicator">
+					<div class="page-number">{{ currentPage }} / {{ totalPages }}</div>
+				</div>
+
+				<button
+					class="retro-btn"
+					@click="nextPage"
+					:disabled="currentPage === totalPages"
+				>
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">&gt;</div>
+						</div>
+					</div>
+				</button>
+			</div>
 		</div>
 
 		<!-- 笔记列表 -->
@@ -16,14 +81,22 @@
 					:key="index"
 					class="word-item"
 				>
-					<div class="word-content" @click="selectNote(note)">
+					<div
+						class="word-content"
+						@click="selectNote(note)"
+						:class="{ active: activeNote.word === note.word }"
+						:style="getRandomStyle(index)"
+					>
 						<div class="word-section">
-							<template v-if="activeNote.word === note.word">
-								<span class="selected-word">{{ note.word }}</span>
-							</template>
-							<template v-else>
-								<span class="normal-word">{{ note.word }}</span>
-							</template>
+							<span
+								:class="[
+									activeNote.word === note.word
+										? 'selected-word'
+										: 'normal-word',
+								]"
+							>
+								{{ note.word }}
+							</span>
 						</div>
 
 						<div class="translation-section">
@@ -33,32 +106,6 @@
 					</div>
 				</li>
 			</ul>
-		</div>
-
-		<div class="pagination-controls">
-			<button class="retro-btn" @click="prevPage" :disabled="currentPage === 1">
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">&lt;</div>
-					</div>
-				</div>
-			</button>
-
-			<div class="page-indicator">
-				<div class="page-number">{{ currentPage }} / {{ totalPages }}</div>
-			</div>
-
-			<button
-				class="retro-btn"
-				@click="nextPage"
-				:disabled="currentPage === totalPages"
-			>
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">&gt;</div>
-					</div>
-				</div>
-			</button>
 		</div>
 	</div>
 </template>
@@ -87,13 +134,17 @@ const props = defineProps({
 const notebookRef = ref(null);
 const vocabularyNotes = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = ref(18);
+const itemsPerPage = ref(14);
 const totalCounts = ref(0);
 const activeNote = ref({});
 const isImportantMode = ref(false);
 
 const notebookStore = useNotebookStore();
 const { setCurrentActiveNote } = notebookStore;
+
+// 搜索相关的状态
+const searchQuery = ref("");
+const suggestions = ref([]);
 
 onMounted(() => {
 	isLogin.value && getNotebook();
@@ -112,23 +163,46 @@ const selectNote = (note) => {
 	emit("on-select-note", note);
 };
 
-const getNotebook = async (page = 1, limit = 18) => {
+const getNotebook = async (page = 1, limit = 14) => {
 	if (!isLogin.value) {
 		vocabularyNotes.value = [];
 		totalCounts.value = 0;
 		return;
 	}
-	const response = await apiClient.get(
-		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}&isImportant=${isImportantMode.value}`
+	const res = await apiClient.get(
+		`/lesson-notes/user/all-notes?page=${page}&limit=${limit}`
 	);
-	if (response.data.code === 200) {
-		const { notes, total } = response.data.data;
+	if (res.data.code === 200) {
+		const { notes, total } = res.data.data;
 		vocabularyNotes.value = notes;
 		totalCounts.value = total;
 		selectNote(vocabularyNotes.value[0]);
 	} else {
 		showToast({ message: "未查到单词", type: "error" });
 	}
+};
+
+// 预定义一些柔和的颜色
+const pastelColors = [
+	// 主色系列
+	{ bg: "rgba(63, 81, 181, 0.05)", border: "rgb(63, 81, 181)" }, // primary
+	{ bg: "rgba(232, 68, 122, 0.05)", border: "rgb(232, 68, 122)" }, // secondary
+	{ bg: "rgba(92, 198, 187, 0.05)", border: "rgb(92, 198, 187)" }, // accent
+
+	// 延伸色系列
+	{ bg: "rgba(81, 99, 199, 0.05)", border: "rgb(81, 99, 199)" }, // primary 延伸
+	{ bg: "rgba(232, 88, 142, 0.05)", border: "rgb(232, 88, 142)" }, // secondary 延伸
+	{ bg: "rgba(112, 218, 207, 0.05)", border: "rgb(112, 218, 207)" }, // accent 延伸
+];
+
+// 根据索引返回随机样式
+const getRandomStyle = (index) => {
+	const colorIndex = index % pastelColors.length;
+	const color = pastelColors[colorIndex];
+	return {
+		backgroundColor: color.bg,
+		"--note-border-color": color.border,
+	};
 };
 
 // 分页导航
@@ -145,6 +219,49 @@ const prevPage = () => {
 		getNotebook(currentPage.value);
 	}
 };
+
+// 搜索相关的方法
+let debounceTimeout;
+const debounce = (func, delay) => {
+	return (...args) => {
+		clearTimeout(debounceTimeout);
+		debounceTimeout = setTimeout(() => func(...args), delay);
+	};
+};
+
+const searchWord = () => {
+	if (!isLogin.value) return;
+	if (searchQuery.value.trim()) {
+		emit("on-search-word", searchQuery.value.trim());
+	}
+};
+
+const selectSuggestion = (suggestion) => {
+	searchQuery.value = suggestion;
+	suggestions.value = [];
+	searchWord();
+};
+
+const onInputWord = debounce(async () => {
+	if (!isLogin.value) return;
+	if (searchQuery.value.trim()) {
+		try {
+			const response = await apiClient.get(
+				`/lesson-notes/user/suggest?term=${searchQuery.value.trim()}`
+			);
+			if (response.data.code === 200) {
+				suggestions.value = response.data.data;
+			} else {
+				showToast({ message: response.data.message, type: "error" });
+			}
+		} catch (error) {
+			showToast({ message: error, type: "error" });
+			console.error("Error fetching suggestions:", error);
+		}
+	} else {
+		suggestions.value = [];
+	}
+}, 300);
 
 watch(
 	() => [props.searchWord, props.searchIndex],
@@ -197,7 +314,7 @@ watch(
 	position: relative;
 	height: 100%;
 	background-size: 100% 24px;
-	padding: 1rem 0;
+	padding: 0.5rem 0;
 }
 
 /* 笔记本标题区域 */
@@ -236,68 +353,100 @@ watch(
 .word-list {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: 0.75rem;
+	padding: 0.5rem;
 }
 
 .word-item {
 	text-align: left;
-	padding-left: 10px;
-	margin-bottom: 5px;
-	width: calc(50% - 0.5rem);
+	width: calc(50% - 0.375rem);
+	transform: rotate(-1deg);
+	transition: transform 0.3s ease;
+}
+
+.word-item:nth-child(2n) {
+	transform: rotate(1deg);
 }
 
 .word-content {
+	background: white;
+	border: 3px solid #000;
+	padding: 0.75rem;
 	cursor: pointer;
-	transition: all 0.3s ease;
-	border-radius: 4px;
+	position: relative;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	/* transition: transform 0.2s ease, box-shadow 0.2s ease; */
 }
 
 .word-content:hover {
-	background-color: rgba(var(--secondary-color-rgb), 0.05);
+	transform: translateY(-2px);
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
 }
 
-/* 单词显示样式 */
+.word-content.active {
+	border-left-width: 6px;
+	border-left-color: var(--note-border-color);
+	transform: translateY(-2px);
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
 .word-section {
 	margin-bottom: 0.25rem;
 }
 
 .selected-word {
-	background: linear-gradient(
-		transparent 60%,
-		rgba(var(--secondary-color-rgb), 0.2) 40%
-	);
-	padding: 0 0.25rem;
+	font-size: 1rem;
 	font-weight: bold;
-	color: var(--secondary-color);
+	color: #222;
+	position: relative;
+	display: inline-block;
 }
 
 .normal-word {
 	font-size: 1rem;
 	color: #333;
+	font-weight: 500;
 }
 
 /* 翻译区域样式 */
 .translation-section {
-	font-size: 0.875rem;
+	font-size: 0.8rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
 .pos-tag {
 	color: #666;
-	margin-right: 0.5rem;
 	font-style: italic;
+	background-color: rgba(0, 0, 0, 0.05);
+	padding: 0.1rem 0.3rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+}
+.chinese-meaning {
+	color: #555;
 }
 
-.chinese-meaning {
-	color: #333;
-	font-weight: 500;
+/* 添加一些随机倾斜效果 */
+.word-item:nth-child(4n) {
+	transform: rotate(1.5deg);
+}
+
+.word-item:nth-child(4n + 1) {
+	transform: rotate(-1.5deg);
+}
+
+.word-item:nth-child(4n + 2) {
+	transform: rotate(0.5deg);
+}
+
+.word-item:nth-child(4n + 3) {
+	transform: rotate(-0.5deg);
 }
 
 /* 分页控制器 */
 .pagination-controls {
-	position: absolute;
-	bottom: 0.4rem;
-	left: 50%;
-	transform: translateX(-50%);
 	display: flex;
 	align-items: center;
 	gap: 1rem;
@@ -383,5 +532,72 @@ watch(
 /* 页面装订效果 */
 .notebook-content {
 	position: relative;
+}
+
+/* 搜索框样式 */
+.search-area {
+	padding: 0;
+}
+
+.retro-input-wrapper {
+	position: relative;
+	width: 100%;
+}
+
+.retro-input {
+	width: 100%;
+	height: 40px;
+	padding: 0 1rem;
+	background: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	font-size: 0.875rem;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.retro-input:focus {
+	outline: none;
+	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* 联想框样式 */
+.suggestions-box {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+.suggestions-shadow {
+	background-color: #666;
+	border-radius: 8px;
+	transform: translateY(2px);
+}
+
+.suggestions-edge {
+	background-color: #888;
+	border-radius: 8px;
+	transform: translateY(-2px);
+}
+
+.suggestions-face {
+	background-color: white;
+	border: 2px solid #333;
+	border-radius: 8px;
+	transform: translateY(-2px);
+	overflow: hidden;
+}
+
+.suggestion-item {
+	padding: 0.75rem 1rem;
+	font-size: 0.875rem;
+	cursor: pointer;
+	border-bottom: 1px solid #eee;
+	transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+	background-color: rgba(var(--primary-color-rgb), 0.1);
 }
 </style>

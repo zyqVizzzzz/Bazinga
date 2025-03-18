@@ -284,7 +284,6 @@ onMounted(() => {
 watch(
 	() => props.podcastData,
 	(newData, oldData) => {
-		console.log("播客数据已更新:", newData);
 		// 重置播放器状态
 		resetPlayer();
 		// 如果有新数据，自动选择第一个

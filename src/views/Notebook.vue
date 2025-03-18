@@ -1,7 +1,7 @@
 <template>
 	<div class="flex flex-col w-full p-6 relative">
 		<!-- 工具箱区域 -->
-		<div class="w-full toolbox mb-6 h-[58px]" style="z-index: 100">
+		<!-- <div class="w-full toolbox mb-6 h-[58px]" style="z-index: 100">
 			<div class="retro-card">
 				<div class="card-face">
 					<Toolbox
@@ -11,7 +11,7 @@
 					/>
 				</div>
 			</div>
-		</div>
+		</div> -->
 
 		<!-- 笔记本主体 -->
 		<div class="w-full flex gap-6">
@@ -70,9 +70,6 @@ import EditCard from "@/components/notes/edit.vue";
 import apiClient from "@/api";
 import { useNotebookStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
-import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
 
 const notebookStore = useNotebookStore();
 const selectedNote = ref(null);

@@ -107,3 +107,12 @@ mark.pink {
 .ce-toolbar__settings-btn {
 	margin-left: 0;
 }
+
+/* 添加编辑器段落样式 */
+.editorjs-container .ce-block {
+	margin-bottom: 1.5rem;
+}
+
+.editorjs-container .ce-block:last-child {
+	margin-bottom: 0;
+}

@@ -3,81 +3,81 @@ export const scene1 = [
 		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"Hey, everyone! Welcome back to Bazinga, I’m your host Jinji! Today’s vibe is super cool, and we’re digging into some dope English slang to make your convos pop. You ready?",
+			"Hey, everyone! Welcome back to Bazinga, I'm your host Jinji! Today’s vibe is super cool, and we’re gonna explore some fire English expressions to level up your convo game! ",
 		chinese_lines:
-			"嘿，大家好！欢迎回到Bazinga，我是你们的主持人Jinji！今天的氛围超级酷，我们要一起探索一些超棒的英语俚语，让你的对话更有活力。准备好了吗？",
+			"嘿，大家好！欢迎回到Bazinga，我是你们的主持人Jinji！今天的氛围超酷，我们要一起探索一些超棒的英语表达，提升你的对话技能！",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"Hello. I’m Muz, here to decode human language quirks. What slang are we exploring today?",
+			"Greetings, listeners. I am Muz, your co-host. Our focus today is on two practical English phrases: 'There’s no time' and 'How’s it going.' These are widely used in human communication.",
 		chinese_lines:
-			"你好。我是Muz，来这里解码人类语言的怪癖。今天我们要探索什么俚语？",
+			"听众们好，我是Muz，你们的共同主持人。今天我们关注两个实用的英语短语：'There’s no time'和'How’s it going'。它们在人类交流中被广泛使用。",
 	},
 	{
 		character: "Jinji",
-		emoji: "curious",
+		emoji: "surprised",
 		lines:
-			"Okay, Muz, picture this: we’re chilling in the cafeteria, and there’s one slice of pizza left. I yell, ‘I call dibs!’ What’s that mean to you?",
+			"Okay, Muz, let’s dive in! Imagine this: I overslept, my alarm’s dead, and I’m yelling, 'There’s no time!' It’s like the ultimate SOS when you’re totally freaking out!",
 		chinese_lines:
-			"好吧，Muz，想象一下：我们在食堂里放松，只剩下一片披萨。我喊道，‘I call dibs！’ 你觉得这是什么意思？",
-	},
-	{
-		character: "Muz",
-		emoji: "confused",
-		lines:
-			"Processing… ‘Dibs’ sounds like a declaration. Are you reserving the pizza through some unofficial rule?",
-		chinese_lines:
-			"处理中…‘Dibs’听起来像是一种声明。你是通过某种非正式规则预订那块披萨吗？",
-	},
-	{
-		character: "Jinji",
-		emoji: "happy",
-		lines:
-			"Yup, nailed it! ‘Dibs’ is like, ‘I got here first, it’s mine!’ Super chill way to claim stuff with your crew.",
-		chinese_lines:
-			"对，太对了！‘Dibs’就像是，‘我先到这儿，这是我的！’ 和朋友一起抢东西时超随意的说法。",
-	},
-	{
-		character: "Muz",
-		emoji: "thoughtful",
-		lines:
-			"Fascinating. So it’s a social shortcut for priority based on speed. Humans are efficient in odd ways.",
-		chinese_lines:
-			"有趣。所以这是一个基于速度优先的社交捷径。人类在奇怪的地方还挺有效率。",
-	},
-	{
-		character: "Jinji",
-		emoji: "mischievous",
-		lines:
-			"Totally! Now, what if I’m like, ‘I got dibs on the front seat,’ and you go, ‘Big deal’? What’s that vibe?",
-		chinese_lines:
-			"完全是！现在，如果我说，‘我抢了前座，’而你说，‘Big deal’？那是什么感觉？",
+			"好吧，Muz，我们开始吧！想象一下：我睡过头了，闹钟没响，我大喊'There’s no time!'，这就像是完全慌乱时的终极求救信号！",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"Analyzing… ‘Big deal’ seems positive, like it’s important. But your tone suggests otherwise. Is it sarcasm?",
+			"I see. 'There’s no time' signals extreme urgency. It’s more direct than saying 'We’re running late,' implying that action must be taken immediately. A very efficient phrase.",
 		chinese_lines:
-			"分析中…‘Big deal’听起来是正面的，像很重要。但你的语气好像不是这样。是讽刺吗？",
+			"我明白了。'There’s no time'表示极度紧急。它比'We’re running late'更直接，暗示必须立即采取行动。一个非常高效的短语。",
 	},
 	{
 		character: "Jinji",
-		emoji: "playful",
+		emoji: "happy",
 		lines:
-			"Bingo! ‘Big deal’ is sarcastic—like, ‘Oh wow, cool story, but I don’t care.’ Perfect for shutting down braggers.",
+			"Yup, it’s like a panic button in words! You’d say it when you’re rushing to catch a bus or finish homework before class. It’s quick, it’s dramatic, and it works! ",
 		chinese_lines:
-			"答对了！‘Big deal’是讽刺的——就像，‘哦哇，好厉害的故事，但我才不在乎。’ 很适合对付爱吹牛的人。",
+			"对，就像语言里的紧急按钮！你会在赶公交或上课前赶作业时用它。简短、夸张，而且超有效！",
 	},
 	{
 		character: "Muz",
+		emoji: "neutral",
+		lines:
+			"Fascinating. Humans seem to exaggerate to express urgency. So, Jinji, how would you rate your experience when you say 'There’s no time'? Does it feel… stressful?",
+		chinese_lines:
+			"有趣。人类似乎通过夸张来表达紧急感。那么，Jinji，当你说'There’s no time'时，你会如何评价自己的体验？感觉……有压力吗？",
+	},
+	{
+		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"Understood. ‘Dibs’ grabs, ‘big deal’ deflates. These are clever tools for human banter. I approve.",
+			"Haha, totally stressful but also kinda fun! Okay, next up: 'How’s it going?' It’s like the chillest way to say hi. You just toss it out there like, 'Hey, how’s it going, fam?' ",
 		chinese_lines:
-			"明白了。‘Dibs’是抢，‘Big deal’是泼冷水。这些是人类玩笑的聪明工具。我认可。",
+			"哈哈，完全有压力但也有点好玩！好了，下一个：'How’s it going?'这是最轻松的打招呼方式。你就随口一说，像是'嘿，兄弟们，最近咋样？' ",
+	},
+	{
+		character: "Muz",
+		emoji: "neutral",
+		lines:
+			"'How’s it going?' appears to be a casual greeting. Is it different from 'How are you?' or do humans use them interchangeably? I’m curious about the nuance.",
+		chinese_lines:
+			"'How’s it going?'似乎是一个随意的问候。它和'How are you?'有区别吗，还是人类会互换使用？我对这种细微差别很好奇。",
+	},
+	{
+		character: "Jinji",
+		emoji: "happy",
+		lines:
+			"Good question! 'How’s it going?' is more laid-back, like something you’d say to a friend. You might answer, 'It’s going awesome, how about you?' It’s all about keeping it easy and vibey! ",
+		chinese_lines:
+			"好问题！'How’s it going?'更放松，就像你会对朋友说的话。你可能会回答'It’s going awesome, how about you?'，就是要保持轻松和氛围感！",
+	},
+	{
+		character: "Muz",
+		emoji: "neutral",
+		lines:
+			"Understood. It fosters a relaxed exchange. To summarize: 'There’s no time' conveys urgency, while 'How’s it going?' builds casual rapport. Context is key in human language.",
+		chinese_lines:
+			"明白了。它促进了轻松的交流。总结一下：'There’s no time'传达紧急感，而'How’s it going?'建立随意的关系。语境在人类语言中至关重要。",
 	},
 ];
 
@@ -86,80 +86,80 @@ export const scene2 = [
 		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"Hey, everyone! Welcome back to Bazinga, I'm your host Jinji! Today’s vibe is super cool because we’re digging into some dope English expressions. Like, have you ever heard 'isn't this nice?' and been like, what’s the tea? Let’s unpack it with my fave robot pal, Muz!",
+			"Hey, everyone! Welcome back to Bazinga, I'm your host Jinji! Today’s vibe is super cool, and I’ve got something awesome to share. Wasn't that wonderful? Like, imagine you just watched an amazing performance, and you turn to your friend and say, 'Wasn't that wonderful?' It's not really a question, but a way to say, 'That was so good!'",
 		chinese_lines:
-			"嘿，大家好！欢迎回到Bazinga，我是你们的主持人Jinji！今天的氛围超酷，因为我们要挖掘一些超赞的英语表达。比如，你有没有听过‘isn't this nice?’然后想，啥情况啊？让我们和我的最爱机器人朋友Muz一起拆解它吧！",
+			"嘿，大家好！欢迎回到Bazinga，我是你们的主持人Jinji！今天的气氛超级酷，我有个很棒的东西要和大家分享。'Wasn't that wonderful?' 是不是很棒？想象一下，你刚看完一场精彩的表演，转向你的朋友说，'Wasn't that wonderful?' 这其实不是一个问题，而是在说，'这太棒了！'",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"Hello, Jinji and listeners. I am Muz, here to examine this phrase. 'Isn't this nice?' seems to be a question that doesn’t expect an answer. I find this intriguing—why do humans phrase it this way?",
+			"As presented by Jinji, today we are exploring the art of English expressions. The phrase 'Wasn't that wonderful?' is indeed a rhetorical question, used to express admiration and seek agreement. It is a polite and cultured way to appreciate something, especially after a performance or presentation.",
 		chinese_lines:
-			"你好，Jinji和听众们。我是Muz，来分析这个短语。‘Isn't this nice?’似乎是一个不需要回答的问题。我觉得这很有趣——为什么人类会这样表达？",
+			"正如Jinji所介绍的，今天我们将探讨英语表达的艺术。'Wasn't that wonderful?' 这个短语确实是一个反问句，用来表达赞赏并寻求认同。这是一种礼貌且有教养的欣赏方式，特别适用于表演或展示之后。",
 	},
 	{
 		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"Right? It’s not really a question, Muz! It’s more like, ‘Yo, this is vibin’, don’t you think?’ It’s a chill way to say something’s awesome without being all extra about it.",
+			"Exactly! It's like when you're at a concert, and the singer hits that high note, you just go, 'Wasn't that wonderful?' It's a vibe, you know? It makes you sound so classy and in the moment.",
 		chinese_lines:
-			"对吧？这其实不是个问题，Muz！更像是，‘嘿，这超有感觉，你不觉得吗？’这是一种很chill的方式来说某件事很棒，而不显得太夸张。",
+			"没错！就像你在音乐会上，歌手唱到高音时，你就会说，'Wasn't that wonderful?' 这是一种感觉，你懂吗？它让你听起来很有品位，而且很投入。",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"I understand. It’s an indirect way to express approval. But wouldn’t saying ‘This is nice’ be more efficient? I’m curious about the added complexity.",
+			"Indeed, it is a sophisticated expression. Now, let us move to another phrase, 'as presented by.' This is a formal introduction, often used in professional settings to introduce a speaker, performer, or artist. It adds a sense of ceremony and respect to the introduction.",
 		chinese_lines:
-			"我明白了。这是一种间接表达赞同的方式。但直接说‘This is nice’不是更有效率吗？我对这种额外的复杂性感到好奇。",
+			"确实，这是一个精致的表达。现在，让我们来看另一个短语，'as presented by.' 这是一个正式的介绍用语，常用于专业场合介绍演讲者、表演者或艺术家。它为介绍增添了一份仪式感和尊重。",
+	},
+	{
+		character: "Jinji",
+		emoji: "surprised",
+		lines:
+			"Oh, like when they say, 'Tonight's performance, as presented by the amazing orchestra.' It sounds so official and grand! I didn't realize how much weight it carries.",
+		chinese_lines:
+			"哦，就像他们说，'今晚的表演，由杰出的管弦乐队呈现。' 听起来非常正式和隆重！我之前没意识到它有这么大的分量。",
+	},
+	{
+		character: "Muz",
+		emoji: "neutral",
+		lines:
+			"Precisely. It is commonly used in academic conferences, art exhibitions, and concerts. The phrase 'as presented by' elevates the introduction, making it more than just a simple announcement. It shows appreciation for the effort and artistry involved.",
+		chinese_lines:
+			"确实如此。它常用于学术会议、艺术展览和音乐会。'as presented by' 这个短语提升了介绍的层次，使其不仅仅是一个简单的宣布。它表达了对所涉及的努力和艺术性的欣赏。",
 	},
 	{
 		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"True, but the question vibe makes it pop! It’s like you’re pulling the other person in, like, ‘Come on, feel this with me!’ It’s way more fun and interactive.",
+			"That's so cool! I can totally see myself using it at school events or even when introducing my friends at a party. 'Tonight's fun, as presented by my bestie!' It adds a touch of elegance, right?",
 		chinese_lines:
-			"没错，但问句的氛围让它更出彩！就像你在拉着对方一起感受，像是，‘来吧，和我一起感受这个！’这样更有趣、更互动。",
+			"太酷了！我完全可以想象自己在学校活动上或者在派对上介绍朋友时使用它。'今晚的欢乐，由我的好朋友呈现！' 它增添了一份优雅，不是吗？",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"Fascinating. It acts as a conversational tool to build connection. For example, at a gathering, one might say ‘Isn’t this nice?’ about the ambiance to engage others.",
+			"While it may sound elegant, it is important to use it in the appropriate context. In casual settings, it might come across as overly formal or even humorous. However, in the right setting, it can indeed add a touch of sophistication.",
 		chinese_lines:
-			"真有趣。它就像一个建立联系的对话工具。比如，在一个聚会上，有人可能会说‘Isn’t this nice?’来形容氛围，从而吸引别人参与。",
+			"虽然它听起来很优雅，但在适当的场合使用它很重要。在休闲场合，它可能会显得过于正式甚至有些滑稽。然而，在合适的场合，它确实可以增添一份 sophistication。",
 	},
 	{
 		character: "Jinji",
 		emoji: "happy",
 		lines:
-			"Yup, exactly! Imagine you’re at a party, and the snacks are fire. You’d say ‘Isn’t this nice?’ to hype it up without sounding like a try-hard.",
+			"Got it! So, 'Wasn't that wonderful?' for appreciating something amazing, and 'as presented by' for formal introductions. These are like secret weapons for sounding more polished in English!",
 		chinese_lines:
-			"对，就是这样！想象你在派对上，零食超棒。你会说‘Isn’t this nice?’来炒热气氛，又不会显得太刻意。",
+			"明白了！所以，'Wasn't that wonderful?' 用于欣赏精彩的事物，'as presented by' 用于正式的介绍。这些就像是在英语中听起来更优雅的秘密武器！",
 	},
 	{
 		character: "Muz",
 		emoji: "neutral",
 		lines:
-			"I see its versatility. But could it also mean the opposite? Humans sometimes say things they don’t mean, which confuses me.",
+			"Indeed, mastering such expressions can enhance one's communication skills. To conclude, remember that 'Wasn't that wonderful?' is a rhetorical question for appreciation, and 'as presented by' is a formal introduction phrase. Use them wisely to elevate your English expressions.",
 		chinese_lines:
-			"我看出它的多功能性了。但它也能表示相反的意思吗？人类有时会说与本意相反的话，这让我困惑。",
-	},
-	{
-		character: "Jinji",
-		emoji: "happy",
-		lines:
-			"Oh, totally! If it’s raining and you’re stuck inside, you might say ‘Isn’t this nice?’ with a smirk to mean it’s actually trash. Tone’s the key, fam!",
-		chinese_lines:
-			"哦，绝对可以！如果下雨了，你被困在室内，你可能会带着 smirk 说‘Isn’t this nice?’来表示其实很烂。语气是关键，兄弟们！",
-	},
-	{
-		character: "Muz",
-		emoji: "neutral",
-		lines:
-			"Noted. The meaning hinges on tone and context. This phrase is more layered than I expected—very efficient for humans. Listeners, try it out and observe the reactions!",
-		chinese_lines:
-			"记下了。意思取决于语气和语境。这个短语比我预想的更复杂——对人类来说很高效。听众们，试试看，观察别人的反应吧！",
+			"确实，掌握这些表达可以提升一个人的沟通技巧。总结一下，记住 'Wasn't that wonderful?' 是一个用于欣赏的反问句，'as presented by' 是一个正式的介绍短语。明智地使用它们来提升你的英语表达。",
 	},
 ];

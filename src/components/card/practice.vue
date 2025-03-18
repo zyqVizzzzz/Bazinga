@@ -190,7 +190,7 @@ const isWelcomePlaying = ref(false);
 const welcomeAudio = ref(null);
 
 onMounted(() => {
-	displayedDialogues.value = props.currentPractice.dialogues;
+	// displayedDialogues.value = props.currentPractice.dialogues;
 });
 
 const emit = defineEmits(["play-complete"]);
@@ -448,7 +448,6 @@ onUpdated(() => {
 watch(
 	() => props.currentPage,
 	(newPage, oldPage) => {
-		console.log("Practice 组件检测到页面变更为:", newPage);
 		// 只有当页面真正变化时才重新获取数据
 		if (newPage !== oldPage) {
 			// 重置播放器状态
@@ -456,9 +455,9 @@ watch(
 			singlePlayer.cleanup();
 
 			// 如果没有对话数据，尝试获取播客数据
-			if (!props.currentPractice || !props.currentPractice.conversation_id) {
-				fetchPodcastData();
-			}
+			// if (!props.currentPractice || !props.currentPractice.conversation_id) {
+			fetchPodcastData();
+			// }
 
 			// 如果有自定义播客组件，重置它
 			if (podcastCustomRef.value) {

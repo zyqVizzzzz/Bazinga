@@ -12,6 +12,7 @@ import Signup from "@/views/Signup.vue";
 import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
+import CardEditor2 from "@/views/CardEditorBackup.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
