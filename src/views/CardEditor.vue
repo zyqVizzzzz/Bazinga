@@ -1,6 +1,7 @@
 <template>
 	<div class="container w-full mx-auto mt-10 pt-2">
 		<div class="flex editor-box">
+			<!-- 原文编辑器 -->
 			<div class="editor-container text-sm relative w-1/2">
 				<div
 					class="editor-wrapper text-sm rounded shadow-editor"
@@ -9,11 +10,24 @@
 					<div id="editor" class="editorjs-container"></div>
 				</div>
 			</div>
+			<!-- 卡片编辑器 -->
 			<div class="right-panel w-1/2">
 				<div
 					class="option-group flex items-center justify-between p-4 border-b border-gray-100"
 				>
-					<div class="text-lg font-bold relative top-[-2px]">卡片编辑器</div>
+					<div class="flex flex-col">
+						<div class="text-base font-bold relative flex items-center gap-2">
+							<i class="bi bi-arrow-left"></i>
+							<span>原文编辑区</span>
+						</div>
+						<div class="border-b border-gray-300 my-1 pt-1"></div>
+						<div
+							class="text-base font-bold relative flex items-center justify-between"
+						>
+							<span>卡片编辑区</span>
+							<i class="bi bi-arrow-down"></i>
+						</div>
+					</div>
 					<div class="flex space-x-4 relative top-[2px]">
 						<div class="tooltip" data-tip="退出">
 							<button class="retro-btn" @click="backToPreview">
@@ -39,29 +53,6 @@
 							</button>
 						</div>
 
-						<div class="tooltip" data-tip="生成器">
-							<button
-								class="retro-btn"
-								@click="openKnowledgeModal"
-								:disabled="generateAllLoading"
-							>
-								<div class="btn-shadow">
-									<div class="btn-edge">
-										<div class="btn-face">
-											<i
-												v-if="!generateAllLoading"
-												class="bi bi-magic text-lg"
-											></i>
-											<span
-												v-else
-												class="loading loading-spinner loading-xs"
-											></span>
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-
 						<!-- 新增说明指南按钮 -->
 						<div class="tooltip" data-tip="使用指南">
 							<button class="retro-btn" @click="openGuideModal">
@@ -76,39 +67,61 @@
 						</div>
 					</div>
 				</div>
+
 				<div
 					class="toolbox-container mt-4 border border-gray-100 shadow-xl rounded-xl shadow-knowledge sticky top-[15%]"
 				>
 					<div class="relative w-full max-w-2xl mx-auto">
 						<div class="relative">
 							<div class="decorated-card py-6 px-4">
+								<!-- 编辑器内容标题 -->
 								<div
-									class="flex items-center justify-between space-x-2 ml-3 mb-4"
+									class="flex items-center justify-between space-x-2 mx-2 mb-4"
 								>
-									<select
-										v-model="currentSceneIndex"
-										class="select select-sm select-bordered w-32 mr-4"
-										@change="handleSceneChange"
+									<div
+										class="scene-title text-base font-medium text-left text-xl"
 									>
-										<option
-											v-for="(scene, index) in scenes"
-											:key="index"
-											:value="index"
+										{{ currentScene?.title }}
+									</div>
+									<div class="flex items-center gap-4">
+										<!-- 一键处理按钮 -->
+										<div class="tooltip" data-tip="一键处理">
+											<button
+												class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-md transition-colors border border-gray-200"
+												@click="handleAllBlocks"
+											>
+												<i class="bi bi-magic text-sm"></i>
+											</button>
+										</div>
+
+										<!-- 生成播客按钮 -->
+										<div class="tooltip" data-tip="生成播客">
+											<button
+												class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-md transition-colors border border-gray-200"
+												@click="openKnowledgeModal"
+											>
+												<PodcastIcon />
+											</button>
+										</div>
+										<select
+											v-model="currentSceneIndex"
+											class="select select-sm select-bordered w-32"
+											@change="handleSceneChange"
 										>
-											场景 {{ index + 1 }}
-										</option>
-									</select>
+											<option
+												v-for="(scene, index) in scenes"
+												:key="index"
+												:value="index"
+											>
+												场景 {{ index + 1 }}
+											</option>
+										</select>
+									</div>
 								</div>
 
 								<!-- 场景内容显示区 -->
 								<div class="scene-content space-y-4">
-									<div
-										class="scene-title pl-2 text-base font-medium mb-2 text-left text-xl"
-									>
-										{{ currentScene?.title }}
-									</div>
-
-									<!-- 原文显示区 -->
+									<!-- 编辑区 -->
 									<div class="original-text space-y-2">
 										<template
 											v-for="(block, index) in currentSceneBlocks"
@@ -117,14 +130,83 @@
 											<!-- 工具栏 -->
 											<div
 												v-if="selectedBlockIndex === index && !block.isTitle"
-												class="text-toolbox"
+												class="text-toolbox bg-gray-800 rounded-lg shadow-md border border-gray-200 flex items-center justify-between px-2 py-1.5"
 											>
-												<button @click="translateBlock(index)">
-													<i class="bi bi-translate"></i> 翻译
-												</button>
-												<button @click="generateKnowledgeFromBlock(block)">
-													<i class="bi bi-lightbulb"></i> 生成知识点
-												</button>
+												<!-- 左侧按钮组 -->
+												<div class="flex items-center gap-3">
+													<button
+														class="text-xs flex items-center gap-1 px-3 rounded hover:bg-base-300 transition-colors"
+														@click="translateBlock(index)"
+													>
+														<i class="bi bi-translate"></i> 翻译
+													</button>
+													<button
+														class="text-xs flex items-center gap-1 px-3 py-1.5 rounded hover:bg-base-300 transition-colors"
+														@click="generateKnowledgeFromBlock(block)"
+													>
+														<i class="bi bi-lightbulb"></i> 生成知识点
+													</button>
+													<button
+														class="text-xs flex items-center gap-1 px-3 py-1.5 rounded hover:bg-base-700 transition-colors"
+														@click="toggleNarration(index)"
+													>
+														<i class="bi bi-chat-quote"></i>
+														{{
+															currentSceneBlocks[index].narration
+																? "取消注释"
+																: "标记为注释"
+														}}
+													</button>
+													<!-- 说话者选择 -->
+													<div class="speaker-select relative w-40">
+														<div
+															class="min-h-[32px] p-1 border rounded-lg bg-base-100 cursor-text flex items-center"
+														>
+															<input
+																v-model="newSpeaker"
+																type="text"
+																class="flex-1 min-w-[60px] bg-transparent border-none outline-none text-xs text-gray-700"
+																placeholder="选择或输入说话者..."
+																@input="showSpeakerDropdown = true"
+																@focus="showSpeakerDropdown = true"
+																@change="handleSpeakerInput"
+															/>
+														</div>
+
+														<!-- 下拉列表 -->
+														<div
+															v-if="
+																showSpeakerDropdown &&
+																filteredSpeakers.length > 0
+															"
+															class="absolute z-50 mt-1 w-full bg-base-100 border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto"
+														>
+															<div
+																v-for="speaker in filteredSpeakers"
+																:key="speaker"
+																class="px-3 py-2 hover:bg-base-200 cursor-pointer text-xs text-gray-700"
+																@click="selectSpeaker(speaker)"
+															>
+																{{ speaker }}
+															</div>
+														</div>
+													</div>
+												</div>
+
+												<!-- 右侧加载状态指示器 -->
+												<div class="flex items-center gap-3">
+													<div
+														v-if="
+															translatingBlockId === block.id ||
+															generatingKnowledgeBlockId === block.id
+														"
+														class="flex items-center justify-center w-6 h-6"
+													>
+														<span
+															class="loading loading-spinner loading-xs text-white"
+														></span>
+													</div>
+												</div>
 											</div>
 											<div
 												class="text-sm p-2 rounded hover:bg-gray-50 cursor-pointer text-left"
@@ -132,14 +214,42 @@
 													'font-bold': block.isTitle,
 													'translated-text': block.isTranslated,
 													'knowledge-block': block.isKnowledge,
+													'text-primary': block.narration,
 												}"
 												@click="handleBlockClick(index, block)"
-												v-html="
-													block.isKnowledge
-														? block.text
-														: block.displayText || block.text
-												"
-											></div>
+											>
+												<!-- 对话场景使用带说话者的布局 -->
+												<div
+													v-if="
+														block.speaker &&
+														!block.isTitle &&
+														!block.isTranslated &&
+														!block.isKnowledge &&
+														!block.narration
+													"
+													class="flex flex-col gap-1"
+												>
+													<div
+														class="speaker-badge self-start px-2 py-0.5 rounded-lg text-xs bg-primary/10 text-primary"
+													>
+														{{ block.speaker }}
+													</div>
+													<div
+														class="mt-1"
+														v-html="block.displayText || block.text"
+													></div>
+												</div>
+
+												<!-- 普通文本使用简单布局 -->
+												<div
+													v-else
+													v-html="
+														block.isKnowledge
+															? block.text
+															: block.displayText || block.text
+													"
+												></div>
+											</div>
 										</template>
 									</div>
 								</div>
@@ -190,10 +300,106 @@
 				<button>关闭</button>
 			</form>
 		</dialog>
+		<!-- 知识点详情模态框 -->
+		<dialog id="knowledge_detail_modal" class="modal">
+			<div
+				class="modal-box border-2 border-gray-800"
+				style="background-color: var(--milk-color)"
+			>
+				<h3 class="font-bold text-lg text-secondary">
+					{{ selectedKnowledge?.word }}
+				</h3>
+				<div class="pt-2 pb-4 space-y-4">
+					<!-- 中文释义 -->
+					<div class="text-sm text-gray-500">
+						{{ selectedKnowledge?.word_zh }}
+					</div>
+
+					<!-- 分割线 -->
+					<div class="border-b border-gray-200"></div>
+
+					<!-- 中文释义 -->
+					<div>
+						<h4 class="font-medium mb-2 text-left">中文释义</h4>
+						<p class="text-sm text-gray-600 text-left">
+							{{ selectedKnowledge?.definition_zh }}
+						</p>
+					</div>
+
+					<!-- 同义词 -->
+					<div v-if="selectedKnowledge?.synonyms">
+						<h4 class="font-medium mb-2 text-left">同义词</h4>
+						<ol
+							class="text-sm text-gray-600 space-y-1 list-decimal list-inside"
+						>
+							<li
+								v-for="(synonym, index) in selectedKnowledge.synonyms.split(
+									'|'
+								)"
+								:key="index"
+								class="text-left"
+							>
+								{{ synonym.trim() }}
+							</li>
+						</ol>
+					</div>
+
+					<!-- 例句 -->
+					<div v-if="selectedKnowledge?.example" class="space-y-1">
+						<h4 class="font-medium mb-2 text-left">例句</h4>
+						<p class="text-sm text-gray-600 text-left">
+							{{ selectedKnowledge?.example }}
+						</p>
+						<p class="text-sm text-gray-500 text-left">
+							{{ selectedKnowledge?.example_zh }}
+						</p>
+					</div>
+
+					<!-- 笔记 -->
+					<div v-if="selectedKnowledge?.note">
+						<h4 class="font-medium mb-2 text-left">补充说明</h4>
+						<p class="text-sm text-gray-600 text-left">
+							{{ selectedKnowledge?.note }}
+						</p>
+					</div>
+				</div>
+
+				<div class="modal-action justify-center">
+					<form method="dialog">
+						<button class="btn btn-sm btn-secondary text-white">关闭</button>
+					</form>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>关闭</button>
+			</form>
+		</dialog>
+		<!-- 删除知识点确认对话框 -->
+		<dialog id="delete_knowledge_modal" class="modal">
+			<div class="modal-box">
+				<h3 class="font-bold text-lg">确认删除</h3>
+				<p class="py-4">
+					确定要删除知识点
+					<span class="font-bold text-secondary">{{ knowledgeToDelete }}</span>
+					吗？
+				</p>
+				<div class="modal-action">
+					<button class="btn btn-error" @click="confirmDeleteKnowledge">
+						删除
+					</button>
+					<form method="dialog">
+						<button class="btn">取消</button>
+					</form>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>取消</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
@@ -202,6 +408,7 @@ import { useAppStore } from "@/store";
 import { exampleText, exampleTextZh } from "@/constants/Example.js";
 import KnowledgeGenerator from "@/components/cardEditor/KnowledgeGenerator.vue";
 import { v4 as uuidv4 } from "uuid";
+import PodcastIcon from "@/components/icons/Podcast.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -228,10 +435,43 @@ const currentScene = ref(null);
 const currentSceneBlocks = ref([]);
 
 const selectedBlockIndex = ref(null);
+const selectedKnowledge = ref(null);
+const knowledgeToDelete = ref(null); // 存储待删除的知识点
 
 // 添加新的数据结构
 const blocksMap = ref(new Map()); // 存储所有块的数据，键为唯一ID
 const sceneStructure = ref([]); // 存储场景结构，包含块ID的引用
+
+const speakers = ref(new Set()); // 存储所有说话者
+const showSpeakerDropdown = ref(false);
+const newSpeaker = ref("");
+
+const translatingBlockId = ref(null);
+const generatingKnowledgeBlockId = ref(null);
+
+// 计算过滤后的说话者列表
+const filteredSpeakers = computed(() => {
+	if (!newSpeaker.value) return Array.from(speakers.value || new Set());
+	return Array.from(speakers.value || new Set()).filter((speaker) =>
+		speaker.toLowerCase().includes(newSpeaker.value.toLowerCase())
+	);
+});
+
+// 选择说话者
+const selectSpeaker = (speaker) => {
+	applySpeakerToBlock(speaker);
+	showSpeakerDropdown.value = false;
+	newSpeaker.value = "";
+};
+
+// 移除说话者
+const removeSpeaker = (speaker) => {
+	speakers.value.delete(speaker);
+	localStorage.setItem(
+		"cardEditorSpeakers",
+		JSON.stringify(Array.from(speakers.value))
+	);
+};
 
 const updateCurrentScene = async () => {
 	if (!editor.value) return;
@@ -254,7 +494,7 @@ const updateCurrentScene = async () => {
 
 	// 第二步：解析编辑器内容，生成新的场景结构
 	const newScenes = [];
-	let currentScene = null;
+	let currentSceneObj = null;
 
 	// 找出所有场景标题和原文块
 	for (let i = 0; i < editorBlocks.length; i++) {
@@ -263,16 +503,21 @@ const updateCurrentScene = async () => {
 
 		// 检查是否是标题
 		if (text.startsWith("#")) {
-			currentScene = {
+			currentSceneObj = {
 				index: newScenes.length,
 				title: text.replace("#", "").trim(),
 				blockIds: [], // 存储块ID而不是块内容
 			};
-			newScenes.push(currentScene);
+			newScenes.push(currentSceneObj);
+
+			// 更新右侧面板的标题显示
+			if (scenes.value[newScenes.length - 1]) {
+				scenes.value[newScenes.length - 1].title = currentSceneObj.title;
+			}
 			continue;
 		}
 
-		if (!currentScene) continue;
+		if (!currentSceneObj) continue;
 
 		// 为原文块创建或查找唯一ID
 		let blockId = block.id || `editor-block-${uuidv4()}`;
@@ -339,6 +584,7 @@ const updateCurrentScene = async () => {
 				id: blockId,
 				text: text.replace(/<\/?[^>]+(>|$)/g, ""),
 				isTitle: false,
+				narration: false, // 添加 narration 标记
 				editorId: block.id, // 保存编辑器块ID以便后续匹配
 				originalIndex: blockId, // 兼容旧代码
 			});
@@ -376,7 +622,7 @@ const updateCurrentScene = async () => {
 		}
 
 		// 将块ID添加到场景结构中
-		currentScene.blockIds.push(blockId);
+		currentSceneObj.blockIds.push(blockId);
 	}
 
 	// 第三步：更新场景数据
@@ -444,10 +690,18 @@ const handleBlockClick = (index, block) => {
 		selectedBlockIndex.value = null;
 		return;
 	}
+
+	// 如果点击的是当前已选中的块，则取消选中（关闭工具栏）
+	if (selectedBlockIndex.value === index) {
+		selectedBlockIndex.value = null;
+		return;
+	}
+
+	// 否则选中新的块（显示工具栏）
 	selectedBlockIndex.value = index;
 };
 
-// 知识点按钮的点击处理函数
+// 点击知识点按钮
 const handleKnowledgeButtonClick = (event) => {
 	// 检查点击的是否是知识点按钮
 	const detailBtn = event.target.closest(".knowledge-detail-btn");
@@ -472,26 +726,125 @@ const handleKnowledgeButtonClick = (event) => {
 	}
 };
 
+const toggleNarration = (index) => {
+	const block = currentSceneBlocks.value[index];
+	if (!block) return;
+
+	// 确保块有ID
+	const blockId = block.id || block.originalIndex;
+	if (!blockId) return;
+
+	// 获取原始文本（移除所有HTML标签）
+	const plainText = block.text.replace(/<\/?[^>]+(>|$)/g, "");
+
+	// 切换 narration 状态
+	block.narration = !block.narration;
+
+	// 更新block的文本
+	block.text = plainText;
+
+	// 如果有displayText，也需要更新
+	if (block.displayText) {
+		block.displayText = plainText;
+		// 重新应用知识点高亮
+		applyKnowledgeHighlight(block, currentSceneIndex.value);
+	} else {
+		block.displayText = plainText;
+	}
+
+	// 更新blocksMap中的数据
+	const originalBlock = blocksMap.value.get(blockId);
+	if (originalBlock) {
+		originalBlock.narration = block.narration;
+		originalBlock.text = plainText;
+		if (originalBlock.displayText) {
+			originalBlock.displayText = plainText;
+			applyKnowledgeHighlight(originalBlock, currentSceneIndex.value);
+		} else {
+			originalBlock.displayText = plainText;
+		}
+	}
+
+	// 强制更新视图
+	currentSceneBlocks.value = [...currentSceneBlocks.value];
+};
+
+const handleSpeakerInput = () => {
+	if (newSpeaker.value.trim()) {
+		applySpeakerToBlock(newSpeaker.value.trim());
+		if (!speakers.value.has(newSpeaker.value.trim())) {
+			speakers.value.add(newSpeaker.value.trim());
+			localStorage.setItem(
+				"cardEditorSpeakers",
+				JSON.stringify(Array.from(speakers.value))
+			);
+		}
+		newSpeaker.value = "";
+	}
+};
+
+// 应用说话者到当前块
+const applySpeakerToBlock = (speaker) => {
+	const block = currentSceneBlocks.value[selectedBlockIndex.value];
+	if (!block) return;
+
+	const blockId = block.id || block.originalIndex;
+	if (!blockId) return;
+
+	block.speaker = speaker;
+
+	const originalBlock = blocksMap.value.get(blockId);
+	if (originalBlock) {
+		originalBlock.speaker = speaker;
+	}
+
+	// 强制更新视图
+	currentSceneBlocks.value = [...currentSceneBlocks.value];
+};
+
 // 显示知识点详情
 const showKnowledgeDetail = (word) => {
 	const knowledge = currentKnowledge.value.get(word);
 	if (knowledge) {
-		// 这里可以实现显示详情的逻辑，例如打开一个模态框
-		showToast({ message: `查看知识点详情: ${word}`, type: "info" });
-		console.log("知识点详情:", knowledge);
+		// 设置选中的知识点
+		selectedKnowledge.value = knowledge;
+
+		// 打开模态框
+		document.getElementById("knowledge_detail_modal").showModal();
 	}
 };
 
 // 删除知识点
 const deleteKnowledge = (word) => {
+	// 设置待删除的知识点
+	knowledgeToDelete.value = word;
+
+	// 打开确认对话框
+	document.getElementById("delete_knowledge_modal").showModal();
+};
+
+// 确认删除
+const confirmDeleteKnowledge = () => {
 	// 从当前知识点Map中删除
-	if (currentKnowledge.value.has(word)) {
-		currentKnowledge.value.delete(word);
+	if (
+		knowledgeToDelete.value &&
+		currentKnowledge.value.has(knowledgeToDelete.value)
+	) {
+		currentKnowledge.value.delete(knowledgeToDelete.value);
 
 		// 更新所有包含该知识点的块
-		updateBlocksAfterKnowledgeDelete(word);
+		updateBlocksAfterKnowledgeDelete(knowledgeToDelete.value);
 
-		showToast({ message: `已删除知识点: ${word}`, type: "success" });
+		showToast({
+			message: `已删除知识点: ${knowledgeToDelete.value}`,
+			type: "success",
+		});
+
+		// 关闭对话框
+		document.getElementById("delete_knowledge_modal").close();
+
+		// 清空待删除的知识点
+		knowledgeToDelete.value = null;
 	}
 };
 
@@ -572,7 +925,7 @@ const updateBlocksAfterKnowledgeDelete = (word) => {
 	currentSceneBlocks.value = [...currentSceneBlocks.value];
 };
 
-// 点击事件处理器
+// 隐藏toolbox
 const handleClickOutside = (event) => {
 	// 检查点击是否在文本块或工具栏内部
 	const isClickOnBlock = event.target.closest(".text-sm.p-2.rounded");
@@ -583,7 +936,7 @@ const handleClickOutside = (event) => {
 	}
 };
 
-// 修改翻译块函数
+// 翻译块
 const translateBlock = async (index) => {
 	const block = currentSceneBlocks.value[index];
 	if (!block || block.isTranslated) return;
@@ -595,6 +948,8 @@ const translateBlock = async (index) => {
 			console.error("无法翻译：块没有ID");
 			return;
 		}
+
+		translatingBlockId.value = blockId; // 设置正在翻译的块ID
 
 		// 检查是否已有翻译块
 		const translationId = `translation-${blockId}`;
@@ -639,6 +994,8 @@ const translateBlock = async (index) => {
 	} catch (error) {
 		console.error("Translation failed:", error);
 		showToast({ message: "翻译失败，请重试", type: "error" });
+	} finally {
+		translatingBlockId.value = null; // 清除正在翻译的块ID
 	}
 };
 
@@ -655,6 +1012,8 @@ const generateKnowledgeFromBlock = async (block) => {
 			console.error("无法生成知识点：块没有ID");
 			return;
 		}
+
+		generatingKnowledgeBlockId.value = blockId; // 设置正在生成知识点的块ID
 
 		// 提取关键词
 		const keyPhrases = await extractKeyPhrases(block.text);
@@ -753,7 +1112,10 @@ const generateKnowledgeFromBlock = async (block) => {
 		}
 
 		showToast({ message: "知识点生成成功", type: "success" });
-	} catch (error) {}
+	} catch (error) {
+	} finally {
+		generatingKnowledgeBlockId.value = null; // 清除正在生成知识点的块ID
+	}
 };
 
 // 格式化知识点显示
@@ -761,10 +1123,12 @@ const formatKnowledgeDisplay = (knowledgeItems) => {
 	return knowledgeItems
 		.map((item) => {
 			return `<div class="knowledge-item p-1">
-			<div class="flex justify-between">
-				<span class="font-bold">${item.word}</span>
-				<div class="flex items-center">
-					<span class="text-gray-600 mr-2">${item.word_zh}</span>
+			<div class="flex justify-between items-center">
+				<div class="flex items-center gap-2">
+					<span class="font-bold">${item.word}</span>
+					<span class="text-gray-600">${item.word_zh}</span>
+				</div>
+				<div class="flex items-center gap-1">
 					<button class="knowledge-btn knowledge-detail-btn" data-word="${item.word}" title="详情">
 						<i class="bi bi-info-circle"></i>
 					</button>
@@ -916,7 +1280,29 @@ const initEditorJS = async () => {
 	if (!scriptJson.value) return;
 
 	try {
-		const blocks = await initEditorBlocks(scriptJson.value);
+		// 创建默认场景
+		if (!scenes.value || scenes.value.length === 0) {
+			const defaultScene = {
+				index: 0,
+				title: "",
+				blockIds: [],
+				blocks: [],
+			};
+			scenes.value = [defaultScene];
+			currentScene.value = defaultScene;
+			currentSceneBlocks.value = [];
+			sceneStructure.value = [
+				{
+					index: 0,
+					title: "",
+					blockIds: [],
+				},
+			];
+		}
+
+		const blocks = scriptJson.value
+			? await initEditorBlocks(scriptJson.value)
+			: [];
 
 		// 销毁现有编辑器实例（如果存在）
 		if (editor.value) {
@@ -1037,8 +1423,10 @@ const initRightPanelScenes = (scriptData) => {
 			// 创建原文块
 			const originalBlock = {
 				id: blockId,
-				text: originalText,
+				text: text, // 存储纯文本内容
+				speaker: speaker, // 单独存储说话者
 				isTitle: false,
+				narration: speaker === "narration",
 				originalIndex: blockId, // 兼容旧代码
 			};
 
@@ -1210,20 +1598,22 @@ const initEditorBlocks = (scriptData) => {
 
 	dialogues.forEach((dialogue, dialogueIndex) => {
 		// 添加标题
-		const titleId = `title_${dialogueIndex}`;
-		const titleBlock = {
-			type: "paragraph",
-			data: { text: `# ${dialogue.title}` },
-			id: titleId, // 为编辑器块添加唯一ID
-		};
-		blocks.push(titleBlock);
+		if (dialogue.title) {
+			const titleId = `title_${dialogueIndex}`;
+			const titleBlock = {
+				type: "paragraph",
+				data: { text: `# ${dialogue.title}` },
+				id: titleId,
+			};
+			blocks.push(titleBlock);
 
-		// 保存标题块到blocksMap
-		blocksMap.value.set(titleId, {
-			id: titleId,
-			text: `# ${dialogue.title}`,
-			isTitle: true,
-		});
+			// 保存标题块到blocksMap
+			blocksMap.value.set(titleId, {
+				id: titleId,
+				text: `# ${dialogue.title}`,
+				isTitle: true,
+			});
+		}
 
 		// 处理每组文本，只添加英文原文
 		for (let i = 0; i < dialogue.text.length; i++) {
@@ -1232,28 +1622,22 @@ const initEditorBlocks = (scriptData) => {
 			// 创建唯一ID
 			const blockId = `block_${dialogueIndex}_${i}`;
 
-			// 格式化文本
-			const formattedText =
-				speaker === "narration"
-					? `<i>${text}</i>`
-					: speaker
-					? `[${speaker}] ${text}`
-					: text;
-
 			// 创建编辑器块
 			const editorBlock = {
 				type: "paragraph",
-				data: { text: formattedText },
-				id: blockId, // 为编辑器块添加唯一ID
+				data: { text: text }, // 直接使用text，不添加说话者标记
+				id: blockId,
 			};
 			blocks.push(editorBlock);
 
 			// 保存原文块到blocksMap
 			blocksMap.value.set(blockId, {
 				id: blockId,
-				text: formattedText,
+				text: text, // 存储纯文本
+				speaker: speaker, // 单独存储说话者
 				isTitle: false,
-				originalIndex: blockId, // 兼容旧代码
+				narration: speaker === "narration",
+				originalIndex: blockId,
 			});
 
 			// 如果有翻译，也保存到blocksMap
@@ -1268,7 +1652,7 @@ const initEditorBlocks = (scriptData) => {
 					isTitle: false,
 					isTranslated: true,
 					originalId: blockId,
-					originalIndex: blockId, // 兼容旧代码
+					originalIndex: blockId,
 				});
 			}
 		}
@@ -1288,6 +1672,21 @@ const openKnowledgeModal = async () => {
 };
 
 onMounted(async () => {
+	// 从 localStorage 加载说话者列表
+	const savedSpeakers = localStorage.getItem("cardEditorSpeakers");
+	if (savedSpeakers) {
+		const speakerArray = JSON.parse(savedSpeakers);
+		speakers.value = new Set(speakerArray);
+	}
+
+	document.addEventListener("click", (e) => {
+		const target = e.target;
+		if (!target.closest(".speaker-select")) {
+			showSpeakerDropdown.value = false;
+			newSpeaker.value = "";
+		}
+	});
+
 	if (route.query.mode === "edit") {
 		getDefaultJson();
 		getDefaultKnowledge();
@@ -1401,9 +1800,12 @@ function processSceneData() {
 			const translationId = `translation-${blockId}`;
 			const translationBlock = blocksMap.value.get(translationId);
 
-			// 解析原文
-			const englishLine = parseDialogueLine(cleanText, "en");
-			dialogue.text.push([englishLine.speaker, englishLine.text]);
+			// 处理原文 - 直接使用 block 的 speaker 和 narration 属性
+			if (block.narration) {
+				dialogue.text.push(["narration", cleanText]);
+			} else {
+				dialogue.text.push([block.speaker || "", cleanText]);
+			}
 
 			// 如果有翻译，添加翻译；否则添加空翻译
 			if (translationBlock) {
@@ -1618,10 +2020,9 @@ const getDefaultJson = () => {
 			id: "Scene1",
 			season: season,
 			episode: episode,
-			title: "编辑器使用说明",
-			img: "",
-			text: exampleText,
-			text_zh: exampleTextZh,
+			title: "",
+			text: [],
+			text_zh: [],
 		},
 	];
 	scriptJson.value = {
@@ -1651,19 +2052,16 @@ function parseDialogueLine(line, tag) {
 	let speaker = "";
 	let text = line.trim();
 
-	// 如果是 "zh" 标记，则去除所有标签
 	if (tag === "zh") {
-		text = text.replace(/<\/?[^>]+(>|$)/g, ""); // 移除所有 HTML 标签
+		text = text.replace(/<\/?[^>]+(>|$)/g, "");
 	} else {
-		// 检查是否整行被 <i> 标签包裹
 		if (/^<i>.*<\/i>$/.test(text)) {
-			text = text.slice(3, -4).trim(); // 去掉开头的 <i> 和结尾的 </i>
+			text = text.slice(3, -4).trim();
 			speaker = "narration";
 		} else {
-			// 检查是否有角色名，使用正则表达式匹配最外层的 `[]` 并忽略内层 `[]`
 			const match = text.match(/^\[([^\[\]]*)\]\s*(.*)/);
 			if (match) {
-				speaker = match[1].replace(/\[.*?\]/g, "").trim(); // 移除内部 `[]`
+				speaker = match[1].replace(/\[.*?\]/g, "").trim();
 				text = match[2].trim();
 			}
 		}
@@ -1885,7 +2283,7 @@ watch(
 
 /* 工具箱容器 */
 .toolbox-container {
-	height: calc(100vh - 250px);
+	height: calc(100vh - 265px);
 	overflow-y: auto;
 	border: 3px solid #333;
 	border-radius: 12px;
@@ -1924,26 +2322,6 @@ watch(
 	background: rgba(0, 0, 0, 0.3);
 }
 
-/* 空状态样式 */
-.text-gray-500 {
-	position: relative;
-	padding: 2rem;
-	border: 2px dashed #ccc;
-	border-radius: 8px;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 10px,
-		rgba(0, 0, 0, 0.02) 10px,
-		rgba(0, 0, 0, 0.02) 20px
-	);
-}
-
-.text-gray-500 i {
-	font-size: 2.5rem;
-	margin-bottom: 0.5rem;
-}
-
 /* 顶部装饰条 */
 .bg-gradient-to-r {
 	height: 4px;
@@ -1964,16 +2342,16 @@ watch(
 .text-toolbox {
 	display: flex;
 	gap: 0.5rem;
-	padding: 0.25rem;
-	background-color: #f3f4f6;
-	border: 1px solid #e5e7eb;
+	padding: 0.3rem;
+	/* background-color: #f3f4f6; */
+	/* border: 1px solid #e5e7eb; */
 	border-radius: 0.375rem;
-	margin-bottom: 0.5rem;
+	margin-bottom: -0.2rem;
 }
 
 .text-toolbox button {
 	padding: 0.25rem 0.5rem;
-	font-size: 0.875rem;
+	/* font-size: 0.875rem; */
 	border-radius: 0.25rem;
 	background-color: white;
 	border: 1px solid #d1d5db;
@@ -1981,7 +2359,7 @@ watch(
 }
 
 .text-toolbox button:hover {
-	background-color: #f9fafb;
+	background-color: #f0f0f1;
 }
 
 .translated-text {
@@ -2004,6 +2382,19 @@ watch(
 	margin: 0.75rem 0;
 	border-left: 4px solid var(--secondary-color); /* 添加左侧边框 */
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+}
+.speaker-badge {
+	background-color: var(--secondary-color);
+	color: white;
+	font-weight: 500;
+	min-width: 60px;
+	text-align: center;
+}
+
+/* 如果是旁白，使用不同的样式 */
+.text-primary .speaker-badge {
+	background-color: var(--primary-color);
+	opacity: 0.8;
 }
 </style>
 <style>
