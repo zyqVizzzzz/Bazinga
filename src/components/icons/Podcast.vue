@@ -1,6 +1,6 @@
 <template>
 	<svg
-		class="w-7 h-7"
+		:class="size ? `w-${size} h-${size}` : 'w-7 h-7'"
 		viewBox="0 0 1024 1024"
 		version="1.1"
 		xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +21,10 @@
 </template>
 <script setup>
 defineProps({
-	size: String,
+	size: {
+		type: [String, Number],
+		default: null,
+	},
 	fill: Boolean,
 });
 </script>

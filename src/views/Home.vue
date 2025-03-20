@@ -76,18 +76,7 @@ const scenes = ref([]);
 
 onMounted(() => {
 	getCatalogs();
-	aiTest();
 });
-
-const aiTest = async () => {
-	try {
-		// const response = await apiClient.post("/knowledge/generate", {
-		// 	word: "collections",
-		// });
-	} catch (error) {
-		console.error("Failed to fetch catalogs", error);
-	}
-};
 
 const getCatalogs = async () => {
 	try {

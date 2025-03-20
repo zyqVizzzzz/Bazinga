@@ -28,30 +28,58 @@
 										{{ currentScene?.title }}
 									</div>
 									<div class="flex items-center gap-4">
-										<!-- 一键处理按钮 -->
-										<div class="tooltip" data-tip="一键处理">
+										<!-- 一键翻译 -->
+										<div class="tooltip" data-tip="一键翻译">
 											<button
-												class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-md transition-colors border border-gray-200"
-												@click="processEntireScene"
-												:disabled="processingEntireScene"
+												class="ghost-btn w-8 h-8 flex items-center justify-center"
+												style="padding: 0.4rem"
+												@click="translateEntireScene"
+												:disabled="translatingScene"
 											>
 												<span
-													v-if="processingEntireScene"
+													v-if="translatingScene"
 													class="loading loading-spinner loading-xs"
 												></span>
-												<i v-else class="bi bi-lightning-charge text-sm"></i>
+												<!-- <i v-else class="bi bi-lightning-charge text-sm"></i> -->
+												<TranslationIcon
+													class="relative top-[1px]"
+													size="5"
+													v-else
+												/>
+											</button>
+										</div>
+										<div class="tooltip" data-tip="一键生成知识点">
+											<button
+												class="ghost-btn w-8 h-8 flex items-center justify-center"
+												style="padding: 0.4rem"
+												@click="generateKnowledgeForScene"
+												:disabled="generatingSceneKnowledge"
+											>
+												<span
+													v-if="generatingSceneKnowledge"
+													class="loading loading-spinner loading-xs"
+												></span>
+												<!-- <i v-else class="bi bi-lightning-charge text-sm"></i> -->
+												<KnowledgeIcon
+													class="relative top-[1px]"
+													size="5"
+													v-else
+												/>
 											</button>
 										</div>
 
 										<!-- 生成播客按钮 -->
 										<div class="tooltip" data-tip="生成播客">
 											<button
-												class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-md transition-colors border border-gray-200"
+												class="ghost-btn w-8 h-8 flex items-center justify-center"
+												style="padding: 0"
 												@click="openKnowledgeModal"
 											>
-												<PodcastIcon />
+												<PodcastIcon size="6" />
 											</button>
 										</div>
+
+										<!-- 选择场景 -->
 										<select
 											v-model="currentSceneIndex"
 											class="select select-sm select-bordered w-32"
@@ -79,27 +107,26 @@
 											<!-- 工具栏 -->
 											<div
 												v-if="selectedBlockIndex === index && !block.isTitle"
-												class="text-toolbox bg-gray-800 rounded-lg shadow-md border border-gray-200 flex items-center justify-between px-2 py-1.5"
+												class="text-toolbox bg-milk border-2 border-gray-800 rounded-lg flex items-center justify-between px-4 py-2 shadow-retro relative"
 											>
 												<!-- 左侧按钮组 -->
 												<div class="flex items-center gap-3">
 													<button
-														class="text-xs flex items-center gap-1 px-3 rounded hover:bg-base-300 transition-colors"
+														class="ghost-btn"
 														@click="translateBlock(index)"
 													>
-														<i class="bi bi-translate"></i> 翻译
+														翻译
 													</button>
 													<button
-														class="text-xs flex items-center gap-1 px-3 py-1.5 rounded hover:bg-base-300 transition-colors"
+														class="ghost-btn"
 														@click="generateKnowledgeFromBlock(block)"
 													>
-														<i class="bi bi-lightbulb"></i> 生成知识点
+														生成知识点
 													</button>
 													<button
-														class="text-xs flex items-center gap-1 px-3 py-1.5 rounded hover:bg-base-700 transition-colors"
+														class="ghost-btn"
 														@click="toggleNarration(index)"
 													>
-														<i class="bi bi-chat-quote"></i>
 														{{
 															currentSceneBlocks[index].narration
 																? "取消注释"
@@ -109,7 +136,7 @@
 													<!-- 说话者选择 -->
 													<div class="speaker-select relative w-40">
 														<div
-															class="min-h-[32px] p-1 border rounded-lg bg-base-100 cursor-text flex items-center"
+															class="min-h-[32px] p-1 border border-gray-300 rounded-lg cursor-text flex items-center hover:border-gray-400 transition-colors"
 														>
 															<input
 																v-model="newSpeaker"
@@ -133,10 +160,17 @@
 															<div
 																v-for="speaker in filteredSpeakers"
 																:key="speaker"
-																class="px-3 py-2 hover:bg-base-200 cursor-pointer text-xs text-gray-700"
-																@click="selectSpeaker(speaker)"
+																class="px-3 py-2 hover:bg-milk cursor-pointer text-xs text-gray-700 flex items-center justify-between group"
 															>
-																{{ speaker }}
+																<span @click="selectSpeaker(speaker)">{{
+																	speaker
+																}}</span>
+																<button
+																	class="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-red-500"
+																	@click.stop="removeSpeaker(speaker)"
+																>
+																	<i class="bi bi-x-circle"></i>
+																</button>
 															</div>
 														</div>
 													</div>
@@ -152,7 +186,7 @@
 														class="flex items-center justify-center w-6 h-6"
 													>
 														<span
-															class="loading loading-spinner loading-xs text-white"
+															class="loading loading-spinner loading-xs text-gray-800"
 														></span>
 													</div>
 												</div>
@@ -179,14 +213,11 @@
 													class="flex flex-col gap-1"
 												>
 													<div
-														class="speaker-badge self-start px-2 py-0.5 rounded-lg text-xs bg-primary/10 text-primary"
+														class="speaker-badge self-start px-1.5 py-0.5 rounded text-xs text-gray-700 bg-gray-200 border border-gray-200"
 													>
 														{{ block.speaker }}
 													</div>
-													<div
-														class="mt-1"
-														v-html="block.displayText || block.text"
-													></div>
+													<div v-html="block.displayText || block.text"></div>
 												</div>
 
 												<!-- 普通文本使用简单布局 -->
@@ -213,7 +244,6 @@
 			ref="knowledgeGeneratorRef"
 			:editor="editor"
 			:currentKnowledge="currentKnowledge"
-			:shouldTranslate="shouldTranslate"
 			@update:currentKnowledge="currentKnowledge = $event"
 		/>
 
@@ -367,17 +397,20 @@
 		<dialog id="delete_knowledge_modal" class="modal">
 			<div class="modal-box">
 				<h3 class="font-bold text-lg">确认删除</h3>
-				<p class="py-4">
+				<p class="py-4 text-base">
 					确定要删除知识点
 					<span class="font-bold text-secondary">{{ knowledgeToDelete }}</span>
 					吗？
 				</p>
-				<div class="modal-action">
-					<button class="btn btn-error" @click="confirmDeleteKnowledge">
+				<div class="modal-action flex justify-center gap-4">
+					<button
+						class="btn btn-error btn-sm text-white"
+						@click="confirmDeleteKnowledge"
+					>
 						删除
 					</button>
 					<form method="dialog">
-						<button class="btn">取消</button>
+						<button class="btn btn-sm">取消</button>
 					</form>
 				</div>
 			</div>
@@ -397,7 +430,11 @@ import { useAppStore } from "@/store";
 import KnowledgeGenerator from "@/components/cardEditor/KnowledgeGenerator.vue";
 import { v4 as uuidv4 } from "uuid";
 import PodcastIcon from "@/components/icons/Podcast.vue";
+import KnowledgeIcon from "@/components/icons/Knowledge.vue";
+import TranslationIcon from "@/components/icons/Translation.vue";
 import {
+	calculateMaxPhrases,
+	calculateMaxPhrasesForScene,
 	highlightKnowledgeInText,
 	applyKnowledgeHighlight,
 } from "@/utils/editor";
@@ -441,6 +478,8 @@ const newSpeaker = ref("");
 const translatingBlockId = ref(null);
 const generatingKnowledgeBlockId = ref(null);
 const processingEntireScene = ref(false); // 处理全部内容的状态变量
+const translatingScene = ref(false);
+const generatingSceneKnowledge = ref(false);
 
 // 计算过滤后的说话者列表
 const filteredSpeakers = computed(() => {
@@ -491,7 +530,7 @@ const guideItems = ref([
 	},
 ]);
 
-// 优化编辑器初始化逻辑
+// 编辑器初始化
 const initEditorJS = async () => {
 	console.log("Initializing EditorJS...");
 	if (!scriptJson.value) return;
@@ -860,7 +899,7 @@ const initDialogues = async () => {
 	} catch (err) {}
 };
 
-// 添加打开模态框的方法
+// 打开模态框
 const openKnowledgeModal = async () => {
 	try {
 		generateAllLoading.value = true;
@@ -1139,13 +1178,13 @@ const updateCurrentScene = async () => {
 	}
 };
 
-// 处理整个场景的内容
-const processEntireScene = async () => {
-	if (processingEntireScene.value || !currentScene.value) return;
+// 处理整个场景的翻译
+const translateEntireScene = async () => {
+	if (translatingScene.value || !currentScene.value) return;
 
 	try {
-		processingEntireScene.value = true;
-		showToast({ message: "开始处理整个场景内容...", type: "info" });
+		translatingScene.value = true;
+		showToast({ message: "开始翻译场景内容...", type: "info" });
 
 		// 1. 收集当前场景的所有原文块
 		const originalBlocks = currentSceneBlocks.value.filter(
@@ -1153,7 +1192,7 @@ const processEntireScene = async () => {
 		);
 
 		if (originalBlocks.length === 0) {
-			showToast({ message: "当前场景没有可处理的原文内容", type: "warning" });
+			showToast({ message: "当前场景没有可翻译的原文内容", type: "warning" });
 			return;
 		}
 
@@ -1191,7 +1230,7 @@ const processEntireScene = async () => {
 			// 保存到blocksMap
 			blocksMap.value.set(translationId, translationBlock);
 
-			// 查找原文块在当前场景中的位置
+			// 查找原文块在当前场景中的位置并插入翻译
 			const blockIndex = currentSceneBlocks.value.findIndex(
 				(b) => b.id === blockId || b.originalIndex === blockId
 			);
@@ -1213,7 +1252,34 @@ const processEntireScene = async () => {
 			}
 		}
 
-		// 4. 将整个场景的文本合并，一次性生成知识点
+		showToast({ message: "场景翻译完成", type: "success" });
+	} catch (error) {
+		console.error("翻译场景内容失败:", error);
+		showToast({ message: "翻译失败，请重试", type: "error" });
+	} finally {
+		translatingScene.value = false;
+	}
+};
+
+// 为整个场景生成知识点
+const generateKnowledgeForScene = async () => {
+	if (generatingSceneKnowledge.value || !currentScene.value) return;
+
+	try {
+		generatingSceneKnowledge.value = true;
+		showToast({ message: "开始生成场景知识点...", type: "info" });
+
+		// 1. 收集当前场景的所有原文块
+		const originalBlocks = currentSceneBlocks.value.filter(
+			(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
+		);
+
+		if (originalBlocks.length === 0) {
+			showToast({ message: "当前场景没有可处理的原文内容", type: "warning" });
+			return;
+		}
+
+		// 2. 将整个场景的文本合并，一次性生成知识点
 		const entireSceneText = originalBlocks.map((block) => block.text).join(" ");
 
 		// 根据文本长度计算应该生成的知识点数量
@@ -1221,8 +1287,6 @@ const processEntireScene = async () => {
 			.split(/\s+/)
 			.filter((word) => word.length > 0).length;
 		const maxPhrases = calculateMaxPhrasesForScene(wordCount);
-
-		console.log(`场景总字数: ${wordCount}, 计划生成知识点数: ${maxPhrases}`);
 
 		// 提取关键词
 		const keyPhrases = await extractKeyPhrasesForScene(
@@ -1234,43 +1298,35 @@ const processEntireScene = async () => {
 		// 批量生成知识点
 		for (const phrase of keyPhrases) {
 			try {
-				const res = await apiClient.post("/knowledge/generate", {
+				const res = await apiClient.post("/translation/generate", {
 					word: phrase,
 				});
 
 				if (res.data.code === 200) {
-					// 将新生成的知识点添加到列表
 					generatedKnowledgeItems.push(res.data.data);
-
-					// 同时添加到当前知识点Map中
-					if (!currentKnowledge.value.has(res.data.data.word)) {
-						const sceneId = `Scene${currentSceneIndex.value + 1}`;
-						currentKnowledge.value.set(res.data.data.word, {
-							...res.data.data,
-							scenes: new Set([sceneId]),
-						});
-					}
-
-					console.log(`成功生成知识点: ${res.data.data.word}`);
+					const sceneId = `Scene${currentSceneIndex.value + 1}`;
+					currentKnowledge.value.set(res.data.data.word, {
+						...res.data.data,
+						scenes: new Set([sceneId]),
+					});
 				}
 			} catch (err) {
 				console.error(`Failed to generate knowledge for "${phrase}":`, err);
 			}
 		}
 
-		// 5. 将生成的知识点分配到相应的原文块
+		// 3. 为每个原文块应用知识点
 		for (const block of originalBlocks) {
 			const blockId = block.id || block.originalIndex;
 			if (!blockId) continue;
 
-			// 找出与当前块文本匹配的知识点
 			const matchingKnowledge = generatedKnowledgeItems.filter((item) =>
 				block.text.toLowerCase().includes(item.word.toLowerCase())
 			);
 
 			if (matchingKnowledge.length > 0) {
 				// 高亮原文中的知识点
-				let highlightedText = highlightKnowledgeInText(
+				const highlightedText = highlightKnowledgeInText(
 					block.text,
 					matchingKnowledge
 				);
@@ -1279,8 +1335,6 @@ const processEntireScene = async () => {
 				const originalBlock = blocksMap.value.get(blockId) || block;
 				if (originalBlock) {
 					originalBlock.displayText = highlightedText;
-
-					// 更新当前显示的块
 					const blockIndex = currentSceneBlocks.value.findIndex(
 						(b) => b.id === blockId || b.originalIndex === blockId
 					);
@@ -1289,7 +1343,7 @@ const processEntireScene = async () => {
 					}
 				}
 
-				// 创建知识点块
+				// 创建并插入知识点块
 				const knowledgeId = `knowledge-${blockId}`;
 				const knowledgeBlock = {
 					id: knowledgeId,
@@ -1300,73 +1354,45 @@ const processEntireScene = async () => {
 					originalIndex: blockId,
 				};
 
-				// 保存到blocksMap
 				blocksMap.value.set(knowledgeId, knowledgeBlock);
 
-				// 查找原文块和翻译块在当前场景中的位置
+				// 插入知识点块
 				const blockIndex = currentSceneBlocks.value.findIndex(
 					(b) => b.id === blockId || b.originalIndex === blockId
 				);
-
 				if (blockIndex >= 0) {
-					// 检查下一个块是否是翻译块
 					const nextIndex = blockIndex + 1;
 					const hasTranslation =
 						nextIndex < currentSceneBlocks.value.length &&
 						currentSceneBlocks.value[nextIndex].isTranslated;
 
-					// 检查是否已有知识点块
-					const knowledgeIndex = hasTranslation ? nextIndex + 1 : nextIndex;
-					const hasKnowledge =
-						knowledgeIndex < currentSceneBlocks.value.length &&
-						currentSceneBlocks.value[knowledgeIndex].isKnowledge;
-
-					if (hasKnowledge) {
-						// 更新现有知识点块
-						currentSceneBlocks.value[knowledgeIndex].text = knowledgeBlock.text;
-					} else {
-						// 插入新的知识点块
-						const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
-						currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
-					}
+					const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
+					currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
 				}
 			}
 		}
 
-		// 6. 强制更新视图
-		currentSceneBlocks.value = [...currentSceneBlocks.value];
-
-		showToast({ message: "场景内容处理完成", type: "success" });
+		showToast({ message: "知识点生成完成", type: "success" });
 	} catch (error) {
-		console.error("处理场景内容失败:", error);
-		showToast({ message: "处理场景内容失败，请重试", type: "error" });
+		console.error("生成知识点失败:", error);
+		showToast({ message: "生成知识点失败，请重试", type: "error" });
 	} finally {
-		processingEntireScene.value = false;
-	}
-};
-
-// 根据场景文本长度计算应该生成的知识点数量
-const calculateMaxPhrasesForScene = (wordCount) => {
-	// 根据单词数量动态计算关键词数量
-	if (wordCount <= 100) {
-		return 3;
-	} else if (wordCount <= 200) {
-		return 5;
-	} else if (wordCount <= 500) {
-		return 8;
-	} else if (wordCount <= 1000) {
-		return 12;
-	} else {
-		return 15; // 最多生成15个知识点
+		generatingSceneKnowledge.value = false;
 	}
 };
 
 // 为整个场景提取关键词或短语
 const extractKeyPhrasesForScene = async (text, maxPhrases) => {
 	try {
+		// 收集当前场景已存在的知识点
+		const existingPhrases = Array.from(currentKnowledge.value.keys());
+
 		const response = await apiClient.post("/translation/extract-key-phrases", {
 			text,
-			options: { maxPhrases },
+			options: {
+				maxPhrases,
+				existingPhrases, // 传入已存在的知识点列表
+			},
 		});
 
 		if (response.data.code === 200) {
@@ -1702,7 +1728,7 @@ const translateBlock = async (index) => {
 	}
 };
 
-// 修改生成知识点函数
+// 生成知识点
 const generateKnowledgeFromBlock = async (block) => {
 	if (!block) return;
 
@@ -1724,7 +1750,7 @@ const generateKnowledgeFromBlock = async (block) => {
 
 		for (const phrase of keyPhrases) {
 			try {
-				const res = await apiClient.post("/knowledge/generate", {
+				const res = await apiClient.post("/translation/generate", {
 					word: phrase,
 				});
 
@@ -1828,10 +1854,10 @@ const formatKnowledgeDisplay = (knowledgeItems) => {
 					<span class="text-gray-600">${item.word_zh}</span>
 				</div>
 				<div class="flex items-center gap-1">
-					<button class="knowledge-btn knowledge-detail-btn" data-word="${item.word}" title="详情">
-						<i class="bi bi-info-circle"></i>
+					<button class="knowledge-btn knowledge-detail-btn hover:text-primary transition-colors" data-word="${item.word}" title="详情">
+						<i class="bi bi-journal-text"></i>
 					</button>
-					<button class="knowledge-btn knowledge-delete-btn" data-word="${item.word}" title="删除">
+					<button class="knowledge-btn knowledge-delete-btn hover:text-secondary transition-colors" data-word="${item.word}" title="删除">
 						<i class="bi bi-trash"></i>
 					</button>
 				</div>
@@ -1860,24 +1886,6 @@ const extractKeyPhrases = async (text) => {
 	} catch (error) {
 		console.error("Failed to extract key phrases:", error);
 		// return fallbackExtractPhrases(text);
-	}
-};
-
-// 根据文本长度计算合适的知识点数量
-const calculateMaxPhrases = (text) => {
-	// 计算单词数量（按空格分割）
-	const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
-	// 根据单词数量动态计算关键词数量
-	if (wordCount <= 25) {
-		return 1;
-	} else if (wordCount <= 50) {
-		return 2;
-	} else if (wordCount <= 100) {
-		return 3;
-	} else if (wordCount <= 200) {
-		return 4;
-	} else {
-		return 5;
 	}
 };
 
@@ -2576,6 +2584,55 @@ function parseDialogueLine(line, tag) {
 	transform: translateY(-1px);
 }
 
+.shadow-retro {
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.ghost-btn {
+	padding: 0.375rem 0.75rem;
+	font-size: 0.75rem;
+	line-height: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	background-color: transparent;
+	border: none;
+	border-radius: 0.5rem;
+	color: rgb(31, 41, 55);
+	position: relative;
+	overflow: hidden;
+	transition: all 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ghost-btn:hover {
+	/* background-color: rgb(249, 250, 251); */
+	/* border-color: rgba(31, 41, 55, 0.4); */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ghost-btn:active {
+	transform: translateY(1px);
+	/* background-color: rgb(243, 244, 246); */
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.ghost-btn::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	/* background: rgba(0, 0, 0, 0.05); */
+	transform: translateX(-100%);
+	transition: transform 0.2s ease;
+}
+
+.ghost-btn:hover::before {
+	transform: translateX(0);
+}
+
 .text-toolbox {
 	display: flex;
 	gap: 0.5rem;
@@ -2586,17 +2643,17 @@ function parseDialogueLine(line, tag) {
 	margin-bottom: -0.2rem;
 }
 
-.text-toolbox button {
-	padding: 0.25rem 0.5rem;
-	/* font-size: 0.875rem; */
-	border-radius: 0.25rem;
-	background-color: white;
-	border: 1px solid #d1d5db;
-	cursor: pointer;
-}
-
-.text-toolbox button:hover {
-	background-color: #f0f0f1;
+/* 可以添加纸张纹理背景 */
+.text-toolbox::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0.1;
+	pointer-events: none;
+	border-radius: 0.5rem;
 }
 
 .translated-text {
@@ -2614,15 +2671,13 @@ function parseDialogueLine(line, tag) {
 
 .knowledge-block {
 	cursor: default;
-	background-color: rgba(var(--secondary-color-rgb), 0.02);
+	background-color: rgba(var(--milk-color-rgb), 0.5);
 	border-radius: 0.5rem;
 	margin: 0.75rem 0;
-	border-left: 4px solid var(--secondary-color); /* 添加左侧边框 */
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+	border-left: 3px solid rgba(var(--secondary-color-rgb), 1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .speaker-badge {
-	background-color: var(--secondary-color);
-	color: white;
 	font-weight: 500;
 	min-width: 60px;
 	text-align: center;
@@ -2655,11 +2710,11 @@ function parseDialogueLine(line, tag) {
 }
 
 .knowledge-detail-btn {
-	color: #3b82f6; /* 蓝色 */
+	color: #222; /* 蓝色 */
 }
 
 .knowledge-delete-btn {
-	color: #ef4444; /* 红色 */
+	color: #222; /* 红色 */
 }
 
 .knowledge-btn i {

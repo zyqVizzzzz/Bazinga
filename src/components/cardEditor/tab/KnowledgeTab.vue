@@ -362,7 +362,7 @@ const generateKnowledge = async () => {
 
 		for (const phrase of keyPhrases) {
 			try {
-				const res = await apiClient.post("/knowledge/generate", {
+				const res = await apiClient.post("/translation/generate", {
 					word: phrase,
 				});
 

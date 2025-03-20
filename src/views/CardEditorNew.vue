@@ -526,7 +526,7 @@ const initDialogues = async () => {
 const generateKnowledge = async (word) => {
 	generateLoading.value = true;
 	try {
-		const res = await apiClient.post("/knowledge/generate", {
+		const res = await apiClient.post("/translation/generate", {
 			word,
 		});
 		if (res.data.code === 200) {

@@ -24,6 +24,9 @@ mark.pink {
 	margin: 0 -2px;
 	padding: 0 2px;
 }
+.bg-milk {
+	background-color: var(--milk-color);
+}
 .bg-paper {
 	background: linear-gradient(155deg, #f0f0f0, #f1f1f1);
 	/* border: 2px solid #2c2c2c;  */

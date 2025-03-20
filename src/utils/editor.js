@@ -8,6 +8,48 @@ export function escapeRegExp(string) {
 }
 
 /**
+ * 根据场景文本长度计算应该生成的知识点数量
+ * @param {number} wordCount - 文本中的单词数量
+ * @returns {number} - 应该生成的知识点数量
+ */
+export const calculateMaxPhrasesForScene = (wordCount) => {
+	// 根据单词数量动态计算关键词数量
+	if (wordCount <= 100) {
+		return 3;
+	} else if (wordCount <= 200) {
+		return 5;
+	} else if (wordCount <= 500) {
+		return 8;
+	} else if (wordCount <= 1000) {
+		return 12;
+	} else {
+		return 15; // 最多生成15个知识点
+	}
+};
+
+/**
+ * 根据文本长度计算合适的知识点数量
+ * @param {string} text - 需要分析的文本
+ * @returns {number} - 应该生成的知识点数量
+ */
+export const calculateMaxPhrases = (text) => {
+	// 计算单词数量（按空格分割）
+	const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
+	// 根据单词数量动态计算关键词数量
+	if (wordCount <= 25) {
+		return 1;
+	} else if (wordCount <= 50) {
+		return 2;
+	} else if (wordCount <= 100) {
+		return 3;
+	} else if (wordCount <= 200) {
+		return 4;
+	} else {
+		return 5;
+	}
+};
+
+/**
  * 高亮文本中的知识点
  * @param {string} text 原始文本
  * @param {Array} knowledgeItems 知识点数组

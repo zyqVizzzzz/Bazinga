@@ -459,7 +459,7 @@ const generateKnowledge = async () => {
 
 	generateLoading.value = true;
 	try {
-		const res = await apiClient.post("/knowledge/generate", {
+		const res = await apiClient.post("/translation/generate", {
 			word: knowledgeForm.value.word,
 		});
 
