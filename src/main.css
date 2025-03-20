@@ -110,7 +110,7 @@ mark.pink {
 
 /* 添加编辑器段落样式 */
 .editorjs-container .ce-block {
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 }
 
 .editorjs-container .ce-block:last-child {

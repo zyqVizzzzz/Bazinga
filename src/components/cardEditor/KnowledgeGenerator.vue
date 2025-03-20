@@ -8,25 +8,6 @@
 				<div class="flex justify-between items-center mb-6">
 					<div class="flex items-center gap-4">
 						<h3 class="text-lg font-bold">Bazinga！</h3>
-						<div
-							class="points-badge flex items-center gap-1 px-2 py-0.5 rounded-full"
-						>
-							<span class="text-sm font-bold text-secondary">积分：</span>
-							<span class="text-secondary font-bold text-sm tracking-wider">{{
-								points
-							}}</span>
-							<transition name="points-change">
-								<span
-									v-if="showPointsChange"
-									:class="[
-										'points-change-indicator',
-										pointsChange > 0 ? 'text-success' : 'text-error',
-									]"
-								>
-									{{ pointsChange > 0 ? "+" : "" }}{{ pointsChange }}
-								</span>
-							</transition>
-						</div>
 					</div>
 					<form method="dialog" @submit="handleDialogClose">
 						<button class="btn btn-sm btn-circle btn-ghost">
@@ -39,23 +20,6 @@
 					<div
 						class="option-group flex flex-col justify-start space-y-4 mr-6 pt-2"
 					>
-						<div class="tooltip tooltip-right" data-tip="生成知识点">
-							<button
-								class="retro-btn"
-								:class="{ 'btn-active': currentTab === 'knowledge' }"
-								@click="switchTab('knowledge')"
-							>
-								<div class="btn-shadow">
-									<div class="btn-edge">
-										<div class="btn-face">
-											<!-- <i class="bi bi-book text-lg"></i> -->
-											<KnowledgeIcon />
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-
 						<div class="tooltip tooltip-right" data-tip="生成播客">
 							<button
 								class="retro-btn"
@@ -91,18 +55,6 @@
 					<div class="flex-1">
 						<!-- 中间内容区域 -->
 						<div class="flex gap-4 h-[65vh] mb-4">
-							<div v-show="currentTab === 'knowledge'" class="w-full">
-								<KnowledgeTab
-									ref="knowledgeTabRef"
-									:scene-content="selectedSceneContent"
-									:selected-scene-index="selectedSceneIndex"
-									:should-translate="shouldTranslate"
-									:current-knowledge="currentKnowledge"
-									:editor="editor"
-									:bold-knowledge-words="boldKnowledgeWords"
-									@update:knowledge="updateKnowledge"
-								/>
-							</div>
 							<div v-show="currentTab === 'podcast'" class="w-full">
 								<PodcastTab
 									ref="tabRefs.podcast"
@@ -196,7 +148,7 @@ const scenesList = ref([]);
 const selectedSceneContent = ref([]);
 
 // 标签页管理
-const currentTab = ref("knowledge");
+const currentTab = ref("podcast");
 const switchTab = (tab) => {
 	currentTab.value = tab;
 };
