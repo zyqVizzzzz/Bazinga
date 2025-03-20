@@ -512,7 +512,7 @@ const editCard = () => {
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const sign = route.query.sign;
-	router.replace({
+	router.push({
 		path: `/card-editor/${courseId}/${season}/${episode}`,
 		query: {
 			sign: sign,

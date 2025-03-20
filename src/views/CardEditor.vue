@@ -418,14 +418,39 @@
 				<button>取消</button>
 			</form>
 		</dialog>
+
+		<!-- 在模板部分添加确认对话框 -->
+		<dialog id="leave_confirm_modal" class="modal">
+			<div class="modal-box">
+				<h3 class="font-bold text-lg">确认离开</h3>
+				<p class="py-4 text-base">您有未保存的更改，确定要离开吗？</p>
+				<div class="modal-action flex justify-center gap-4">
+					<button
+						class="btn btn-accent btn-sm text-white"
+						@click="saveDialogue(true, true)"
+					>
+						保存并离开
+					</button>
+					<button
+						class="btn btn-secondary btn-sm text-white"
+						@click="confirmLeave"
+					>
+						确认离开
+					</button>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>取消</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onBeforeMount } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import EditorJS from "@editorjs/editorjs";
 import apiClient from "@/api";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import { useAppStore } from "@/store";
 import KnowledgeGenerator from "@/components/cardEditor/KnowledgeGenerator.vue";
 import { v4 as uuidv4 } from "uuid";
@@ -453,6 +478,7 @@ const knowledgeGeneratorRef = ref(null); // 知识点生成器引用
 
 const generateAllLoading = ref(false);
 const isSaved = ref(false);
+const hasUnsavedChanges = ref(false);
 
 // 添加自动保存状态变量
 const autoSaving = ref(false);
@@ -985,6 +1011,7 @@ const updateCurrentScene = async () => {
 	// 第二步：解析编辑器内容，生成新的场景结构
 	const newScenes = [];
 	let currentSceneObj = null;
+	let contentChanged = false; // 标记内容是否有变化
 
 	// 找出所有场景标题和原文块
 	for (let i = 0; i < editorBlocks.length; i++) {
@@ -1087,6 +1114,8 @@ const updateCurrentScene = async () => {
 
 			// 如果文本内容发生变化，需要重新应用知识点高亮
 			if (oldText !== existingBlock.text) {
+				contentChanged = true; // 标记内容已变化
+				hasUnsavedChanges.value = true; // 标记有未保存的更改
 				// 更新 displayText
 				if (existingBlock.displayText) {
 					// 重新应用知识点高亮
@@ -1121,6 +1150,21 @@ const updateCurrentScene = async () => {
 
 	// 第三步：更新场景数据
 	sceneStructure.value = newScenes;
+
+	// 如果场景结构发生变化，也标记为有未保存的更改
+	if (
+		JSON.stringify(sceneStructure.value) !==
+		JSON.stringify(
+			scenes.value.map((s) => ({
+				index: s.index,
+				title: s.title,
+				blockIds: s.blockIds,
+			}))
+		)
+	) {
+		contentChanged = true;
+		hasUnsavedChanges.value = true;
+	}
 
 	// 如果是初始化阶段，不更新场景数据
 	if (scenes.value.length === 0) {
@@ -1252,6 +1296,7 @@ const translateEntireScene = async () => {
 			}
 		}
 
+		hasUnsavedChanges.value = true;
 		showToast({ message: "场景翻译完成", type: "success" });
 	} catch (error) {
 		console.error("翻译场景内容失败:", error);
@@ -1564,6 +1609,7 @@ const confirmDeleteKnowledge = () => {
 		// 更新所有包含该知识点的块
 		updateBlocksAfterKnowledgeDelete(knowledgeToDelete.value);
 
+		hasUnsavedChanges.value = true;
 		showToast({
 			message: `已删除知识点: ${knowledgeToDelete.value}`,
 			type: "success",
@@ -1719,6 +1765,7 @@ const translateBlock = async (index) => {
 			currentSceneBlocks.value.splice(index + 1, 0, translationBlock);
 		}
 
+		hasUnsavedChanges.value = true;
 		showToast({ message: "翻译成功", type: "success" });
 	} catch (error) {
 		console.error("Translation failed:", error);
@@ -1834,6 +1881,8 @@ const generateKnowledgeFromBlock = async (block) => {
 					currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
 				}
 			}
+
+			hasUnsavedChanges.value = true;
 		}
 
 		showToast({ message: "知识点生成成功", type: "success" });
@@ -1941,17 +1990,12 @@ const handleSceneChange = () => {
 };
 
 // 保存
-const saveDialogue = async (isCustom = false) => {
+const saveDialogue = async (isCustom = false, shouldLeave = false) => {
 	try {
 		// 从右侧面板提取原文
 		const outputDialogues = processSceneData();
 
 		if (outputDialogues.length > 0) {
-			// 在保存前记录当前的编辑状态
-			const currentEditorContent = editor.value
-				? await editor.value.save()
-				: null;
-
 			const updatedJson = {
 				...scriptJson.value,
 				scenes: [
@@ -1967,11 +2011,18 @@ const saveDialogue = async (isCustom = false) => {
 			scriptJson.value = updatedJson;
 
 			// 保存知识点
-			await saveAllKnowledge(isCustom); // 不显示额外的成功提示
+			await saveAllKnowledge(isCustom);
 
 			if (isCustom) {
 				isSaved.value = true; // 标记为已保存
+				hasUnsavedChanges.value = false; // 标记为已保存
 				showToast({ message: "脚本保存成功", type: "success" });
+			}
+
+			// 如果需要离开，关闭确认对话框并执行离开操作
+			if (shouldLeave) {
+				document.getElementById("leave_confirm_modal").close();
+				backToPreview();
 			}
 
 			// 记录最后保存时间
@@ -2394,6 +2445,39 @@ function parseDialogueLine(line, tag) {
 
 	return { speaker, text };
 }
+
+const targetRoute = ref(null);
+
+// 修改路由守卫
+onBeforeRouteLeave((to, from, next) => {
+	if (hasUnsavedChanges.value) {
+		targetRoute.value = to;
+		document.getElementById("leave_confirm_modal").showModal();
+		next(false);
+	} else {
+		next();
+	}
+});
+
+// 确认离开
+const confirmLeave = () => {
+	if (targetRoute.value) {
+		document.getElementById("leave_confirm_modal").close();
+		hasUnsavedChanges.value = false; // 重置未保存状态
+		router.push(targetRoute.value); // 手动跳转到目标路由
+		targetRoute.value = null;
+	}
+};
+
+// 修改页面刷新处理
+onBeforeMount(() => {
+	window.addEventListener("beforeunload", (e) => {
+		if (hasUnsavedChanges.value) {
+			e.preventDefault();
+			return "";
+		}
+	});
+});
 </script>
 <style scoped>
 .editor-box {
