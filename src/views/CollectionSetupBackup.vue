@@ -12,7 +12,9 @@
 		</div>
 
 		<!-- 表单网格 -->
-		<div class="flex justify-center mb-10 px-10">
+		<div
+			class="grid mb-10 justify-items-center grid-cols-2 gap-8 px-10 auto-rows-fr"
+		>
 			<!-- 基本信息卡片 -->
 			<div class="retro-card h-full w-full max-w-lg">
 				<div class="card-shadow h-full">
@@ -182,6 +184,179 @@
 					</div>
 				</div>
 			</div>
+
+			<!-- 季节设置卡片 -->
+			<div class="retro-card h-full w-full max-w-lg">
+				<div class="card-shadow h-full">
+					<div class="card-edge h-full">
+						<div class="card-face h-full">
+							<form class="space-y-6">
+								<!-- Seasons选择器 -->
+								<!-- <div class="form-control">
+									<label class="retro-label">
+										<span class="label-text">{{
+											t("collectionSetup.form.seasons")
+										}}</span>
+									</label>
+									<div class="flex space-x-4 items-center">
+										<div class="retro-select-wrapper flex-1">
+											<select
+												v-model="selectedSeasonIndex"
+												class="retro-select"
+											>
+												<option
+													v-for="(season, index) in noteForm.seasons"
+													:key="index"
+													:value="index"
+												>
+													{{ season.seasonNumber }}
+												</option>
+											</select>
+										</div>
+										<button
+											type="button"
+											class="retro-btn-small"
+											@click="addSeason"
+										>
+											<div class="btn-shadow">
+												<div class="btn-edge">
+													<div class="btn-face">
+														<i class="bi bi-plus text-xl"></i>
+													</div>
+												</div>
+											</div>
+										</button>
+										<button
+											type="button"
+											class="retro-btn-small"
+											@click="removeSeason"
+											:disabled="!noteForm.seasons.length"
+										>
+											<div class="btn-shadow">
+												<div class="btn-edge">
+													<div class="btn-face">
+														<i class="bi bi-trash text-lg"></i>
+													</div>
+												</div>
+											</div>
+										</button>
+									</div>
+								</div>
+
+								<div class="form-control" v-if="selectedSeason">
+									<div class="retro-input-wrapper">
+										<input
+											v-model="selectedSeason.seasonName"
+											type="text"
+											class="retro-input"
+											placeholder="为组设置标题，未设置则自动以 S01, S02... 为标题"
+											@blur="
+												v$.seasons[selectedSeasonIndex]?.seasonName?.$touch()
+											"
+										/>
+									</div>
+									<div class="flex justify-between">
+										<div
+											v-if="v$.seasons[selectedSeasonIndex]?.seasonName?.$error"
+											class="text-red-500 text-sm mt-1"
+										>
+											{{
+												v$.seasons[selectedSeasonIndex]?.seasonName?.$errors[0]
+													?.$message
+											}}
+										</div>
+									</div>
+								</div> -->
+
+								<!-- Episodes网格 -->
+								<div class="form-control" v-if="selectedSeason">
+									<div class="flex justify-between items-center mb-2">
+										<label class="retro-label">
+											<span class="label-text">{{
+												t("collectionSetup.form.episodes")
+											}}</span>
+										</label>
+									</div>
+
+									<div class="space-y-4">
+										<div
+											v-for="(episode, episodeIndex) in selectedSeason.episodes"
+											:key="episodeIndex"
+											class="flex items-center space-x-4 bg-base-200 p-4 rounded-lg"
+										>
+											<!-- EP编号显示 -->
+											<div class="text-center font-medium">
+												EP{{ episode.ep }}
+											</div>
+
+											<!-- EP名称输入 -->
+											<div class="flex-1">
+												<div class="retro-input-wrapper">
+													<input
+														v-model="episode.epName"
+														type="text"
+														class="retro-input"
+														placeholder="请输入集数名称"
+														@blur="
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$touch()
+														"
+													/>
+												</div>
+												<div class="flex justify-between">
+													<div
+														v-if="
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$error
+														"
+														class="text-red-500 text-sm mt-1"
+													>
+														{{
+															v$.seasons[selectedSeasonIndex]?.episodes?.[
+																episodeIndex
+															]?.epName?.$errors[0]?.$message
+														}}
+													</div>
+												</div>
+											</div>
+
+											<button
+												type="button"
+												class="retro-btn-small"
+												@click="addEpisodeAfter(episodeIndex)"
+											>
+												<div class="btn-shadow">
+													<div class="btn-edge">
+														<div class="btn-face">
+															<i class="bi bi-plus text-xl"></i>
+														</div>
+													</div>
+												</div>
+											</button>
+											<!-- 删除按钮 -->
+											<button
+												type="button"
+												class="retro-btn-small"
+												@click="removeEpisode(episodeIndex)"
+											>
+												<div class="btn-shadow">
+													<div class="btn-edge">
+														<div class="btn-face">
+															<i class="bi bi-trash text-lg"></i>
+														</div>
+													</div>
+												</div>
+											</button>
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!-- 操作按钮 -->
@@ -321,12 +496,18 @@ const noteForm = ref({
 		{
 			seasonNumber: "S01",
 			seasonName: "",
-			episodes: [],
+			episodes: [{ ep: "1", epName: "", scriptUrl: "" }],
 		},
 	],
 });
 
 const v$ = useVuelidate(rules, noteForm);
+
+// 计算字符长度
+const getCharCount = (text = "") => ({
+	current: text.length,
+	max: text.length >= 200 ? 200 : text.length >= 30 ? 30 : 30,
+});
 
 // 即时预览数据
 const bannerPreview = ref("");
@@ -341,6 +522,11 @@ onMounted(async () => {
 	} else {
 		selectedSeasonIndex.value = 0; // 默认选择第一季
 	}
+});
+
+// 获取选择的季
+const selectedSeason = computed(() => {
+	return noteForm.value.seasons[selectedSeasonIndex.value] || null;
 });
 
 const getCollection = async () => {
@@ -373,6 +559,75 @@ const getCollection = async () => {
 	} catch (error) {
 		showToast({ message: "合辑获取失败，请重试！", type: "error" });
 		console.error("Failed to create note:", error);
+	}
+};
+
+// 新增季
+const addSeason = async () => {
+	const newSeasonNumber = noteForm.value.seasons.length + 1;
+	const formattedSeasonNumber = `S${String(newSeasonNumber).padStart(2, "0")}`;
+	noteForm.value.seasons.push({
+		seasonNumber: formattedSeasonNumber,
+		seasonName: "",
+		episodes: [
+			{
+				ep: "1",
+				epName: "",
+				scriptUrl: "",
+			},
+		],
+	});
+	selectedSeasonIndex.value = noteForm.value.seasons.length - 1;
+	await v$.value.$touch(); // 触发验证
+};
+
+// 删除当前选择的季
+const removeSeason = () => {
+	if (selectedSeasonIndex.value !== null && noteForm.value.seasons.length > 1) {
+		noteForm.value.seasons.splice(selectedSeasonIndex.value, 1);
+		// 如果删除的是最后一个季节，选中新的最后一个
+		if (selectedSeasonIndex.value >= noteForm.value.seasons.length) {
+			selectedSeasonIndex.value = noteForm.value.seasons.length - 1;
+		}
+	}
+};
+
+// 在指定位置后添加新集数
+const addEpisodeAfter = (index) => {
+	if (selectedSeason.value) {
+		// 在指定位置后插入新集数
+		selectedSeason.value.episodes.splice(index + 1, 0, {
+			ep: "", // 临时设置为空，会在重新编号时更新
+			epName: "",
+			scriptUrl: "",
+		});
+
+		// 重新编号所有集数
+		selectedSeason.value.episodes = selectedSeason.value.episodes.map(
+			(episode, idx) => ({
+				...episode,
+				ep: String(idx + 1),
+			})
+		);
+	}
+};
+
+// 删除指定集
+const removeEpisode = (index) => {
+	if (selectedSeason.value.episodes.length === 1) {
+		showToast({ message: "每组请至少保留一篇内容", type: "warning" });
+	}
+	if (selectedSeason.value && index !== 0) {
+		// 确保不能删除第一集
+		selectedSeason.value.episodes.splice(index, 1);
+
+		// 重新编号剩余集数
+		selectedSeason.value.episodes = selectedSeason.value.episodes.map(
+			(episode, idx) => ({
+				...episode,
+				ep: String(idx + 1),
+			})
+		);
 	}
 };
 
@@ -531,6 +786,15 @@ const uploadBanner = async (file) => {
 	} catch (error) {
 		showToast({ message: "头像上传失败，请重试！", type: "error" });
 		console.error("Failed to upload banner:", error);
+	}
+};
+
+const handleTitleInput = () => {
+	const result = validateCollectionTitle(noteForm.value.showName);
+	formErrors.showName = result.error;
+
+	if (result.value) {
+		noteForm.value.showName = result.value;
 	}
 };
 </script>

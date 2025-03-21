@@ -57,7 +57,7 @@
 					</li>
 					<li v-if="isLogin">
 						<a class="retro-link" @click="logout">
-							<i class="bi bi-box-arrow-right"></i>
+							<ExitIcon size="5" />
 						</a>
 					</li>
 					<li v-if="!isLogin">
@@ -75,6 +75,7 @@ import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
+import ExitIcon from "@/components/icons/Exit.vue";
 
 const { t, locale } = useI18n();
 
@@ -117,16 +118,6 @@ const logout = () => {
 		path: "/login",
 		query: { redirect: fullPath },
 	});
-};
-
-const changeLanguage = () => {
-	if (t("app.lang") === "zh-CN") {
-		locale.value = "en-US";
-		localStorage.setItem("language", "en-US");
-	} else {
-		locale.value = "zh-CN";
-		localStorage.setItem("language", "zh-CN");
-	}
 };
 
 // 在挂载时检查登录状态

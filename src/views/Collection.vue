@@ -102,103 +102,69 @@
 		</div>
 
 		<!-- 内容区域 -->
-		<div class="w-2/3">
-			<!-- 季数 -->
-			<div
-				class="manga-subtitle-box"
-				:class="{ 'mb-10': !currentProgress.course }"
-			>
-				<h2 class="text-xl font-bold text-shadow-retro h-[30px]">
-					<div class="tooltip" data-tip="切换视图">
-						<span
-							@click="toggleViewMode"
-							class="cursor-pointer w-[30px]"
-							style="display: inline-block"
-							><i v-if="viewMode === 'gallery'" class="bi bi-list"></i
-							><i v-else class="bi bi-grid" style="font-size: 1rem"></i>
-						</span>
-					</div>
-				</h2>
-			</div>
-
+		<div class="w-2/3 relative">
 			<!-- 进度提示 -->
-			<div v-if="currentProgress.course" class="mb-10">
+			<!-- <div v-if="currentProgress.course" class="mb-10">
 				<div class="alert-content">
 					<span @click="goToLessonProgress" class="retro-link text-sm">
 						{{ t("collection.continue") }}
 					</span>
 				</div>
-			</div>
+			</div> -->
 			<!-- 剧集 -->
-			<template v-if="viewMode === 'gallery'">
-				<div class="grid grid-cols-3 md:grid-cols-4 gap-6 mb-10">
-					<div
-						v-for="(episode, index) in currentSeasonEpisodes"
-						:key="index"
-						@click="goToLesson(currentSeason?.seasonNumber, episode)"
-						class="retro-episode-card"
-					>
-						<div class="card-shadow">
-							<div class="card-edge">
-								<div class="card-face">
-									<p class="text-sm font-bold">
-										{{ `episode ${episode.ep}` }}
-									</p>
-								</div>
-							</div>
+
+			<!-- 使用 draggable 替换原来的 div -->
+			<draggable
+				v-model="currentSeasonEpisodes"
+				:disabled="!isEditMode"
+				item-key="_id"
+				handle=".drag-handle"
+				ghost-class="ghost"
+				class="grid grid-cols-3 md:grid-cols-4 gap-6 mb-10"
+				@start="dragStart"
+				@end="dragEnd"
+				@change="handleChange"
+			>
+				<template #item="{ element: episode }">
+					<EpisodeCard
+						:episode="episode"
+						:is-edit-mode="isEditMode"
+						:layout="getRandomLayout()"
+						@click="
+							isEditMode
+								? openTitleEditor(episode)
+								: goToLesson(currentSeason?.seasonNumber, episode)
+						"
+						@delete="deleteEpisode"
+						@update="updateEpisodeTitle"
+					/>
+				</template>
+			</draggable>
+
+			<!-- 添加新集按钮 -->
+			<div v-if="isEditMode" class="retro-add-button" @click="addNewEpisode">
+				<div class="card-shadow">
+					<div class="card-edge">
+						<div class="card-face">
+							<i class="bi bi-plus-lg"></i>
+							<span class="ml-2">添加新集</span>
 						</div>
 					</div>
 				</div>
-			</template>
-			<template v-else>
-				<!-- 列表视图 -->
-				<div class="flex flex-col space-y-4 mb-10">
-					<div
-						v-for="(episode, index) in currentSeasonEpisodes"
-						:key="index"
-						@click="goToLesson(currentSeason?.seasonNumber, episode)"
-						class="retro-episode-card p-4 flex items-center justify-between hover:bg-gray-100 cursor-pointer rounded-lg border border-gray-200"
-					>
-						<div class="flex items-center justify-center space-x-4">
-							<span class="text-sm font-bold">
-								{{
-									`${episode.epName ? episode.epName : "episode " + episode.ep}`
-								}}
-							</span>
-							<span v-if="episode.title" class="text-sm text-gray-600">
-								{{ episode.title }}
-							</span>
-						</div>
-						<i class="bi bi-chevron-right text-gray-400" />
-					</div>
+			</div>
+		</div>
+
+		<div v-if="!isDefault" class="fixed-knob">
+			<div
+				class="retro-knob"
+				:class="{ 'is-active': isEditMode }"
+				@click="isEditMode = !isEditMode"
+			>
+				<div class="knob-base">
+					<div class="knob-indicator"></div>
+					<div class="knob-label">编辑</div>
 				</div>
-			</template>
-
-			<!-- 控制区 -->
-			<div class="flex justify-between w-full mt-8" v-if="seasons.length > 1">
-				<button
-					class="retro-nav-btn"
-					:disabled="currentSeasonIndex === 0"
-					@click="previousSeason"
-				>
-					<div class="btn-shadow">
-						<div class="btn-edge">
-							<div class="btn-face">上一季</div>
-						</div>
-					</div>
-				</button>
-
-				<button
-					class="retro-nav-btn"
-					:disabled="currentSeasonIndex === seasons.length - 1"
-					@click="nextSeason"
-				>
-					<div class="btn-shadow">
-						<div class="btn-edge">
-							<div class="btn-face">下一季</div>
-						</div>
-					</div>
-				</button>
+				<div class="knob-shadow"></div>
 			</div>
 		</div>
 	</div>
@@ -207,18 +173,17 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { showToast } from "@/components/common/toast.js";
+import EpisodeCard from "@/components/card/episode.vue";
 
 import apiClient from "@/api";
 import { useAppStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
-import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
+import draggable from "vuedraggable";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 const userInfo = computed(() => loginStore.userInfo);
-
-const { t } = useI18n();
 
 const appStore = useAppStore();
 const router = useRouter();
@@ -230,9 +195,105 @@ const episodes = ref({}); // 存储每季的集数
 const currentSeasonIndex = ref(0); // 当前季的索引
 const isDefault = ref(true); // 是否是系统默认数据
 const currentProgress = ref({}); // 当前进度
-const viewMode = ref("gallery");
 
 const hasPackageAccess = ref(false); // 检测是否已购入资源包
+
+// 添加编辑相关的状态
+const isEditMode = ref(false);
+const editingEp = ref(null);
+const isDragging = ref(false);
+
+// 拖拽相关的方法
+const dragStart = () => {
+	isDragging.value = true;
+};
+
+const dragEnd = () => {
+	isDragging.value = false;
+};
+
+const handleChange = async (evt) => {
+	// 处理移动事件
+	if (evt.moved) {
+		try {
+			const newOrder = [...currentSeasonEpisodes.value];
+			const movedItem = newOrder.splice(evt.moved.oldIndex, 1)[0];
+			newOrder.splice(evt.moved.newIndex, 0, movedItem);
+
+			const res = await apiClient.post(`/catalogs/episodes/reorder`, {
+				catalogId: route.params.id,
+				seasonNumber: currentSeason.value.seasonNumber,
+				episodes: newOrder.map((ep, index) => ({
+					_id: ep._id,
+					order: index + 1,
+				})),
+			});
+
+			if (res.data.code === 200) {
+				await loadCategoryData();
+			} else {
+				showToast({ message: "保存排序失败", type: "error" });
+			}
+		} catch (error) {
+			showToast({ message: "保存排序失败", type: "error" });
+		}
+	}
+};
+
+// 删除集数
+const deleteEpisode = async (episode) => {
+	if (confirm("确定要删除这一集吗？")) {
+		try {
+			const res = await apiClient.delete(`/catalogs/episodes/${episode._id}`);
+			if (res.data.code === 200) {
+				await loadCategoryData();
+				showToast({ message: "删除成功", type: "success" });
+			}
+		} catch (error) {
+			showToast({ message: "删除失败", type: "error" });
+		}
+	}
+};
+
+// 添加更新标题的方法
+const updateEpisodeTitle = async (updatedEpisode) => {
+	try {
+		const res = await apiClient.post(`/catalogs/episodes/update-title`, {
+			catalogId: route.params.id,
+			seasonNumber: currentSeason.value.seasonNumber,
+			episodeId: updatedEpisode._id,
+			epName: updatedEpisode.epName,
+		});
+
+		if (res.data.code === 200) {
+			await loadCategoryData();
+			showToast({ message: "标题更新成功", type: "success" });
+		}
+	} catch (error) {
+		showToast({ message: "更新失败", type: "error" });
+	}
+};
+
+// 添加新集
+const addNewEpisode = async () => {
+	const currentEpisodes = episodes.value[currentSeason.value.seasonNumber];
+	const newEp = {
+		ep: currentEpisodes.length + 1,
+		epName: ``,
+		seasonNumber: currentSeason.value.seasonNumber,
+	};
+
+	try {
+		const res = await apiClient.post("/catalogs/episodes/create", newEp);
+		if (res.data.code === 200) {
+			// 添加成功后重新加载数据
+			await loadCategoryData();
+			showToast({ message: "添加成功", type: "success" });
+		}
+	} catch (error) {
+		showToast({ message: "添加失败", type: "error" });
+	}
+};
 
 // 获取当前季的集数
 const currentSeason = computed(() => seasons.value[currentSeasonIndex.value]);
@@ -354,24 +415,11 @@ const goToCollectionEdit = () => {
 	});
 };
 
-const previousSeason = () => {
-	if (currentSeasonIndex.value > 0) {
-		currentSeasonIndex.value--;
-	}
-};
-
-const nextSeason = () => {
-	if (currentSeasonIndex.value < seasons.value.length - 1) {
-		currentSeasonIndex.value++;
-	}
-};
-
-const toggleViewMode = () => {
-	if (viewMode.value === "gallery") {
-		viewMode.value = "list";
-	} else {
-		viewMode.value = "gallery";
-	}
+// 布局随机函数
+const getRandomLayout = () => {
+	// 为了保持视觉一致性，可以根据 ep 编号固定布局
+	const layouts = ["1", "2", "3", "4"];
+	return layouts[3];
 };
 </script>
 
@@ -530,7 +578,7 @@ const toggleViewMode = () => {
 
 .retro-episode-card {
 	position: relative;
-	height: 3rem;
+	aspect-ratio: 4/3;
 	cursor: pointer;
 	transition: transform 0.3s;
 }
@@ -751,5 +799,141 @@ button:disabled {
 	to {
 		transform: translateY(-50%) rotate(360deg);
 	}
+}
+
+.retro-add-button {
+	position: relative;
+	height: 3rem;
+	cursor: pointer;
+	transition: transform 0.3s;
+}
+
+.retro-add-button .card-shadow,
+.retro-add-button .card-edge,
+.retro-add-button .card-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: 12px;
+}
+
+.retro-add-button .card-shadow {
+	transform: translateY(4px);
+}
+
+.retro-add-button .card-edge {
+	background-color: rgba(102, 102, 102, 0.5);
+	transform: translateY(-4px);
+}
+
+.retro-add-button .card-face {
+	background-color: white;
+	border: 3px solid #333;
+	transform: translateY(-4px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.875rem;
+	color: #666;
+}
+
+.retro-add-button:hover {
+	transform: translateY(-2px);
+}
+
+.retro-add-button:hover .card-face {
+	color: var(--primary-color);
+}
+
+.fixed-knob {
+	position: fixed;
+	right: 40px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 100;
+}
+
+.retro-knob {
+	position: relative;
+	width: 60px;
+	height: 60px;
+	cursor: pointer;
+	transition: transform 0.3s ease;
+}
+
+.knob-base {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: #fff;
+	border: 3px solid #333;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform-origin: center center;
+	transition: transform 0.3s ease;
+	box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8),
+		inset -2px -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.knob-shadow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	/* background: rgba(0, 0, 0, 0.2); */
+	transform: translateY(4px);
+}
+
+.knob-indicator {
+	position: absolute;
+	width: 4px;
+	height: 20px;
+	background: #333;
+	top: 6px;
+	left: 50%;
+	transform: translateX(-50%);
+	border-radius: 2px;
+}
+
+.knob-label {
+	position: absolute;
+	bottom: 10px;
+	font-size: 14px;
+	font-weight: bold;
+	letter-spacing: 1px;
+	color: #333;
+}
+
+.retro-knob:hover .knob-base {
+	transform: translateY(-2px);
+}
+
+.retro-knob.is-active .knob-base {
+	transform: rotate(90deg);
+	background: var(--primary-color);
+	color: white;
+}
+
+.retro-knob.is-active .knob-indicator,
+.retro-knob.is-active .knob-label {
+	color: white;
+}
+
+.retro-knob.is-active .knob-base {
+	transform: rotate(90deg);
+	background: #fff;
+	border-color: var(--primary-color);
+}
+
+.retro-knob.is-active .knob-indicator {
+	background: var(--primary-color);
+}
+
+.retro-knob.is-active .knob-label {
+	color: var(--primary-color);
 }
 </style>

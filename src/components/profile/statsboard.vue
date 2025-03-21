@@ -1,12 +1,12 @@
 <template>
 	<div class="stats-column space-y-4 mt-2">
 		<div class="stat-card border-4 border-black bg-white p-2">
-			<div class="stat-title text-sm text-gray-600 mb-1">已创建合集</div>
+			<div class="stat-title text-sm text-gray-600 mb-1">已创建合辑</div>
 			<div class="flex items-center justify-between">
 				<div class="stat-value text-2xl font-bold">
 					{{ statistics.catalogsCount || 0 }}
 				</div>
-				<!-- 环形进度图：每10个合集为一圈 -->
+				<!-- 环形进度图：每10个合辑为一圈 -->
 				<div class="circular-progress-container">
 					<div class="circular-progress">
 						<svg width="50" height="50" viewBox="0 0 50 50">
@@ -218,11 +218,11 @@ const getCenterColor = (count) => {
 	// 根据完成的圈数改变中心点颜色
 	const circleCount = Math.floor(count / 10);
 	const colors = [
-		"var(--primary-color)", // 0-9个合集
-		"var(--secondary-color)", // 10-19个合集
-		"var(--accent-color)", // 20-29个合集
-		"#6366f1", // 30-39个合集
-		"#10b981", // 40+个合集
+		"var(--primary-color)", // 0-9个合辑
+		"var(--secondary-color)", // 10-19个合辑
+		"var(--accent-color)", // 20-29个合辑
+		"#6366f1", // 30-39个合辑
+		"#10b981", // 40+个合辑
 	];
 	return colors[Math.min(circleCount, colors.length - 1)];
 };

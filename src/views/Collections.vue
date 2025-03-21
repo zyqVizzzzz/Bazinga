@@ -12,7 +12,7 @@
 			<div class="title-decoration right"></div> -->
 		</div>
 
-		<!-- 合集 -->
+		<!-- 合辑 -->
 		<div class="grid-container justify-items-center">
 			<div
 				v-for="scene in scenes"
@@ -45,7 +45,7 @@
 				</div>
 			</div>
 
-			<!-- 新增合集 -->
+			<!-- 新增合辑 -->
 			<div class="retro-card add-card" @click="addNewScene">
 				<div class="card-shadow">
 					<div class="card-edge">
@@ -105,7 +105,7 @@ const addNewScene = () => {
 	if (isLogin.value) {
 		router.push("/setup-collection");
 	} else {
-		showToast({ message: "登录后可创建合集", type: "info" });
+		showToast({ message: "登录后可创建合辑", type: "info" });
 	}
 };
 </script>

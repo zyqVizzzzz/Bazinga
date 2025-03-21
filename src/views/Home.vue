@@ -4,12 +4,10 @@
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
 				<div class="text-shadow-retro">
-					<span
-						><mark class="retro-highlight">{{ t("home.title") }}</mark></span
-					>
+					<span><mark class="retro-highlight">Bazinga</mark></span>
 				</div>
 				<div class="pronunciation">
-					<span>n. {{ t("home.subTitle") }} - /kəˈlɛkʃənz/</span>
+					<span>int. 妙哉 - /bəˈzɪŋɡə/</span>
 				</div>
 			</h1>
 		</div>

@@ -122,7 +122,7 @@
 								<!-- 学习数据卡片 -->
 								<div class="study-note collection-note">
 									<div class="paper-clip"></div>
-									<h3>已创建合集</h3>
+									<h3>已创建合辑</h3>
 									<p class="stat-number">
 										{{ statistics.catalogsCount }}<span class="unit">个</span>
 									</p>
