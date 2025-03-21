@@ -12,12 +12,10 @@ import Signup from "@/views/Signup.vue";
 import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
-import CardEditor2 from "@/views/CardEditorBackup.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
 import GenKnowledge from "@/prompt/knowledge_prompt.vue";
-import GeneratePodcast from "@/prompt/generate_podcast.vue";
 import GenerateInvitation from "@/prompt/generate_invitation.vue";
 
 const routes = [
@@ -103,11 +101,6 @@ const routes = [
 		path: "/gen_knowledge",
 		name: "gen_knowledge",
 		component: GenKnowledge,
-	},
-	{
-		path: "/generate-podcast",
-		name: "generate-podcast",
-		component: GeneratePodcast,
 	},
 	{
 		path: "/generate-invitation",
