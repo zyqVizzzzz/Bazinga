@@ -109,7 +109,6 @@
 				:class="{ 'mb-10': !currentProgress.course }"
 			>
 				<h2 class="text-xl font-bold text-shadow-retro h-[30px]">
-					{{ currentSeason?.seasonName || currentSeason?.seasonNumber }}
 					<div class="tooltip" data-tip="切换视图">
 						<span
 							@click="toggleViewMode"

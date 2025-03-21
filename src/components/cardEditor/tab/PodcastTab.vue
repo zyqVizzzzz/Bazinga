@@ -406,6 +406,10 @@ const generatePodcast = async () => {
 			podcastChineseScript.value = podcastData.map(
 				(item) => item.chinese_lines || ""
 			);
+
+			// 生成成功后直接保存
+			await savePodcast();
+
 			generating.value = false;
 			pointsStore.updatePoints(-10);
 			showToast({ message: "播客生成完成", type: "success" });

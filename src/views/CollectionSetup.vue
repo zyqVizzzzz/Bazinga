@@ -192,7 +192,7 @@
 						<div class="card-face h-full">
 							<form class="space-y-6">
 								<!-- Seasons选择器 -->
-								<div class="form-control">
+								<!-- <div class="form-control">
 									<label class="retro-label">
 										<span class="label-text">{{
 											t("collectionSetup.form.seasons")
@@ -266,7 +266,7 @@
 											}}
 										</div>
 									</div>
-								</div>
+								</div> -->
 
 								<!-- Episodes网格 -->
 								<div class="form-control" v-if="selectedSeason">

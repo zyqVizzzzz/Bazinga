@@ -325,12 +325,19 @@
 				class="modal-box border-2 border-gray-800"
 				style="background-color: var(--milk-color)"
 			>
-				<h3 class="font-bold text-lg text-secondary">
-					{{ selectedKnowledge?.word }}
-				</h3>
+				<div class="flex items-center gap-2">
+					<h3 class="font-bold text-lg text-secondary">
+						{{ selectedKnowledge?.word }}
+					</h3>
+					<PodcastIcon
+						v-if="selectedKnowledge?.hasPodcast"
+						size="5"
+						class="text-secondary"
+					/>
+				</div>
 				<div class="pt-2 pb-4 space-y-4">
 					<!-- 中文释义 -->
-					<div class="text-sm text-gray-500">
+					<div class="text-sm text-gray-500 text-left">
 						{{ selectedKnowledge?.word_zh }}
 					</div>
 
@@ -463,6 +470,7 @@ import {
 	highlightKnowledgeInText,
 	applyKnowledgeHighlight,
 } from "@/utils/editor";
+import { generateTextHash } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -562,6 +570,7 @@ const initEditorJS = async () => {
 	if (!scriptJson.value) return;
 
 	try {
+		processingEntireScene.value = true; // 设置初始化状态
 		// 创建默认场景
 		if (!scenes.value || scenes.value.length === 0) {
 			const defaultScene = {
@@ -599,6 +608,7 @@ const initEditorJS = async () => {
 			onReady: async () => {
 				console.log("编辑器准备就绪");
 				await updateCurrentScene();
+				processingEntireScene.value = false; // 初始化完成后重置状态
 			},
 			onChange: async (api, event) => {
 				// 立即更新当前场景
@@ -612,6 +622,7 @@ const initEditorJS = async () => {
 	} catch (error) {
 		console.error("初始化编辑器失败:", error);
 		showToast({ message: "初始化编辑器失败，请刷新页面重试", type: "error" });
+		processingEntireScene.value = false; // 确保在出错时也重置状态
 	}
 };
 
@@ -1114,6 +1125,7 @@ const updateCurrentScene = async () => {
 
 			// 如果文本内容发生变化，需要重新应用知识点高亮
 			if (oldText !== existingBlock.text) {
+				console.log("bianhua");
 				contentChanged = true; // 标记内容已变化
 				hasUnsavedChanges.value = true; // 标记有未保存的更改
 				// 更新 displayText
@@ -1153,14 +1165,15 @@ const updateCurrentScene = async () => {
 
 	// 如果场景结构发生变化，也标记为有未保存的更改
 	if (
+		!processingEntireScene.value && // 添加初始化检查
 		JSON.stringify(sceneStructure.value) !==
-		JSON.stringify(
-			scenes.value.map((s) => ({
-				index: s.index,
-				title: s.title,
-				blockIds: s.blockIds,
-			}))
-		)
+			JSON.stringify(
+				scenes.value.map((s) => ({
+					index: s.index,
+					title: s.title,
+					blockIds: s.blockIds,
+				}))
+			)
 	) {
 		contentChanged = true;
 		hasUnsavedChanges.value = true;
@@ -1577,11 +1590,28 @@ const applySpeakerToBlock = (speaker) => {
 };
 
 // 显示知识点详情
-const showKnowledgeDetail = (word) => {
+const showKnowledgeDetail = async (word) => {
 	const knowledge = currentKnowledge.value.get(word);
 	if (knowledge) {
 		// 设置选中的知识点
 		selectedKnowledge.value = knowledge;
+
+		// 检查是否有对应的播客
+		try {
+			const textHash = generateTextHash(word.trim());
+			const res = await apiClient.get(`/podcasts/search?knowledge=${textHash}`);
+			if (res.data.code === 200 && res.data.data.podcasts.length) {
+				selectedKnowledge.value.hasPodcast = true;
+				selectedKnowledge.value.podcastData = res.data.data.podcasts[0];
+			} else {
+				selectedKnowledge.value.hasPodcast = false;
+				selectedKnowledge.value.podcastData = null;
+			}
+		} catch (error) {
+			console.error("检查播客失败:", error);
+			selectedKnowledge.value.hasPodcast = false;
+			selectedKnowledge.value.podcastData = null;
+		}
 
 		// 打开模态框
 		document.getElementById("knowledge_detail_modal").showModal();
@@ -2450,6 +2480,7 @@ const targetRoute = ref(null);
 
 // 修改路由守卫
 onBeforeRouteLeave((to, from, next) => {
+	console.log(hasUnsavedChanges.value);
 	if (hasUnsavedChanges.value) {
 		targetRoute.value = to;
 		document.getElementById("leave_confirm_modal").showModal();

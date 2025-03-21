@@ -123,13 +123,10 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-import KnowledgeTab from "./tab/KnowledgeTab.vue";
 import SitcomTab from "./tab/SitcomTab.vue";
 import PodcastTab from "./tab/PodcastTab.vue";
 import PodcastIcon from "@/components/icons/Podcast.vue";
-import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import SitcomIcon from "@/components/icons/Sitcom.vue";
 import { usePointsStore } from "@/store/index";
 
@@ -155,7 +152,6 @@ const switchTab = (tab) => {
 
 // 积分相关的状态管理
 const pointsStore = usePointsStore();
-const points = computed(() => pointsStore.points);
 const pointsChange = ref(0);
 const showPointsChange = ref(false);
 
@@ -263,11 +259,6 @@ const selectScene = (index) => {
 		// 重新加载当前场景的已保存播客
 		tabRefs.podcast.value.loadSavedPodcasts(index);
 	}
-};
-
-// 更新知识点
-const updateKnowledge = (updatedKnowledge) => {
-	emit("update:currentKnowledge", updatedKnowledge);
 };
 
 // 添加对话框关闭处理
