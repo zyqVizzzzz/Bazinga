@@ -2037,7 +2037,11 @@ const saveDialogue = async (isCustom = false, shouldLeave = false) => {
 			};
 
 			// 上传脚本
-			await uploadScripts(updatedJson, isCustom);
+			const uploadSuccess = await uploadScripts(updatedJson, isCustom);
+			if (!uploadSuccess) {
+				return; // 如果上传失败，直接返回
+			}
+
 			scriptJson.value = updatedJson;
 
 			// 保存知识点
@@ -2361,26 +2365,28 @@ const autoSaveAllKnowledge = async () => {
 
 const uploadScripts = async (jsonData, isCustom = false) => {
 	const catalogId = route.params.id;
-	const season = route.params.season;
-	const episode = route.params.episode;
+	const episodeId = route.query.sign;
 	try {
 		const response = await apiClient.post(
-			`/scripts/${catalogId}/${season}/${episode}`,
+			`/scripts/${catalogId}/episode/${episodeId}`,
 			{
 				scriptData: jsonData,
 			}
 		);
+
 		if (response.data.code === 200) {
 			if (isCustom) {
 				isSaved.value = true;
 				clearLocalProgressByCatalogId(catalogId);
-				showToast({ message: "保存成功", type: "success" });
 			}
+			return true; // 保存成功返回 true
 		} else {
 			showToast({ message: "保存失败", type: "error" });
+			return false; // 保存失败返回 false
 		}
 	} catch (error) {
-		showToast({ message: error, type: "error" });
+		showToast({ message: "保存失败", type: "error" });
+		return false; // 发生错误返回 false
 	}
 };
 
