@@ -1,18 +1,5 @@
 <template>
 	<div class="flex flex-col w-full p-6 relative">
-		<!-- 工具箱区域 -->
-		<!-- <div class="w-full toolbox mb-6 h-[58px]" style="z-index: 100">
-			<div class="retro-card">
-				<div class="card-face">
-					<Toolbox
-						@on-search-word="onSearchWord"
-						@on-important-mode="onImportantMode"
-						:flashState="flashState"
-					/>
-				</div>
-			</div>
-		</div> -->
-
 		<!-- 笔记本主体 -->
 		<div class="w-full flex gap-6">
 			<!-- 笔记列表区域 -->
@@ -24,12 +11,14 @@
 								<div class="notebook-spine"></div>
 								<div class="notebook-content book-face">
 									<BookCard
-										:minusPoint="minusPoint"
+										:refreshTrigger="refreshTrigger"
 										:isImportantMode="isImportantMode"
 										:searchIndex="searchIndex"
 										:searchWord="searchNote"
 										:selectedNote="selectedNote"
 										@on-select-note="selectNote"
+										@on-search-word="onSearchWord"
+										@on-generate-card="onGenerateCard"
 									/>
 								</div>
 							</div>
@@ -44,40 +33,38 @@
 					<div class="card-shadow">
 						<div class="card-edge">
 							<div class="card-face edit-face">
-								<EditCard
-									v-if="selectedNote"
-									:selectedNote="selectedNote"
-									@on-add-point="onAddPoint"
-									@on-minus-point="onMinusPoint"
-								/>
+								<template v-if="selectedNote">
+									<EditCard
+										:selectedNote="selectedNote"
+										@on-delete-note="onDeleteNote"
+									/>
+								</template>
+								<div v-else class="empty-edit-state">
+									<div class="empty-content">
+										<p class="empty-text">请选择或搜索一个知识点</p>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-
-		<BlinkBoxCard />
 	</div>
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
-import BlinkBoxCard from "@/components/notes/blinkbox.vue";
-import Toolbox from "@/components/notes/toolbox.vue";
+import { ref } from "vue";
 import BookCard from "@/components/notes/book.vue";
 import EditCard from "@/components/notes/edit.vue";
 import apiClient from "@/api";
-import { useNotebookStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
 
-const notebookStore = useNotebookStore();
 const selectedNote = ref(null);
 const searchNote = ref({});
-const flashState = ref(0);
 const searchIndex = ref(0);
 const isImportantMode = ref(false);
-const minusPoint = ref(0);
+const refreshTrigger = ref(0);
 
 const onSearchWord = async (word) => {
 	try {
@@ -93,23 +80,38 @@ const onSearchWord = async (word) => {
 	}
 };
 
-const onImportantMode = async () => {
-	isImportantMode.value = !isImportantMode.value;
+const onGenerateCard = async (cardData) => {
+	try {
+		// 保存生成的卡片到数据库
+		const res = await apiClient.post(
+			"/lesson-notes/user/save-generated",
+			cardData
+		);
+
+		if (res.data.code === 200) {
+			// 获取新生成的笔记
+			const newNote = res.data.data.notes[0];
+			// 更新选中的笔记
+			selectedNote.value = newNote;
+			// 设置搜索词，触发 book.vue 中的搜索
+			searchNote.value = { word: newNote.word };
+			showToast({ message: "生成成功", type: "success" });
+		} else {
+			showToast({ message: res.data.message || "保存失败", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: "保存失败", type: "error" });
+		console.error("Error saving generated card:", error);
+	}
+};
+
+// 删除处理方法
+const onDeleteNote = () => {
+	selectedNote.value = null; // 清空选中的笔记
+	refreshTrigger.value++; // 触发刷新
 };
 
 const selectNote = (note) => (selectedNote.value = note); // 选中笔记并展示在 edit 区域
-const onAddPoint = () => flashState.value++;
-const showBlinkbox = computed(() => notebookStore.showBlinkbox);
-
-const onMinusPoint = () => {
-	minusPoint.value++;
-};
-
-// 控制单词盲盒的显示和隐藏
-watch(showBlinkbox, (newValue) => {
-	const binkModalDom = document.getElementById("note_blink_modal");
-	newValue ? binkModalDom.showModal() : binkModalDom.close();
-});
 </script>
 
 <style scoped>
@@ -148,48 +150,11 @@ watch(showBlinkbox, (newValue) => {
 	border-radius: 12px;
 	transform: translateY(-4px);
 }
-.card-face::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 2px,
-		rgba(0, 0, 0, 0.02) 2px,
-		rgba(0, 0, 0, 0.02) 4px
-	);
-	border-radius: 9px;
-	pointer-events: none;
-}
-
-/* 光泽效果 */
-.card-face::after {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 40%;
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
-	border-radius: 9px 9px 0 0;
-	pointer-events: none;
-}
 
 .notebook-face {
 	display: flex;
 	background-color: #fff;
 	overflow: hidden;
-	background-image: linear-gradient(
-			90deg,
-			rgba(0, 0, 0, 0.03) 1px,
-			transparent 1px
-		),
-		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-	background-size: 15px 15px;
 }
 
 .notebook-spine {
@@ -214,13 +179,6 @@ watch(showBlinkbox, (newValue) => {
 /* 网格纸效果 */
 .edit-face {
 	background-color: white;
-	background-image: linear-gradient(
-			90deg,
-			rgba(0, 0, 0, 0.03) 1px,
-			transparent 1px
-		),
-		linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-	background-size: 15px 15px;
 	padding: 1rem;
 	overflow-y: auto;
 }
@@ -241,5 +199,28 @@ watch(showBlinkbox, (newValue) => {
 .edit-face::-webkit-scrollbar-thumb {
 	background: rgba(0, 0, 0, 0.2);
 	border-radius: 4px;
+}
+
+.empty-edit-state {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+}
+
+.empty-content {
+	text-align: center;
+	padding: 2rem;
+}
+
+.empty-icon {
+	margin-bottom: 1rem;
+	opacity: 0.5;
+}
+
+.empty-text {
+	font-size: 1rem;
+	color: #888;
 }
 </style>

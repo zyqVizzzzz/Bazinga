@@ -27,11 +27,18 @@
 					></i>
 				</button> -->
 				<button
-					class="delete-btn px-3 py-1 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+					class="retro-btn ghost-btn"
 					@click="handleDelete"
 					title="删除笔记"
 				>
-					删除
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">
+								<i class="bi bi-trash mr-2 relative top-[1px]"></i>
+								删除
+							</div>
+						</div>
+					</div>
 				</button>
 			</div>
 		</div>
@@ -157,15 +164,19 @@ import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
 import { generateTextHash } from "@/utils";
 import PodcastIcon from "@/components/icons/Podcast.vue";
+import { useNotebookStore } from "@/store/index";
 
 const props = defineProps({
 	selectedNote: Object,
 });
 const { selectedNote } = toRefs(props);
 
-const emit = defineEmits(["on-close-blink", "on-add-point"]);
+const emit = defineEmits(["on-delete-note"]);
 
-const showEditModal = ref(false);
+const notebookStore = useNotebookStore();
+const storeNote = computed(() => notebookStore.currentActiveNote);
+const noteChangeCounter = computed(() => notebookStore.noteChangeCounter);
+
 const showPodcastModal = ref(false);
 const showChinese = ref(false);
 const podcastData = ref(null);
@@ -197,33 +208,41 @@ const checkPodcast = async () => {
 	}
 };
 
-const toggleImportantBadge = async () => {
-	if (!selectedNote.value.isImportant) {
-		const importantObj = { ...selectedNote.value, isImportant: true };
-		const res = await apiClient.put(
-			`/lesson-notes/${selectedNote.value.resourceId}`,
-			importantObj
-		);
-		if (res.data.code === 200) {
-			selectedNote.value.isImportant = true;
-			emit("on-add-point");
+// 添加删除方法
+const handleDelete = async () => {
+	try {
+		const response = await apiClient.post("/lesson-notes/remove", {
+			resourceId: selectedNote.value.resourceId,
+			word: selectedNote.value.word,
+		});
+
+		if (response.data.code === 200) {
+			emit("on-delete-note", {
+				word: selectedNote.value.word,
+				action: "remove",
+			});
+			showToast({ message: "删除成功", type: "success" });
 		} else {
-			showToast({ message: res.data.message, type: "error" });
+			showToast({
+				message: response.data.message || "删除失败",
+				type: "error",
+			});
 		}
-	} else {
-		const importantObj = { ...selectedNote.value, isImportant: false };
-		const res = await apiClient.put(
-			`/lesson-notes/${selectedNote.value.resourceId}`,
-			importantObj
-		);
-		if (res.data.code === 200) {
-			selectedNote.value.isImportant = false;
-			emit("on-minus-point");
-		} else {
-			showToast({ message: res.data.message, type: "error" });
-		}
+	} catch (error) {
+		showToast({ message: "删除失败", type: "error" });
+		console.error("Error deleting note:", error);
 	}
 };
+
+watch(
+	() => notebookStore.noteChangeCounter,
+	(newVal, oldVal) => {
+		if (newVal !== oldVal && storeNote.value?.word) {
+			checkPodcast();
+		}
+	},
+	{ immediate: true } // 添加 immediate 选项确保首次加载时也执行
+);
 
 watch(
 	() => selectedNote.value?.word,
@@ -368,7 +387,6 @@ watch(
 .btn-edge {
 	position: absolute;
 	inset: 0;
-	background-color: #888;
 	border-radius: 8px;
 	transform: translateY(-2px);
 	transition: transform 0.1s;
@@ -391,18 +409,12 @@ watch(
 }
 
 .retro-btn:hover .btn-face {
-	background-color: white;
+	/* background-color: white; */
 }
 
 .retro-btn:active .btn-edge,
 .retro-btn:active .btn-face {
 	transform: translateY(0);
-}
-
-/* 主按钮变体 */
-.retro-btn.primary .btn-face {
-	/* color: var(--secondary-color);
-	border-color: var(--secondary-color); */
 }
 
 /* 装饰效果 */
@@ -473,14 +485,38 @@ watch(
 	background: rgba(0, 0, 0, 0.3);
 }
 
-.delete-btn {
-	border: none;
-	cursor: pointer;
-	transition: all 0.2s;
+.ghost-btn {
+	width: 80px;
+	height: 36px;
+	transition: transform 0.3s;
+}
+
+.ghost-btn .btn-face {
+	/* background-color: white; */
+	color: #666;
+	font-size: 0.875rem;
 	font-weight: 500;
 }
 
-.delete-btn:hover {
-	color: #ef4444;
+.ghost-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* 卡片悬停效果 */
+.ghost-btn:hover {
+	transform: translateY(-2px);
+}
+
+.ghost-btn:active .btn-edge,
+.ghost-btn:active .btn-face {
+	transform: translateY(-1px);
+}
+
+/* 添加通用悬停效果 */
+.ghost-btn:hover .btn-face {
+	color: var(--secondary-color);
+	transition: all 0.3s ease;
+	transform: translateY(-3px);
 }
 </style>

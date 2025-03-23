@@ -102,7 +102,7 @@
 		</div>
 
 		<!-- 内容区域 -->
-		<div class="w-2/3 relative">
+		<div class="w-2/3 relative mt-4">
 			<!-- 进度提示 -->
 			<!-- <div v-if="currentProgress.course" class="mb-10">
 				<div class="alert-content">

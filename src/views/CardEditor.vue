@@ -1439,7 +1439,124 @@ const generateKnowledgeForScene = async () => {
 	}
 };
 
-// 为整个场景提取关键词或短语
+// 生成知识点
+const generateKnowledgeFromBlock = async (block) => {
+	if (!block) return;
+
+	try {
+		generateAllLoading.value = true;
+
+		// 确保块有ID
+		const blockId = block.id || block.originalIndex;
+		if (!blockId) {
+			console.error("无法生成知识点：块没有ID");
+			return;
+		}
+
+		generatingKnowledgeBlockId.value = blockId; // 设置正在生成知识点的块ID
+
+		// 提取关键词
+		const keyPhrases = await extractKeyPhrases(block.text);
+		const generatedKnowledgeItems = [];
+
+		for (const phrase of keyPhrases) {
+			try {
+				const res = await apiClient.post("/translation/generate", {
+					word: phrase,
+				});
+
+				if (res.data.code === 200) {
+					// 将新生成的知识点添加到列表
+					generatedKnowledgeItems.push(res.data.data);
+
+					// 同时添加到当前知识点Map中
+					if (!currentKnowledge.value.has(res.data.data.word)) {
+						const sceneId = `Scene${currentSceneIndex.value + 1}`;
+						currentKnowledge.value.set(res.data.data.word, {
+							...res.data.data,
+							scenes: new Set([sceneId]),
+						});
+					}
+				}
+			} catch (err) {
+				console.error(`Failed to generate knowledge for "${phrase}":`, err);
+			}
+		}
+
+		// 高亮原文中的知识点
+		let highlightedText = highlightKnowledgeInText(
+			block.text,
+			generatedKnowledgeItems
+		);
+
+		// 更新原文块的displayText
+		const originalBlock = blocksMap.value.get(blockId) || block;
+		if (originalBlock) {
+			originalBlock.displayText = highlightedText;
+
+			// 更新当前显示的块
+			const blockIndex = currentSceneBlocks.value.findIndex(
+				(b) => b.id === blockId || b.originalIndex === blockId
+			);
+			if (blockIndex >= 0) {
+				currentSceneBlocks.value[blockIndex].displayText = highlightedText;
+			}
+		}
+
+		// 创建知识点块
+		if (generatedKnowledgeItems.length > 0) {
+			const knowledgeId = `knowledge-${blockId}`;
+			const knowledgeBlock = {
+				id: knowledgeId,
+				text: formatKnowledgeDisplay(generatedKnowledgeItems),
+				isTitle: false,
+				isKnowledge: true,
+				originalId: blockId,
+				originalIndex: blockId, // 兼容旧代码
+			};
+
+			// 保存到blocksMap
+			blocksMap.value.set(knowledgeId, knowledgeBlock);
+
+			// 检查是否已有知识点块
+			const existingIndex = currentSceneBlocks.value.findIndex(
+				(b) => b.id === knowledgeId || b.originalIndex === knowledgeId
+			);
+
+			if (existingIndex >= 0) {
+				// 更新现有知识点块
+				currentSceneBlocks.value[existingIndex].text = knowledgeBlock.text;
+			} else {
+				// 找到原文块和可能的翻译块
+				const originalIndex = currentSceneBlocks.value.findIndex(
+					(b) => b.id === blockId || b.originalIndex === blockId
+				);
+				if (originalIndex >= 0) {
+					// 检查下一个块是否是翻译块
+					const nextIndex = originalIndex + 1;
+					const hasTranslation =
+						nextIndex < currentSceneBlocks.value.length &&
+						currentSceneBlocks.value[nextIndex].isTranslated;
+
+					// 确定插入位置
+					const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
+
+					// 插入知识点块
+					currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
+				}
+			}
+
+			hasUnsavedChanges.value = true;
+		}
+
+		showToast({ message: "知识点生成成功", type: "success" });
+	} catch (error) {
+	} finally {
+		generatingKnowledgeBlockId.value = null; // 清除正在生成知识点的块ID
+	}
+};
+
+// 提取关键词或短语（整个场景）
 const extractKeyPhrasesForScene = async (text, maxPhrases) => {
 	try {
 		// 收集当前场景已存在的知识点
@@ -1460,6 +1577,28 @@ const extractKeyPhrasesForScene = async (text, maxPhrases) => {
 	} catch (error) {
 		console.error("Failed to extract key phrases for scene:", error);
 		return [];
+	}
+};
+
+// 提取关键词或短语（单个 block）
+const extractKeyPhrases = async (text) => {
+	// 使用辅助方法计算合适的关键词数量
+	const maxPhrases = calculateMaxPhrases(text);
+	const options = { maxPhrases };
+	try {
+		const response = await apiClient.post("/translation/extract-key-phrases", {
+			text,
+			options,
+		});
+
+		if (response.data.code === 200) {
+			return response.data.data.phrases;
+		}
+
+		// return fallbackExtractPhrases(text);
+	} catch (error) {
+		console.error("Failed to extract key phrases:", error);
+		// return fallbackExtractPhrases(text);
 	}
 };
 
@@ -1805,123 +1944,6 @@ const translateBlock = async (index) => {
 	}
 };
 
-// 生成知识点
-const generateKnowledgeFromBlock = async (block) => {
-	if (!block) return;
-
-	try {
-		generateAllLoading.value = true;
-
-		// 确保块有ID
-		const blockId = block.id || block.originalIndex;
-		if (!blockId) {
-			console.error("无法生成知识点：块没有ID");
-			return;
-		}
-
-		generatingKnowledgeBlockId.value = blockId; // 设置正在生成知识点的块ID
-
-		// 提取关键词
-		const keyPhrases = await extractKeyPhrases(block.text);
-		const generatedKnowledgeItems = [];
-
-		for (const phrase of keyPhrases) {
-			try {
-				const res = await apiClient.post("/translation/generate", {
-					word: phrase,
-				});
-
-				if (res.data.code === 200) {
-					// 将新生成的知识点添加到列表
-					generatedKnowledgeItems.push(res.data.data);
-
-					// 同时添加到当前知识点Map中
-					if (!currentKnowledge.value.has(res.data.data.word)) {
-						const sceneId = `Scene${currentSceneIndex.value + 1}`;
-						currentKnowledge.value.set(res.data.data.word, {
-							...res.data.data,
-							scenes: new Set([sceneId]),
-						});
-					}
-				}
-			} catch (err) {
-				console.error(`Failed to generate knowledge for "${phrase}":`, err);
-			}
-		}
-
-		// 高亮原文中的知识点
-		let highlightedText = highlightKnowledgeInText(
-			block.text,
-			generatedKnowledgeItems
-		);
-
-		// 更新原文块的displayText
-		const originalBlock = blocksMap.value.get(blockId) || block;
-		if (originalBlock) {
-			originalBlock.displayText = highlightedText;
-
-			// 更新当前显示的块
-			const blockIndex = currentSceneBlocks.value.findIndex(
-				(b) => b.id === blockId || b.originalIndex === blockId
-			);
-			if (blockIndex >= 0) {
-				currentSceneBlocks.value[blockIndex].displayText = highlightedText;
-			}
-		}
-
-		// 创建知识点块
-		if (generatedKnowledgeItems.length > 0) {
-			const knowledgeId = `knowledge-${blockId}`;
-			const knowledgeBlock = {
-				id: knowledgeId,
-				text: formatKnowledgeDisplay(generatedKnowledgeItems),
-				isTitle: false,
-				isKnowledge: true,
-				originalId: blockId,
-				originalIndex: blockId, // 兼容旧代码
-			};
-
-			// 保存到blocksMap
-			blocksMap.value.set(knowledgeId, knowledgeBlock);
-
-			// 检查是否已有知识点块
-			const existingIndex = currentSceneBlocks.value.findIndex(
-				(b) => b.id === knowledgeId || b.originalIndex === knowledgeId
-			);
-
-			if (existingIndex >= 0) {
-				// 更新现有知识点块
-				currentSceneBlocks.value[existingIndex].text = knowledgeBlock.text;
-			} else {
-				// 找到原文块和可能的翻译块
-				const originalIndex = currentSceneBlocks.value.findIndex(
-					(b) => b.id === blockId || b.originalIndex === blockId
-				);
-				if (originalIndex >= 0) {
-					// 检查下一个块是否是翻译块
-					const nextIndex = originalIndex + 1;
-					const hasTranslation =
-						nextIndex < currentSceneBlocks.value.length &&
-						currentSceneBlocks.value[nextIndex].isTranslated;
-
-					// 确定插入位置
-					const insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
-
-					// 插入知识点块
-					currentSceneBlocks.value.splice(insertIndex, 0, knowledgeBlock);
-				}
-			}
-
-			hasUnsavedChanges.value = true;
-		}
-
-		showToast({ message: "知识点生成成功", type: "success" });
-	} catch (error) {
-	} finally {
-		generatingKnowledgeBlockId.value = null; // 清除正在生成知识点的块ID
-	}
-};
-
 // 格式化知识点显示
 const formatKnowledgeDisplay = (knowledgeItems) => {
 	return knowledgeItems
@@ -1944,28 +1966,6 @@ const formatKnowledgeDisplay = (knowledgeItems) => {
 		</div>`;
 		})
 		.join("");
-};
-
-// 提取关键词或短语
-const extractKeyPhrases = async (text) => {
-	// 使用辅助方法计算合适的关键词数量
-	const maxPhrases = calculateMaxPhrases(text);
-	const options = { maxPhrases };
-	try {
-		const response = await apiClient.post("/translation/extract-key-phrases", {
-			text,
-			options,
-		});
-
-		if (response.data.code === 200) {
-			return response.data.data.phrases;
-		}
-
-		// return fallbackExtractPhrases(text);
-	} catch (error) {
-		console.error("Failed to extract key phrases:", error);
-		// return fallbackExtractPhrases(text);
-	}
 };
 
 // 重构场景切换处理方法

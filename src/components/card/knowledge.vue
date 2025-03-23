@@ -86,7 +86,7 @@
 				<i class="bi bi-lock text-2xl text-gray-500 mb-3"></i>
 				<h3 class="text-gray-800 font-medium text-base mb-4">解锁知识点内容</h3>
 				<p class="text-gray-600 text-sm mb-4 max-w-xs">
-					本场景的知识点内容需要解锁《辛普森一家》资源包才能查看。解锁后可获得：
+					本场景的知识点内容需要解锁资源包才能查看。解锁后可获得：
 				</p>
 				<ul class="text-gray-600 text-sm text-left list-disc list-inside mb-4">
 					<li>全部剧集的场景知识点解析</li>

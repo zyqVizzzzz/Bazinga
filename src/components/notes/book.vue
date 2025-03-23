@@ -12,31 +12,8 @@
 							@input="onInputWord"
 							@keydown.enter="searchWord"
 							:placeholder="t('notes.searchInput')"
+							:disabled="isGenerating"
 						/>
-					</div>
-
-					<!-- 联想框 -->
-					<div
-						v-if="suggestions.length"
-						class="suggestions-box"
-						style="margin-left: 0; margin-top: 8px"
-					>
-						<div class="suggestions-shadow">
-							<div class="suggestions-edge">
-								<div class="suggestions-face">
-									<ul>
-										<li
-											v-for="(suggestion, index) in suggestions"
-											:key="index"
-											@click="selectSuggestion(suggestion)"
-											class="suggestion-item text-left"
-										>
-											{{ suggestion }}
-										</li>
-									</ul>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -75,37 +52,42 @@
 
 		<!-- 笔记列表 -->
 		<div class="notebook-content">
-			<ul class="word-list">
-				<li
-					v-for="(note, index) in vocabularyNotes"
-					:key="index"
-					class="word-item"
-				>
+			<div class="dictionary-list">
+				<template v-if="vocabularyNotes.length > 0">
 					<div
-						class="word-content"
+						v-for="(note, index) in vocabularyNotes"
+						:key="index"
 						@click="selectNote(note)"
-						:class="{ active: activeNote.word === note.word }"
-						:style="getRandomStyle(index)"
+						:class="['word-entry', { active: activeNote.word === note.word }]"
 					>
-						<div class="word-section">
-							<span
-								:class="[
-									activeNote.word === note.word
-										? 'selected-word'
-										: 'normal-word',
-								]"
-							>
-								{{ note.word }}
-							</span>
-						</div>
-
-						<div class="translation-section">
-							<span v-if="note.pos" class="pos-tag">{{ note.pos }}</span>
-							<span class="chinese-meaning">{{ note.word_zh }}</span>
+						<div class="flex justify-between items-center">
+							<div class="word-left">
+								<span class="word-text">{{ note.word }}</span>
+								<span v-if="note.pos" class="pos">{{ note.pos }}</span>
+							</div>
+							<div class="word-right">
+								<span class="definition">{{ note.word_zh }}</span>
+							</div>
 						</div>
 					</div>
-				</li>
-			</ul>
+				</template>
+				<div v-else class="empty-state">
+					<p class="text-gray-500 mb-4">未找到相关单词</p>
+					<button
+						@click="generateNewCard"
+						class="retro-btn generate-btn"
+						:disabled="!searchQuery.trim()"
+					>
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face text-sm">
+									{{ isGenerating ? "生成中..." : "生成新卡片" }}
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -113,31 +95,31 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
-import { useNotebookStore } from "@/store/index";
+import { useNotebookStore, useLoginStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
 import { useI18n } from "vue-i18n";
-import { useLoginStore } from "@/store/index";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 
 const { t } = useI18n();
 
-const emit = defineEmits(["on-select-note"]);
+const emit = defineEmits([
+	"on-select-note",
+	"on-search-word",
+	"on-generate-card",
+]);
 const props = defineProps({
 	searchWord: Object,
 	searchIndex: Number,
-	isImportantMode: Boolean,
-	minusPoint: Number,
+	refreshTrigger: Number,
 });
 
-const notebookRef = ref(null);
 const vocabularyNotes = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = ref(14);
+const itemsPerPage = ref(10);
 const totalCounts = ref(0);
 const activeNote = ref({});
-const isImportantMode = ref(false);
 
 const notebookStore = useNotebookStore();
 const { setCurrentActiveNote } = notebookStore;
@@ -145,6 +127,8 @@ const { setCurrentActiveNote } = notebookStore;
 // 搜索相关的状态
 const searchQuery = ref("");
 const suggestions = ref([]);
+
+const isGenerating = ref(false);
 
 onMounted(() => {
 	isLogin.value && getNotebook();
@@ -163,7 +147,7 @@ const selectNote = (note) => {
 	emit("on-select-note", note);
 };
 
-const getNotebook = async (page = 1, limit = 14) => {
+const getNotebook = async (page = 1, limit = 10) => {
 	if (!isLogin.value) {
 		vocabularyNotes.value = [];
 		totalCounts.value = 0;
@@ -176,33 +160,38 @@ const getNotebook = async (page = 1, limit = 14) => {
 		const { notes, total } = res.data.data;
 		vocabularyNotes.value = notes;
 		totalCounts.value = total;
-		selectNote(vocabularyNotes.value[0]);
+
+		if (notes.length > 0) {
+			// 使用 store 设置当前笔记
+			setCurrentActiveNote(notes[0]);
+			activeNote.value = notes[0];
+			emit("on-select-note", notes[0]);
+		}
 	} else {
 		showToast({ message: "未查到单词", type: "error" });
 	}
 };
 
-// 预定义一些柔和的颜色
-const pastelColors = [
-	// 主色系列
-	{ bg: "rgba(63, 81, 181, 0.05)", border: "rgb(63, 81, 181)" }, // primary
-	{ bg: "rgba(232, 68, 122, 0.05)", border: "rgb(232, 68, 122)" }, // secondary
-	{ bg: "rgba(92, 198, 187, 0.05)", border: "rgb(92, 198, 187)" }, // accent
+const generateNewCard = async () => {
+	if (!searchQuery.value.trim() || isGenerating.value) return;
 
-	// 延伸色系列
-	{ bg: "rgba(81, 99, 199, 0.05)", border: "rgb(81, 99, 199)" }, // primary 延伸
-	{ bg: "rgba(232, 88, 142, 0.05)", border: "rgb(232, 88, 142)" }, // secondary 延伸
-	{ bg: "rgba(112, 218, 207, 0.05)", border: "rgb(112, 218, 207)" }, // accent 延伸
-];
+	try {
+		isGenerating.value = true;
+		const res = await apiClient.post("/translation/generate", {
+			word: searchQuery.value.trim(),
+		});
 
-// 根据索引返回随机样式
-const getRandomStyle = (index) => {
-	const colorIndex = index % pastelColors.length;
-	const color = pastelColors[colorIndex];
-	return {
-		backgroundColor: color.bg,
-		"--note-border-color": color.border,
-	};
+		if (res.data.code === 200) {
+			emit("on-generate-card", res.data.data);
+		} else {
+			showToast({ message: res.data.message || "生成失败", type: "error" });
+		}
+	} catch (error) {
+		showToast({ message: "生成失败", type: "error" });
+		console.error("Error generating card:", error);
+	} finally {
+		isGenerating.value = false;
+	}
 };
 
 // 分页导航
@@ -236,75 +225,59 @@ const searchWord = () => {
 	}
 };
 
-const selectSuggestion = (suggestion) => {
-	searchQuery.value = suggestion;
-	suggestions.value = [];
-	searchWord();
-};
-
 const onInputWord = debounce(async () => {
 	if (!isLogin.value) return;
-	if (searchQuery.value.trim()) {
+	const query = searchQuery.value.trim();
+
+	if (query) {
 		try {
-			const response = await apiClient.get(
-				`/lesson-notes/user/suggest?term=${searchQuery.value.trim()}`
+			const suggestRes = await apiClient.get(
+				`/lesson-notes/user/suggest?term=${query}`
 			);
-			if (response.data.code === 200) {
-				suggestions.value = response.data.data;
-			} else {
-				showToast({ message: response.data.message, type: "error" });
+			if (suggestRes.data.code === 200) {
+				suggestions.value = suggestRes.data.data;
+				// 获取包含搜索词的所有笔记
+				const res = await apiClient.get(
+					`/lesson-notes/user/all-notes?search=${query}&page=1&limit=10`
+				);
+				if (res.data.code === 200) {
+					const { notes, total } = res.data.data;
+					vocabularyNotes.value = notes;
+					totalCounts.value = total;
+					if (notes.length > 0) {
+						selectNote(notes[0]);
+					} else {
+						// 如果没有搜索结果，清空选中的笔记
+						emit("on-select-note", null);
+					}
+				}
 			}
 		} catch (error) {
 			showToast({ message: error, type: "error" });
-			console.error("Error fetching suggestions:", error);
 		}
 	} else {
+		// 如果搜索框为空，恢复显示所有笔记
 		suggestions.value = [];
+		getNotebook();
 	}
 }, 300);
 
+// 监听搜索词的变化
 watch(
-	() => [props.searchWord, props.searchIndex],
-	([newSearchWord, newSearchIndex], [oldSearchWord, oldSearchIndex]) => {
-		if (newSearchIndex !== oldSearchIndex || newSearchWord !== oldSearchWord) {
-			const page = Math.ceil((newSearchIndex + 1) / itemsPerPage.value); // 根据索引确定页码
-			currentPage.value = page;
-			// 调用 getNotebook，确保在正确页码加载后设置 activeNote
-			getNotebook(page).then(() => {
-				// 将 activeNote 设置为搜索的单词
-				const foundNote = vocabularyNotes.value.find(
-					(note) => note.word === newSearchWord.word
-				);
-				if (foundNote) {
-					selectNote(foundNote); // 设置选中单词
-				}
-			});
-		}
-	},
-	{ deep: true }
-);
-
-watch(
-	() => props.isImportantMode,
-	(newValue) => {
-		console.log(newValue);
-		if (newValue) {
-			isImportantMode.value = props.isImportantMode;
-			getNotebook();
-		} else {
-			isImportantMode.value = false;
-			getNotebook();
+	() => props.searchWord,
+	async (newVal) => {
+		if (newVal?.word) {
+			searchQuery.value = newVal.word;
+			await onInputWord();
 		}
 	}
 );
 
+// 监听 refreshTrigger 的变化来刷新笔记列表
 watch(
-	() => props.minusPoint,
-	(newValue, oldValue) => {
-		console.log(newValue, oldValue);
-		if (newValue > oldValue) {
-			getNotebook();
-		}
+	() => props.refreshTrigger,
+	() => {
+		getNotebook(currentPage.value);
 	}
 );
 </script>
@@ -315,6 +288,8 @@ watch(
 	height: 100%;
 	background-size: 100% 24px;
 	padding: 0.5rem 0;
+	display: flex;
+	flex-direction: column;
 }
 
 /* 笔记本标题区域 */
@@ -529,11 +504,6 @@ watch(
 	transform: translateY(0);
 }
 
-/* 页面装订效果 */
-.notebook-content {
-	position: relative;
-}
-
 /* 搜索框样式 */
 .search-area {
 	padding: 0;
@@ -599,5 +569,125 @@ watch(
 
 .suggestion-item:hover {
 	background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+.notebook-content {
+	position: relative;
+	background: #fff;
+	padding: 1rem;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.dictionary-list {
+	height: 100%;
+}
+
+.word-entry {
+	padding: 12px 16px;
+	border-bottom: 1px solid #e5e5e5;
+	cursor: pointer;
+}
+
+.word-entry:hover {
+	background-color: #f5f5f5;
+}
+
+.word-entry.active {
+	background-color: #f0f0f0;
+	border-left: 3px solid #333;
+}
+
+.word-details {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.pos {
+	font-style: italic;
+	color: #666;
+	font-size: 0.9rem;
+}
+
+.definition {
+	color: #444;
+}
+
+.word-left {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.word-text {
+	font-weight: 600;
+	color: #333;
+}
+
+.pos {
+	font-style: italic;
+	color: #666;
+	font-size: 0.9rem;
+	padding: 2px 6px;
+	background: #f5f5f5;
+	border-radius: 4px;
+}
+
+.word-right {
+	color: #444;
+	font-size: 0.875rem;
+}
+
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 2rem;
+	text-align: center;
+	height: 100%; /* 添加这行 */
+	min-height: 300px; /* 添加这行，确保有足够的高度 */
+}
+
+.empty-state p {
+	position: relative;
+	top: -40px;
+	font-size: 1rem;
+	color: #666;
+	margin-bottom: 1.5rem;
+}
+
+.generate-btn {
+	position: relative;
+	top: -40px;
+	width: 120px; /* 让按钮更宽一些 */
+	height: 40px;
+	transition: transform 0.3s;
+}
+
+.generate-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.empty-state .btn-face {
+	color: #222;
+}
+
+/* 卡片悬停效果 */
+.generate-btn:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.generate-btn:active .btn-edge,
+.generate-btn:active .btn-face {
+	transform: translateY(-2px);
+}
+
+/* 添加通用悬停效果 */
+.generate-btnhover .btn-face {
+	transition: all 0.3s ease;
+	transform: translateY(-4px);
 }
 </style>

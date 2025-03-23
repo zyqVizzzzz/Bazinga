@@ -71,6 +71,7 @@ export const useNotebookStore = defineStore("notebook", {
 	state: () => ({
 		showBlinkbox: false,
 		currentActiveNote: {},
+		noteChangeCounter: 0,
 	}),
 	actions: {
 		toggleBlinkBox() {
@@ -78,6 +79,8 @@ export const useNotebookStore = defineStore("notebook", {
 		},
 		setCurrentActiveNote(note) {
 			this.currentActiveNote = note;
+			this.noteChangeCounter++;
+			console.log(this.noteChangeCounter);
 		},
 	},
 	// persist: true,
