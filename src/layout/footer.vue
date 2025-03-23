@@ -5,19 +5,13 @@
 			<!-- 标题 -->
 			<div class="terminal-title text-center" @click="toggleShowDevLog">
 				<div class="terminal-header">
-					<!-- <span class="terminal-dot red"></span>
-					<span class="terminal-dot yellow"></span>
-					<span class="terminal-dot green"></span> -->
 					<span class="relative -top-[1px]"
 						><i class="bi bi-code-square"></i
 					></span>
-					<span class="terminal-title-text">开发者留言.log</span>
+					<span class="terminal-title-text">站内信.log</span>
 					<span class="cursor text-xs">_</span>
 				</div>
 			</div>
-			<!-- <div class="copyright text-sm text-center text-gray-400">
-				Copyright 2024 Bazinga · All rights reserved
-			</div> -->
 
 			<dialog
 				id="dev_log_modal"
@@ -100,27 +94,6 @@
 					</div>
 					<div class="retro-terminal max-w-3xl mx-auto" v-if="!isExpanded">
 						<div class="terminal-face panel flex">
-							<div class="character-card">
-								<!-- 角色卡片容器 -->
-								<div class="card-inner">
-									<!-- 标题 -->
-									<div class="card-title bg-gray-700">Muztagh(d/acc)</div>
-
-									<!-- 头像区域 -->
-									<div class="avatar-container">
-										<slot name="avatar">
-											<img src="../assets/avatar.jpg" alt="Muztag" />
-										</slot>
-									</div>
-
-									<p class="text-sm mt-1 text-gray-800">zyqvizzz@gmail.com</p>
-									<div style="background-color: rgba(0, 0, 0, 0.2)">
-										<p class="text-xs mt-2 py-2 text-gray-300">
-											With math, 6900 simply cannot be contained by 500
-										</p>
-									</div>
-								</div>
-							</div>
 							<div>
 								<!-- 命令提示符和时间戳 -->
 								<div class="terminal-prompt mb-6">
@@ -177,16 +150,13 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { ref } from "vue";
 import apiClient from "@/api";
-import { showToast } from "@/components/common/toast.js";
-const route = useRoute();
 const showDevLog = ref(false);
 const articles = ref([
 	{
 		title: "0110100001100101011011000110110001101111",
-		title_zh: "开发者留言",
+		title_zh: "站内信",
 		progress: 0,
 	},
 ]);
@@ -239,7 +209,7 @@ const handleSubmit = async () => {
 }
 .modal-dev-log .modal-box {
 	width: 100%;
-	max-width: 768px;
+	max-width: 550px;
 	padding: 0;
 	display: flex;
 	justify-content: center;

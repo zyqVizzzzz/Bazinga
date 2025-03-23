@@ -17,6 +17,7 @@ import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
 import GenKnowledge from "@/prompt/knowledge_prompt.vue";
 import GenerateInvitation from "@/prompt/generate_invitation.vue";
+import GenerateHustle from "@/prompt/generate_hustle.vue";
 
 const routes = [
 	{
@@ -106,6 +107,11 @@ const routes = [
 		path: "/generate-invitation",
 		name: "generate-invitation",
 		component: GenerateInvitation,
+	},
+	{
+		path: "/generate-hustle",
+		name: "generate-hustle",
+		component: GenerateHustle,
 	},
 ];
 

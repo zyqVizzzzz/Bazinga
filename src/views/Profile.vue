@@ -28,7 +28,7 @@
 								<div
 									class="dashboard-header flex justify-between items-center mb-4"
 								>
-									<h2 class="text-2xl font-bold">日志</h2>
+									<h2 class="text-2xl font-bold">Daily Hustle</h2>
 									<button
 										@click="editProfile"
 										class="edit-profile-button px-4 py-2 bg-white border-2 border-black text-sm font-medium hover:bg-gray-100 transition-colors flex items-center gap-1"
@@ -40,7 +40,7 @@
 
 								<!-- 内容区域：左侧排行榜 + 右侧统计卡片 -->
 								<div class="content-grid grid grid-cols-3 gap-6">
-									<!-- 左侧：排行榜 -->
+									<!-- 左侧：Daily Hustle -->
 									<div class="col-span-2">
 										<Leaderboard :rankingList="selfRankingList" />
 									</div>
