@@ -13,7 +13,11 @@
 					@click="goToHome"
 					class="nav-brand btn btn-ghost hover:bg-transparent hover:text-inherit"
 				>
-					<img src="/logo-trans@4x.png" alt="Bazinga Logo" class="logo-image" />
+					<img
+						src="../assets/logo-trans@4x.png"
+						alt="Bazinga Logo"
+						class="logo-image"
+					/>
 					azinga!
 				</a>
 			</div>

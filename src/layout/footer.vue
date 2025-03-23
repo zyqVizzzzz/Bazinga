@@ -49,7 +49,7 @@
 						<div class="terminal-face article">
 							<p class="mb-6">我们的旅程从这里开始</p>
 							<img
-								src="../assets/dev_banner2.jpg"
+								src="../assets/dev_banner.jpg"
 								alt=""
 								class="w-[50%] my-6 mx-auto"
 							/>
