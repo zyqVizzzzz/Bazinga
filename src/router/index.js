@@ -13,11 +13,11 @@ import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
-import Test from "@/views/Test.vue";
-import GenPractice from "@/prompt/practice_prompt.vue";
-import GenKnowledge from "@/prompt/knowledge_prompt.vue";
-import GenerateInvitation from "@/prompt/generate_invitation.vue";
-import GenerateHustle from "@/prompt/generate_hustle.vue";
+// import Test from "@/views/Test.vue";
+// import GenPractice from "@/prompt/practice_prompt.vue";
+// import GenKnowledge from "@/prompt/knowledge_prompt.vue";
+// import GenerateInvitation from "@/prompt/generate_invitation.vue";
+// import GenerateHustle from "@/prompt/generate_hustle.vue";
 
 const routes = [
 	{
@@ -88,31 +88,31 @@ const routes = [
 			requiresAuth: true,
 		},
 	},
-	{
-		path: "/test",
-		name: "Test",
-		component: Test,
-	},
-	{
-		path: "/gen_practice",
-		name: "gen_practice",
-		component: GenPractice,
-	},
-	{
-		path: "/gen_knowledge",
-		name: "gen_knowledge",
-		component: GenKnowledge,
-	},
-	{
-		path: "/generate-invitation",
-		name: "generate-invitation",
-		component: GenerateInvitation,
-	},
-	{
-		path: "/generate-hustle",
-		name: "generate-hustle",
-		component: GenerateHustle,
-	},
+	// {
+	// 	path: "/test",
+	// 	name: "Test",
+	// 	component: Test,
+	// },
+	// {
+	// 	path: "/gen_practice",
+	// 	name: "gen_practice",
+	// 	component: GenPractice,
+	// },
+	// {
+	// 	path: "/gen_knowledge",
+	// 	name: "gen_knowledge",
+	// 	component: GenKnowledge,
+	// },
+	// {
+	// 	path: "/generate-invitation",
+	// 	name: "generate-invitation",
+	// 	component: GenerateInvitation,
+	// },
+	// {
+	// 	path: "/generate-hustle",
+	// 	name: "generate-hustle",
+	// 	component: GenerateHustle,
+	// },
 ];
 
 const router = createRouter({
