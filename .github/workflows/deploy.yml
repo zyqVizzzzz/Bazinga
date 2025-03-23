@@ -28,9 +28,10 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
+          source: "dist/*, public/*"
           target: "/var/www/Bazinga"
           strip_components: 1
+          rm: true
 
       - name: Restart Nginx
         uses: appleboy/ssh-action@master
