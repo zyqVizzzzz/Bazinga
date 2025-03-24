@@ -88,6 +88,16 @@ const routes = [
 			requiresAuth: true,
 		},
 	},
+	{
+		path: "/useragreement",
+		name: "useragreement",
+		component: () => import("@/layout/userAgreement.vue"),
+	},
+	{
+		path: "/privacypolicy",
+		name: "privacypolicy",
+		component: () => import("@/layout/privacyPolicy.vue"),
+	},
 	// {
 	// 	path: "/test",
 	// 	name: "Test",

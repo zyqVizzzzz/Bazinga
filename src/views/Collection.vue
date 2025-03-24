@@ -62,31 +62,6 @@
 					</div>
 				</div>
 
-				<!-- 资源包状态显示 -->
-				<div v-if="isDefault" class="package-status mt-6">
-					<div v-if="hasPackageAccess" class="retro-badge success">
-						<div class="badge-content">
-							<i class="bi bi-check-circle-fill text-xl"></i>
-							<span class="ml-2">已解锁全部内容</span>
-						</div>
-					</div>
-					<div v-else class="retro-promo" @click="handleUnlock">
-						<div class="promo-content">
-							<div class="promo-text">
-								<h3 class="font-bold">开通资源包解锁全部学习内容</h3>
-							</div>
-							<button class="unlock-btn">
-								<span class="price mr-2">¥14.9</span>
-								<!-- <i class="bi bi-unlock-fill"></i> -->
-								立即解锁
-							</button>
-						</div>
-						<!-- 装饰元素 -->
-						<div class="promo-decoration left-star">★</div>
-						<div class="promo-decoration right-star">★</div>
-					</div>
-				</div>
-
 				<!-- 设置 -->
 				<!--  -->
 				<button

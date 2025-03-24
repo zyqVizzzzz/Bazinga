@@ -56,6 +56,35 @@
 								{{ errorMessage }}
 							</div>
 
+							<div
+								class="flex items-center justify-center mb-2 text-sm text-gray-600"
+							>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										v-model="agreeToTerms"
+										class="checkbox checkbox-sm checkbox-primary mr-2"
+										required
+									/>
+									<span>
+										我已仔细查看并同意
+										<router-link
+											to="/useragreement"
+											class="text-blue-600 hover:text-blue-800"
+										>
+											用户协议
+										</router-link>
+										和
+										<router-link
+											to="/privacypolicy"
+											class="text-blue-600 hover:text-blue-800"
+										>
+											隐私政策
+										</router-link>
+									</span>
+								</label>
+							</div>
+
 							<!-- 提交按钮 -->
 							<div class="flex justify-center mt-6">
 								<button type="submit" class="retro-btn-large">
@@ -110,7 +139,14 @@ const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 
+// 协议同意状态
+const agreeToTerms = ref(false);
+
 const login = async () => {
+	if (!agreeToTerms.value) {
+		errorMessage.value = "请阅读并同意用户协议和隐私政策";
+		return;
+	}
 	try {
 		const response = await apiClient.post("/auth/login", {
 			email: email.value,

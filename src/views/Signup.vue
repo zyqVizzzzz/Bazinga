@@ -184,6 +184,35 @@
 								</div>
 							</div>
 
+							<div
+								class="flex items-center justify-center mb-2 text-sm text-gray-600"
+							>
+								<label class="flex items-center cursor-pointer">
+									<input
+										type="checkbox"
+										v-model="agreeToTerms"
+										class="checkbox checkbox-sm checkbox-primary mr-2"
+										required
+									/>
+									<span>
+										我已仔细查看并同意
+										<router-link
+											to="/useragreement"
+											class="text-blue-600 hover:text-blue-800"
+										>
+											用户协议
+										</router-link>
+										和
+										<router-link
+											to="/privacypolicy"
+											class="text-blue-600 hover:text-blue-800"
+										>
+											隐私政策
+										</router-link>
+									</span>
+								</label>
+							</div>
+
 							<!-- 提交按钮 -->
 							<div class="flex justify-center mt-6">
 								<button class="retro-btn-large" @click="register">
@@ -237,6 +266,9 @@ const formData = ref({
 });
 const errorMessage = ref("");
 const cooldown = ref(0);
+
+// 协议同意状态
+const agreeToTerms = ref(false);
 
 // 自定义验证规则
 const containsLower = (value) => /[a-z]/.test(value);
@@ -355,6 +387,10 @@ const passwordStrength = computed(() => {
 
 // 注册
 const register = async () => {
+	if (!agreeToTerms.value) {
+		errorMessage.value = "请阅读并同意用户协议和隐私政策";
+		return;
+	}
 	try {
 		const isFormValid = await v$.value.$validate();
 		if (!isFormValid) {
