@@ -538,41 +538,20 @@ const filteredSpeakers = computed(() => {
 // 使用指南数据
 const guideItems = ref([
 	{
-		title: "卡片标题",
-		description: "每张卡片的标题请以 # 开头",
+		title: "左侧编辑器",
+		description: "左侧编辑器负责编辑英文原始内容，并自动同步到右侧卡片生成器",
 	},
 	{
-		title: "标准格式",
-		description:
-			"英文段落 + 中文段落 + 空行 = 一个完整的段落。中文翻译紧邻英文段落",
+		title: "卡片标题(必填)",
+		description: "每张卡片的标题请以 # 开头，系统将根据标题自动划分场景",
+	},
+	{
+		title: "右侧卡片生成器",
+		description: "卡片生成器提供生成知识点、翻译、注释等功能",
 	},
 	{
 		title: "保存",
-		description:
-			"点击左侧「保存」按钮，或输入 Command/Ctrl + s，完成保存。同时，编辑器有自动保存功能。",
-	},
-	{
-		title: "知识点",
-		description:
-			"选中单词，选择粗体，或输入 Command/Ctrl + b，可将选中部分加入右侧知识点列表",
-	},
-	{
-		title: "旁白/注释",
-		description:
-			"选中段落，选择斜体，或输入 Command/ctrl + i，可以将该段落标记为旁白或注释",
-	},
-	{
-		title: "翻译",
-		description: "选中段落，选择翻译，完成翻译",
-	},
-	{
-		title: "对白标记",
-		description: "用'[]'标记说话者，标记该段落为对白",
-	},
-	{
-		title: "生成器",
-		description:
-			"点击左侧「生成器」按钮，试试自动生成知识点、播客、情景剧等功能...",
+		description: "点击右侧保存按钮，生成知识点卡片",
 	},
 ]);
 

@@ -1,7 +1,5 @@
 <template>
-	<div
-		class="password-section flex-1 bg-white p-6 rounded-xl border-2 border-gray-100"
-	>
+	<div class="password-section flex-1 bg-white">
 		<div class="space-y-4">
 			<!-- 当前密码 -->
 			<div>
@@ -42,7 +40,7 @@
 				<div class="text-red-500 text-xs mt-1" v-if="v$.newPassword.$error">
 					{{ v$.newPassword.$errors[0].$message }}
 				</div>
-				<div class="text-gray-500 text-xs mt-2">
+				<div class="text-gray-500 text-xs mt-2 text-left">
 					<ul class="list-disc ml-4 mt-1">
 						<li>长度至少8位</li>
 						<li>必须包含字母和数字</li>

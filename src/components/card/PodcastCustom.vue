@@ -107,63 +107,34 @@
 					请从左侧选择一个播客
 				</div>
 				<div v-else-if="selectedPodcast" class="script-container">
-					<!-- 语言切换选项 -->
-					<div class="language-toggle">
-						<button
-							:class="['toggle-btn', { active: showOriginal }]"
-							@click="
-								showOriginal = true;
-								showTranslated = !showOriginal;
-							"
-						>
-							原文
-						</button>
-						<button
-							:class="['toggle-btn', { active: showTranslated }]"
-							@click="
-								showTranslated = true;
-								showOriginal = !showTranslated;
-							"
-						>
-							中文
-						</button>
-					</div>
-
 					<!-- 脚本内容 -->
 					<div class="script-content">
-						<!-- 原文脚本 -->
-						<div
-							v-if="showOriginal && selectedPodcast.script"
-							class="script-text original"
-						>
-							<p
+						<div class="script-text" v-if="selectedPodcast.script">
+							<div
 								v-for="(paragraph, idx) in selectedPodcast.script"
-								:key="'orig-' + idx"
-								class="script-paragraph"
+								:key="idx"
+								class="script-block"
 							>
-								{{ paragraph }}
-							</p>
+								<!-- 英文段落 -->
+								<div class="script-paragraph-wrapper">
+									<p class="script-paragraph original">
+										{{ paragraph }}
+									</p>
+									<!-- 对应的中文翻译 -->
+									<p
+										v-if="
+											showTranslated &&
+											selectedPodcast.chineseScript &&
+											selectedPodcast.chineseScript[idx]
+										"
+										class="script-paragraph translated"
+									>
+										{{ selectedPodcast.chineseScript[idx] }}
+									</p>
+								</div>
+							</div>
 						</div>
-						<div v-else-if="showOriginal" class="no-script">暂无原文脚本</div>
-
-						<!-- 中文脚本 -->
-						<div
-							v-if="
-								showTranslated &&
-								selectedPodcast.chineseScript &&
-								selectedPodcast.chineseScript.length > 0
-							"
-							class="script-text translated"
-						>
-							<p
-								v-for="(paragraph, idx) in selectedPodcast.chineseScript"
-								:key="'trans-' + idx"
-								class="script-paragraph"
-							>
-								{{ paragraph }}
-							</p>
-						</div>
-						<div v-else-if="showTranslated" class="no-script">暂无中文脚本</div>
+						<div v-else class="no-script">暂无脚本内容</div>
 					</div>
 				</div>
 			</div>
@@ -306,6 +277,13 @@ watch(
 		if (props.podcastData && props.podcastData.length > 0) {
 			selectPodcast(props.podcastData[0], 0);
 		}
+	}
+);
+
+watch(
+	() => props.showTranslation,
+	(newValue) => {
+		showTranslated.value = newValue;
 	}
 );
 
@@ -723,7 +701,7 @@ defineExpose({
 .script-content {
 	flex: 1;
 	overflow-y: auto;
-	padding: 0 8px;
+	padding: 12px 24px;
 }
 
 .script-text {
@@ -731,10 +709,28 @@ defineExpose({
 	line-height: 1.6;
 }
 
+.script-block {
+	margin-bottom: 24px;
+}
+
 .script-paragraph {
-	margin-bottom: 16px;
+	margin: 0;
 	text-align: justify;
 	color: #333;
+}
+
+.script-paragraph.original {
+	font-weight: 500;
+	margin-bottom: 16px;
+}
+
+.script-paragraph.translated {
+	font-size: 14px;
+	color: #666;
+	line-height: 1.5;
+	padding-top: 8px;
+	/* margin-top: 8px; */
+	border-top: 1px dashed #e0e0e0;
 }
 
 .script-text.original .script-paragraph {

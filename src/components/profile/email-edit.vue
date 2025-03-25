@@ -1,26 +1,42 @@
 <template>
-	<div
-		class="email-section flex-1 bg-white p-6 rounded-xl border-2 border-gray-100"
-	>
+	<div class="email-section flex-1 bg-white rounded-xl">
 		<div class="space-y-4">
 			<!-- 邮箱输入 -->
 			<div>
-				<!-- <label class="text-sm text-gray-600 mb-2 block">邮箱地址</label> -->
+				<div class="flex-1">
+					<input
+						type="email"
+						id="email"
+						v-model="tempEmail"
+						:class="{ 'input-error': v$.tempEmail.$error }"
+						class="input input-bordered w-full text-sm"
+						:placeholder="t('profile.account_form.email_input')"
+						autocomplete="off"
+						autocorrect="off"
+						spellcheck="false"
+					/>
+					<div class="text-red-500 text-xs mt-1" v-if="v$.tempEmail.$error">
+						{{ v$.tempEmail.$errors[0].$message }}
+					</div>
+				</div>
+			</div>
+
+			<!-- 验证码输入 -->
+			<div>
 				<div class="flex space-x-2 items-center">
 					<div class="flex-1">
 						<input
-							type="email"
-							id="email"
-							v-model="tempEmail"
-							:class="{ 'input-error': v$.tempEmail.$error }"
+							type="text"
+							v-model="verificationCode"
+							:class="{ 'input-error': v$.verificationCode.$error }"
 							class="input input-bordered w-full text-sm"
-							:placeholder="t('profile.account_form.email_input')"
-							autocomplete="off"
-							autocorrect="off"
-							spellcheck="false"
+							:placeholder="'请输入验证码'"
 						/>
-						<div class="text-red-500 text-xs mt-1" v-if="v$.tempEmail.$error">
-							{{ v$.tempEmail.$errors[0].$message }}
+						<div
+							class="text-red-500 text-xs mt-1"
+							v-if="v$.verificationCode.$error"
+						>
+							{{ v$.verificationCode.$errors[0].$message }}
 						</div>
 					</div>
 					<button
@@ -31,24 +47,6 @@
 					>
 						{{ cooldown > 0 ? `${cooldown}s` : "发送验证码" }}
 					</button>
-				</div>
-			</div>
-
-			<!-- 验证码输入 -->
-			<div>
-				<!-- <label class="text-sm text-gray-600 mb-2 block">验证码</label> -->
-				<input
-					type="text"
-					v-model="verificationCode"
-					:class="{ 'input-error': v$.verificationCode.$error }"
-					class="input input-bordered w-full text-sm"
-					:placeholder="'请输入验证码'"
-				/>
-				<div
-					class="text-red-500 text-xs mt-1"
-					v-if="v$.verificationCode.$error"
-				>
-					{{ v$.verificationCode.$errors[0].$message }}
 				</div>
 			</div>
 

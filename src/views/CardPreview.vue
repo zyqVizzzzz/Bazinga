@@ -144,26 +144,6 @@
 						<button
 							v-if="isFlipped"
 							class="retro-btn option"
-							:class="{ 'btn-active': showBazingaPlay }"
-							@click="toggleBazingaPlayMode"
-						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<i
-											class="bi text-xl"
-											:class="
-												showBazingaPlay ? 'bi-pause-fill' : 'bi-play-fill'
-											"
-										></i>
-									</div>
-								</div>
-							</div>
-						</button>
-
-						<button
-							v-if="isFlipped"
-							class="retro-btn option"
 							:class="{ 'btn-active': showBazingaTrans }"
 							@click="toggleBazingaTransMode"
 						>
