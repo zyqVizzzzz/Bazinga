@@ -105,19 +105,19 @@ let checkPaymentTimer = null; // 轮询定时器
 
 // 获取商品信息
 const fetchProductInfo = async () => {
-	try {
-		const res = await apiClient.get(
-			`/packages/catalog/${route.query.catalogId}`
-		);
-		if (res.data.code === 200) {
-			productInfo.value = res.data.data;
-		} else {
-			showToast({ message: res.data.message, type: "error" });
-		}
-	} catch (error) {
-		showToast({ message: "获取商品信息失败", type: "error" });
-		console.error("Failed to fetch product info:", error);
-	}
+	// try {
+	// 	const res = await apiClient.get(
+	// 		`/packages/catalog/${route.query.catalogId}`
+	// 	);
+	// 	if (res.data.code === 200) {
+	// 		productInfo.value = res.data.data;
+	// 	} else {
+	// 		showToast({ message: res.data.message, type: "error" });
+	// 	}
+	// } catch (error) {
+	// 	showToast({ message: "获取商品信息失败", type: "error" });
+	// 	console.error("Failed to fetch product info:", error);
+	// }
 };
 
 // 处理购买
