@@ -1,5 +1,8 @@
 <template>
-	<div class="mondrian-grid">
+	<div
+		class="mondrian-grid"
+		v-if="dailyPhrase && Object.keys(dailyPhrase).length"
+	>
 		<!-- 排行榜容器 -->
 		<div class="hustle-container">
 			<div class="hustle-grid p-2">

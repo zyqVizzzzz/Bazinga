@@ -2,7 +2,7 @@
 	<div class="container w-full mx-auto mt-10 pt-2">
 		<div class="flex editor-box">
 			<!-- 原文编辑器 -->
-			<div class="editor-container text-sm relative w-1/2">
+			<div class="editor-container text-sm relative w-1/2" v-if="isCustom">
 				<div
 					class="editor-wrapper text-sm rounded shadow-editor"
 					style="overflow-y: auto"
@@ -11,7 +11,7 @@
 				</div>
 			</div>
 			<!-- 卡片编辑器 -->
-			<div class="right-panel w-1/2">
+			<div class="right-panel" :class="isCustom ? 'w-1/2' : 'w-2/3 mx-auto'">
 				<div
 					class="toolbox-container border border-gray-100 shadow-xl rounded-xl shadow-knowledge sticky top-[15%]"
 				>
@@ -29,7 +29,7 @@
 									</div>
 									<div class="flex items-center gap-4">
 										<!-- 一键翻译 -->
-										<div class="tooltip" data-tip="一键翻译">
+										<div class="tooltip" data-tip="一键翻译" v-if="isCustom">
 											<button
 												class="ghost-btn w-8 h-8 flex items-center justify-center"
 												style="padding: 0.4rem"
@@ -48,7 +48,11 @@
 												/>
 											</button>
 										</div>
-										<div class="tooltip" data-tip="一键生成知识点">
+										<div
+											class="tooltip"
+											data-tip="一键生成知识点"
+											v-if="isCustom"
+										>
 											<button
 												class="ghost-btn w-8 h-8 flex items-center justify-center"
 												style="padding: 0.4rem"
@@ -67,9 +71,8 @@
 												/>
 											</button>
 										</div>
-
 										<!-- 生成播客按钮 -->
-										<div class="tooltip" data-tip="生成播客">
+										<div class="tooltip" data-tip="生成播客" v-if="isCustom">
 											<button
 												class="ghost-btn w-8 h-8 flex items-center justify-center"
 												style="padding: 0"
@@ -106,7 +109,11 @@
 										>
 											<!-- 工具栏 -->
 											<div
-												v-if="selectedBlockIndex === index && !block.isTitle"
+												v-if="
+													isCustom &&
+													selectedBlockIndex === index &&
+													!block.isTitle
+												"
 												class="text-toolbox bg-milk border-2 border-gray-800 rounded-lg flex items-center justify-between px-4 py-2 shadow-retro relative"
 											>
 												<!-- 左侧按钮组 -->
@@ -262,7 +269,11 @@
 			</div>
 
 			<div class="tooltip" data-tip="保存">
-				<button class="retro-btn" @click="saveDialogue(true)">
+				<button
+					class="retro-btn"
+					@click="saveDialogue(true)"
+					:disabled="!isCustom"
+				>
 					<div class="btn-shadow">
 						<div class="btn-edge">
 							<div class="btn-face">
@@ -514,6 +525,7 @@ const generatingKnowledgeBlockId = ref(null);
 const processingEntireScene = ref(false); // 处理全部内容的状态变量
 const translatingScene = ref(false);
 const generatingSceneKnowledge = ref(false);
+const isCustom = ref(false);
 
 // 计算过滤后的说话者列表
 const filteredSpeakers = computed(() => {
@@ -920,6 +932,7 @@ const initDialogues = async () => {
 	try {
 		const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 		if (res.data.code === 200 && res.data.data) {
+			isCustom.value = res.data.data.isCustom;
 			scriptJson.value = res.data.data.scriptData;
 			currentDialogue.value =
 				res.data.data.scriptData.scenes[0].dialogues[
@@ -1954,14 +1967,22 @@ const formatKnowledgeDisplay = (knowledgeItems) => {
 					<span class="font-bold">${item.word}</span>
 					<span class="text-gray-600">${item.word_zh}</span>
 				</div>
-				<div class="flex items-center gap-1">
+				${
+					isCustom.value
+						? `<div class="flex items-center gap-1">
 					<button class="knowledge-btn knowledge-detail-btn hover:text-primary transition-colors" data-word="${item.word}" title="详情">
 						<i class="bi bi-journal-text"></i>
 					</button>
 					<button class="knowledge-btn knowledge-delete-btn hover:text-secondary transition-colors" data-word="${item.word}" title="删除">
 						<i class="bi bi-trash"></i>
 					</button>
-				</div>
+				</div>`
+						: `<div class="flex items-center gap-1">
+					<button class="knowledge-btn knowledge-detail-btn hover:text-primary transition-colors" data-word="${item.word}" title="详情">
+						<i class="bi bi-journal-text"></i>
+					</button>
+				</div>`
+				}
 			</div>
 		</div>`;
 		})

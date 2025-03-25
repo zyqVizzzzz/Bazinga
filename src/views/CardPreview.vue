@@ -111,7 +111,7 @@
 				>
 					<!-- 控制按钮组 -->
 					<div class="flex justify-center gap-6 mt-6">
-						<button
+						<!-- <button
 							v-if="!isFlipped"
 							class="retro-btn option"
 							:class="{ 'btn-active': isListenMode }"
@@ -124,7 +124,7 @@
 									</div>
 								</div>
 							</div>
-						</button>
+						</button> -->
 
 						<button
 							v-if="!isFlipped"
@@ -135,7 +135,7 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face flex items-center justify-center">
-										<i class="bi bi-translate text-xl"></i>
+										<TranslationIcon size="5" />
 									</div>
 								</div>
 							</div>
@@ -170,7 +170,7 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face flex items-center justify-center">
-										<i class="bi bi-translate text-xl"></i>
+										<TranslationIcon size="5" />
 									</div>
 								</div>
 							</div>
@@ -184,13 +184,13 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face flex items-center justify-center">
-										<Podcast />
+										<PodcastIcon />
 									</div>
 								</div>
 							</div>
 						</button>
 
-						<div class="flex items-center gap-6" v-if="!isDefault">
+						<div class="flex items-center gap-6">
 							<!-- 竖线分隔符 -->
 							<div class="h-8 w-[2px] bg-black"></div>
 
@@ -199,7 +199,7 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face flex items-center justify-center">
-											<i class="bi bi-pencil-square text-xl"></i>
+											<i class="bi text-xl bi-pencil-square"></i>
 										</div>
 									</div>
 								</div>
@@ -280,7 +280,10 @@ import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
 import { useLessonStore, useAppStore, useLoginStore } from "@/store";
 import apiClient from "@/api";
 
-import Podcast from "@/components/icons/Podcast.vue";
+import PodcastIcon from "@/components/icons/Podcast.vue";
+import EditIcon from "@/components/icons/Edit.vue";
+import TranslationIcon from "@/components/icons/Translation.vue";
+import PreviewIcon from "@/components/icons/Preview.vue";
 import KnowledgeCard from "@/components/card/knowledge.vue";
 import DialogueCard from "@/components/card/dialogue.vue";
 import PracticeCard from "@/components/card/practice.vue";
@@ -323,7 +326,7 @@ const isEditPage = ref(false);
 const editPageRef = ref(null);
 const editCurrentPageNumber = ref(0); // 跳转页码
 
-const isDefault = ref(false);
+const isCustom = ref(false);
 const isListenMode = ref(false);
 const isLoading = ref(true);
 
@@ -358,6 +361,7 @@ const getLesson = async () => {
 
 		if (scriptRes.data.code === 200) {
 			const res = await scriptRes.data.data;
+			isCustom.value = res.isCustom;
 			dialoguesData.value = res.scriptData;
 
 			if (dialoguesData.value.scenes && dialoguesData.value.scenes.length > 0) {
@@ -523,9 +527,6 @@ const editCard = () => {
 // 在组件挂载时，确保数据加载正确
 onMounted(async () => {
 	lessonStore.closeListenMode();
-	// if (route.params.id === "67230dee6fc3d389ea1ffedf") {
-	// 	isDefault.value = true;
-	// }
 	isLoading.value = true;
 	await getLesson();
 });

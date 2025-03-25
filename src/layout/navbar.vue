@@ -6,6 +6,7 @@
 			background: isCategory || isProfile ? 'rgba(255,255,255,0.1)' : '#fff',
 			'border-radius': isCategory ? '0px' : '15px',
 		}"
+		v-if="!isEditor"
 	>
 		<div class="container mx-auto px-4 flex justify-between items-center">
 			<div class="flex-none">
@@ -41,7 +42,7 @@
 							{{ t("nav.collections") }}
 						</a>
 					</li>
-					<li>
+					<li v-if="isLogin">
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/notebook' }"
@@ -92,6 +93,7 @@ const route = useRoute();
 const username = ref(""); // 保存已登录用户的名字
 const isCategory = ref(false);
 const isProfile = ref(false);
+const isEditor = ref(false);
 
 // 跳转到主页
 const goToHome = () => {
@@ -142,6 +144,12 @@ watch(
 			isProfile.value = true;
 		} else {
 			isProfile.value = false;
+		}
+
+		if (newName === "CardEditor") {
+			isEditor.value = true;
+		} else {
+			isEditor.value = false;
 		}
 	}
 );
