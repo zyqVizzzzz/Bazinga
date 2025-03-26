@@ -2,7 +2,15 @@
 	<div class="container w-full mx-auto mt-10 pt-2">
 		<div class="flex editor-box">
 			<!-- 原文编辑器 -->
-			<div class="editor-container text-sm relative w-1/2" v-if="isCustom">
+			<div
+				class="editor-container text-sm relative w-1/2"
+				:class="{
+					'w-1/2': viewMode === 'both',
+					'w-2/3 mx-auto': viewMode === 'editor',
+					hidden: viewMode === 'card',
+				}"
+				v-if="isCustom"
+			>
 				<div
 					class="editor-wrapper text-sm rounded shadow-editor"
 					style="overflow-y: auto"
@@ -11,7 +19,14 @@
 				</div>
 			</div>
 			<!-- 卡片编辑器 -->
-			<div class="right-panel" :class="isCustom ? 'w-1/2' : 'w-2/3 mx-auto'">
+			<div
+				class="right-panel"
+				:class="{
+					'w-1/2': viewMode === 'both',
+					'w-2/3 mx-auto': viewMode === 'card',
+					hidden: viewMode === 'editor',
+				}"
+			>
 				<div
 					class="toolbox-container border border-gray-100 shadow-xl rounded-xl shadow-knowledge sticky top-[15%]"
 				>
@@ -284,6 +299,25 @@
 				</button>
 			</div>
 
+			<div class="tooltip" data-tip="切换视图">
+				<button class="retro-btn" @click="toggleViewMode" :disabled="!isCustom">
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">
+								<i
+									class="bi"
+									:class="{
+										'bi-layout-split': viewMode === 'both',
+										'bi-layout-text-window': viewMode === 'editor',
+										'bi-layout-text-sidebar': viewMode === 'card',
+									}"
+								></i>
+							</div>
+						</div>
+					</div>
+				</button>
+			</div>
+
 			<!-- 新增说明指南按钮 -->
 			<div class="tooltip" data-tip="使用指南">
 				<button class="retro-btn" @click="openGuideModal">
@@ -526,6 +560,8 @@ const processingEntireScene = ref(false); // 处理全部内容的状态变量
 const translatingScene = ref(false);
 const generatingSceneKnowledge = ref(false);
 const isCustom = ref(false);
+// 视图显示状态
+const viewMode = ref("both"); // 'both', 'editor', 'card'
 
 // 计算过滤后的说话者列表
 const filteredSpeakers = computed(() => {
@@ -912,6 +948,7 @@ const initDialogues = async () => {
 		const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 		if (res.data.code === 200 && res.data.data) {
 			isCustom.value = res.data.data.isCustom;
+			viewMode.value = isCustom.value ? "both" : "card";
 			scriptJson.value = res.data.data.scriptData;
 			currentDialogue.value =
 				res.data.data.scriptData.scenes[0].dialogues[
@@ -1633,6 +1670,20 @@ const handleKnowledgeButtonClick = (event) => {
 			// 处理删除按钮点击
 			deleteKnowledge(word);
 		}
+	}
+};
+
+const toggleViewMode = () => {
+	switch (viewMode.value) {
+		case "both":
+			viewMode.value = "editor";
+			break;
+		case "editor":
+			viewMode.value = "card";
+			break;
+		case "card":
+			viewMode.value = "both";
+			break;
 	}
 };
 
@@ -2448,6 +2499,7 @@ const getDefaultJson = () => {
 	};
 	currentDialogue.value = defaultData[0];
 	totalDialogues.value = defaultData[0].length;
+	isCustom.value = true;
 };
 
 const getDefaultKnowledge = () => {

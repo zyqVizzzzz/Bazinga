@@ -78,15 +78,22 @@
 
 		<!-- 内容区域 -->
 		<div class="w-2/3 relative mt-4">
-			<!-- 进度提示 -->
-			<!-- <div v-if="currentProgress.course" class="mb-10">
-				<div class="alert-content">
-					<span @click="goToLessonProgress" class="retro-link text-sm">
-						{{ t("collection.continue") }}
-					</span>
-				</div>
-			</div> -->
-			<!-- 剧集 -->
+			<!-- 添加编辑控制区域 -->
+			<div v-if="!isDefault" class="flex justify-between items-center mb-6">
+				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>
+				<button
+					class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out"
+					:class="
+						isEditMode
+							? 'border-primary text-primary bg-primary/10 hover:bg-primary/20'
+							: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+					"
+					@click="isEditMode = !isEditMode"
+				>
+					<i class="bi bi-pencil-fill mr-2"></i>
+					<span>{{ isEditMode ? "完成" : "编辑" }}</span>
+				</button>
+			</div>
 
 			<!-- 使用 draggable 替换原来的 div -->
 			<draggable
@@ -116,30 +123,16 @@
 				</template>
 			</draggable>
 
-			<!-- 添加新集按钮 -->
+			<!-- 添加新文档按钮 -->
 			<div v-if="isEditMode" class="retro-add-button" @click="addNewEpisode">
 				<div class="card-shadow">
 					<div class="card-edge">
 						<div class="card-face">
 							<i class="bi bi-plus-lg"></i>
-							<span class="ml-2">添加新集</span>
+							<span class="ml-2">添加新文档</span>
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-
-		<div v-if="!isDefault" class="fixed-knob">
-			<div
-				class="retro-knob"
-				:class="{ 'is-active': isEditMode }"
-				@click="isEditMode = !isEditMode"
-			>
-				<div class="knob-base">
-					<div class="knob-indicator"></div>
-					<div class="knob-label">编辑</div>
-				</div>
-				<div class="knob-shadow"></div>
 			</div>
 		</div>
 	</div>
@@ -816,99 +809,5 @@ button:disabled {
 
 .retro-add-button:hover {
 	transform: translateY(-2px);
-}
-
-.retro-add-button:hover .card-face {
-	color: var(--primary-color);
-}
-
-.fixed-knob {
-	position: fixed;
-	right: 40px;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 100;
-}
-
-.retro-knob {
-	position: relative;
-	width: 60px;
-	height: 60px;
-	cursor: pointer;
-	transition: transform 0.3s ease;
-}
-
-.knob-base {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	background: #fff;
-	border: 3px solid #333;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transform-origin: center center;
-	transition: transform 0.3s ease;
-	box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8),
-		inset -2px -2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.knob-shadow {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	/* background: rgba(0, 0, 0, 0.2); */
-	transform: translateY(4px);
-}
-
-.knob-indicator {
-	position: absolute;
-	width: 4px;
-	height: 20px;
-	background: #333;
-	top: 6px;
-	left: 50%;
-	transform: translateX(-50%);
-	border-radius: 2px;
-}
-
-.knob-label {
-	position: absolute;
-	bottom: 10px;
-	font-size: 14px;
-	font-weight: bold;
-	letter-spacing: 1px;
-	color: #333;
-}
-
-.retro-knob:hover .knob-base {
-	transform: translateY(-2px);
-}
-
-.retro-knob.is-active .knob-base {
-	transform: rotate(90deg);
-	background: var(--primary-color);
-	color: white;
-}
-
-.retro-knob.is-active .knob-indicator,
-.retro-knob.is-active .knob-label {
-	color: white;
-}
-
-.retro-knob.is-active .knob-base {
-	transform: rotate(90deg);
-	background: #fff;
-	border-color: var(--primary-color);
-}
-
-.retro-knob.is-active .knob-indicator {
-	background: var(--primary-color);
-}
-
-.retro-knob.is-active .knob-label {
-	color: var(--primary-color);
 }
 </style>
