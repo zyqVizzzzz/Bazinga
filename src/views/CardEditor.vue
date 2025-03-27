@@ -968,7 +968,6 @@ const initKnowledges = async () => {
 			// 处理每个场景的知识点
 			response.data.data.forEach((scene) => {
 				scene.knowledge.forEach((item) => {
-					console.log(item);
 					// 不管是哪个场景的知识点，都添加到 Map 中
 					if (!currentKnowledge.value.has(item.word)) {
 						currentKnowledge.value.set(item.word, {
@@ -982,8 +981,6 @@ const initKnowledges = async () => {
 					}
 				});
 			});
-
-			console.log(currentKnowledge.value);
 		}
 	} catch (error) {
 		console.error(error);
@@ -1107,7 +1104,6 @@ const initRightPanelScenes = (scriptData) => {
 			const [speaker, text] = dialogue.text[i];
 			const textZhPair = dialogue.text_zh[i] || ["", ""];
 			const [speakerZh, textZh] = textZhPair;
-			console.log(dialogue.text[i]);
 			// 创建唯一ID
 			const blockId = `block_${dialogueIndex}_${i}`;
 
@@ -1263,6 +1259,23 @@ const updateCurrentScene = async () => {
 
 	const content = await editor.value.save();
 	const editorBlocks = content.blocks;
+
+	// 检查编辑器是否为空，如果为空则添加默认标题
+	if (editorBlocks.length === 0) {
+		await editor.value.render({
+			blocks: [
+				{
+					type: "paragraph",
+					data: {
+						text: "# Default Card Title",
+					},
+				},
+			],
+		});
+		// 重新获取内容
+		content = await editor.value.save();
+		editorBlocks = content.blocks;
+	}
 
 	// 检查是否存在标题
 	const hasTitle = editorBlocks.some(
@@ -2281,30 +2294,31 @@ const formatKnowledgeDisplay = (knowledgeItems) => {
 const handleSceneChange = () => {
 	if (scenes.value.length > 0) {
 		currentScene.value = scenes.value[currentSceneIndex.value];
-
-		// 使用场景结构和blocksMap重建当前场景的块数组
 		const newSceneBlocks = [];
 		const currentSceneStructure = sceneStructure.value[currentSceneIndex.value];
 
 		if (currentSceneStructure && currentSceneStructure.blockIds) {
+			const sceneId = `Scene${currentSceneIndex.value + 1}`;
+			const sceneKnowledge = Array.from(currentKnowledge.value.values()).filter(
+				(k) => k.scenes && k.scenes.has(sceneId)
+			);
+
 			// 遍历当前场景的所有块ID
 			for (const blockId of currentSceneStructure.blockIds) {
-				// 获取原文块
 				const originalBlock = blocksMap.value.get(blockId);
 				if (originalBlock) {
 					// 添加原文块 - 使用深拷贝确保不共享引用
 					const clonedOriginalBlock = JSON.parse(JSON.stringify(originalBlock));
 
-					// 检查是否有对应的知识点块
-					const knowledgeId = `knowledge-${blockId}`;
-					const sceneId = `Scene${currentSceneIndex.value + 1}`;
-					const sceneKnowledge = Array.from(
-						currentKnowledge.value.values()
-					).filter((k) => k.scenes && k.scenes.has(sceneId));
+					// 找出与当前块相关的知识点
+					const blockKnowledge = sceneKnowledge.filter((k) =>
+						clonedOriginalBlock.text
+							.toLowerCase()
+							.includes(k.word.toLowerCase())
+					);
 
-					// 如果有匹配的知识点，先应用高亮
-					if (sceneKnowledge.length > 0) {
-						// 应用知识点高亮
+					// 如果有匹配的知识点，应用高亮
+					if (blockKnowledge.length > 0) {
 						applyKnowledgeHighlight(
 							clonedOriginalBlock,
 							currentSceneIndex.value,
@@ -2312,29 +2326,27 @@ const handleSceneChange = () => {
 						);
 					}
 
-					// 添加原文块（已经可能被高亮处理过）
+					// 添加原文块
 					newSceneBlocks.push(clonedOriginalBlock);
 
 					// 检查是否有对应的翻译块
 					const translationId = `translation-${blockId}`;
 					if (blocksMap.value.has(translationId)) {
-						// 添加翻译块 - 使用深拷贝确保不共享引用
 						const translationBlock = blocksMap.value.get(translationId);
 						newSceneBlocks.push(JSON.parse(JSON.stringify(translationBlock)));
 					}
 
-					// 如果有知识点，添加知识点块
-					if (sceneKnowledge.length > 0) {
-						// 创建知识点块
+					// 只有当当前块包含知识点时，才添加知识点块
+					if (blockKnowledge.length > 0) {
+						const knowledgeId = `knowledge-${blockId}`;
 						const knowledgeBlock = {
 							id: knowledgeId,
-							text: formatKnowledgeDisplay(sceneKnowledge),
+							text: formatKnowledgeDisplay(blockKnowledge),
 							isTitle: false,
 							isKnowledge: true,
 							originalId: blockId,
 							originalIndex: blockId,
 						};
-						// 保存到blocksMap
 						blocksMap.value.set(knowledgeId, knowledgeBlock);
 						newSceneBlocks.push(JSON.parse(JSON.stringify(knowledgeBlock)));
 					}
@@ -2342,16 +2354,7 @@ const handleSceneChange = () => {
 			}
 		}
 
-		// 更新当前场景块数组
 		currentSceneBlocks.value = newSceneBlocks;
-
-		// // 滚动到选中场景的位置
-		// const editorBlock = document.querySelector(
-		// 	`.ce-block:nth-child(${currentScene.value.index + 1})`
-		// );
-		// if (editorBlock) {
-		// 	editorBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-		// }
 	}
 };
 
