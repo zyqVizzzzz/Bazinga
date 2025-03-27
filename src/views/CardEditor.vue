@@ -660,30 +660,26 @@ const exportToMarkdown = async () => {
 					if (cleanText.length >= 2) {
 						const [word, translation] = cleanText;
 						const knowledge = Array.from(currentKnowledge.value.values()).find(
-							(k) => k.word === word || k.word_zh === translation
+							(k) => (k && k.word === word) || (k && k.word_zh === translation)
 						);
 
-						// 检查前一个块是否也是知识点
-						const prevBlock = sceneBlocks[sceneBlocks.indexOf(block) - 1];
-						const isPrevKnowledge = prevBlock && prevBlock.isKnowledge;
-
-						// 如果前一个块是知识点，添加空行
-						if (isPrevKnowledge) {
-							markdownContent += "\n";
-						}
-
 						if (knowledge) {
+							// 添加空值检查
+							const synonyms = knowledge.synonyms || "";
 							markdownContent += `> 💡 **${knowledge.word}** ｜ ${
-								knowledge.word_zh
+								knowledge.word_zh || ""
 							}
-> 📝 **解释**：${knowledge.definition_zh}
-> 💫 **例句**：${knowledge.example} / ${knowledge.example_zh}
-> 🎯 **同义词**：${knowledge.synonyms
+> 📝 **解释**：${knowledge.definition_zh || ""}
+> 💫 **例句**：${knowledge.example || ""} / ${knowledge.example_zh || ""}
+> 🎯 **同义词**：${synonyms
 								.split("|")
+								.filter(Boolean)
 								.map((s, i) => `${i + 1}/ ${s.trim()}`)
 								.join(" ")}\n\n---\n\n`;
 						} else {
-							markdownContent += `> 💡 ${word} - ${translation}\n\n---\n\n`;
+							markdownContent += `> 💡 ${word || ""} - ${
+								translation || ""
+							}\n\n---\n\n`;
 						}
 					}
 				}
