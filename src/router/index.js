@@ -13,7 +13,7 @@ import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
-// import Test from "@/views/Test.vue";
+import Test from "@/views/Test.vue";
 // import GenPractice from "@/prompt/practice_prompt.vue";
 // import GenKnowledge from "@/prompt/knowledge_prompt.vue";
 // import GenerateInvitation from "@/prompt/generate_invitation.vue";
@@ -98,11 +98,11 @@ const routes = [
 		name: "privacypolicy",
 		component: () => import("@/layout/privacyPolicy.vue"),
 	},
-	// {
-	// 	path: "/test",
-	// 	name: "Test",
-	// 	component: Test,
-	// },
+	{
+		path: "/test",
+		name: "Test",
+		component: Test,
+	},
 	// {
 	// 	path: "/gen_practice",
 	// 	name: "gen_practice",

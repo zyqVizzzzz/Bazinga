@@ -21,7 +21,7 @@
 						<div class="host-avatar">
 							<img
 								v-if="selectedPodcast.options && selectedPodcast.options.voice"
-								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${selectedPodcast.options.voice.toLowerCase()}.jpg`"
+								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${selectedPodcast.options.voice.toLowerCase()}.png`"
 								alt="主持人头像"
 							/>
 							<div class="default-avatar" v-else>

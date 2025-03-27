@@ -13,18 +13,8 @@ export function escapeRegExp(string) {
  * @returns {number} - 应该生成的知识点数量
  */
 export const calculateMaxPhrasesForScene = (wordCount) => {
-	// 根据单词数量动态计算关键词数量
-	if (wordCount <= 100) {
-		return 3;
-	} else if (wordCount <= 200) {
-		return 5;
-	} else if (wordCount <= 500) {
-		return 8;
-	} else if (wordCount <= 1000) {
-		return 12;
-	} else {
-		return 15; // 最多生成15个知识点
-	}
+	// 每100个单词提取5个知识点
+	return Math.ceil((wordCount / 100) * 5);
 };
 
 /**
