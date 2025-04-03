@@ -24,7 +24,7 @@
 			</div>
 			<div class="flex-none">
 				<ul class="menu menu-horizontal gap-2">
-					<li>
+					<li v-if="isLogin">
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/' }"
@@ -33,7 +33,7 @@
 							{{ t("nav.home") }}
 						</a>
 					</li>
-					<li>
+					<li v-if="isLogin">
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/collections' }"

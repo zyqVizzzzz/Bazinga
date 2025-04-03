@@ -51,24 +51,28 @@ export function highlightKnowledgeInText(text, knowledgeItems) {
 	}
 
 	let highlightedText = text;
+	const processedWords = new Set(); // 追踪已处理的知识点
 
 	knowledgeItems.forEach((item) => {
 		// 获取原始知识点关键词
 		const originalWord = item.word;
+
+		// 如果这个知识点已经被处理过，跳过
+		if (processedWords.has(originalWord.toLowerCase())) {
+			return;
+		}
 
 		// 不区分大小写的匹配
 		const textLower = text.toLowerCase();
 		const searchTextLower = originalWord.toLowerCase();
 
 		if (textLower.includes(searchTextLower)) {
-			// 使用正则表达式进行替换，保留原始大小写
-			const regex = new RegExp(escapeRegExp(originalWord), "gi");
-
+			// 使用正则表达式，但只替换第一次出现的位置
+			const regex = new RegExp(escapeRegExp(originalWord), "i");
 			highlightedText = highlightedText.replace(regex, (match) => {
+				processedWords.add(searchTextLower); // 标记该知识点已处理
 				return `<mark class="pink">${match}</mark>`;
 			});
-		} else {
-			// console.log(`未找到匹配: "${originalWord}"`);
 		}
 	});
 
@@ -87,8 +91,6 @@ export function applyKnowledgeHighlight(block, sceneIndex, knowledgeMap) {
 
 	// 获取场景ID
 	const sceneId = `Scene${sceneIndex + 1}`;
-
-	// 初始化 displayText 为原始文本
 	block.displayText = block.text;
 
 	// 收集该场景的所有知识点
@@ -108,17 +110,7 @@ export function applyKnowledgeHighlight(block, sceneIndex, knowledgeMap) {
 	if (matchedKnowledge.length > 0) {
 		// 按照知识点长度排序，先处理较长的知识点，避免部分匹配问题
 		matchedKnowledge.sort((a, b) => b.word.length - a.word.length);
-
-		// 直接调用 highlightKnowledgeInText 函数
-		const beforeHighlight = block.displayText;
 		block.displayText = highlightKnowledgeInText(block.text, matchedKnowledge);
-
-		// 检查是否成功高亮
-		const hasChanged = beforeHighlight !== block.displayText;
-		if (hasChanged) {
-			// console.log(`高亮后文本: "${block.displayText}"`);
-		}
-	} else {
 	}
 
 	return block;

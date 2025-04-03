@@ -9,7 +9,7 @@
 					<input
 						v-model="url"
 						type="url"
-						placeholder="请输入网页地址..."
+						placeholder="请输入 url..."
 						class="input input-bordered w-full pr-24"
 						:disabled="importing"
 					/>
@@ -27,7 +27,7 @@
 				</div>
 			</div>
 			<div class="text-xs text-gray-500 mt-2">
-				注：由于网页结构、网络差异等，部分网站可能无法正确导入内容。建议导入后检查预览内容是否完整。
+				注：由于国内网络限制等原因，部分网站可能无法正确导入内容。建议导入后检查预览内容是否完整。
 			</div>
 
 			<!-- 导入预览区域 -->

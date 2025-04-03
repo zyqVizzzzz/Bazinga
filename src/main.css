@@ -79,14 +79,9 @@ mark.pink {
 	padding-bottom: 100px !important;
 }
 
-.container:has(.editor-box) {
-	margin: 1rem auto 2rem;
-	max-width: 100%;
-}
-
 /* 确保所有父容器都有合适的高度 */
 .container:has(.editor-box) {
-	margin: 1rem auto 2rem;
+	margin: 1rem auto 1rem;
 	max-width: 100%;
 }
 

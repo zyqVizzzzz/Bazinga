@@ -12,9 +12,10 @@ import Signup from "@/views/Signup.vue";
 import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
+import CardEditor2 from "@/views/CardEditor/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
-// import GenPractice from "@/prompt/practice_prompt.vue";
+import GenPractice from "@/prompt/practice_prompt.vue";
 // import GenKnowledge from "@/prompt/knowledge_prompt.vue";
 // import GenerateInvitation from "@/prompt/generate_invitation.vue";
 // import GenerateHustle from "@/prompt/generate_hustle.vue";
@@ -23,7 +24,7 @@ const routes = [
 	{
 		path: "/",
 		name: "Home",
-		component: Home,
+		component: Login,
 	},
 	{
 		path: "/collections",
@@ -49,6 +50,11 @@ const routes = [
 		path: "/card-editor/:id/:season/:episode",
 		name: "CardEditor",
 		component: CardEditor,
+	},
+	{
+		path: "/card-editor2/:id/:season/:episode",
+		name: "CardEditor2",
+		component: CardEditor2,
 	},
 	{
 		path: "/notebook",
@@ -103,11 +109,11 @@ const routes = [
 		name: "Test",
 		component: Test,
 	},
-	// {
-	// 	path: "/gen_practice",
-	// 	name: "gen_practice",
-	// 	component: GenPractice,
-	// },
+	{
+		path: "/gen_practice",
+		name: "gen_practice",
+		component: GenPractice,
+	},
 	// {
 	// 	path: "/gen_knowledge",
 	// 	name: "gen_knowledge",

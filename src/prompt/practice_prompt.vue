@@ -75,6 +75,21 @@
 				style="height: auto"
 			></textarea>
 		</div>
+
+		<div class="bg-white rounded-lg shadow-md p-6">
+			<h2 class="text-xl font-bold mb-4">播客上传</h2>
+			<textarea
+				v-model="podcastContent"
+				class="w-full min-h-[10rem] p-2 border rounded-md mb-4"
+				placeholder="请输入播客内容..."
+			></textarea>
+			<button
+				@click="uploadPodcast"
+				class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
+			>
+				上传播客
+			</button>
+		</div>
 	</div>
 </template>
 
@@ -109,12 +124,71 @@ import {
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67230dee6fc3d389ea1ffee1");
+const lessonId = ref("67b86d75e93057b3448b2658");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
 const dialogues_number = ref("5");
 const generatedContent = ref("");
+
+// 新增响应式状态
+const podcastContent = ref("");
+
+// 新增上传播客方法
+const uploadPodcast = async () => {
+	if (!podcastContent.value.trim()) {
+		alert("请输入播客内容");
+		return;
+	}
+
+	try {
+		// 尝试解析 JSON 字符串
+		let parsedContent;
+		try {
+			parsedContent = JSON.parse(podcastContent.value);
+			console.log(parsedContent);
+		} catch (error) {
+			alert("JSON 格式不正确，请检查输入内容");
+			return;
+		}
+
+		// 转换数据格式
+		const podcastData = {
+			knowledge: parsedContent.knowledge, // 这里需要传入知识点名称
+			resourceId: lessonId.value, // 使用 lessonId 作为 resourceId
+			script: parsedContent.script || [], // 英文脚本
+			chineseScript: parsedContent.chineseScript || [], // 中文脚本
+			audioPath: "", // 音频路径，初始为空
+			sceneId: sceneId.value, // 使用输入的 sceneId
+			options: {
+				voice: parsedContent.character || "jinji", // 使用传入的角色，默认为 jinji
+				speed: "normal",
+				model: "Qwen/QwQ-32B-Preview",
+			},
+		};
+
+		console.log("准备发送的数据：", podcastData);
+
+		const response = await apiClient.post("/podcasts/save", podcastData);
+
+		if (response.data.code === 200) {
+			console.log("播客上传成功！");
+			podcastContent.value = ""; // 清空输入框
+		}
+
+		// const response = await apiClient.post("/podcast/upload", {
+		// 	content: parsedContent
+		// });
+
+		// if (response.data.code === 200) {
+		// 	alert("播客上传成功！");
+		// 	podcastContent.value = ""; // 清空输入框
+		// }
+	} catch (error) {
+		console.error("上传播客失败:", error);
+		alert("上传失败，请重试");
+	}
+};
 
 // 生成内容方法
 const generateContent = async () => {
