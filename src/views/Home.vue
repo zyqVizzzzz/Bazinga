@@ -1,5 +1,5 @@
 <template>
-	<div class="home">
+	<div class="home" v-if="isLogin">
 		<!-- 标题 -->
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
@@ -48,7 +48,6 @@
 				</div>
 			</div>
 		</div>
-
 		<!-- More -->
 		<div class="text-center">
 			<button class="retro-btn-medium" @click="goToAllScenes">
@@ -62,11 +61,17 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { useI18n } from "vue-i18n";
+
+import { useLoginStore } from "@/store/index";
+
+const loginStore = useLoginStore();
+const { setLoginState, setUserInfo } = loginStore;
+const isLogin = computed(() => loginStore.isLogin);
 
 const { t, locale } = useI18n();
 const router = useRouter();
@@ -276,5 +281,15 @@ const goToCollection = (id) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.icp-info a {
+	color: inherit;
+	text-decoration: none;
+	transition: color 0.2s;
+}
+
+.icp-info a:hover {
+	color: var(--primary-color);
 }
 </style>

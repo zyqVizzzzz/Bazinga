@@ -24,7 +24,7 @@ const routes = [
 	{
 		path: "/",
 		name: "Home",
-		component: Login,
+		component: Home,
 	},
 	{
 		path: "/collections",
@@ -113,6 +113,11 @@ const routes = [
 		path: "/gen_practice",
 		name: "gen_practice",
 		component: GenPractice,
+	},
+	{
+		path: "/molidoki",
+		name: "molidoki",
+		component: () => import("@/views/MoliDoki.vue"),
 	},
 	// {
 	// 	path: "/gen_knowledge",

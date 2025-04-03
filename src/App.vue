@@ -29,8 +29,11 @@ onMounted(async () => {
 </script>
 
 <template>
-	<Navbar />
-	<div class="content">
+	<Navbar v-if="$route.name !== 'molidoki'" />
+	<div v-if="$route.name !== 'molidoki'" class="content">
+		<router-view></router-view>
+	</div>
+	<div class="launch" v-else>
 		<router-view></router-view>
 	</div>
 </template>

@@ -6,7 +6,7 @@
 			background: isCategory || isProfile ? 'rgba(255,255,255,0.1)' : '#fff',
 			'border-radius': isCategory ? '0px' : '15px',
 		}"
-		v-if="!isEditor"
+		v-if="!isEditor && !isLaunch"
 	>
 		<div class="container mx-auto px-4 flex justify-between items-center">
 			<div class="flex-none">
@@ -94,6 +94,7 @@ const username = ref(""); // 保存已登录用户的名字
 const isCategory = ref(false);
 const isProfile = ref(false);
 const isEditor = ref(false);
+const isLaunch = ref(false);
 
 // 跳转到主页
 const goToHome = () => {
