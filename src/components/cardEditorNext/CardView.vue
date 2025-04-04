@@ -48,6 +48,7 @@
 									@toggle-narration="handleToggleNarration(index)"
 									@manual-knowledge="handleShowManualKnowledgeModal(index)"
 									@split-scene="handleSplitScene(index)"
+									@delete-block="handleDeleteBlock(index)"
 								/>
 								<!-- 文本块 -->
 								<div
@@ -124,6 +125,17 @@
 					</div>
 				</div>
 			</div>
+			<!-- 全局 Loading -->
+			<div
+				v-if="isLoading"
+				class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
+				style="border-radius: 12px; pointer-events: auto"
+				@click.stop
+			>
+				<div class="crt-loading">
+					<span class="loading loading-bars"></span>
+				</div>
+			</div>
 		</div>
 		<!-- 场景缩略图列表 -->
 		<div class="scene-thumbnails-container w-1/4">
@@ -158,17 +170,6 @@
 				</template>
 			</div>
 		</div>
-
-		<!-- 全局 Loading -->
-		<div
-			v-if="isLoading"
-			class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
-			style="border-radius: 12px"
-		>
-			<div class="crt-loading">
-				<span class="loading loading-bars"></span>
-			</div>
-		</div>
 	</div>
 
 	<!-- 知识点详情模态框 -->
@@ -193,6 +194,27 @@
 					<button
 						class="btn btn-sm btn-secondary text-white"
 						@click="handleConfirmDelete"
+					>
+						确认删除
+					</button>
+					<button class="btn btn-sm">取消</button>
+				</form>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>关闭</button>
+		</form>
+	</dialog>
+
+	<dialog ref="deleteBlockModalRef" class="modal">
+		<div class="modal-box">
+			<h3 class="font-bold text-lg">删除文本块</h3>
+			<p class="py-4">确定要删除这个文本块吗？</p>
+			<div class="modal-action justify-center">
+				<form method="dialog" class="flex gap-2">
+					<button
+						class="btn btn-sm btn-secondary text-white"
+						@click="handleConfirmDeleteBlock"
 					>
 						确认删除
 					</button>
@@ -251,6 +273,10 @@ const deleteConfirmModalRef = ref(null);
 const pendingDeleteWord = ref(null); // 待删除知识点
 const deletedKnowledge = ref(new Set()); // 添加删除缓存
 
+const deleteBlockModalRef = ref(null);
+const pendingDeleteBlockIndex = ref(null);
+const deletedBlocks = ref([]); // 存储已删除的块缓存
+
 // 翻译
 const translatingBlockId = ref(null);
 // 知识点
@@ -271,7 +297,13 @@ onMounted(async () => {
 		deleteConfirmModalRef.value?.showModal();
 	});
 	document.addEventListener("regenerateKnowledge", handleRegenerateKnowledge);
-	await initializeView();
+	// 添加 loading 状态
+	isLoading.value = true;
+	try {
+		await initializeView();
+	} finally {
+		isLoading.value = false;
+	}
 });
 
 onUnmounted(() => {
@@ -367,6 +399,71 @@ const handleConfirmDelete = () => {
 
 		// 6. 清空待删除词
 		pendingDeleteWord.value = null;
+	}
+};
+
+// 添加删除处理函数
+const handleDeleteBlock = (index) => {
+	pendingDeleteBlockIndex.value = index;
+	deleteBlockModalRef.value?.showModal();
+};
+
+const handleConfirmDeleteBlock = () => {
+	if (pendingDeleteBlockIndex.value !== null) {
+		const index = pendingDeleteBlockIndex.value;
+		const block = currentBlocks.value[index];
+		const blockId = block.id || block.originalIndex;
+
+		const indexesToDelete = [];
+		const blocksToDelete = []; // 存储要删除的块
+		indexesToDelete.push(index); // 找出所有需要删除的关联块的索引
+		blocksToDelete.push(block); // 添加原文本块
+
+		// 查找关联的翻译块和知识点块
+		currentBlocks.value.forEach((b, i) => {
+			// 查找翻译块
+			if (
+				b.isTranslated &&
+				(b.originalId === blockId || b.id === `translation-${blockId}`)
+			) {
+				indexesToDelete.push(i);
+				blocksToDelete.push(b);
+			}
+			// 查找知识点块
+			if (b.isKnowledge && b.id?.startsWith(`knowledge-${blockId}`)) {
+				indexesToDelete.push(i);
+				blocksToDelete.push(b);
+			}
+		});
+
+		// 从大到小排序索引，以便从后向前删除
+		indexesToDelete.sort((a, b) => b - a);
+
+		// 删除所有相关块
+		indexesToDelete.forEach((i) => {
+			currentBlocks.value.splice(i, 1);
+		});
+
+		// 将删除的块添加到删除列表
+		deletedBlocks.value.push({
+			timestamp: new Date().toISOString(),
+			sceneIndex: currentIndex.value,
+			blocks: blocksToDelete,
+		});
+
+		// 更新场景
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, sceneIndex) =>
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		// 重置状态
+		selectedBlockIndex.value = null;
+		pendingDeleteBlockIndex.value = null;
+
+		showToast({ message: "删除成功", type: "success" });
 	}
 };
 
