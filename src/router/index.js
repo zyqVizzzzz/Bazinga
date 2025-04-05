@@ -12,7 +12,6 @@ import Signup from "@/views/Signup.vue";
 import ForgotPassword from "@/views/ForgotPassword.vue";
 import Membership from "@/views/Membership.vue";
 import CardEditor from "@/views/CardEditor.vue";
-import CardEditor2 from "@/views/CardEditor/CardEditor.vue";
 import CollectionSetup from "@/views/CollectionSetup.vue";
 import Test from "@/views/Test.vue";
 import GenPractice from "@/prompt/practice_prompt.vue";
@@ -50,11 +49,6 @@ const routes = [
 		path: "/card-editor/:id/:season/:episode",
 		name: "CardEditor",
 		component: CardEditor,
-	},
-	{
-		path: "/card-editor2/:id/:season/:episode",
-		name: "CardEditor2",
-		component: CardEditor2,
 	},
 	{
 		path: "/notebook",

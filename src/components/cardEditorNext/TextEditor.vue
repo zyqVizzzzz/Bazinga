@@ -34,7 +34,6 @@
 				class="editor-wrapper text-sm rounded shadow-editor"
 				style="overflow-y: auto"
 			>
-				<!-- <div id="editor" class="editorjs-container"></div> -->
 				<textarea
 					id="editor"
 					class="editorjs-container"
@@ -46,16 +45,6 @@
 		</div>
 		<!-- 添加制作卡片合辑按钮 -->
 		<div class="flex justify-center mt-6">
-			<!-- <button class="retro-btn-large" @click="splitScenes">
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">
-							<i class="bi bi-scissors me-2"></i>
-							<span>分割场景</span>
-						</div>
-					</div>
-				</div>
-			</button> -->
 			<button class="retro-btn-large" @click="createCollection">
 				<div class="btn-shadow">
 					<div class="btn-edge">
@@ -73,13 +62,10 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, computed, onBeforeMount, nextTick } from "vue";
+import { ref, onMounted } from "vue";
 import { showToast } from "@/components/common/toast.js";
-import EditorJS from "@editorjs/editorjs";
 import { useRoute, useRouter } from "vue-router";
-import { v4 as uuidv4 } from "uuid";
-import ImportDialog from "@/components/cardEditor/ImportDialog.vue";
-import apiClient from "@/api";
+import ImportDialog from "@/components/cardEditorNext/ImportDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -167,104 +153,6 @@ const handleImportConfirm = async (importData) => {
 	}
 
 	showToast({ message: "导入成功", type: "success" });
-};
-
-// 检查是否为顶层标题
-const isTopLevelTitle = (line) => {
-	console.log(line);
-	// 如果包含多个句子，不是标题
-	if (hasMultipleSentences(line)) return false;
-	// 罗马数字（包括单独的 i. ii. 等）
-	if (/^[ivxIVX]+\.\s*$/.test(line)) return true;
-	// Markdown 标题
-	if (/^#\s/.test(line)) return true;
-	// 数字和字母序号（匹配常见的分隔符：点、括号、斜杠、逗号、省略号等）
-	if (/^(?:[1-9][0-9]?|[A-Za-z])[.,)\s/]*(?:\s.*)?$/.test(line)) return true;
-	// 特殊分隔符
-	if (/^[-*=]{3,}$/.test(line)) return true;
-	return false;
-};
-
-// 检查是否包含多个句子
-const hasMultipleSentences = (text) => {
-	// 移除开头的序号、符号等
-	const cleanText = text.replace(/^[ivxIVX0-9A-Za-z][.,)\s/-]*\s*/, "").trim();
-	// 检查是否包含多个句子（用句号、问号或感叹号分隔）
-	const sentences = cleanText
-		.split(/[.!?]+/)
-		.filter((s) => s.trim().length > 0);
-	return sentences.length > 1;
-};
-
-// 智能分割检查
-const shouldSplitByLength = (lines) => {
-	const MAX_LINES = 15;
-	const MAX_WORDS = 200;
-
-	if (lines.length > MAX_LINES) return true;
-
-	const totalWords = lines.reduce((count, line) => {
-		return count + line.trim().split(/\s+/).length;
-	}, 0);
-
-	return totalWords > MAX_WORDS;
-};
-
-// 添加分割场景方法
-const splitScenes = () => {
-	try {
-		const textContent = editorContent.value;
-		if (!textContent.trim()) {
-			showToast({ message: "请先输入内容", type: "warning" });
-			return;
-		}
-
-		let lines = textContent.split("\n");
-		let processedLines = [];
-		let currentScene = [];
-
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-
-			// 2. 检查顶层标题或分隔符
-			if (isTopLevelTitle(line)) {
-				console.log("ddd");
-				if (currentScene.length > 0) {
-					processedLines.push(...currentScene, "", "");
-					currentScene = [];
-				}
-			}
-
-			// 1. 检查空行
-			if (!line.trim()) {
-				if (currentScene.length > 0) {
-					processedLines.push(...currentScene, "", "");
-					currentScene = [];
-				}
-				continue;
-			}
-
-			currentScene.push(line);
-
-			// 3. 智能分割检查
-			if (shouldSplitByLength(currentScene)) {
-				processedLines.push(...currentScene, "", "");
-				currentScene = [];
-			}
-		}
-
-		// 处理最后一个场景
-		if (currentScene.length > 0) {
-			processedLines.push(...currentScene);
-		}
-
-		// 更新编辑器内容
-		editorContent.value = processedLines.join("\n");
-		showToast({ message: "场景分割完成", type: "success" });
-	} catch (error) {
-		console.error("场景分割失败:", error);
-		showToast({ message: "分割失败，请重试", type: "error" });
-	}
 };
 
 onMounted(async () => {

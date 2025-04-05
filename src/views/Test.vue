@@ -87,6 +87,64 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Azure TTS 测试区域 -->
+		<div class="max-w-2xl mx-auto mt-16">
+			<div class="retro-title-box text-center mb-10">
+				<h1 class="text-2xl font-bold">
+					<div class="text-shadow-retro">
+						<span><mark class="retro-highlight">语音合成测试</mark></span>
+					</div>
+				</h1>
+			</div>
+
+			<div class="space-y-4">
+				<textarea
+					v-model="ttsText"
+					placeholder="请输入要转换的文本..."
+					class="textarea textarea-bordered w-full h-32"
+					:disabled="ttsLoading"
+				></textarea>
+
+				<div class="flex gap-4 items-center">
+					<select
+						v-model="selectedVoice"
+						class="select select-bordered flex-1"
+						:disabled="ttsLoading"
+					>
+						<option value="en-US-AvaNeural">AMBER</option>
+						<option value="zh-CN-YunxiNeural">云希 (男声)</option>
+						<option value="zh-CN-XiaoyiNeural">小怡 (女声)</option>
+					</select>
+
+					<button
+						class="retro-btn-medium"
+						@click="generateSpeech"
+						:disabled="ttsLoading || !ttsText"
+					>
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<span
+										v-if="ttsLoading"
+										class="loading loading-spinner loading-xs"
+									></span>
+									<span v-else>生成语音</span>
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+
+				<!-- 音频播放器 -->
+				<audio
+					v-if="audioUrl"
+					controls
+					class="w-full mt-4"
+					:src="audioUrl"
+				></audio>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -98,6 +156,12 @@ import apiClient from "@/api";
 const url = ref("");
 const loading = ref(false);
 const content = ref(null);
+
+// 添加 TTS 相关的变量
+const ttsText = ref("");
+const ttsLoading = ref(false);
+const audioUrl = ref("");
+const selectedVoice = ref("en-US-AvaNeural");
 
 const importUrl = async () => {
 	if (!url.value || loading.value) return;
@@ -122,6 +186,40 @@ const importUrl = async () => {
 		});
 	} finally {
 		loading.value = false;
+	}
+};
+
+// 添加生成语音的方法
+const generateSpeech = async () => {
+	if (!ttsText.value || ttsLoading.value) return;
+
+	try {
+		ttsLoading.value = true;
+		const response = await apiClient.post("/audio", {
+			text: ttsText.value,
+			options: {
+				provider: "azure",
+				voice: selectedVoice.value,
+				style: "whimsical", // 可选：whimsical, cheerful, excited
+				styledegree: "2", // 范围：0.01-2
+				role: "YoungAdult", // 场景角色
+				rate: "0%", // 语速调整
+				pitch: "0%", // 音调调整
+			},
+		});
+
+		if (response.data.data.audioPath) {
+			audioUrl.value = response.data.data.audioPath;
+			showToast({ message: "语音生成成功", type: "success" });
+		}
+	} catch (error) {
+		console.error("语音生成失败:", error);
+		showToast({
+			message: error.response?.data?.message || "语音生成失败",
+			type: "error",
+		});
+	} finally {
+		ttsLoading.value = false;
 	}
 };
 </script>

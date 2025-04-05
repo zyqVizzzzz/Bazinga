@@ -3,7 +3,7 @@
 		class="card-view mx-auto flex gap-4 justify-center items-start w-4/5"
 		v-if="viewMode === 'card'"
 	>
-		<div class="editor-container w-3/4">
+		<div class="editor-container w-4/5">
 			<!-- 控制按钮组 -->
 			<div class="editor-action-buttons">
 				<div class="tooltip" data-tip="退出">
@@ -22,7 +22,41 @@
 						<div class="btn-shadow">
 							<div class="btn-edge">
 								<div class="btn-face">
-									<i class="bi bi-save text-lg"></i>
+									<i class="bi bi-floppy text-lg"></i>
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="tooltip" data-tip="操作说明">
+					<button class="retro-btn" @click="handleSave">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<i class="bi bi-question-circle text-lg"></i>
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="my-1 border-t border-gray-200"></div>
+				<div class="tooltip" data-tip="生成播客" v-if="isCustom">
+					<button class="retro-btn" @click="handleShowPodcastModal">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<PodcastIcon size="7" />
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="tooltip" data-tip="已删除内容" v-if="isCustom">
+					<button class="retro-btn" @click="handleShowRecycleBin">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<HistoryIcon size="6" />
 								</div>
 							</div>
 						</div>
@@ -136,38 +170,41 @@
 					<span class="loading loading-bars"></span>
 				</div>
 			</div>
-		</div>
-		<!-- 场景缩略图列表 -->
-		<div class="scene-thumbnails-container w-1/4">
-			<div class="scene-thumbnails">
-				<template v-for="(scene, index) in scenes" :key="index">
-					<!-- 场景缩略图 -->
-					<div
-						class="scene-thumbnail"
-						:class="{ active: currentIndex === index }"
-						@click="switchScene(index)"
-					>
-						<div class="thumbnail-content">
-							<div class="thumbnail-title truncate" v-if="scene[0]?.text">
-								{{ scene[0].text.replace(/^#\s*/, "") }}
-							</div>
-							<div class="thumbnail-preview">
-								{{ getScenePreview(scene) }}
+			<!-- 场景缩略图列表 -->
+			<div class="scene-thumbnails-container w-1/5">
+				<div class="scene-thumbnails">
+					<template v-for="(scene, index) in scenes" :key="index">
+						<!-- 场景缩略图 -->
+						<div
+							class="scene-thumbnail"
+							:class="{ active: currentIndex === index }"
+							@click="switchScene(index)"
+						>
+							<div class="thumbnail-content">
+								<div class="thumbnail-title line-clamp-4" v-if="scene[0]?.text">
+									{{ scene[0].text.replace(/^#\s*/, "") }}
+								</div>
+								<!-- <div class="thumbnail-preview">
+									{{ getScenePreview(scene) }}
+								</div> -->
 							</div>
 						</div>
-					</div>
 
-					<!-- 合并按钮，最后一个场景不显示 -->
-					<div v-if="index < scenes.length - 1" class="merge-button-container">
-						<button
-							class="merge-button"
-							@click="handleMergeScenes(index)"
-							title="合并场景"
+						<!-- 合并按钮，最后一个场景不显示 -->
+						<div
+							v-if="index < scenes.length - 1"
+							class="merge-button-container"
 						>
-							<i class="bi bi-arrows-collapse"></i>
-						</button>
-					</div>
-				</template>
+							<button
+								class="merge-button"
+								@click="handleMergeScenes(index)"
+								title="合并场景"
+							>
+								<i class="bi bi-arrows-collapse"></i>
+							</button>
+						</div>
+					</template>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -185,58 +222,49 @@
 		@generate-knowledge="handleManualGenerateKnowledge"
 	/>
 
-	<dialog ref="deleteConfirmModalRef" class="modal">
-		<div class="modal-box">
-			<h3 class="font-bold text-lg">删除知识点</h3>
-			<p class="py-4">确定要删除这个知识点吗？</p>
-			<div class="modal-action justify-center">
-				<form method="dialog" class="flex gap-2">
-					<button
-						class="btn btn-sm btn-secondary text-white"
-						@click="handleConfirmDelete"
-					>
-						确认删除
-					</button>
-					<button class="btn btn-sm">取消</button>
-				</form>
-			</div>
-		</div>
-		<form method="dialog" class="modal-backdrop">
-			<button>关闭</button>
-		</form>
-	</dialog>
+	<PodcastModal
+		ref="podcastModalRef"
+		:scene-index="currentIndex"
+		:knowledge="selectedPodcastKnowledge"
+	/>
 
-	<dialog ref="deleteBlockModalRef" class="modal">
-		<div class="modal-box">
-			<h3 class="font-bold text-lg">删除文本块</h3>
-			<p class="py-4">确定要删除这个文本块吗？</p>
-			<div class="modal-action justify-center">
-				<form method="dialog" class="flex gap-2">
-					<button
-						class="btn btn-sm btn-secondary text-white"
-						@click="handleConfirmDeleteBlock"
-					>
-						确认删除
-					</button>
-					<button class="btn btn-sm">取消</button>
-				</form>
-			</div>
-		</div>
-		<form method="dialog" class="modal-backdrop">
-			<button>关闭</button>
-		</form>
-	</dialog>
+	<DeleteKnowledgeModal
+		ref="deleteKnowledgeModalRef"
+		@confirm="handleConfirmDelete"
+	/>
+
+	<DeleteConfirmModal
+		ref="deleteBlockModalRef"
+		title="删除文本块"
+		message="确定要删除这个文本块吗？"
+		@confirm="handleConfirmDeleteBlock"
+	/>
+
+	<RecycleBinModal
+		ref="recycleBinModalRef"
+		:deleted-knowledge="deletedKnowledge"
+		:deleted-blocks="deletedBlocks"
+		@restore-knowledge="handleRestoreKnowledge"
+		@restore-blocks="handleRestoreBlocks"
+	/>
 </template>
 
 <script setup>
 import { ref, watch, computed, nextTick, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import apiClient from "@/api";
+import { showToast } from "@/components/common/toast.js";
+
 import KnowledgeDetailModal from "./KnowledgeDetailModal.vue";
 import TextBlockToolbar from "./TextBlockToolbar.vue";
 import ManualKnowledgeModal from "./ManualKnowledgeModal.vue";
-
-import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
-import apiClient from "@/api";
-import { showToast } from "@/components/common/toast.js";
+import DeleteConfirmModal from "./DeleteConfirmModal.vue";
+import DeleteKnowledgeModal from "./DeleteKnowledgeModal.vue";
+import PodcastModal from "./PodcastModal.vue";
+import RecycleBinModal from "./RecycleBinModal.vue";
+import PodcastIcon from "@/components/icons/Podcast.vue";
+import HistoryIcon from "@/components/icons/History.vue";
+import { generateTextHash } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -261,7 +289,6 @@ const currentBlocks = ref([]);
 const blocksMap = ref(new Map()); // 用于存储和追踪所有文本块
 
 const selectedBlockIndex = ref(null);
-const justClosedToolbox = ref(false); // 记录是否刚刚关闭工具栏
 const processingBlockId = ref(null);
 const toolboxPosition = ref({ top: 0, left: 0 }); // 记录工具栏的位置
 
@@ -269,13 +296,18 @@ const knowledgeModalRef = ref(null);
 const selectedKnowledge = ref(null); // 选中的知识点数据 - 查看详情
 const manualKnowledgeModalRef = ref(null);
 
-const deleteConfirmModalRef = ref(null);
+const deleteKnowledgeModalRef = ref(null);
 const pendingDeleteWord = ref(null); // 待删除知识点
 const deletedKnowledge = ref(new Set()); // 添加删除缓存
 
 const deleteBlockModalRef = ref(null);
 const pendingDeleteBlockIndex = ref(null);
 const deletedBlocks = ref([]); // 存储已删除的块缓存
+
+const recycleBinModalRef = ref(null); // 已删除内容弹框
+
+const podcastModalRef = ref(null);
+const selectedPodcastKnowledge = ref(null);
 
 // 翻译
 const translatingBlockId = ref(null);
@@ -294,10 +326,17 @@ onMounted(async () => {
 	});
 	document.addEventListener("deleteKnowledge", (event) => {
 		pendingDeleteWord.value = event.detail;
-		deleteConfirmModalRef.value?.showModal();
+		deleteKnowledgeModalRef.value?.showModal();
 	});
 	document.addEventListener("regenerateKnowledge", handleRegenerateKnowledge);
-	// 添加 loading 状态
+	document.addEventListener("showPodcastModal", (event) => {
+		const knowledgeData =
+			typeof event.detail === "string"
+				? JSON.parse(event.detail)
+				: event.detail;
+		handleShowPodcastModal(knowledgeData);
+	});
+
 	isLoading.value = true;
 	try {
 		await initializeView();
@@ -317,6 +356,7 @@ onUnmounted(() => {
 		"regenerateKnowledge",
 		handleRegenerateKnowledge
 	);
+	document.removeEventListener("showPodcastModal", handleShowPodcastModal);
 });
 
 // 添加请求队列控制器
@@ -357,11 +397,17 @@ const handleShowManualKnowledgeModal = (index) => {
 // 处理确认删除
 const handleConfirmDelete = () => {
 	if (pendingDeleteWord.value) {
-		// 1. 添加到删除缓存
-		deletedKnowledge.value.add(pendingDeleteWord.value);
+		// 1. 获取完整的知识点数据
+		const knowledgeData = currentKnowledge.value.get(pendingDeleteWord.value);
+		if (!knowledgeData) return;
 
-		// 2. 从当前知识点集合中移除
-		currentKnowledge.value.delete(pendingDeleteWord.value);
+		// 2. 添加到删除缓存
+		deletedKnowledge.value.add({
+			word: pendingDeleteWord.value,
+			data: knowledgeData,
+			timestamp: new Date().toISOString(),
+			blocks: [], // 用于存储相关的知识点块
+		});
 
 		// 3. 从当前场景中移除相关的知识点块
 		const knowledgeBlockIndexes = [];
@@ -370,15 +416,22 @@ const handleConfirmDelete = () => {
 				block.isKnowledge &&
 				block.knowledgeData?.word === pendingDeleteWord.value
 			) {
-				knowledgeBlockIndexes.unshift(index); // 从后往前删除
+				// 保存知识点块到删除缓存中
+				deletedKnowledge.value.forEach((item) => {
+					if (item.word === pendingDeleteWord.value) {
+						item.blocks.push({ ...block });
+					}
+				});
+				knowledgeBlockIndexes.unshift(index);
 			}
 		});
 
+		// 4. 删除知识点块
 		knowledgeBlockIndexes.forEach((index) => {
 			currentBlocks.value.splice(index, 1);
 		});
 
-		// 4. 移除原文中的高亮
+		// 5. 移除原文中的高亮
 		currentBlocks.value.forEach((block) => {
 			if (!block.isKnowledge && block.displayText) {
 				const regex = new RegExp(
@@ -389,7 +442,10 @@ const handleConfirmDelete = () => {
 			}
 		});
 
-		// 5. 更新场景
+		// 6. 从当前知识点集合中移除
+		currentKnowledge.value.delete(pendingDeleteWord.value);
+
+		// 7. 更新场景
 		emit(
 			"update:scenes",
 			props.scenes.map((scene, index) =>
@@ -397,7 +453,7 @@ const handleConfirmDelete = () => {
 			)
 		);
 
-		// 6. 清空待删除词
+		// 8. 清空待删除词
 		pendingDeleteWord.value = null;
 	}
 };
@@ -451,6 +507,8 @@ const handleConfirmDeleteBlock = () => {
 			blocks: blocksToDelete,
 		});
 
+		console.log(deletedBlocks.value);
+
 		// 更新场景
 		emit(
 			"update:scenes",
@@ -464,6 +522,185 @@ const handleConfirmDeleteBlock = () => {
 		pendingDeleteBlockIndex.value = null;
 
 		showToast({ message: "删除成功", type: "success" });
+	}
+};
+
+const handleShowRecycleBin = () => {
+	recycleBinModalRef.value?.showModal();
+};
+
+const handleRestoreKnowledge = (item) => {
+	// 1. 恢复知识点数据到当前知识点集合
+	currentKnowledge.value.set(item.word, item.data);
+
+	// 2. 恢复知识点块到原来的场景
+	const targetScene = props.scenes[currentIndex.value];
+	if (targetScene) {
+		item.blocks.forEach((block) => {
+			// 找到原文块
+			const originalBlock = targetScene.find(
+				(b) =>
+					!b.isKnowledge &&
+					!b.isTranslated &&
+					b.text.toLowerCase().includes(item.word.toLowerCase())
+			);
+
+			if (originalBlock) {
+				// 找到原文块和其对应的翻译块
+				const blockIndex = targetScene.findIndex(
+					(b) => b.id === originalBlock.id
+				);
+				const translationIndex = targetScene.findIndex(
+					(b) =>
+						b.isTranslated &&
+						(b.originalId === originalBlock.id ||
+							b.id === `translation-${originalBlock.id}`)
+				);
+
+				// 确定插入位置：如果有翻译块，插入到翻译块后面；否则插入到原文块后面
+				const insertIndex =
+					translationIndex !== -1 ? translationIndex + 1 : blockIndex + 1;
+
+				// 插入知识点块
+				targetScene.splice(insertIndex, 0, block);
+
+				// 恢复原文的高亮，但保留已有的高亮
+				const displayText = originalBlock.displayText || originalBlock.text;
+
+				// 检查当前单词是否已经被高亮
+				const wordRegex = new RegExp(
+					`<mark class="highlight-knowledge">(${item.word})</mark>`,
+					"gi"
+				);
+				const plainWordRegex = new RegExp(item.word, "gi");
+
+				// 如果单词已经被高亮，则不需要再次高亮
+				if (!wordRegex.test(displayText)) {
+					// 如果单词没有被高亮，则添加高亮
+					originalBlock.displayText = displayText.replace(
+						plainWordRegex,
+						`<mark class="highlight-knowledge">$&</mark>`
+					);
+				}
+			}
+		});
+
+		// 如果是当前场景，更新 currentBlocks
+		if (currentIndex.value === currentIndex.value) {
+			currentBlocks.value = targetScene;
+		}
+
+		// 更新场景
+		emit("update:scenes", [...props.scenes]);
+	}
+
+	// 3. 从删除缓存中移除
+	deletedKnowledge.value.delete(item);
+
+	showToast({ message: "知识点已恢复", type: "success" });
+};
+
+const handleRestoreBlocks = (index) => {
+	const item = deletedBlocks.value[index];
+
+	// 将块插入到原来的场景
+	const targetScene = props.scenes[item.sceneIndex];
+	if (targetScene) {
+		// 对要恢复的块进行分类
+		const originalBlocks = [];
+		const translationBlocks = [];
+		const knowledgeBlocks = [];
+
+		item.blocks.forEach((block) => {
+			if (block.isTranslated) {
+				translationBlocks.push(block);
+			} else if (block.isKnowledge) {
+				knowledgeBlocks.push(block);
+			} else {
+				originalBlocks.push(block);
+			}
+		});
+
+		// 首先插入原文块
+		originalBlocks.forEach((block) => {
+			// 找到合适的位置插入原文块（这里简单地添加到末尾，可以根据需要调整）
+			targetScene.push(block);
+
+			// 查找关联的翻译块
+			const blockId = block.id || block.originalIndex;
+			const relatedTranslation = translationBlocks.find(
+				(b) => b.originalId === blockId || b.id === `translation-${blockId}`
+			);
+
+			// 如果有关联的翻译块，插入到原文块后面
+			if (relatedTranslation) {
+				targetScene.push(relatedTranslation);
+			}
+
+			// 查找关联的知识点块并插入到翻译块后面或原文块后面
+			const relatedKnowledge = knowledgeBlocks.filter((b) =>
+				b.id?.includes(blockId)
+			);
+
+			if (relatedKnowledge.length > 0) {
+				relatedKnowledge.forEach((kb) => {
+					targetScene.push(kb);
+				});
+			}
+		});
+
+		// 如果是当前场景，更新 currentBlocks
+		if (item.sceneIndex === currentIndex.value) {
+			currentBlocks.value = targetScene;
+		}
+
+		// 更新场景
+		emit("update:scenes", [...props.scenes]);
+	}
+
+	// 从删除列表中移除
+	deletedBlocks.value.splice(index, 1);
+
+	showToast({ message: "文本块已恢复", type: "success" });
+};
+
+const handleShowPodcastModal = async (knowledge) => {
+	console.log("d");
+	try {
+		if (knowledge.word) {
+			// 先检查是否存在播客
+			const textHash = generateTextHash(knowledge.word.trim());
+			const response = await apiClient.get(`/podcasts/search`, {
+				params: {
+					knowledge: textHash,
+					resourceId: route.query.sign || "",
+				},
+			});
+			console.log(response);
+
+			if (
+				response.data.code === 200 &&
+				response.data.data.podcasts?.length > 0
+			) {
+				// 如果存在播客，使用现有的播客数据
+				const existingPodcast = response.data.data.podcasts[0];
+				selectedPodcastKnowledge.value = {
+					...knowledge,
+					existingPodcast: {
+						audioPath: existingPodcast.audioPath,
+						script: existingPodcast.script,
+						chineseScript: existingPodcast.chineseScript,
+					},
+				};
+			} else {
+				// 如果不存在播客，使用原始知识点数据
+				selectedPodcastKnowledge.value = knowledge;
+			}
+		}
+		podcastModalRef.value?.showModal();
+	} catch (error) {
+		console.error("检索播客失败:", error);
+		showToast({ message: "检索播客失败，请重试", type: "error" });
 	}
 };
 
@@ -1328,14 +1565,21 @@ const formatKnowledgeDisplay = (knowledgeData) => {
 				${
 					props.isCustom
 						? `
-            <button class="knowledge-btn knowledge-regenerate-btn hover:text-primary transition-colors" onclick="document.dispatchEvent(new CustomEvent('regenerateKnowledge', { detail: '${safeData.word}' }))">
+            <button class="knowledge-btn knowledge-regenerate-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('regenerateKnowledge', { detail: '${safeData.word}' }))">
               <i class="bi bi-arrow-clockwise"></i>
             </button>
             `
 						: ""
 				}
-        <button class="knowledge-btn knowledge-detail-btn hover:text-primary transition-colors" onclick="document.dispatchEvent(new CustomEvent('showKnowledgeDetail', { detail: JSON.parse('${safeJsonString}') }))">
+				
+        <button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showKnowledgeDetail', { detail: JSON.parse('${safeJsonString}') }))">
           <i class="bi bi-journal-text"></i>
+        </button>
+				<button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showPodcastModal', { detail: '${safeJsonString}' }))">
+          <svg style="width:1.35rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
+            <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
+          </svg>
         </button>
         ${
 					props.isCustom
@@ -1779,6 +2023,36 @@ const handleSplitScene = (index) => {
 	const firstPart = currentScene.slice(0, index);
 	const secondPart = currentScene.slice(index);
 
+	// 更新已删除知识点的场景索引
+	deletedKnowledge.value.forEach((item) => {
+		// 检查每个已删除知识点的块
+		const updatedBlocks = [];
+		item.blocks.forEach((block) => {
+			// 解析块的原始ID以获取场景索引
+			const idMatch = block.id.match(/knowledge[_-]block_(\d+)_(\d+)/);
+			if (idMatch) {
+				const blockSceneIndex = parseInt(idMatch[1]);
+				const blockIndex = parseInt(idMatch[2]);
+
+				// 如果块属于被分割的场景之后的场景，更新场景索引
+				if (blockSceneIndex > currentIndex.value) {
+					const newId = block.id.replace(
+						`block_${blockSceneIndex}_`,
+						`block_${blockSceneIndex + 1}_`
+					);
+					updatedBlocks.push({ ...block, id: newId });
+				} else {
+					updatedBlocks.push(block);
+				}
+			} else {
+				updatedBlocks.push(block);
+			}
+		});
+
+		// 更新知识点的块
+		item.blocks = updatedBlocks;
+	});
+
 	// 获取分割点的块
 	const splitBlock = secondPart[0];
 	const splitBlockMatch = splitBlock.id.match(/block_(\d+)_(\d+)/);
@@ -1848,7 +2122,6 @@ const handleSplitScene = (index) => {
 		const sceneTitle = scene.find((block) => block.isTitle);
 		if (sceneTitle) {
 			sceneTitle.id = `title_${sceneNumber}`;
-			sceneTitle.text = `# Scene${sceneNumber + 1}`;
 		}
 
 		// 更新场景中所有块的 ID
@@ -1940,21 +2213,6 @@ const handleMergeScenes = (index) => {
 	currentBlocks.value = updatedScenes[currentIndex.value];
 
 	showToast({ message: "场景合并成功", type: "success" });
-};
-
-const getScenePreview = (scene) => {
-	// 过滤出原文块（非标题、非翻译、非知识点的块）
-	const originalBlocks = scene.filter(
-		(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
-	);
-
-	// 获取前两个原文块的文本
-	const preview = originalBlocks
-		.slice(0, 2)
-		.map((block) => block.text)
-		.join("\n");
-
-	return preview || "空场景";
 };
 
 const handleAutoGenerateTitle = async (index) => {
@@ -2076,8 +2334,9 @@ const handleTranslationEdit = (event, index) => {
 
 /* 场景缩略图样式 */
 .scene-thumbnails-container {
-	position: sticky;
-	top: 1rem;
+	position: absolute;
+	top: -3px;
+	right: -180px;
 }
 
 .scene-thumbnails {
@@ -2090,13 +2349,14 @@ const handleTranslationEdit = (event, index) => {
 	padding: 1rem;
 	background: rgba(255, 255, 255, 0.9);
 	border-radius: 12px;
-	border: 2px solid #eee;
+	/* border: 2px solid #eee; */
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(5px);
 }
 
 .scene-thumbnail {
-	padding: 0.75rem;
-	border: 2px solid #ddd;
+	padding: 0.5rem;
+	border: 1px solid #ddd;
 	border-radius: 8px;
 	cursor: pointer;
 	transition: all 0.2s;
@@ -2121,9 +2381,13 @@ const handleTranslationEdit = (event, index) => {
 }
 
 .thumbnail-title {
-	font-weight: bold;
-	font-size: 0.875rem;
-	color: #333;
+	font-size: 14px;
+	font-weight: 800;
+	line-height: 1.4;
+	min-height: 2.8em;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .thumbnail-preview {
@@ -2371,39 +2635,58 @@ const handleTranslationEdit = (event, index) => {
 	color: #333; /* 深色图标 */
 	transform: scale(1.1);
 }
+</style>
+<style>
+/* 知识点按钮样式 - 全局定义以应用于动态生成的内容 */
+.knowledge-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	margin-left: 4px;
+	transition: all 0.2s;
+}
 
-/* .loading-overlay::after {
-	content: "01";
-	position: absolute;
-	top: -10%;
-	left: 0;
-	width: 100%;
-	height: 120%;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		rgba(var(--primary-color-rgb), 0.1) 25%,
-		rgba(var(--secondary-color-rgb), 0.05) 75%,
-		transparent 100%
-	);
-	background-size: 200% 100%;
-	color: rgba(var(--secondary-color-rgb), 0.05);
-	font-family: monospace;
-	font-size: 12px;
-	letter-spacing: 4px;
-	line-height: 8px;
-	white-space: break-spaces;
-	animation: matrix-rain 2s linear infinite;
-} */
+.knowledge-btn:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
 
-/* @keyframes matrix-rain {
-	0% {
-		background-position: 100% 0;
-		transform: translateY(0);
-	}
-	100% {
-		background-position: -100% 0;
-		transform: translateY(10%);
-	}
-} */
+.knowledge-detail-btn {
+	color: #222; /* 蓝色 */
+}
+
+.knowledge-delete-btn {
+	color: #222; /* 红色 */
+}
+
+.knowledge-btn i {
+	font-size: 14px;
+}
+
+/* 悬浮按钮组样式 */
+.fixed-action-buttons {
+	position: fixed;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	z-index: 100;
+	background-color: rgba(255, 255, 255, 0.8);
+	padding: 12px;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(5px);
+}
+
+/* 确保tooltip正确显示 */
+.fixed-action-buttons .tooltip {
+	margin: 5px 0;
+}
 </style>
