@@ -82,6 +82,7 @@
 									@toggle-narration="handleToggleNarration(index)"
 									@manual-knowledge="handleShowManualKnowledgeModal(index)"
 									@split-scene="handleSplitScene(index)"
+									@toggle-speaker="handleToggleSpeaker(index)"
 								/>
 								<!-- 文本块 -->
 								<div
@@ -110,7 +111,6 @@
 										>
 											{{ block.speaker }}
 										</div>
-										<div v-html="block.displayText || block.text"></div>
 									</div>
 
 									<!-- 标题使用可编辑的 div -->
@@ -250,6 +250,14 @@
 		:deleted-knowledge="deletedKnowledge"
 		@restore-knowledge="handleRestoreKnowledge"
 	/>
+
+	<SpeakerModal
+		ref="speakerModalRef"
+		:speakers="filteredSpeakers"
+		@update="handleSpeakerUpdate"
+		@remove="removeSpeaker"
+		@confirm="handleConfirmSpeaker"
+	/>
 </template>
 
 <script setup>
@@ -272,6 +280,7 @@ import ManualKnowledgeModal from "./ManualKnowledgeModal.vue";
 import DeleteKnowledgeModal from "./DeleteKnowledgeModal.vue";
 import PodcastModal from "./PodcastModal.vue";
 import RecycleBinModal from "./RecycleBinModal.vue";
+import SpeakerModal from "./SpeakerModal.vue";
 import PodcastIcon from "@/components/icons/Podcast.vue";
 import HistoryIcon from "@/components/icons/History.vue";
 import { generateTextHash } from "@/utils";
@@ -318,6 +327,11 @@ const recycleBinModalRef = ref(null); // 已删除内容弹框
 const podcastModalRef = ref(null);
 const selectedPodcastKnowledge = ref(null);
 
+const speakerModalRef = ref(null);
+const speakers = ref(new Set());
+const showSpeakerDropdown = ref(false);
+const newSpeaker = ref("");
+
 // 翻译
 const translatingBlockId = ref(null);
 // 知识点
@@ -327,6 +341,66 @@ const autoSaving = ref(false);
 const isLoading = ref(false);
 
 const emit = defineEmits(["back", "save", "update:scenes"]);
+
+// 处理打开说话者选择弹窗
+const handleToggleSpeaker = (index) => {
+	// 先设置选中的块索引
+	selectedBlockIndex.value = index;
+	showSpeakerDropdown.value = true;
+
+	// 如果当前块已有说话者，预填充
+	if (currentBlocks.value[index].speaker) {
+		newSpeaker.value = currentBlocks.value[index].speaker;
+	} else {
+		newSpeaker.value = "";
+	}
+
+	nextTick(() => {
+		speakerModalRef.value?.showModal();
+	});
+};
+
+// 添加新的处理函数
+const handleSpeakerUpdate = (speaker) => {
+	speakers.value.add(speaker);
+};
+
+// 新增确认按钮处理函数
+const handleConfirmSpeaker = (speaker) => {
+	if (selectedBlockIndex.value === null) return;
+
+	const block = currentBlocks.value[selectedBlockIndex.value];
+	if (speaker) {
+		// 添加到说话者集合
+		speakers.value.add(speaker);
+		// 更新块的说话者
+		block.speaker = speaker;
+
+		// 更新场景数据
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, index) =>
+				index === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		hasUnsavedChanges.value = true;
+	}
+
+	// 关闭模态框
+	speakerModalRef.value?.close();
+};
+
+// 移除说话者
+const removeSpeaker = (speaker) => {
+	speakers.value.delete(speaker);
+	localStorage.setItem("speakers", JSON.stringify(Array.from(speakers.value)));
+};
+
+// 计算过滤后的说话者列表
+const filteredSpeakers = computed(() => {
+	return Array.from(speakers.value);
+});
 
 onMounted(async () => {
 	document.addEventListener("click", handleClickOutside);
@@ -494,6 +568,11 @@ const initializeView = async () => {
 						dialogue.text.forEach((textItem, i) => {
 							const [speaker, text] = textItem;
 							const blockId = `block_${dialogueIndex}_${i}`;
+
+							// 如果有说话者且不是旁白，添加到说话者集合
+							if (speaker && speaker !== "narration") {
+								speakers.value.add(speaker);
+							}
 
 							// 添加原文块
 							currentScene.push({
@@ -1541,6 +1620,10 @@ const handleBlockClick = (event, index, block) => {
 
 // 点击外部隐藏工具栏
 const handleClickOutside = (event) => {
+	console.log(event.target);
+	if (event.target.closest(".modal")) {
+		return;
+	}
 	// 如果工具栏没有显示，不需要处理
 	if (selectedBlockIndex.value === null) return;
 
@@ -1656,15 +1739,56 @@ const handleTranslate = async (index) => {
 
 // 提取知识点
 const extractKeyPhrases = async (text, existingPhrases = []) => {
-	console.log(existingPhrases);
+	const textLength = text.length;
+	const existingCount = existingPhrases.length;
+
+	// 根据文本长度计算最大知识点数量
+	let maxPhrases;
+	if (textLength < 500) {
+		// 小于500字符，每100字符1个知识点，最多5个
+		if (existingCount >= 5) {
+			showToast({
+				message: "已达到当前文本的知识点生成上限，您可以尝试手动选择知识点",
+				type: "warning",
+			});
+			return null;
+		}
+		// 计算应该生成的知识点数量
+		const baseCount = Math.max(1, Math.ceil(textLength / 100));
+		maxPhrases = Math.min(5 - existingCount, baseCount);
+	} else {
+		// 大于等于500字符
+		// 计算当前文本应该生成的总知识点数量：基础5个，每超出200字符加1个，最多8个
+		const baseCount = 5 + Math.floor((textLength - 500) / 200);
+		const totalPhrases = Math.min(8, baseCount);
+
+		if (existingCount >= totalPhrases) {
+			showToast({
+				message: "已达到当前文本的知识点生成上限，您可以尝试手动选择知识点",
+				type: "warning",
+			});
+			return null;
+		}
+
+		maxPhrases = totalPhrases - existingCount;
+	}
+
+	if (maxPhrases <= 0) {
+		showToast({
+			message: "已达到当前文本的知识点生成上限，您可以尝试手动选择知识点",
+			type: "warning",
+		});
+		return null;
+	}
+
 	try {
 		const response = await apiClient.post("/translation/extract-key-phrases", {
 			text,
-			options: { maxPhrases: 1, existingPhrases },
+			options: { maxPhrases, existingPhrases },
 		});
 
 		if (response.data.code === 200 && response.data.data.phrases?.length > 0) {
-			return response.data.data.phrases[0];
+			return response.data.data.phrases;
 		}
 		return null;
 	} catch (error) {
@@ -1674,13 +1798,17 @@ const extractKeyPhrases = async (text, existingPhrases = []) => {
 };
 
 // 生成知识点
-const generateKnowledge = async (phrase) => {
+const generateKnowledge = async (phrases) => {
 	try {
-		const response = await apiClient.post("/translation/generate", {
-			word: phrase,
-		});
+		const response = await apiClient.post(
+			"/translation/generate-knowledge-batch",
+			{
+				words: phrases,
+			}
+		);
 
 		if (response.data.code === 200) {
+			console.log(response.data.data);
 			return response.data.data;
 		}
 		return null;
@@ -1807,108 +1935,93 @@ const handleGenerateKnowledge = async (index) => {
 			.map((k) => k.word);
 
 		// 1. 提取关键词
-		const phrase = await extractKeyPhrases(block.text, existingKnowledges);
-		if (!phrase) {
-			showToast({
-				message: "未能提取到知识点",
-				type: "warning",
-			});
+		const phrases = await extractKeyPhrases(block.text, existingKnowledges);
+		if (!phrases || phrases.length === 0) {
 			return;
 		}
 
 		// 2. 生成知识点
-		const knowledgeData = await generateKnowledge(phrase);
-		if (!knowledgeData) {
+		const knowledgeDataArray = await generateKnowledge(phrases);
+		if (!knowledgeDataArray || knowledgeDataArray.length === 0) {
 			showToast({ message: "生成知识点失败", type: "warning" });
 			return;
 		}
 
-		// 3. 将新知识点添加到 currentKnowledge
 		const sceneId = `Scene${currentIndex.value + 1}`;
-		knowledgeData.scenes = new Set([sceneId]);
-		currentKnowledge.value.set(knowledgeData.word, knowledgeData);
+		let displayText = block.displayText || block.text;
 
-		// 4. 创建知识点块
-		const existingKnowledgeCount = currentBlocks.value.filter(
+		// 获取现有知识点数量作为起始索引
+		const startKnowledgeCount = currentBlocks.value.filter(
 			(b) => b.isKnowledge && b.id.startsWith(`knowledge_${block.id}_`)
 		).length;
 
-		const knowledgeBlock = {
-			id: `knowledge_${block.id}_${existingKnowledgeCount}`,
-			text: formatKnowledgeDisplay(
-				knowledgeData,
-				`knowledge_${block.id}_${existingKnowledgeCount}`
-			),
-			isTitle: false,
-			isKnowledge: true,
-			narration: false,
-			isTranslated: false,
-			knowledgeData: knowledgeData,
-		};
+		// 3. 处理每个知识点
+		knowledgeDataArray.forEach((knowledgeData, arrayIndex) => {
+			// 添加到知识点集合
+			knowledgeData.scenes = new Set([sceneId]);
+			currentKnowledge.value.set(knowledgeData.word, knowledgeData);
 
-		// 5. 查找插入位置
-		const blockId = block.id || block.originalIndex;
-		const translationId = `translation-${blockId}`;
-		const translationIndex = currentBlocks.value.findIndex(
-			(b) => b.id === translationId || b.originalIndex === translationId
-		);
+			// 创建知识点块
+			const knowledgeBlock = {
+				id: `knowledge_${block.id}_${startKnowledgeCount + arrayIndex}`,
+				text: formatKnowledgeDisplay(
+					knowledgeData,
+					`knowledge_${block.id}_${startKnowledgeCount + arrayIndex}`
+				),
+				isTitle: false,
+				isKnowledge: true,
+				narration: false,
+				isTranslated: false,
+				knowledgeData: knowledgeData,
+			};
 
-		// 找到最后一个相关的知识点块的位置
-		const lastKnowledgeIndex = [...currentBlocks.value]
-			.reverse()
-			.findIndex(
-				(b) => b.isKnowledge && b.id.startsWith(`knowledge_${block.id}_`)
+			// 查找插入位置
+			const blockId = block.id || block.originalIndex;
+			const translationId = `translation-${blockId}`;
+			const translationIndex = currentBlocks.value.findIndex(
+				(b) => b.id === translationId || b.originalIndex === translationId
 			);
 
-		// 如果找到了已存在的知识点块，在其后插入；否则在翻译块后插入
-		const insertIndex =
-			lastKnowledgeIndex !== -1
-				? currentBlocks.value.length - lastKnowledgeIndex // 转换为正向索引
-				: translationIndex >= 0
-				? translationIndex + 1
-				: index + 1;
-
-		// 6. 处理已存在的知识点块
-		currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
-
-		// 7. 高亮原文中的知识点
-		let displayText = block.text;
-
-		// 处理新知识点的高亮
-		const originRegex = new RegExp(knowledgeData.origin, "gi");
-		if (block.text.match(originRegex)) {
-			displayText = displayText.replace(
-				originRegex,
-				`<mark class="highlight-knowledge">${knowledgeData.origin}</mark>`
-			);
-		} else {
-			const wordRegex = new RegExp(knowledgeData.word, "gi");
-			if (block.text.match(wordRegex)) {
-				knowledgeData.origin = knowledgeData.word;
-				displayText = displayText.replace(
-					wordRegex,
-					`<mark class="highlight-knowledge">${knowledgeData.word}</mark>`
+			// 找到最后一个相关的知识点块的位置
+			const lastKnowledgeIndex = [...currentBlocks.value]
+				.reverse()
+				.findIndex(
+					(b) => b.isKnowledge && b.id.startsWith(`knowledge_${block.id}_`)
 				);
-			}
-		}
 
-		// 处理已存在知识点的高亮
-		existingKnowledges.forEach((word) => {
-			const existingKnowledge = currentKnowledge.value.get(word);
-			if (existingKnowledge) {
-				const existingRegex = new RegExp(existingKnowledge.origin, "gi");
-				if (displayText.match(existingRegex)) {
+			const insertIndex =
+				lastKnowledgeIndex !== -1
+					? currentBlocks.value.length - lastKnowledgeIndex
+					: translationIndex >= 0
+					? translationIndex + 1
+					: index + 1;
+
+			// 插入知识点块
+			currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
+
+			// 高亮原文中的知识点
+			const originRegex = new RegExp(knowledgeData.origin, "gi");
+			if (displayText.match(originRegex)) {
+				displayText = displayText.replace(
+					originRegex,
+					`<mark class="highlight-knowledge">${knowledgeData.origin}</mark>`
+				);
+			} else {
+				const wordRegex = new RegExp(knowledgeData.word, "gi");
+				if (displayText.match(wordRegex)) {
+					knowledgeData.origin = knowledgeData.word;
 					displayText = displayText.replace(
-						existingRegex,
-						`<mark class="highlight-knowledge">${existingKnowledge.origin}</mark>`
+						wordRegex,
+						`<mark class="highlight-knowledge">${knowledgeData.word}</mark>`
 					);
 				}
 			}
 		});
 
+		// 更新块的显示文本
 		block.displayText = displayText;
 
-		// 8. 更新场景
+		// 更新场景
 		emit(
 			"update:scenes",
 			props.scenes.map((scene, sceneIndex) =>
@@ -2071,8 +2184,22 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 };
 
 const handleToggleNarration = (index) => {
-	// TODO: 实现切换注释功能
-	console.log("切换注释:", index);
+	const block = currentBlocks.value[index];
+	if (!block || block.isTitle || block.isTranslated || block.isKnowledge)
+		return;
+
+	// 切换 narration 状态
+	block.narration = !block.narration;
+
+	// 更新场景数据
+	emit(
+		"update:scenes",
+		props.scenes.map((scene, sceneIndex) =>
+			sceneIndex === currentIndex.value ? currentBlocks.value : scene
+		)
+	);
+
+	hasUnsavedChanges.value = true;
 };
 
 // 分割场景
