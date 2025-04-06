@@ -93,7 +93,7 @@ const hoveredWordIndex = ref(null);
 
 const selectedIndices = ref([]);
 
-const emit = defineEmits(["select-knowledge", "generate-knowledge"]);
+const emit = defineEmits(["select-knowledge", "manual-generate-knowledge"]);
 
 const isPunctuation = (word) => {
 	return !/[a-zA-Z]/.test(word);
@@ -221,7 +221,8 @@ const confirmKnowledge = () => {
 		const selectedKnowledge = knowledgeGroups.value.map((group) =>
 			group.join(" ")
 		);
-		emit("generate-knowledge", selectedKnowledge);
+		console.log(selectedKnowledge);
+		emit("manual-generate-knowledge", selectedKnowledge);
 		clearSelection();
 		modalRef.value?.close();
 	}

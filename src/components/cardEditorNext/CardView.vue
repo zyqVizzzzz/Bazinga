@@ -39,8 +39,8 @@
 						</div>
 					</button>
 				</div>
-				<div class="my-1 border-t border-gray-200"></div>
-				<div class="tooltip" data-tip="生成播客" v-if="isCustom">
+				<!-- <div class="my-1 border-t border-gray-200"></div> -->
+				<!-- <div class="tooltip" data-tip="生成播客" v-if="isCustom">
 					<button class="retro-btn" @click="handleShowPodcastModal">
 						<div class="btn-shadow">
 							<div class="btn-edge">
@@ -50,8 +50,8 @@
 							</div>
 						</div>
 					</button>
-				</div>
-				<div class="tooltip" data-tip="已删除内容" v-if="isCustom">
+				</div> -->
+				<!-- <div class="tooltip" data-tip="已删除内容" v-if="isCustom">
 					<button class="retro-btn" @click="handleShowRecycleBin">
 						<div class="btn-shadow">
 							<div class="btn-edge">
@@ -61,7 +61,7 @@
 							</div>
 						</div>
 					</button>
-				</div>
+				</div> -->
 			</div>
 			<div class="editor-wrapper text-sm">
 				<div class="decorated-card py-6 px-4">
@@ -78,11 +78,10 @@
 									:is-narration="block.narration"
 									:processing="processingBlockId === block.id"
 									@translate="handleTranslate(index)"
-									@generate-knowledge="handleGenerateKnowledge(index)"
+									@auto-generate-knowledge="handleGenerateKnowledge(index)"
 									@toggle-narration="handleToggleNarration(index)"
 									@manual-knowledge="handleShowManualKnowledgeModal(index)"
 									@split-scene="handleSplitScene(index)"
-									@delete-block="handleDeleteBlock(index)"
 								/>
 								<!-- 文本块 -->
 								<div
@@ -174,34 +173,46 @@
 			<div class="scene-thumbnails-container w-1/5">
 				<div class="scene-thumbnails">
 					<template v-for="(scene, index) in scenes" :key="index">
-						<!-- 场景缩略图 -->
-						<div
-							class="scene-thumbnail"
-							:class="{ active: currentIndex === index }"
-							@click="switchScene(index)"
-						>
-							<div class="thumbnail-content">
-								<div class="thumbnail-title line-clamp-4" v-if="scene[0]?.text">
-									{{ scene[0].text.replace(/^#\s*/, "") }}
-								</div>
-								<!-- <div class="thumbnail-preview">
-									{{ getScenePreview(scene) }}
-								</div> -->
-							</div>
-						</div>
-
-						<!-- 合并按钮，最后一个场景不显示 -->
-						<div
-							v-if="index < scenes.length - 1"
-							class="merge-button-container"
-						>
-							<button
-								class="merge-button"
-								@click="handleMergeScenes(index)"
-								title="合并场景"
+						<!-- 场景缩略图卡带 -->
+						<div class="cartridge-container">
+							<div
+								class="cartridge"
+								:class="{ 'cartridge-active': currentIndex === index }"
+								@click="switchScene(index)"
 							>
-								<i class="bi bi-arrows-collapse"></i>
-							</button>
+								<!-- 卡带顶部纹路 -->
+								<div class="cartridge-ridges">
+									<div v-for="n in 8" :key="n" class="ridge"></div>
+								</div>
+
+								<!-- 卡带主体 -->
+								<div class="cartridge-body">
+									<div class="cartridge-label">
+										<div
+											class="cartridge-title line-clamp-2"
+											v-if="scene[0]?.text"
+										>
+											{{ scene[0].text.replace(/^#\s*/, "") }}
+										</div>
+										<div class="cartridge-number">NO. {{ index + 1 }}</div>
+									</div>
+								</div>
+
+								<!-- 卡带底部 -->
+								<div class="cartridge-pins"></div>
+							</div>
+
+							<!-- 合并按钮改造成连接线样式 -->
+							<div v-if="index < scenes.length - 1" class="cartridge-connector">
+								<button
+									class="connector-btn"
+									:class="{ 'connector-btn-merging': isMerging }"
+									@click.stop="handleMergeScenes(index)"
+									title="合并场景"
+								>
+									<i class="bi bi-arrows-collapse"></i>
+								</button>
+							</div>
 						</div>
 					</template>
 				</div>
@@ -219,13 +230,14 @@
 	<ManualKnowledgeModal
 		ref="manualKnowledgeModalRef"
 		:text="selectedBlock?.text || ''"
-		@generate-knowledge="handleManualGenerateKnowledge"
+		@manual-generate-knowledge="handleManualGenerateKnowledge"
 	/>
 
 	<PodcastModal
 		ref="podcastModalRef"
 		:scene-index="currentIndex"
 		:knowledge="selectedPodcastKnowledge"
+		@update-podcast="handlePodcastUpdate"
 	/>
 
 	<DeleteKnowledgeModal
@@ -233,32 +245,30 @@
 		@confirm="handleConfirmDelete"
 	/>
 
-	<DeleteConfirmModal
-		ref="deleteBlockModalRef"
-		title="删除文本块"
-		message="确定要删除这个文本块吗？"
-		@confirm="handleConfirmDeleteBlock"
-	/>
-
 	<RecycleBinModal
 		ref="recycleBinModalRef"
 		:deleted-knowledge="deletedKnowledge"
-		:deleted-blocks="deletedBlocks"
 		@restore-knowledge="handleRestoreKnowledge"
-		@restore-blocks="handleRestoreBlocks"
 	/>
 </template>
 
 <script setup>
-import { ref, watch, computed, nextTick, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import {
+	ref,
+	watch,
+	computed,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	onBeforeUnmount,
+} from "vue";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
 import KnowledgeDetailModal from "./KnowledgeDetailModal.vue";
 import TextBlockToolbar from "./TextBlockToolbar.vue";
 import ManualKnowledgeModal from "./ManualKnowledgeModal.vue";
-import DeleteConfirmModal from "./DeleteConfirmModal.vue";
 import DeleteKnowledgeModal from "./DeleteKnowledgeModal.vue";
 import PodcastModal from "./PodcastModal.vue";
 import RecycleBinModal from "./RecycleBinModal.vue";
@@ -268,6 +278,7 @@ import { generateTextHash } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
+const hasUnsavedChanges = ref(false); // 未保存更改标记
 
 const props = defineProps({
 	viewMode: {
@@ -295,14 +306,12 @@ const toolboxPosition = ref({ top: 0, left: 0 }); // 记录工具栏的位置
 const knowledgeModalRef = ref(null);
 const selectedKnowledge = ref(null); // 选中的知识点数据 - 查看详情
 const manualKnowledgeModalRef = ref(null);
+const podcastBlocksMap = ref(new Map()); // 用于存储和追踪所有播客块
 
 const deleteKnowledgeModalRef = ref(null);
 const pendingDeleteWord = ref(null); // 待删除知识点
 const deletedKnowledge = ref(new Set()); // 添加删除缓存
-
-const deleteBlockModalRef = ref(null);
-const pendingDeleteBlockIndex = ref(null);
-const deletedBlocks = ref([]); // 存储已删除的块缓存
+const deletedPodcasts = ref(new Map()); // 删除的播客数据缓存
 
 const recycleBinModalRef = ref(null); // 已删除内容弹框
 
@@ -336,6 +345,7 @@ onMounted(async () => {
 				: event.detail;
 		handleShowPodcastModal(knowledgeData);
 	});
+	window.addEventListener("beforeunload", handleBeforeUnload);
 
 	isLoading.value = true;
 	try {
@@ -359,509 +369,30 @@ onUnmounted(() => {
 	document.removeEventListener("showPodcastModal", handleShowPodcastModal);
 });
 
-// 添加请求队列控制器
-const requestQueue = {
-	queue: [],
-	processing: false,
-	maxConcurrent: 2, // 最大并发数
+onBeforeUnmount(() => {
+	window.removeEventListener("beforeunload", handleBeforeUnload);
+});
 
-	async process() {
-		if (this.processing || this.queue.length === 0) return;
-
-		this.processing = true;
-		while (this.queue.length > 0) {
-			const batch = this.queue.splice(0, this.maxConcurrent);
-			await Promise.all(batch.map((request) => request()));
-		}
-		this.processing = false;
-	},
-
-	add(request) {
-		this.queue.push(request);
-		this.process();
-	},
-};
-
-const selectedBlock = computed(() =>
-	selectedBlockIndex.value !== null
-		? currentBlocks.value[selectedBlockIndex.value]
-		: null
-);
-
-// 添加处理函数
-const handleShowManualKnowledgeModal = (index) => {
-	selectedBlockIndex.value = index;
-	manualKnowledgeModalRef.value?.showModal();
-};
-
-// 处理确认删除
-const handleConfirmDelete = () => {
-	if (pendingDeleteWord.value) {
-		// 1. 获取完整的知识点数据
-		const knowledgeData = currentKnowledge.value.get(pendingDeleteWord.value);
-		if (!knowledgeData) return;
-
-		// 2. 添加到删除缓存
-		deletedKnowledge.value.add({
-			word: pendingDeleteWord.value,
-			data: knowledgeData,
-			timestamp: new Date().toISOString(),
-			blocks: [], // 用于存储相关的知识点块
-		});
-
-		// 3. 从当前场景中移除相关的知识点块
-		const knowledgeBlockIndexes = [];
-		currentBlocks.value.forEach((block, index) => {
-			if (
-				block.isKnowledge &&
-				block.knowledgeData?.word === pendingDeleteWord.value
-			) {
-				// 保存知识点块到删除缓存中
-				deletedKnowledge.value.forEach((item) => {
-					if (item.word === pendingDeleteWord.value) {
-						item.blocks.push({ ...block });
-					}
-				});
-				knowledgeBlockIndexes.unshift(index);
-			}
-		});
-
-		// 4. 删除知识点块
-		knowledgeBlockIndexes.forEach((index) => {
-			currentBlocks.value.splice(index, 1);
-		});
-
-		// 5. 移除原文中的高亮
-		currentBlocks.value.forEach((block) => {
-			if (!block.isKnowledge && block.displayText) {
-				const regex = new RegExp(
-					`<mark class="highlight-knowledge">(${pendingDeleteWord.value})</mark>`,
-					"gi"
-				);
-				block.displayText = block.displayText.replace(regex, "$1");
-			}
-		});
-
-		// 6. 从当前知识点集合中移除
-		currentKnowledge.value.delete(pendingDeleteWord.value);
-
-		// 7. 更新场景
-		emit(
-			"update:scenes",
-			props.scenes.map((scene, index) =>
-				index === currentIndex.value ? currentBlocks.value : scene
-			)
-		);
-
-		// 8. 清空待删除词
-		pendingDeleteWord.value = null;
+// 添加页面刷新提示
+const handleBeforeUnload = (e) => {
+	if (hasUnsavedChanges.value) {
+		e.preventDefault();
+		e.returnValue = "";
 	}
 };
 
-// 添加删除处理函数
-const handleDeleteBlock = (index) => {
-	pendingDeleteBlockIndex.value = index;
-	deleteBlockModalRef.value?.showModal();
-};
-
-const handleConfirmDeleteBlock = () => {
-	if (pendingDeleteBlockIndex.value !== null) {
-		const index = pendingDeleteBlockIndex.value;
-		const block = currentBlocks.value[index];
-		const blockId = block.id || block.originalIndex;
-
-		const indexesToDelete = [];
-		const blocksToDelete = []; // 存储要删除的块
-		indexesToDelete.push(index); // 找出所有需要删除的关联块的索引
-		blocksToDelete.push(block); // 添加原文本块
-
-		// 查找关联的翻译块和知识点块
-		currentBlocks.value.forEach((b, i) => {
-			// 查找翻译块
-			if (
-				b.isTranslated &&
-				(b.originalId === blockId || b.id === `translation-${blockId}`)
-			) {
-				indexesToDelete.push(i);
-				blocksToDelete.push(b);
-			}
-			// 查找知识点块
-			if (b.isKnowledge && b.id?.startsWith(`knowledge-${blockId}`)) {
-				indexesToDelete.push(i);
-				blocksToDelete.push(b);
-			}
-		});
-
-		// 从大到小排序索引，以便从后向前删除
-		indexesToDelete.sort((a, b) => b - a);
-
-		// 删除所有相关块
-		indexesToDelete.forEach((i) => {
-			currentBlocks.value.splice(i, 1);
-		});
-
-		// 将删除的块添加到删除列表
-		deletedBlocks.value.push({
-			timestamp: new Date().toISOString(),
-			sceneIndex: currentIndex.value,
-			blocks: blocksToDelete,
-		});
-
-		console.log(deletedBlocks.value);
-
-		// 更新场景
-		emit(
-			"update:scenes",
-			props.scenes.map((scene, sceneIndex) =>
-				sceneIndex === currentIndex.value ? currentBlocks.value : scene
-			)
-		);
-
-		// 重置状态
-		selectedBlockIndex.value = null;
-		pendingDeleteBlockIndex.value = null;
-
-		showToast({ message: "删除成功", type: "success" });
-	}
-};
-
-const handleShowRecycleBin = () => {
-	recycleBinModalRef.value?.showModal();
-};
-
-const handleRestoreKnowledge = (item) => {
-	// 1. 恢复知识点数据到当前知识点集合
-	currentKnowledge.value.set(item.word, item.data);
-
-	// 2. 恢复知识点块到原来的场景
-	const targetScene = props.scenes[currentIndex.value];
-	if (targetScene) {
-		item.blocks.forEach((block) => {
-			// 找到原文块
-			const originalBlock = targetScene.find(
-				(b) =>
-					!b.isKnowledge &&
-					!b.isTranslated &&
-					b.text.toLowerCase().includes(item.word.toLowerCase())
-			);
-
-			if (originalBlock) {
-				// 找到原文块和其对应的翻译块
-				const blockIndex = targetScene.findIndex(
-					(b) => b.id === originalBlock.id
-				);
-				const translationIndex = targetScene.findIndex(
-					(b) =>
-						b.isTranslated &&
-						(b.originalId === originalBlock.id ||
-							b.id === `translation-${originalBlock.id}`)
-				);
-
-				// 确定插入位置：如果有翻译块，插入到翻译块后面；否则插入到原文块后面
-				const insertIndex =
-					translationIndex !== -1 ? translationIndex + 1 : blockIndex + 1;
-
-				// 插入知识点块
-				targetScene.splice(insertIndex, 0, block);
-
-				// 恢复原文的高亮，但保留已有的高亮
-				const displayText = originalBlock.displayText || originalBlock.text;
-
-				// 检查当前单词是否已经被高亮
-				const wordRegex = new RegExp(
-					`<mark class="highlight-knowledge">(${item.word})</mark>`,
-					"gi"
-				);
-				const plainWordRegex = new RegExp(item.word, "gi");
-
-				// 如果单词已经被高亮，则不需要再次高亮
-				if (!wordRegex.test(displayText)) {
-					// 如果单词没有被高亮，则添加高亮
-					originalBlock.displayText = displayText.replace(
-						plainWordRegex,
-						`<mark class="highlight-knowledge">$&</mark>`
-					);
-				}
-			}
-		});
-
-		// 如果是当前场景，更新 currentBlocks
-		if (currentIndex.value === currentIndex.value) {
-			currentBlocks.value = targetScene;
-		}
-
-		// 更新场景
-		emit("update:scenes", [...props.scenes]);
-	}
-
-	// 3. 从删除缓存中移除
-	deletedKnowledge.value.delete(item);
-
-	showToast({ message: "知识点已恢复", type: "success" });
-};
-
-const handleRestoreBlocks = (index) => {
-	const item = deletedBlocks.value[index];
-
-	// 将块插入到原来的场景
-	const targetScene = props.scenes[item.sceneIndex];
-	if (targetScene) {
-		// 对要恢复的块进行分类
-		const originalBlocks = [];
-		const translationBlocks = [];
-		const knowledgeBlocks = [];
-
-		item.blocks.forEach((block) => {
-			if (block.isTranslated) {
-				translationBlocks.push(block);
-			} else if (block.isKnowledge) {
-				knowledgeBlocks.push(block);
-			} else {
-				originalBlocks.push(block);
-			}
-		});
-
-		// 首先插入原文块
-		originalBlocks.forEach((block) => {
-			// 找到合适的位置插入原文块（这里简单地添加到末尾，可以根据需要调整）
-			targetScene.push(block);
-
-			// 查找关联的翻译块
-			const blockId = block.id || block.originalIndex;
-			const relatedTranslation = translationBlocks.find(
-				(b) => b.originalId === blockId || b.id === `translation-${blockId}`
-			);
-
-			// 如果有关联的翻译块，插入到原文块后面
-			if (relatedTranslation) {
-				targetScene.push(relatedTranslation);
-			}
-
-			// 查找关联的知识点块并插入到翻译块后面或原文块后面
-			const relatedKnowledge = knowledgeBlocks.filter((b) =>
-				b.id?.includes(blockId)
-			);
-
-			if (relatedKnowledge.length > 0) {
-				relatedKnowledge.forEach((kb) => {
-					targetScene.push(kb);
-				});
-			}
-		});
-
-		// 如果是当前场景，更新 currentBlocks
-		if (item.sceneIndex === currentIndex.value) {
-			currentBlocks.value = targetScene;
-		}
-
-		// 更新场景
-		emit("update:scenes", [...props.scenes]);
-	}
-
-	// 从删除列表中移除
-	deletedBlocks.value.splice(index, 1);
-
-	showToast({ message: "文本块已恢复", type: "success" });
-};
-
-const handleShowPodcastModal = async (knowledge) => {
-	console.log("d");
-	try {
-		if (knowledge.word) {
-			// 先检查是否存在播客
-			const textHash = generateTextHash(knowledge.word.trim());
-			const response = await apiClient.get(`/podcasts/search`, {
-				params: {
-					knowledge: textHash,
-					resourceId: route.query.sign || "",
-				},
-			});
-			console.log(response);
-
-			if (
-				response.data.code === 200 &&
-				response.data.data.podcasts?.length > 0
-			) {
-				// 如果存在播客，使用现有的播客数据
-				const existingPodcast = response.data.data.podcasts[0];
-				selectedPodcastKnowledge.value = {
-					...knowledge,
-					existingPodcast: {
-						audioPath: existingPodcast.audioPath,
-						script: existingPodcast.script,
-						chineseScript: existingPodcast.chineseScript,
-					},
-				};
-			} else {
-				// 如果不存在播客，使用原始知识点数据
-				selectedPodcastKnowledge.value = knowledge;
-			}
-		}
-		podcastModalRef.value?.showModal();
-	} catch (error) {
-		console.error("检索播客失败:", error);
-		showToast({ message: "检索播客失败，请重试", type: "error" });
-	}
-};
-
-const groupTextByLength = async (blocks) => {
-	const groups = [];
-	let currentGroup = [];
-	let currentLength = 0;
-	const TARGET_LENGTH = 2000;
-
-	// 过滤出原文内容
-	const originalBlocks = blocks.filter(
-		(block) =>
-			!block.isTitle &&
-			!block.isTranslated &&
-			!block.isKnowledge &&
-			!block.narration
-	);
-
-	originalBlocks.forEach((block) => {
-		const text = block.text || "";
-		const textLength = text.length;
-
-		if (currentGroup.length === 0) {
-			currentGroup.push(block);
-			currentLength = textLength;
+// 路由离开守卫
+onBeforeRouteLeave((to, from, next) => {
+	if (hasUnsavedChanges.value) {
+		if (window.confirm("您有未保存的更改，确定要离开吗？")) {
+			next();
 		} else {
-			if (currentLength > TARGET_LENGTH) {
-				groups.push([...currentGroup]);
-				currentGroup = [block];
-				currentLength = textLength;
-			} else {
-				currentGroup.push(block);
-				currentLength += textLength;
-			}
+			next(false);
 		}
-	});
-
-	if (currentGroup.length > 0) {
-		groups.push(currentGroup);
+	} else {
+		next();
 	}
-
-	// 为每组文本生成知识点
-	groups.forEach(async (group, groupIndex) => {
-		requestQueue.add(async () => {
-			try {
-				const originalTexts = group
-					.filter(
-						(block) =>
-							!block.isTitle && !block.isTranslated && !block.isKnowledge
-					)
-					.map((block) => block.text)
-					.join("\n");
-
-				if (originalTexts) {
-					const textLength = originalTexts.length;
-					const maxPhrases = Math.ceil(textLength / 250);
-
-					const phrasesResponse = await apiClient.post(
-						"/translation/extract-key-phrases",
-						{
-							text: originalTexts,
-							options: {
-								maxPhrases: Math.max(1, Math.min(maxPhrases, 8)),
-							},
-						}
-					);
-
-					if (phrasesResponse.data.data.phrases) {
-						// 3. 批量生成知识点
-						const knowledgeResponse = await apiClient.post(
-							"/translation/generate-knowledge-batch",
-							{
-								words: phrasesResponse.data.data.phrases,
-							}
-						);
-
-						if (knowledgeResponse.data.data) {
-							// 遍历每个原文块，检查是否包含知识点
-							group.forEach((block) => {
-								const blockText = block.text.toLowerCase();
-								// 修改为查找所有匹配的知识点
-								const matchedKnowledges = knowledgeResponse.data.data.filter(
-									(k) => blockText.includes(k.origin.toLowerCase())
-								);
-
-								if (matchedKnowledges.length > 0) {
-									// 高亮原文中的所有知识点
-									let displayText = block.text;
-									matchedKnowledges.forEach((knowledge) => {
-										// 先尝试用 origin 匹配
-										const originRegex = new RegExp(knowledge.origin, "gi");
-										if (block.text.match(originRegex)) {
-											displayText = displayText.replace(
-												originRegex,
-												`<mark class="highlight-knowledge">${knowledge.origin}</mark>`
-											);
-										} else {
-											// 如果 origin 没有匹配到，尝试用 word 匹配
-											const wordRegex = new RegExp(knowledge.word, "gi");
-											if (block.text.match(wordRegex)) {
-												// 如果 word 匹配到了，更新 knowledge.origin 为 word 的值
-												knowledge.origin = knowledge.word;
-												displayText = displayText.replace(
-													wordRegex,
-													`<mark class="highlight-knowledge">${knowledge.word}</mark>`
-												);
-											}
-										}
-									});
-									block.displayText = displayText;
-
-									// 找到原文块和翻译块的位置
-									const blockIndex = currentBlocks.value.findIndex(
-										(b) => b.id === block.id
-									);
-									const translationIndex = currentBlocks.value.findIndex(
-										(b) => b.id === `translation-${block.id}`
-									);
-									const insertIndex =
-										translationIndex !== -1
-											? translationIndex + 1
-											: blockIndex + 1;
-
-									// 为每个匹配的知识点创建知识点块
-									matchedKnowledges.forEach((knowledge, kIndex) => {
-										const knowledgeBlock = {
-											id: `knowledge_${block.id}_${kIndex}`,
-											text: formatKnowledgeDisplay(knowledge),
-											isTitle: false,
-											isKnowledge: true,
-											narration: false,
-											isTranslated: false,
-											knowledgeData: knowledge,
-										};
-
-										if (insertIndex !== -1) {
-											// 按顺序插入知识点块
-											currentBlocks.value.splice(
-												insertIndex + kIndex,
-												0,
-												knowledgeBlock
-											);
-										}
-									});
-								}
-							});
-						}
-					}
-				}
-			} catch (error) {
-				console.error(`为第 ${groupIndex + 1} 组生成知识点失败:`, error);
-				showToast({
-					message: `为第 ${groupIndex + 1} 组生成知识点失败`,
-					type: "error",
-				});
-			}
-		});
-	});
-
-	return groups;
-};
+});
 
 const initializeView = async () => {
 	try {
@@ -998,10 +529,14 @@ const initializeView = async () => {
 
 					// 更新场景数据
 					emit("update:scenes", scenes);
-					console.log("Scenes:", scenes);
 
 					// 初始化知识点
 					await initKnowledgeDisplay();
+					// 初始化播客
+					await initPodcasts();
+
+					console.log("Scenes:", scenes);
+					console.log("Podcast:", podcastBlocksMap.value);
 				}
 			}
 		}
@@ -1009,6 +544,583 @@ const initializeView = async () => {
 		console.error("初始化视图失败:", error);
 		showToast({ message: "加载数据失败，请重试", type: "error" });
 	}
+};
+
+// 初始化知识点显示
+const initKnowledgeDisplay = async () => {
+	try {
+		if (currentKnowledge.value.size === 0) {
+			await initKnowledges();
+		}
+
+		props.scenes.forEach((scene, sceneIndex) => {
+			const sceneId = `Scene${sceneIndex + 1}`;
+			const processedKnowledgeInScene = new Set();
+
+			const sceneBlocks =
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene;
+
+			// 收集该场景的知识点
+			const matchedKnowledge = Array.from(
+				currentKnowledge.value.values()
+			).filter((knowledge) => knowledge.scenes.has(sceneId));
+
+			if (matchedKnowledge.length > 0) {
+				for (let i = sceneBlocks.length - 1; i >= 0; i--) {
+					const block = sceneBlocks[i];
+					if (block.isTitle || block.isTranslated || block.isKnowledge)
+						continue;
+
+					const blockId = block.id || block.originalIndex;
+					if (!blockId) continue;
+
+					// 应用高亮
+					applyKnowledgeHighlight(block, sceneIndex, currentKnowledge.value);
+
+					// 检查是否需要插入知识点块
+					if (block.displayText?.includes('class="highlight-knowledge"')) {
+						const nextIndex = i + 1;
+						const hasTranslation =
+							nextIndex < sceneBlocks.length &&
+							sceneBlocks[nextIndex].isTranslated;
+						let insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
+
+						// 筛选匹配的且未处理的知识点
+						const blockMatchedKnowledge = matchedKnowledge.filter(
+							(k) =>
+								block.text.toLowerCase().includes(k.origin.toLowerCase()) &&
+								!processedKnowledgeInScene.has(k.origin)
+						);
+
+						if (blockMatchedKnowledge.length > 0) {
+							// 为每个匹配的知识点创建并插入知识点块
+							blockMatchedKnowledge.forEach((knowledge, kIndex) => {
+								processedKnowledgeInScene.add(knowledge.word);
+
+								const knowledgeBlock = {
+									id: `knowledge-${blockId}-${kIndex}`,
+									text: formatKnowledgeDisplay(
+										{
+											...knowledge,
+											hasPodcast: false, // 传入标记
+										},
+										`knowledge-${blockId}-${kIndex}`
+									),
+									isTitle: false,
+									isKnowledge: true,
+									originalId: blockId,
+									knowledgeData: knowledge,
+								};
+
+								blocksMap.value.set(knowledgeBlock.id, knowledgeBlock);
+
+								if (sceneIndex === currentIndex.value) {
+									currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
+								} else {
+									scene.splice(insertIndex, 0, knowledgeBlock);
+								}
+
+								// 更新插入位置，使后续知识点插入到当前知识点之后
+								insertIndex++;
+							});
+						}
+					}
+				}
+			}
+		});
+	} catch (error) {
+		console.error("初始化知识点显示失败:", error);
+	}
+};
+
+// 初始化知识点数据
+const initKnowledges = async () => {
+	try {
+		const response = await apiClient.get(`/knowledge`, {
+			params: {
+				catalogId: route.params.id,
+				lessonId: route.query.sign,
+			},
+		});
+
+		if (response.data.code === 200) {
+			currentKnowledge.value = new Map();
+
+			response.data.data.forEach((scene) => {
+				scene.knowledge.forEach((item) => {
+					if (!currentKnowledge.value.has(item.word)) {
+						currentKnowledge.value.set(item.word, {
+							...item,
+							scenes: new Set([scene.sceneId]),
+						});
+					} else {
+						const existingKnowledge = currentKnowledge.value.get(item.word);
+						existingKnowledge.scenes.add(scene.sceneId);
+					}
+				});
+			});
+		}
+	} catch (error) {
+		console.error("加载知识点失败:", error);
+	}
+};
+
+const initPodcasts = async () => {
+	try {
+		// 获取所有播客数据
+		const podcastResponse = await apiClient.get(
+			`/podcasts/resource/${route.query.sign}`
+		);
+
+		// 初始化播客 Map
+		podcastBlocksMap.value.clear();
+
+		if (podcastResponse.data.code === 200) {
+			// 遍历所有场景
+			props.scenes.forEach((scene, sceneIndex) => {
+				// 找出场景中的所有知识点块
+				scene.forEach((block) => {
+					if (block.isKnowledge && block.knowledgeData) {
+						// 查找匹配的播客
+						const matchedPodcast = podcastResponse.data.data.podcasts.find(
+							(podcast) => podcast.knowledge === block.knowledgeData.word
+						);
+
+						if (matchedPodcast) {
+							// 使用知识点块 ID 作为 key
+							podcastBlocksMap.value.set(block.id, {
+								audioPath: matchedPodcast.audioPath,
+								script: matchedPodcast.script,
+								chineseScript: matchedPodcast.chineseScript,
+								sceneIndex: sceneIndex,
+								knowledge: matchedPodcast.knowledge,
+							});
+
+							// 更新知识点块的显示
+							block.text = formatKnowledgeDisplay(
+								{
+									...block.knowledgeData,
+									hasPodcast: true,
+								},
+								block.id
+							);
+						}
+					}
+				});
+			});
+		}
+	} catch (error) {
+		console.error("初始化播客数据失败:", error);
+	}
+};
+
+// 添加请求队列控制器
+const requestQueue = {
+	queue: [],
+	processing: false,
+	maxConcurrent: 2, // 最大并发数
+
+	async process() {
+		if (this.processing || this.queue.length === 0) return;
+
+		this.processing = true;
+		while (this.queue.length > 0) {
+			const batch = this.queue.splice(0, this.maxConcurrent);
+			await Promise.all(batch.map((request) => request()));
+		}
+		this.processing = false;
+	},
+
+	add(request) {
+		this.queue.push(request);
+		this.process();
+	},
+};
+
+const selectedBlock = computed(() =>
+	selectedBlockIndex.value !== null
+		? currentBlocks.value[selectedBlockIndex.value]
+		: null
+);
+
+// 添加处理函数
+const handleShowManualKnowledgeModal = (index) => {
+	selectedBlockIndex.value = index;
+	manualKnowledgeModalRef.value?.showModal();
+};
+
+// 处理确认删除
+const handleConfirmDelete = () => {
+	if (pendingDeleteWord.value) {
+		// 1. 获取完整的知识点数据
+		const knowledgeData = currentKnowledge.value.get(pendingDeleteWord.value);
+		if (!knowledgeData) return;
+
+		// 2. 添加到删除缓存
+		deletedKnowledge.value.add({
+			word: pendingDeleteWord.value,
+			data: knowledgeData,
+			timestamp: new Date().toISOString(),
+			blocks: [], // 用于存储相关的知识点块
+		});
+
+		// 3. 从当前场景中移除相关的知识点块
+		const knowledgeBlockIndexes = [];
+		currentBlocks.value.forEach((block, index) => {
+			if (
+				block.isKnowledge &&
+				block.knowledgeData?.word === pendingDeleteWord.value
+			) {
+				// 保存知识点块到删除缓存中
+				deletedKnowledge.value.forEach((item) => {
+					if (item.word === pendingDeleteWord.value) {
+						item.blocks.push({ ...block });
+					}
+				});
+				knowledgeBlockIndexes.unshift(index);
+
+				// 检查并保存相关的播客数据
+				if (podcastBlocksMap.value.has(block.id)) {
+					const podcastData = podcastBlocksMap.value.get(block.id);
+					deletedPodcasts.value.set(block.id, {
+						...podcastData,
+						timestamp: new Date().toISOString(),
+						knowledgeWord: pendingDeleteWord.value,
+					});
+					// 从当前播客映射中删除
+					podcastBlocksMap.value.delete(block.id);
+				}
+			}
+		});
+
+		// 4. 删除知识点块
+		knowledgeBlockIndexes.forEach((index) => {
+			currentBlocks.value.splice(index, 1);
+		});
+
+		// 5. 移除原文中的高亮
+		currentBlocks.value.forEach((block) => {
+			if (!block.isKnowledge && block.displayText) {
+				const regex = new RegExp(
+					`<mark class="highlight-knowledge">(${pendingDeleteWord.value})</mark>`,
+					"gi"
+				);
+				block.displayText = block.displayText.replace(regex, "$1");
+			}
+		});
+
+		// 6. 从当前知识点集合中移除
+		currentKnowledge.value.delete(pendingDeleteWord.value);
+
+		// 7. 更新场景
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, index) =>
+				index === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		hasUnsavedChanges.value = true;
+
+		// 8. 清空待删除词
+		pendingDeleteWord.value = null;
+	}
+};
+
+const handleShowRecycleBin = () => {
+	recycleBinModalRef.value?.showModal();
+};
+
+const handleRestoreKnowledge = (item) => {
+	// 1. 恢复知识点数据到当前知识点集合
+	currentKnowledge.value.set(item.word, item.data);
+
+	// 2. 恢复知识点块到原来的场景
+	const targetScene = props.scenes[currentIndex.value];
+	if (targetScene) {
+		item.blocks.forEach((block) => {
+			// 找到原文块
+			const originalBlock = targetScene.find(
+				(b) =>
+					!b.isKnowledge &&
+					!b.isTranslated &&
+					b.text.toLowerCase().includes(item.word.toLowerCase())
+			);
+
+			if (originalBlock) {
+				// 找到原文块和其对应的翻译块
+				const blockIndex = targetScene.findIndex(
+					(b) => b.id === originalBlock.id
+				);
+				const translationIndex = targetScene.findIndex(
+					(b) =>
+						b.isTranslated &&
+						(b.originalId === originalBlock.id ||
+							b.id === `translation-${originalBlock.id}`)
+				);
+
+				// 确定插入位置：如果有翻译块，插入到翻译块后面；否则插入到原文块后面
+				const insertIndex =
+					translationIndex !== -1 ? translationIndex + 1 : blockIndex + 1;
+
+				// 插入知识点块
+				targetScene.splice(insertIndex, 0, block);
+
+				// 恢复原文的高亮，但保留已有的高亮
+				const displayText = originalBlock.displayText || originalBlock.text;
+
+				// 检查当前单词是否已经被高亮
+				const wordRegex = new RegExp(
+					`<mark class="highlight-knowledge">(${item.word})</mark>`,
+					"gi"
+				);
+				const plainWordRegex = new RegExp(item.word, "gi");
+
+				// 如果单词已经被高亮，则不需要再次高亮
+				if (!wordRegex.test(displayText)) {
+					// 如果单词没有被高亮，则添加高亮
+					originalBlock.displayText = displayText.replace(
+						plainWordRegex,
+						`<mark class="highlight-knowledge">$&</mark>`
+					);
+				}
+			}
+		});
+
+		// 如果是当前场景，更新 currentBlocks
+		if (currentIndex.value === currentIndex.value) {
+			currentBlocks.value = targetScene;
+		}
+
+		// 更新场景
+		emit("update:scenes", [...props.scenes]);
+	}
+
+	// 3. 从删除缓存中移除
+	deletedKnowledge.value.delete(item);
+
+	showToast({ message: "知识点已恢复", type: "success" });
+};
+
+const handleShowPodcastModal = async (knowledge) => {
+	console.log(knowledge);
+	try {
+		if (knowledge.word) {
+			// 在 podcastBlocksMap 中查找匹配的播客
+			const matchedPodcast = Array.from(podcastBlocksMap.value.values()).find(
+				(podcast) => podcast.knowledge === knowledge.word
+			);
+
+			if (matchedPodcast) {
+				// 如果找到匹配的播客，使用现有数据
+				selectedPodcastKnowledge.value = {
+					...knowledge,
+					blockId: knowledge?.blockId,
+					existingPodcast: {
+						audioPath: matchedPodcast.audioPath,
+						script: matchedPodcast.script,
+						chineseScript: matchedPodcast.chineseScript,
+					},
+				};
+			} else {
+				// 如果没有找到，使用原始知识点数据
+				selectedPodcastKnowledge.value = {
+					...knowledge,
+					blockId: knowledge?.blockId,
+				};
+			}
+		}
+		console.log(selectedPodcastKnowledge.value);
+		podcastModalRef.value?.showModal();
+	} catch (error) {
+		console.error("打开播客模态框失败:", error);
+		showToast({ message: "打开播客模态框失败，请重试", type: "error" });
+	}
+};
+
+const handlePodcastUpdate = (podcastData) => {
+	hasUnsavedChanges.value = true;
+	const blockId = selectedPodcastKnowledge.value?.blockId;
+	if (blockId) {
+		podcastBlocksMap.value.set(blockId, podcastData);
+
+		// 更新知识点块的显示
+		const blockIndex = currentBlocks.value.findIndex(
+			(block) => block.id === blockId
+		);
+		if (blockIndex !== -1) {
+			const block = currentBlocks.value[blockIndex];
+			block.text = formatKnowledgeDisplay(
+				{
+					...block.knowledgeData,
+					hasPodcast: true,
+				},
+				block.id
+			);
+		}
+	}
+};
+
+const groupTextByLength = async (blocks) => {
+	const groups = [];
+	let currentGroup = [];
+	let currentLength = 0;
+	const TARGET_LENGTH = 2000;
+
+	// 过滤出原文内容
+	const originalBlocks = blocks.filter(
+		(block) =>
+			!block.isTitle &&
+			!block.isTranslated &&
+			!block.isKnowledge &&
+			!block.narration
+	);
+
+	originalBlocks.forEach((block) => {
+		const text = block.text || "";
+		const textLength = text.length;
+
+		if (currentGroup.length === 0) {
+			currentGroup.push(block);
+			currentLength = textLength;
+		} else {
+			if (currentLength > TARGET_LENGTH) {
+				groups.push([...currentGroup]);
+				currentGroup = [block];
+				currentLength = textLength;
+			} else {
+				currentGroup.push(block);
+				currentLength += textLength;
+			}
+		}
+	});
+
+	if (currentGroup.length > 0) {
+		groups.push(currentGroup);
+	}
+
+	// 为每组文本生成知识点
+	groups.forEach(async (group, groupIndex) => {
+		requestQueue.add(async () => {
+			try {
+				const originalTexts = group
+					.filter(
+						(block) =>
+							!block.isTitle && !block.isTranslated && !block.isKnowledge
+					)
+					.map((block) => block.text)
+					.join("\n");
+
+				if (originalTexts) {
+					const textLength = originalTexts.length;
+					const maxPhrases = Math.ceil(textLength / 250);
+
+					const phrasesResponse = await apiClient.post(
+						"/translation/extract-key-phrases",
+						{
+							text: originalTexts,
+							options: {
+								maxPhrases: Math.max(1, Math.min(maxPhrases, 8)),
+							},
+						}
+					);
+
+					if (phrasesResponse.data.data.phrases) {
+						// 3. 批量生成知识点
+						const knowledgeResponse = await apiClient.post(
+							"/translation/generate-knowledge-batch",
+							{
+								words: phrasesResponse.data.data.phrases,
+							}
+						);
+
+						if (knowledgeResponse.data.data) {
+							// 遍历每个原文块，检查是否包含知识点
+							group.forEach((block) => {
+								const blockText = block.text.toLowerCase();
+								// 修改为查找所有匹配的知识点
+								const matchedKnowledges = knowledgeResponse.data.data.filter(
+									(k) => blockText.includes(k.origin.toLowerCase())
+								);
+
+								if (matchedKnowledges.length > 0) {
+									// 高亮原文中的所有知识点
+									let displayText = block.text;
+									matchedKnowledges.forEach((knowledge) => {
+										// 先尝试用 origin 匹配
+										const originRegex = new RegExp(knowledge.origin, "gi");
+										if (block.text.match(originRegex)) {
+											displayText = displayText.replace(
+												originRegex,
+												`<mark class="highlight-knowledge">${knowledge.origin}</mark>`
+											);
+										} else {
+											// 如果 origin 没有匹配到，尝试用 word 匹配
+											const wordRegex = new RegExp(knowledge.word, "gi");
+											if (block.text.match(wordRegex)) {
+												// 如果 word 匹配到了，更新 knowledge.origin 为 word 的值
+												knowledge.origin = knowledge.word;
+												displayText = displayText.replace(
+													wordRegex,
+													`<mark class="highlight-knowledge">${knowledge.word}</mark>`
+												);
+											}
+										}
+									});
+									block.displayText = displayText;
+
+									// 找到原文块和翻译块的位置
+									const blockIndex = currentBlocks.value.findIndex(
+										(b) => b.id === block.id
+									);
+									const translationIndex = currentBlocks.value.findIndex(
+										(b) => b.id === `translation-${block.id}`
+									);
+									const insertIndex =
+										translationIndex !== -1
+											? translationIndex + 1
+											: blockIndex + 1;
+
+									// 为每个匹配的知识点创建知识点块
+									matchedKnowledges.forEach((knowledge, kIndex) => {
+										const knowledgeBlock = {
+											id: `knowledge_${block.id}_${kIndex}`,
+											text: formatKnowledgeDisplay(
+												knowledge,
+												`knowledge_${block.id}_${kIndex}`
+											),
+											isTitle: false,
+											isKnowledge: true,
+											narration: false,
+											isTranslated: false,
+											knowledgeData: knowledge,
+										};
+
+										if (insertIndex !== -1) {
+											// 按顺序插入知识点块
+											currentBlocks.value.splice(
+												insertIndex + kIndex,
+												0,
+												knowledgeBlock
+											);
+										}
+									});
+								}
+							});
+						}
+					}
+				}
+			} catch (error) {
+				console.error(`为第 ${groupIndex + 1} 组生成知识点失败:`, error);
+				showToast({
+					message: `为第 ${groupIndex + 1} 组生成知识点失败`,
+					type: "error",
+				});
+			}
+		});
+	});
+
+	return groups;
 };
 
 const switchScene = async (index) => {
@@ -1038,9 +1150,13 @@ const handleSave = async () => {
 		// 上传脚本数据
 		const uploadSuccess = await uploadScripts(updatedJson);
 		// 保存知识点数据
-		await saveAllKnowledge();
+		const knowledgeSuccess = await saveAllKnowledge();
+		// 保存播客数据
+		const podcastSuccess = await saveAllPodcasts();
 
-		if (uploadSuccess) {
+		if (uploadSuccess && knowledgeSuccess && podcastSuccess) {
+			// 重置未保存标记
+			hasUnsavedChanges.value = false;
 			showToast({ message: "保存成功", type: "success" });
 		} else {
 			showToast({ message: "保存失败，请重试", type: "error" });
@@ -1154,18 +1270,25 @@ const uploadScripts = async (jsonData) => {
 // 处理标题编辑
 const handleTitleEdit = (event, index) => {
 	const newText = event.target.innerText;
-	// 确保标题以 # 开头
-	currentBlocks.value[index].text = newText.startsWith("#")
-		? newText
-		: `# ${newText}`;
+	const oldText = currentBlocks.value[index].text;
 
-	// 通知父组件更新场景
-	emit(
-		"update:scenes",
-		props.scenes.map((scene, sceneIndex) =>
-			sceneIndex === currentIndex.value ? currentBlocks.value : scene
-		)
-	);
+	// 确保标题以 # 开头
+	const formattedText = newText.startsWith("#") ? newText : `# ${newText}`;
+
+	// 只有当文本确实发生变化时才更新
+	if (formattedText !== oldText) {
+		currentBlocks.value[index].text = formattedText;
+
+		// 通知父组件更新场景
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, sceneIndex) =>
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		hasUnsavedChanges.value = true; // 标记未保存更改
+	}
 };
 
 // 解析对话行
@@ -1246,12 +1369,38 @@ const saveAllKnowledge = async () => {
 		// 调用批量保存接口
 		const response = await apiClient.post("/knowledge/bulk", bulkData);
 
-		if (response.data.code === 200) {
-			console.log("知识点保存成功", new Date().toLocaleTimeString());
-		}
+		return response.data.code === 200 && true;
 	} catch (error) {
 		console.error("保存知识点失败:", error);
-		throw error;
+		return false;
+	}
+};
+
+const saveAllPodcasts = async () => {
+	try {
+		const podcastsToSave = [];
+		podcastBlocksMap.value.forEach((podcastData, blockId) => {
+			podcastsToSave.push({
+				knowledge: podcastData.knowledge,
+				script: podcastData.script,
+				audioPath: podcastData.audioPath,
+				chineseScript: podcastData.chineseScript,
+				sceneId: `${podcastData.sceneIndex + 1}`,
+				resourceId: route.query.sign,
+			});
+		});
+
+		if (podcastsToSave.length > 0) {
+			const response = await apiClient.post("/podcasts/batch-save", {
+				resourceId: route.query.sign,
+				podcasts: podcastsToSave,
+			});
+			return response.data.code === 200;
+		}
+		return true; // 如果没有播客需要保存，也算成功
+	} catch (error) {
+		console.error("保存播客失败:", error);
+		return false;
 	}
 };
 
@@ -1340,8 +1489,10 @@ const handleRegenerateKnowledge = async (event) => {
 			// 更新知识点块的显示
 			currentBlocks.value.forEach((block, index) => {
 				if (block.isKnowledge && block.knowledgeData?.word === word) {
-					currentBlocks.value[index].text =
-						formatKnowledgeDisplay(newKnowledgeData);
+					currentBlocks.value[index].text = formatKnowledgeDisplay(
+						newKnowledgeData,
+						block.id
+					);
 					currentBlocks.value[index].knowledgeData = newKnowledgeData;
 				}
 			});
@@ -1353,6 +1504,8 @@ const handleRegenerateKnowledge = async (event) => {
 					index === currentIndex.value ? currentBlocks.value : scene
 				)
 			);
+
+			hasUnsavedChanges.value = true;
 
 			showToast({ message: "知识点重新生成成功", type: "success" });
 		}
@@ -1451,6 +1604,11 @@ const handleTranslate = async (index) => {
 			target: "zh",
 		});
 
+		if (response.data.code !== 200 || !response.data.data.translatedText) {
+			showToast({ message: "翻译失败，请重试", type: "error" });
+			return;
+		}
+
 		const translatedText = response.data.data.translatedText;
 
 		// 创建翻译块
@@ -1475,6 +1633,8 @@ const handleTranslate = async (index) => {
 			// 在当前块后插入翻译文本
 			currentBlocks.value.splice(index + 1, 0, translationBlock);
 		}
+
+		hasUnsavedChanges.value = true;
 
 		// 通知父组件更新场景
 		emit(
@@ -1531,7 +1691,7 @@ const generateKnowledge = async (phrase) => {
 };
 
 // 格式化知识点显示
-const formatKnowledgeDisplay = (knowledgeData) => {
+const formatKnowledgeDisplay = (knowledgeData, blockId) => {
 	// 创建一个新的对象，只包含需要的数据
 	const safeData = {
 		word: knowledgeData.word,
@@ -1542,6 +1702,7 @@ const formatKnowledgeDisplay = (knowledgeData) => {
 		example_zh: knowledgeData.example_zh || "",
 		note: knowledgeData.note || "",
 		definition_zh: knowledgeData.definition_zh,
+		blockId: blockId,
 	};
 
 	// 转义特殊字符
@@ -1558,6 +1719,7 @@ const formatKnowledgeDisplay = (knowledgeData) => {
           data-example="${safeData.example}"
           data-example-zh="${safeData.example_zh}"
           data-note="${safeData.note}"
+					data-block-id="${safeData.blockId}"
         >${safeData.word}</span>
         <span class="text-gray-600">${safeData.word_zh}</span>
       </div>
@@ -1571,12 +1733,17 @@ const formatKnowledgeDisplay = (knowledgeData) => {
             `
 						: ""
 				}
-				
+
         <button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showKnowledgeDetail', { detail: JSON.parse('${safeJsonString}') }))">
           <i class="bi bi-journal-text"></i>
         </button>
 				<button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showPodcastModal', { detail: '${safeJsonString}' }))">
           <svg style="width:1.35rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+						${
+							knowledgeData.hasPodcast
+								? `<path d="M422.4 601.6m-217.6 0a217.6 217.6 0 1 0 435.2 0 217.6 217.6 0 1 0-435.2 0Z" fill="#e8447a"></path>`
+								: ""
+						}
             <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
             <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
           </svg>
@@ -1594,40 +1761,6 @@ const formatKnowledgeDisplay = (knowledgeData) => {
     </div>
     <div class="text-gray-600 text-sm mt-1">${knowledgeData.definition_zh}</div>
   </div>`;
-};
-
-// 初始化知识点数据
-const initKnowledges = async () => {
-	try {
-		const response = await apiClient.get(`/knowledge`, {
-			params: {
-				catalogId: route.params.id,
-				lessonId: route.query.sign,
-			},
-		});
-
-		console.log(response.data.data);
-
-		if (response.data.code === 200) {
-			currentKnowledge.value = new Map();
-
-			response.data.data.forEach((scene) => {
-				scene.knowledge.forEach((item) => {
-					if (!currentKnowledge.value.has(item.word)) {
-						currentKnowledge.value.set(item.word, {
-							...item,
-							scenes: new Set([scene.sceneId]),
-						});
-					} else {
-						const existingKnowledge = currentKnowledge.value.get(item.word);
-						existingKnowledge.scenes.add(scene.sceneId);
-					}
-				});
-			});
-		}
-	} catch (error) {
-		console.error("加载知识点失败:", error);
-	}
 };
 
 // 为文本块应用知识点高亮
@@ -1660,87 +1793,6 @@ const applyKnowledgeHighlight = (block, sceneIndex, knowledgeMap) => {
 	});
 
 	block.displayText = text;
-};
-
-// 初始化知识点显示
-const initKnowledgeDisplay = async () => {
-	try {
-		if (currentKnowledge.value.size === 0) {
-			await initKnowledges();
-		}
-
-		props.scenes.forEach((scene, sceneIndex) => {
-			const sceneId = `Scene${sceneIndex + 1}`;
-			const processedKnowledgeInScene = new Set();
-
-			const sceneBlocks =
-				sceneIndex === currentIndex.value ? currentBlocks.value : scene;
-
-			// 收集该场景的知识点
-			const matchedKnowledge = Array.from(
-				currentKnowledge.value.values()
-			).filter((knowledge) => knowledge.scenes.has(sceneId));
-
-			if (matchedKnowledge.length > 0) {
-				for (let i = sceneBlocks.length - 1; i >= 0; i--) {
-					const block = sceneBlocks[i];
-					if (block.isTitle || block.isTranslated || block.isKnowledge)
-						continue;
-
-					const blockId = block.id || block.originalIndex;
-					if (!blockId) continue;
-
-					// 应用高亮
-					applyKnowledgeHighlight(block, sceneIndex, currentKnowledge.value);
-
-					// 检查是否需要插入知识点块
-					if (block.displayText?.includes('class="highlight-knowledge"')) {
-						const nextIndex = i + 1;
-						const hasTranslation =
-							nextIndex < sceneBlocks.length &&
-							sceneBlocks[nextIndex].isTranslated;
-						let insertIndex = hasTranslation ? nextIndex + 1 : nextIndex;
-
-						// 筛选匹配的且未处理的知识点
-						const blockMatchedKnowledge = matchedKnowledge.filter(
-							(k) =>
-								block.text.toLowerCase().includes(k.origin.toLowerCase()) &&
-								!processedKnowledgeInScene.has(k.origin)
-						);
-
-						if (blockMatchedKnowledge.length > 0) {
-							// 为每个匹配的知识点创建并插入知识点块
-							blockMatchedKnowledge.forEach((knowledge, kIndex) => {
-								processedKnowledgeInScene.add(knowledge.word);
-
-								const knowledgeBlock = {
-									id: `knowledge-${blockId}-${kIndex}`,
-									text: formatKnowledgeDisplay(knowledge),
-									isTitle: false,
-									isKnowledge: true,
-									originalId: blockId,
-									knowledgeData: knowledge,
-								};
-
-								blocksMap.value.set(knowledgeBlock.id, knowledgeBlock);
-
-								if (sceneIndex === currentIndex.value) {
-									currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
-								} else {
-									scene.splice(insertIndex, 0, knowledgeBlock);
-								}
-
-								// 更新插入位置，使后续知识点插入到当前知识点之后
-								insertIndex++;
-							});
-						}
-					}
-				}
-			}
-		});
-	} catch (error) {
-		console.error("初始化知识点显示失败:", error);
-	}
 };
 
 const handleGenerateKnowledge = async (index) => {
@@ -1783,7 +1835,10 @@ const handleGenerateKnowledge = async (index) => {
 
 		const knowledgeBlock = {
 			id: `knowledge_${block.id}_${existingKnowledgeCount}`,
-			text: formatKnowledgeDisplay(knowledgeData),
+			text: formatKnowledgeDisplay(
+				knowledgeData,
+				`knowledge_${block.id}_${existingKnowledgeCount}`
+			),
 			isTitle: false,
 			isKnowledge: true,
 			narration: false,
@@ -1861,6 +1916,7 @@ const handleGenerateKnowledge = async (index) => {
 			)
 		);
 
+		hasUnsavedChanges.value = true;
 		showToast({ message: "知识点生成成功", type: "success" });
 	} catch (error) {
 		console.error("处理知识点失败:", error);
@@ -1904,8 +1960,8 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 			return;
 		}
 
-		const formattedTexts = filteredTexts.map((text) => `[${text}/${text}]`);
-
+		const formattedTexts = filteredTexts.map((text) => `${text}/${text}`);
+		console.log(formattedTexts);
 		// 并行处理所有选中的文本
 		const knowledgeResults = await apiClient.post(
 			"/translation/generate-knowledge-batch",
@@ -1939,7 +1995,10 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 
 			const knowledgeBlock = {
 				id: `knowledge_${block.id}_${existingKnowledgeCount + index}`,
-				text: formatKnowledgeDisplay(knowledgeData),
+				text: formatKnowledgeDisplay(
+					knowledgeData,
+					`knowledge_${block.id}_${existingKnowledgeCount + index}`
+				),
 				isTitle: false,
 				isKnowledge: true,
 				narration: false,
@@ -1991,6 +2050,8 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 
 		block.displayText = displayText;
 
+		hasUnsavedChanges.value = true;
+
 		// 更新场景
 		emit(
 			"update:scenes",
@@ -2016,56 +2077,44 @@ const handleToggleNarration = (index) => {
 
 // 分割场景
 const handleSplitScene = (index) => {
-	// 获取当前场景的所有块
+	// 1. 获取当前场景并分割
 	const currentScene = [...currentBlocks.value];
-
-	// 分割成两个场景
 	const firstPart = currentScene.slice(0, index);
 	const secondPart = currentScene.slice(index);
+	const newSceneNumber = currentIndex.value + 1;
 
-	// 更新已删除知识点的场景索引
+	// 2. 更新已删除知识点的场景索引和块ID
 	deletedKnowledge.value.forEach((item) => {
-		// 检查每个已删除知识点的块
-		const updatedBlocks = [];
-		item.blocks.forEach((block) => {
-			// 解析块的原始ID以获取场景索引
+		// 如果知识点属于被分割的场景，检查是否应该移动到新场景
+		if (item.sceneIndex === currentIndex.value) {
+			// 检查知识点是否在第二部分中
+			const isInSecondPart = secondPart.some((block) =>
+				block.text?.toLowerCase().includes(item.word.toLowerCase())
+			);
+			if (isInSecondPart) {
+				item.sceneIndex = newSceneNumber;
+			}
+		}
+		// 更新块ID
+		item.blocks = item.blocks.map((block) => {
 			const idMatch = block.id.match(/knowledge[_-]block_(\d+)_(\d+)/);
 			if (idMatch) {
 				const blockSceneIndex = parseInt(idMatch[1]);
-				const blockIndex = parseInt(idMatch[2]);
-
-				// 如果块属于被分割的场景之后的场景，更新场景索引
 				if (blockSceneIndex > currentIndex.value) {
-					const newId = block.id.replace(
-						`block_${blockSceneIndex}_`,
-						`block_${blockSceneIndex + 1}_`
-					);
-					updatedBlocks.push({ ...block, id: newId });
-				} else {
-					updatedBlocks.push(block);
+					return {
+						...block,
+						id: block.id.replace(
+							`block_${blockSceneIndex}_`,
+							`block_${blockSceneIndex + 1}_`
+						),
+					};
 				}
-			} else {
-				updatedBlocks.push(block);
 			}
+			return block;
 		});
-
-		// 更新知识点的块
-		item.blocks = updatedBlocks;
 	});
 
-	// 获取分割点的块
-	const splitBlock = secondPart[0];
-	const splitBlockMatch = splitBlock.id.match(/block_(\d+)_(\d+)/);
-
-	if (!splitBlockMatch) {
-		console.error("无法解析块ID:", splitBlock.id);
-		return;
-	}
-
-	// 获取新场景的编号
-	const newSceneNumber = currentIndex.value + 1;
-
-	// 为新场景添加标题
+	// 3. 为新场景添加标题
 	const newSceneTitle = {
 		id: `title_${newSceneNumber}`,
 		text: `# New Scene`,
@@ -2073,18 +2122,18 @@ const handleSplitScene = (index) => {
 	};
 	secondPart.unshift(newSceneTitle);
 
-	// 更新第二个场景中所有块的 ID
+	// 4. 更新第二个场景中所有块的ID
 	let currentBlockIndex = 0;
 	for (let i = 0; i < secondPart.length; i++) {
 		const block = secondPart[i];
 		if (block.isTitle) continue;
 
 		if (!block.isTranslated && !block.isKnowledge) {
-			// 更新原文块 ID
+			// 更新原文块ID
 			const oldId = block.id;
 			block.id = `block_${newSceneNumber}_${currentBlockIndex}`;
 
-			// 更新对应的翻译块 ID
+			// 更新翻译块ID
 			const translationBlock = secondPart.find(
 				(b) =>
 					b.isTranslated &&
@@ -2095,25 +2144,37 @@ const handleSplitScene = (index) => {
 				translationBlock.originalId = block.id;
 			}
 
-			// 更新对应的知识点块 ID
+			// 更新知识点块ID和播客数据
 			const knowledgeBlocks = secondPart.filter(
 				(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
 			);
 			knowledgeBlocks.forEach((kb, kIndex) => {
-				kb.id = `knowledge-block_${newSceneNumber}_${currentBlockIndex}-${kIndex}`;
+				const oldKnowledgeId = kb.id;
+				const newKnowledgeId = `knowledge-block_${newSceneNumber}_${currentBlockIndex}-${kIndex}`;
+
+				// 更新知识点块ID
+				kb.id = newKnowledgeId;
 				kb.originalId = block.id;
+
+				// 更新播客数据
+				if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+					const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+					podcastData.sceneIndex = newSceneNumber;
+					podcastBlocksMap.value.delete(oldKnowledgeId);
+					podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+				}
 			});
 
 			currentBlockIndex++;
 		}
 	}
 
-	// 更新场景数据
+	// 5. 更新场景数据
 	const updatedScenes = [...props.scenes];
 	updatedScenes[currentIndex.value] = firstPart;
 	updatedScenes.splice(currentIndex.value + 1, 0, secondPart);
 
-	// 更新后续场景的编号和 ID
+	// 6. 更新后续场景的编号和ID
 	for (let i = currentIndex.value + 2; i < updatedScenes.length; i++) {
 		const scene = updatedScenes[i];
 		const sceneNumber = i;
@@ -2124,7 +2185,7 @@ const handleSplitScene = (index) => {
 			sceneTitle.id = `title_${sceneNumber}`;
 		}
 
-		// 更新场景中所有块的 ID
+		// 更新场景中所有块的ID
 		let blockIndex = 0;
 		scene.forEach((block) => {
 			if (block.isTitle) return;
@@ -2158,26 +2219,88 @@ const handleSplitScene = (index) => {
 		});
 	}
 
-	// 发送更新事件
+	// 7. 更新状态和UI
 	emit("update:scenes", updatedScenes);
-
-	console.log(updatedScenes);
-
-	// 切换到新场景
-	currentIndex.value = currentIndex.value + 1;
+	currentIndex.value = newSceneNumber;
 	currentBlocks.value = secondPart;
-
-	// 重置工具栏状态
 	selectedBlockIndex.value = null;
+	hasUnsavedChanges.value = true;
 
 	showToast({ message: "场景分割成功", type: "success" });
 };
 
+const isMerging = ref(false);
 // 合并场景
-const handleMergeScenes = (index) => {
+const handleMergeScenes = async (index) => {
+	isMerging.value = true;
+
+	// 添加动画类到要合并的卡带
+	const cartridgeElement = document.querySelectorAll(".cartridge")[index + 1];
+	if (cartridgeElement) {
+		cartridgeElement.classList.add("cartridge-merging");
+	}
+
+	// 等待动画完成后再执行合并
+	await new Promise((resolve) => setTimeout(resolve, 800));
+
 	// 获取要合并的两个场景
 	const upperScene = [...props.scenes[index]];
 	const lowerScene = [...props.scenes[index + 1]];
+
+	// 获取上面场景中最后一个非标题块的索引
+	let lastUpperBlockIndex = 0;
+	upperScene.forEach((block) => {
+		if (!block.isTitle && !block.isTranslated && !block.isKnowledge) {
+			lastUpperBlockIndex++;
+		}
+	});
+
+	// 更新下面场景中所有块的 ID
+	let blockIndex = lastUpperBlockIndex;
+	lowerScene.forEach((block) => {
+		if (block.isTitle) return;
+
+		if (!block.isTranslated && !block.isKnowledge) {
+			// 更新原文块 ID
+			const oldId = block.id;
+			block.id = `block_${index}_${blockIndex}`;
+
+			// 更新翻译块
+			const translationBlock = lowerScene.find(
+				(b) =>
+					b.isTranslated &&
+					(b.originalId === oldId || b.id === `translation-${oldId}`)
+			);
+			if (translationBlock) {
+				translationBlock.id = `translation-block_${index}_${blockIndex}`;
+				translationBlock.originalId = block.id;
+			}
+
+			// 更新知识点块和相关的播客数据
+			const knowledgeBlocks = lowerScene.filter(
+				(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
+			);
+			knowledgeBlocks.forEach((kb, kIndex) => {
+				const oldKnowledgeId = kb.id;
+				// 直接使用原始的 kIndex，不加上 upperKnowledgeCount
+				const newKnowledgeId = `knowledge-block_${index}_${blockIndex}-${kIndex}`;
+
+				// 更新知识点块ID
+				kb.id = newKnowledgeId;
+				kb.originalId = block.id;
+
+				// 更新播客数据
+				if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+					const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+					podcastData.sceneIndex = index;
+					podcastBlocksMap.value.delete(oldKnowledgeId);
+					podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+				}
+			});
+
+			blockIndex++;
+		}
+	});
 
 	// 移除下面场景的标题块
 	const mergedScene = [
@@ -2190,12 +2313,64 @@ const handleMergeScenes = (index) => {
 	updatedScenes[index] = mergedScene;
 	updatedScenes.splice(index + 1, 1);
 
-	// 更新后续场景的标题编号
+	// 更新后续场景的编号和块ID
 	for (let i = index + 1; i < updatedScenes.length; i++) {
-		const sceneTitle = updatedScenes[i].find((block) => block.isTitle);
+		const scene = updatedScenes[i];
+		const sceneNumber = i;
+		let blockIndex = 0;
+
+		// 更新场景标题
+		const sceneTitle = scene.find((block) => block.isTitle);
 		if (sceneTitle) {
-			sceneTitle.id = `title_${i}`;
+			sceneTitle.id = `title_${sceneNumber}`;
 		}
+
+		// 更新场景中所有块的 ID
+		scene.forEach((block) => {
+			if (block.isTitle) return;
+
+			if (!block.isTranslated && !block.isKnowledge) {
+				// 更新原文块 ID
+				const oldId = block.id;
+				block.id = `block_${sceneNumber}_${blockIndex}`;
+
+				// 更新翻译块
+				const translationBlock = scene.find(
+					(b) =>
+						b.isTranslated &&
+						(b.originalId === oldId || b.id === `translation-${oldId}`)
+				);
+				if (translationBlock) {
+					translationBlock.id = `translation-block_${sceneNumber}_${blockIndex}`;
+					translationBlock.originalId = block.id;
+				}
+
+				// 更新知识点块和相关的播客数据
+				const knowledgeBlocks = scene.filter(
+					(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
+				);
+				knowledgeBlocks.forEach((kb, kIndex) => {
+					const oldKnowledgeId = kb.id;
+					const newKnowledgeId = `knowledge-block_${sceneNumber}_${blockIndex}-${kIndex}`;
+
+					// 更新知识点块ID
+					kb.id = newKnowledgeId;
+					kb.originalId = block.id;
+
+					// 更新播客数据
+					if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+						const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+						// 更新场景索引
+						podcastData.sceneIndex = sceneNumber;
+						// 使用新的知识点块ID作为key
+						podcastBlocksMap.value.delete(oldKnowledgeId);
+						podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+					}
+				});
+
+				blockIndex++;
+			}
+		});
 	}
 
 	// 发送更新事件
@@ -2212,6 +2387,11 @@ const handleMergeScenes = (index) => {
 	// 更新当前显示的场景内容
 	currentBlocks.value = updatedScenes[currentIndex.value];
 
+	isMerging.value = false;
+	if (cartridgeElement) {
+		cartridgeElement.classList.remove("cartridge-merging");
+	}
+	hasUnsavedChanges.value = true;
 	showToast({ message: "场景合并成功", type: "success" });
 };
 
@@ -2236,7 +2416,6 @@ const handleAutoGenerateTitle = async (index) => {
 		if (response.data.code === 200) {
 			// 更新标题
 			const newTitle = response.data.data.title;
-			console.log(response.data.data);
 			currentBlocks.value[index].text = `# ${newTitle}`;
 
 			// 更新场景
@@ -2246,6 +2425,8 @@ const handleAutoGenerateTitle = async (index) => {
 					sceneIndex === currentIndex.value ? currentBlocks.value : scene
 				)
 			);
+
+			hasUnsavedChanges.value = true;
 
 			showToast({ message: "标题生成成功", type: "success" });
 		}
@@ -2279,22 +2460,29 @@ watch(
 
 const handleTranslationEdit = (event, index) => {
 	const newText = event.target.innerText.trim();
+	const oldText = currentBlocks.value[index].text;
 
-	if (newText === "") {
-		// 删除空的翻译行
-		currentBlocks.value.splice(index, 1);
-	} else {
-		// 更新翻译文本
-		currentBlocks.value[index].text = newText;
+	// 只有当文本确实发生变化时才进行更新
+	if (newText !== oldText) {
+		if (newText === "") {
+			// 删除空的翻译行
+			currentBlocks.value.splice(index, 1);
+		} else {
+			// 更新翻译文本
+			currentBlocks.value[index].text = newText;
+		}
+
+		// 标记有未保存的更改
+		hasUnsavedChanges.value = true;
+
+		// 通知父组件更新场景
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, sceneIndex) =>
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
 	}
-
-	// 通知父组件更新场景
-	emit(
-		"update:scenes",
-		props.scenes.map((scene, sceneIndex) =>
-			sceneIndex === currentIndex.value ? currentBlocks.value : scene
-		)
-	);
 };
 </script>
 
@@ -2345,11 +2533,9 @@ const handleTranslationEdit = (event, index) => {
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
-	padding: 1rem;
+	padding: 0.5rem;
 	background: rgba(255, 255, 255, 0.9);
 	border-radius: 12px;
-	/* border: 2px solid #eee; */
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(5px);
 }
@@ -2408,7 +2594,7 @@ const handleTranslationEdit = (event, index) => {
 	display: flex;
 	flex-direction: column;
 	pointer-events: auto;
-	gap: 15px;
+	gap: 20px;
 	z-index: 100;
 	background-color: rgba(255, 255, 255, 0.8);
 	padding: 12px;
@@ -2688,5 +2874,167 @@ const handleTranslationEdit = (event, index) => {
 /* 确保tooltip正确显示 */
 .fixed-action-buttons .tooltip {
 	margin: 5px 0;
+}
+
+/* 卡带容器样式 */
+.cartridge-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+}
+
+/* 添加合并动画相关样式 */
+.cartridge-merging {
+	animation: merge-animation 0.8s ease-in-out;
+}
+
+@keyframes merge-animation {
+	0% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	50% {
+		transform: translateY(-40px);
+		opacity: 0.5;
+	}
+	100% {
+		transform: translateY(-80px);
+		opacity: 0;
+	}
+}
+
+/* 连接器按钮动画 */
+.connector-btn-merging {
+	animation: connector-merge 0.8s ease-in-out;
+}
+
+@keyframes connector-merge {
+	0% {
+		transform: translate(-50%, -50%) scale(1);
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(1.2);
+		background: #555;
+	}
+	100% {
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+/* 卡带主体样式 */
+.cartridge {
+	width: 140px;
+	background: #fff;
+	border-radius: 4px;
+	padding: 8px;
+	cursor: pointer;
+	position: relative;
+	border: 2px solid #eee;
+}
+
+/* 卡带激活状态 */
+.cartridge-active {
+	background: #f0f0f0;
+	border-color: #333;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 卡带顶部纹路 */
+.cartridge-ridges {
+	display: flex;
+	justify-content: space-between;
+	padding: 4px 0;
+}
+
+.ridge {
+	width: 12px;
+	height: 3px;
+	background: #f0f0f0;
+	border-radius: 1px;
+}
+
+/* 卡带标签区域 */
+.cartridge-label {
+	background: #f8f8f8;
+	padding: 8px;
+	border-radius: 2px;
+	margin: 8px 0;
+	border: 1px solid #eee;
+}
+
+.cartridge-title {
+	color: #333;
+	font-size: 0.875rem;
+	margin-bottom: 4px;
+}
+
+.cartridge-number {
+	color: #666;
+	font-size: 0.75rem;
+}
+
+/* 激活状态下的文字颜色 */
+.cartridge-active .cartridge-label {
+	background: #e8e8e8;
+	border-color: #ddd;
+}
+
+.cartridge-active .cartridge-title {
+	color: #333;
+}
+
+.cartridge-active .cartridge-number {
+	color: #666;
+}
+
+.cartridge-active .ridge {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+/* 卡带底部引脚 */
+.cartridge-pins {
+	height: 12px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		transparent 10%,
+		rgba(var(--secondary-color-rgb), 0.1) 10%,
+		rgba(var(--secondary-color-rgb), 0.1) 90%,
+		transparent 90%
+	);
+	border-radius: 0 0 2px 2px;
+}
+
+/* 连接器样式 */
+.cartridge-connector {
+	width: 2px;
+	height: 24px;
+	background: rgba(0, 0, 0, 0.1);
+	position: relative;
+	margin: 8px 0;
+}
+
+.connector-btn {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: #fff;
+	color: #666;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid #eee;
+	transition: all 0.2s ease;
+}
+
+.connector-btn:hover {
+	background: #f8f8f8;
+	border-color: #ddd;
+	transform: translate(-50%, -50%) scale(1.1);
 }
 </style>

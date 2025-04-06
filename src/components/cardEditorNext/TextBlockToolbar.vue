@@ -15,7 +15,7 @@
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
 			<button class="ghost-btn" @click="$emit('translate')">翻译</button>
 
-			<button class="ghost-btn" @click="$emit('generate-knowledge')">
+			<button class="ghost-btn" @click="$emit('auto-generate-knowledge')">
 				生成知识点
 			</button>
 			<button class="ghost-btn" @click="$emit('manual-knowledge')">
@@ -43,9 +43,9 @@
 					:class="hasSpeaker ? 'bi-emoji-surprise-fill' : 'bi-emoji-surprise'"
 				></i>
 			</button>
-			<button class="ghost-btn" @click="$emit('delete-block')" title="删除">
+			<!-- <button class="ghost-btn" @click="$emit('delete-block')" title="删除">
 				<i class="bi bi-trash"></i>
-			</button>
+			</button> -->
 		</div>
 		<div v-if="processing" class="flex items-center gap-3 ml-6">
 			<div class="flex items-center justify-center w-6 h-6">
@@ -77,7 +77,7 @@ defineProps({
 
 defineEmits([
 	"translate",
-	"generate-knowledge",
+	"auto-generate-knowledge",
 	"toggle-narration",
 	"manual-knowledge",
 	"toggle-speaker",

@@ -57,41 +57,6 @@
 								暂无删除的知识点
 							</div>
 						</div>
-
-						<!-- 文本块列表 -->
-						<div v-show="currentTab === 'blocks'" class="space-y-2">
-							<div
-								v-for="(item, index) in deletedBlocks"
-								:key="index"
-								class="p-3 rounded-lg cursor-pointer relative group"
-								style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)"
-							>
-								<div class="text-sm truncate">
-									{{ item.blocks[0]?.text || "无内容" }}
-								</div>
-								<div class="text-xs text-gray-600 mt-1">
-									{{ new Date(item.timestamp).toLocaleString() }}
-								</div>
-								<button
-									class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-									@click="handleRestoreBlocks(index)"
-								>
-									<div class="retro-btn-xs">
-										<div class="btn-shadow">
-											<div class="btn-edge">
-												<div class="btn-face">恢复</div>
-											</div>
-										</div>
-									</div>
-								</button>
-							</div>
-							<div
-								v-if="!deletedBlocks.length"
-								class="text-gray-500 text-center py-4 text-sm mt-4"
-							>
-								暂无删除的文本块
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -104,7 +69,6 @@
 
 <script setup>
 import { ref } from "vue";
-import { showToast } from "@/components/common/toast.js";
 
 const props = defineProps({
 	deletedKnowledge: {
@@ -117,7 +81,7 @@ const props = defineProps({
 	},
 });
 
-const emit = defineEmits(["restore-knowledge", "restore-blocks"]);
+const emit = defineEmits(["restore-knowledge"]);
 
 const recycleBinModalRef = ref(null);
 const currentTab = ref("knowledge");
@@ -127,10 +91,6 @@ const tabs = {
 		label: "已删除知识点",
 		icon: "bi bi-book",
 	},
-	blocks: {
-		label: "已删除文本块",
-		icon: "bi bi-file-text",
-	},
 };
 
 const showModal = () => {
@@ -139,10 +99,6 @@ const showModal = () => {
 
 const handleRestoreKnowledge = (word) => {
 	emit("restore-knowledge", word);
-};
-
-const handleRestoreBlocks = (index) => {
-	emit("restore-blocks", index);
 };
 
 defineExpose({

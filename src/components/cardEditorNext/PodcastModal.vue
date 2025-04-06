@@ -89,14 +89,23 @@
 				<!-- 播放器控制区 -->
 				<div class="radio-control-panel p-4">
 					<div class="flex items-center gap-4">
-						<audio
-							v-if="audioUrl"
-							controls
-							class="radio-player flex-1"
-							ref="audioElement"
-						>
-							<source :src="audioUrl" type="audio/mpeg" />
-						</audio>
+						<div class="flex-1">
+							<audio
+								v-if="audioUrl"
+								controls
+								class="radio-player"
+								ref="audioElement"
+							>
+								<source :src="audioUrl" type="audio/mpeg" />
+							</audio>
+							<div
+								v-else-if="generating"
+								class="radio-player flex items-center justify-center gap-2 text-base-700"
+							>
+								<span class="loading loading-spinner loading-sm"></span>
+								音频生成中...
+							</div>
+						</div>
 
 						<div class="language-toggle flex justify-center items-center">
 							<div class="vintage-toggle-group">
@@ -144,11 +153,10 @@
 	</dialog>
 </template>
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-import { usePointsStore } from "@/store/index";
-import { useRouter, useRoute, onBeforeRouteLeave } from "vue-router";
+import { useRoute } from "vue-router";
 
 const props = defineProps({
 	knowledge: {
@@ -156,7 +164,6 @@ const props = defineProps({
 		required: true,
 	},
 	sceneIndex: {
-		// 添加场景索引属性
 		type: Number,
 		default: 0,
 	},
@@ -177,13 +184,10 @@ const showChinese = ref(false);
 const podcastModalRef = ref(null);
 const audioElement = ref(null);
 
+const emit = defineEmits(["updatePodcast"]);
+
 // 计算属性
 const hasContent = computed(() => podcastScript.value.length > 0);
-
-// 方法定义
-const toggleScript = () => {
-	showScript.value = !showScript.value;
-};
 
 const toggleLanguage = (lang) => {
 	if (lang === "english") {
@@ -203,6 +207,8 @@ const toggleLanguage = (lang) => {
 const generatePodcast = async () => {
 	try {
 		generating.value = true;
+		// 立即清除旧的音频 URL
+		audioUrl.value = "";
 
 		// 1. 生成播客脚本
 		const scriptResponse = await apiClient.post(
@@ -221,17 +227,14 @@ const generatePodcast = async () => {
 				(item) => item.chinese_lines || ""
 			);
 
-			// 2. 生成音频 (使用 Azure TTS)
-			const audioResponse = await apiClient.post(
-				"/podcasts/generate-audio-edge",
-				{
-					knowledge: props.knowledge.word,
-					script: podcastScript.value.join("\n"),
-					voice: "en-US-AvaNeural",
-					resourceId: route.query.sign || "",
-					sceneId: props.sceneIndex?.toString() || "0",
-				}
-			);
+			console.log("生成音频", props.sceneIndex?.toString());
+			// 2. 生成音频
+			const audioResponse = await apiClient.post("/podcasts/generate-audio", {
+				knowledge: props.knowledge.word,
+				script: podcastScript.value.join("\n"),
+				resourceId: route.query.sign || "",
+				sceneId: props.sceneIndex?.toString() || "0",
+			});
 
 			if (audioResponse.data.code === 200) {
 				audioUrl.value = audioResponse.data.data.result.audioUrl;
@@ -245,36 +248,14 @@ const generatePodcast = async () => {
 					}, 0);
 				}
 
-				// 3. 保存播客
-				const podcastData = {
-					knowledge: props.knowledge.word,
-					resourceId: route.query.sign || "",
+				// 通知父组件更新 podcastBlocksMap
+				emit("updatePodcast", {
+					audioPath: audioUrl.value,
 					script: podcastScript.value,
 					chineseScript: podcastChineseScript.value,
-					audioPath: audioUrl.value,
-					sceneId: (props.selectedSceneIndex + 1).toString(),
-					options: {},
-				};
-
-				const saveResponse = await apiClient.post(
-					"/podcasts/save",
-					podcastData
-				);
-
-				if (saveResponse.data.code === 200) {
-					// 更新本地缓存
-					// savedPodcasts.value.set(key, {
-					// 	script: [...podcastScript.value],
-					// 	chineseScript: [...podcastChineseScript.value],
-					// 	audioUrl: podcastUrl.value,
-					// 	timestamp: new Date().toISOString(),
-					// 	id: saveResponse.data.data.id,
-					// });
-
-					// // 扣除积分（脚本生成10分，音频生成20分）
-					// pointsStore.updatePoints(-30);
-					showToast({ message: "播客生成完成", type: "success" });
-				}
+					sceneIndex: props.sceneIndex,
+					knowledge: props.knowledge.word,
+				});
 			}
 		}
 	} catch (error) {
@@ -317,7 +298,7 @@ defineExpose({
 .modal-box {
 	background: #ffffff;
 	border: 2px solid #000;
-	/* box-shadow: 8px 8px 0 #000; */
+	box-shadow: 3px 3px 0 #000;
 	overflow: hidden;
 }
 
