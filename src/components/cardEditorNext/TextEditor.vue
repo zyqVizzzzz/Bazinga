@@ -1,10 +1,7 @@
 <template>
 	<div>
 		<!-- 原文编辑器 -->
-		<div
-			class="editor-container text-sm relative w-2/3 mx-auto"
-			v-if="isCustom"
-		>
+		<div class="editor-container w-4/5 mx-auto relative" v-if="isCustom">
 			<!-- 按钮组 -->
 			<div class="editor-action-buttons">
 				<div class="tooltip" data-tip="退出">
@@ -30,10 +27,7 @@
 					</button>
 				</div>
 			</div>
-			<div
-				class="editor-wrapper text-sm rounded shadow-editor"
-				style="overflow-y: auto"
-			>
+			<div class="editor-wrapper mx-auto text-sm w-4/5">
 				<textarea
 					id="editor"
 					class="editorjs-container"
@@ -49,8 +43,7 @@
 				<div class="btn-shadow">
 					<div class="btn-edge">
 						<div class="btn-face">
-							<i class="bi bi-collection-play me-2"></i>
-							<span>制作卡片合辑</span>
+							<span>下一步</span>
 						</div>
 					</div>
 				</div>
@@ -356,7 +349,11 @@ const getDefaultKnowledge = () => {
 
 .editor-wrapper {
 	height: 100%;
+	overflow: visible;
 	overflow-y: auto;
+	border: 3px solid #333;
+	border-radius: 12px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 	scrollbar-width: none; /* Firefox */
 	-ms-overflow-style: none; /* IE and Edge */
 }
@@ -389,10 +386,8 @@ const getDefaultKnowledge = () => {
 	position: relative;
 	text-align: left;
 	height: calc(100vh - 230px);
-	border: 3px solid #333;
-	border-radius: 12px;
-	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 	overflow: visible;
+	background: transparent;
 }
 
 .editorjs-container {
@@ -410,12 +405,12 @@ const getDefaultKnowledge = () => {
 
 .editor-action-buttons {
 	position: absolute;
-	left: -80px;
+	left: 20px;
 	top: 20px;
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
-	z-index: 100;
+	z-index: 1000;
 	background-color: rgba(255, 255, 255, 0.8);
 	padding: 12px;
 	border-radius: 12px;

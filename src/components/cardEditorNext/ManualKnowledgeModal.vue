@@ -1,15 +1,12 @@
 <template>
 	<dialog ref="modalRef" id="manual_knowledge_modal" class="modal">
-		<div
-			class="modal-box border-2 border-gray-800"
-			style="background-color: var(--milk-color)"
-		>
-			<div class="flex items-center gap-2">
-				<!-- <h3 class="font-bold text-lg text-secondary">选择知识点</h3> -->
-			</div>
-			<div class="pt-2 pb-2">
+		<div class="modal-box vintage-modal">
+			<h3 class="vintage-title">选择知识点</h3>
+			<p class="vintage-subtitle">点击文本中的单词或短语来选择知识点</p>
+
+			<div class="vintage-content">
 				<div
-					class="text-sm text-gray-700 text-left interactive-text"
+					class="text-sm text-left interactive-text"
 					@mousemove="handleTextHover"
 					@mouseleave="hoveredWordIndex = null"
 					ref="textContainer"
@@ -28,26 +25,23 @@
 				</div>
 			</div>
 
-			<div class="py-2 border-t min-h-[80px] flex items-center">
+			<div class="vintage-selection">
 				<div
 					v-if="knowledgeGroups.length === 0"
-					class="text-gray-500 text-sm flex items-center"
+					class="empty-selection text-sm"
 				>
 					<i class="bi bi-info-circle mr-2"></i>
-					点击文本中的单词或短语来选择知识点
+					请从上方文本中选择关键词
 				</div>
-				<div v-else class="w-full flex flex-wrap gap-2">
+				<div v-else class="selected-groups">
 					<div
 						v-for="(group, groupIndex) in knowledgeGroups"
 						:key="groupIndex"
-						class="flex mr-2 relative"
+						class="vintage-tag"
 					>
-						<span
-							class="text-secondary text-sm font-bold px-2 py-1 rounded-md bg-secondary/10"
-							>{{ group.join(" ") }}</span
-						>
+						<span>{{ group.join(" ") }}</span>
 						<button
-							class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs"
+							class="vintage-tag-remove"
 							@click.stop="removeGroup(groupIndex)"
 						>
 							<i class="bi bi-x"></i>
@@ -56,18 +50,26 @@
 				</div>
 			</div>
 
-			<div class="modal-action justify-center">
-				<!-- <div class="flex justify-end"> -->
+			<div class="vintage-actions">
 				<button
 					v-if="knowledgeGroups.length > 0"
-					class="btn btn-sm btn-secondary text-white"
 					@click="confirmKnowledge"
+					class="retro-btn w-[120px] h-8"
 				>
-					生成知识点
+					<div class="btn-shadow">
+						<div class="btn-edge">
+							<div class="btn-face">生成知识点</div>
+						</div>
+					</div>
 				</button>
-				<!-- </div> -->
 				<form method="dialog">
-					<button class="btn btn-sm">关闭</button>
+					<!-- <button class="retro-btn w-[80px] h-8">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">关闭</div>
+							</div>
+						</div>
+					</button> -->
 				</form>
 			</div>
 		</div>
@@ -78,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
 	text: {
@@ -94,6 +96,29 @@ const hoveredWordIndex = ref(null);
 const selectedIndices = ref([]);
 
 const emit = defineEmits(["select-knowledge", "manual-generate-knowledge"]);
+
+const handleCancel = () => {
+	clearSelection();
+};
+
+// 同时我们也需要监听对话框的关闭事件
+const setupModalListeners = () => {
+	if (modalRef.value) {
+		modalRef.value.addEventListener("close", clearSelection);
+	}
+};
+
+// 在组件挂载后设置监听器
+onMounted(() => {
+	setupModalListeners();
+});
+
+// 在组件卸载前移除监听器
+onUnmounted(() => {
+	if (modalRef.value) {
+		modalRef.value.removeEventListener("close", clearSelection);
+	}
+});
 
 const isPunctuation = (word) => {
 	return !/[a-zA-Z]/.test(word);
@@ -236,8 +261,57 @@ defineExpose({
 </script>
 
 <style scoped>
+.vintage-modal {
+	border: 3px solid #000;
+	border-radius: 12px;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+	padding: 24px;
+	position: relative;
+	max-width: 600px;
+}
+
+.vintage-title {
+	font-weight: bold;
+	font-size: 20px;
+	margin-bottom: 16px;
+	text-align: center;
+	position: relative;
+	color: #000;
+}
+
+.vintage-title::after {
+	content: "";
+	position: absolute;
+	bottom: -8px;
+	left: 25%;
+	right: 25%;
+	height: 2px;
+	background: #000;
+}
+
+.vintage-subtitle {
+	text-align: center;
+	color: #666;
+	font-size: 14px;
+	margin-bottom: 20px;
+	font-style: italic;
+}
+
+.vintage-content {
+	border: 2px solid #000;
+	border-radius: 8px;
+	padding: 16px;
+	background: #fff;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	margin-bottom: 16px;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
 .interactive-text {
 	cursor: pointer;
+	color: #333;
+	line-height: 1.6;
 }
 
 .word-span {
@@ -245,6 +319,7 @@ defineExpose({
 	border-radius: 4px;
 	transition: all 0.2s ease;
 	display: inline-block;
+	cursor: pointer;
 }
 
 .word-highlight {
@@ -253,7 +328,145 @@ defineExpose({
 }
 
 .word-selected {
-	background-color: rgba(var(--secondary-color-rgb), 0.1);
+	background-color: rgba(var(--secondary-color-rgb), 0.2);
 	color: var(--secondary-color);
+	font-weight: bold;
+}
+
+.vintage-selection {
+	border: 2px solid #000;
+	border-radius: 8px;
+	padding: 16px;
+	background: #fff;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	min-height: 80px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+}
+
+.empty-selection {
+	color: #666;
+	font-style: italic;
+	display: flex;
+	align-items: center;
+}
+
+.selected-groups {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	width: 100%;
+}
+
+.vintage-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 10px;
+	background: rgba(var(--secondary-color-rgb), 0.1);
+	border: 2px solid #000;
+	border-radius: 20px;
+	font-size: 13px;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+	transition: all 0.2s;
+	color: var(--secondary-color);
+	font-weight: bold;
+	position: relative;
+}
+
+.vintage-tag:hover {
+	transform: translateY(-2px);
+	box-shadow: 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.vintage-tag-remove {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.1);
+	color: #666;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.vintage-tag-remove:hover {
+	background: var(--secondary-color);
+	color: #fff;
+}
+
+.vintage-actions {
+	display: flex;
+	justify-content: center;
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.retro-btn {
+	position: relative;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.retro-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 6px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 6px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 6px;
+	color: #333;
+	font-weight: bold;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+}
+
+/* 按钮交互效果 */
+.retro-btn:hover:not(:disabled) .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active:not(:disabled) .btn-edge,
+.retro-btn:active:not(:disabled) .btn-face {
+	transform: translateY(0);
 }
 </style>

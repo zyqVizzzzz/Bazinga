@@ -1,52 +1,58 @@
 <template>
 	<div class="podcast-custom-container">
-		<!-- 左右布局容器 -->
-		<div class="podcast-layout" v-if="podcastData && podcastData.length > 0">
+		<div
+			class="vintage-radio-container"
+			v-if="podcastData && podcastData.length > 0"
+		>
 			<!-- 左侧播客列表 -->
-			<div class="podcast-left-section">
-				<!-- 欢迎标题区域 -->
-				<div class="podcast-header">
-					<div class="podcast-title">
-						<div class="title-content">
-							<div class="welcome-title">
-								<span>Scene {{ props.currentPage }}</span>
-							</div>
-						</div>
-						<div class="podcast-badge">BAZINGA PODCAST</div>
+			<div class="radio-sidebar">
+				<div class="radio-header">
+					<div class="radio-indicator"></div>
+					<h2 class="radio-title">BAZINGA RADIO</h2>
+				</div>
+
+				<div class="scene-display">
+					<div class="scene-number">Scene {{ props.currentPage }}</div>
+					<div class="frequency">FM MOLIDOKI</div>
+				</div>
+
+				<div class="channel-list">
+					<!-- <div class="channel-header">播客列表</div> -->
+					<div
+						v-for="(podcast, index) in podcastData"
+						:key="index"
+						class="channel-item"
+						:class="{ active: currentPlayingIndex === index }"
+						@click="selectPodcast(podcast, index)"
+					>
+						<span class="channel-number">{{ index + 1 }}</span>
+						<span class="channel-name">{{
+							podcast.knowledge || "暂无标题"
+						}}</span>
+						<span
+							class="channel-status"
+							v-if="currentPlayingIndex === index && isPlaying"
+						>
+							<i class="bi bi-soundwave"></i>
+						</span>
 					</div>
 				</div>
-				<!-- 播放器区域 -->
-				<div class="podcast-player" v-if="selectedPodcast">
-					<div class="player-header">
-						<div class="host-avatar">
-							<img
-								v-if="selectedPodcast.options && selectedPodcast.options.voice"
-								:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${selectedPodcast.options.voice.toLowerCase()}.png`"
-								alt="主持人头像"
-							/>
-							<div class="default-avatar" v-else>
-								{{
-									selectedPodcast.options && selectedPodcast.options.voice
-										? selectedPodcast.options.voice.charAt(0).toUpperCase()
-										: "?"
-								}}
-							</div>
-						</div>
-						<div class="player-info">
-							<h3 class="player-title">
-								{{ selectedPodcast.knowledge || "未知标题" }}
-							</h3>
-							<p
-								class="player-host"
-								v-if="selectedPodcast.options && selectedPodcast.options.voice"
-							>
-								主持人: {{ selectedPodcast.options.voice }}
-							</p>
-						</div>
+			</div>
+
+			<!-- 右侧内容区 -->
+			<div class="radio-content">
+				<div class="empty-state" v-if="currentPlayingIndex === null">
+					<i class="bi bi-broadcast"></i>
+					<p>请从左侧选择一个播客</p>
+				</div>
+
+				<div v-else-if="selectedPodcast" class="podcast-player-container">
+					<div class="podcast-header">
+						<h2 class="podcast-title">{{ selectedPodcast.knowledge }}</h2>
+						<!-- <p class="podcast-subtitle">一系列</p> -->
 					</div>
 
-					<!-- 音频播放器 -->
-					<div class="audio-controls">
+					<div class="player-section">
 						<audio
 							ref="audioPlayer"
 							:src="selectedPodcast.audioPath"
@@ -55,91 +61,63 @@
 							@timeupdate="onTimeUpdate"
 							@loadedmetadata="onLoadedMetadata"
 							controls
-							class="audio-element"
+							class="audio-player"
 						></audio>
 
-						<!-- 自定义播放控件 -->
-						<div class="custom-controls">
-							<div class="progress-bar">
-								<div class="progress-bg"></div>
-								<div
-									class="progress-fill"
-									:style="{ width: `${audioProgress}%` }"
-								></div>
-								<div
-									class="progress-handle"
-									:style="{ left: `${audioProgress}%` }"
-								></div>
-							</div>
-							<div class="time-display">
-								<span>{{ formatTime(currentTime) }}</span>
-								<span>{{ formatTime(duration) }}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="podcast-list">
-					<div
-						v-for="(podcast, index) in podcastData"
-						:key="index"
-						class="podcast-list-item"
-						:class="{ active: currentPlayingIndex === index }"
-						@click="selectPodcast(podcast, index)"
-					>
-						<div class="podcast-item-content">
-							<p class="podcast-title">{{ podcast.knowledge || "暂无标题" }}</p>
-						</div>
-						<div class="podcast-status">
-							<div
-								class="status-icon"
-								:class="{ playing: currentPlayingIndex === index && isPlaying }"
+						<div class="language-switch">
+							<button
+								class="lang-btn"
+								:class="{ active: showOriginal }"
+								@click="
+									showOriginal = true;
+									showTranslated = false;
+								"
 							>
-								<i class="bi bi-soundwave"></i>
-							</div>
+								英
+							</button>
+							<button
+								class="lang-btn"
+								:class="{ active: showTranslated }"
+								@click="
+									showOriginal = false;
+									showTranslated = true;
+								"
+							>
+								中
+							</button>
 						</div>
 					</div>
-				</div>
-			</div>
 
-			<!-- 右侧脚本区域 -->
-			<div class="podcast-detail">
-				<div class="empty-detail" v-if="currentPlayingIndex === null">
-					请从左侧选择一个播客
-				</div>
-				<div v-else-if="selectedPodcast" class="script-container">
-					<!-- 脚本内容 -->
-					<div class="script-content">
-						<div class="script-text" v-if="selectedPodcast.script">
+					<div class="transcript-section">
+						<div v-if="selectedPodcast.script" class="transcript-content">
 							<div
 								v-for="(paragraph, idx) in selectedPodcast.script"
 								:key="idx"
-								class="script-block"
+								class="transcript-paragraph"
 							>
-								<!-- 英文段落 -->
-								<div class="script-paragraph-wrapper">
-									<p class="script-paragraph original">
-										{{ paragraph }}
-									</p>
-									<!-- 对应的中文翻译 -->
-									<p
-										v-if="
-											showTranslated &&
-											selectedPodcast.chineseScript &&
-											selectedPodcast.chineseScript[idx]
-										"
-										class="script-paragraph translated"
-									>
-										{{ selectedPodcast.chineseScript[idx] }}
-									</p>
-								</div>
+								<p v-if="showOriginal" class="english-text">{{ paragraph }}</p>
+								<p
+									v-if="
+										showTranslated &&
+										selectedPodcast.chineseScript &&
+										selectedPodcast.chineseScript[idx]
+									"
+									class="chinese-text"
+								>
+									{{ selectedPodcast.chineseScript[idx] }}
+								</p>
 							</div>
 						</div>
-						<div v-else class="no-script">暂无脚本内容</div>
+						<div v-else class="no-transcript">暂无脚本内容</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div v-else class="no-data">暂无播客数据</div>
+
+		<div v-else class="no-data">
+			<i class="bi bi-broadcast"></i>
+			<p>暂无播客数据</p>
+		</div>
 	</div>
 </template>
 <script setup>
@@ -307,483 +285,444 @@ defineExpose({
 <style scoped>
 .podcast-custom-container {
 	width: 100%;
-	padding: 16px 0;
-	border-radius: 8px;
-	margin-top: 0 !important;
+	height: 100%;
+	flex: 1;
 }
 
-/* 左右布局容器 */
-.podcast-layout {
+.vintage-radio-container {
 	display: flex;
-	gap: 20px;
-	width: 100%;
-	min-height: 400px;
+	gap: 0;
+	/* background: white; */
+	overflow: hidden;
+	min-height: 500px;
+	height: 100%;
+	position: relative;
 }
 
-/* 左侧区域：包含播放器和列表 */
-.podcast-left-section {
-	width: 30%;
-	max-width: 300px;
-	min-width: 200px;
+/* 左侧边栏 - 收音机控制面板 */
+.radio-sidebar {
+	width: 280px;
+	border-right: 3px solid #000;
+	background: white;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	position: sticky;
-	top: 16px;
-	align-self: flex-start;
-	max-height: calc(100vh - 32px); /* 减去上下间距 */
-	overflow-y: auto;
-}
-
-/* 欢迎标题区域样式 */
-.podcast-header {
-	background-color: white;
-	border: 2px solid black;
-	border-radius: 12px;
-	padding: 12px;
 	position: relative;
-	overflow: hidden;
-	margin-bottom: 16px;
-	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-.podcast-header::before {
+.radio-header {
+	font-family: "Courier New", monospace;
+	padding: 16px;
+	border-bottom: 3px solid #000;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: #000;
+	position: relative;
+	z-index: 1;
+}
+
+.radio-indicator {
+	width: 12px;
+	height: 12px;
+	background: var(--secondary-color);
+	border-radius: 50%;
+	border: 2px solid #fff;
+	box-shadow: 0 0 8px var(--secondary-color);
+	animation: blink 2s infinite;
+}
+
+.radio-title {
+	color: #fff;
+	font-size: 16px;
+	font-weight: bold;
+	letter-spacing: 1px;
+	margin: 0;
+}
+
+/* 频率显示屏 - 收音机显示面板 */
+.scene-display {
+	padding: 21px 16px;
+	border-bottom: 3px solid #000;
+	background: #222;
+	color: #f8f8f8;
+	position: relative;
+	z-index: 1;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.scene-number {
+	font-weight: bold;
+	font-size: 18px;
+	font-family: "Digital-7", monospace;
+	color: var(--Primary-color);
+	/* text-shadow: 0 0 5px var(--accent-color); */
+}
+
+.frequency {
+	font-size: 14px;
+	color: var(--secondary-color);
+	/* font-family: "Digital-7", monospace; */
+	/* text-shadow: 0 0 5px rgba(255, 107, 107, 0.7); */
+	margin-top: 4px;
+}
+
+/* 频道列表 - 收音机旋钮区域 */
+.channel-list {
+	flex: 1;
+	overflow-y: auto;
+	position: relative;
+	z-index: 1;
+	padding-bottom: 16px;
+}
+
+.channel-header {
+	padding: 10px 16px;
+	/* background: #000; */
+	color: #000;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	border-bottom: 2px solid #444;
+}
+
+.channel-item {
+	padding: 12px 16px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.channel-item:hover {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.channel-item.active::after {
+	content: "";
+	position: absolute;
+	right: 16px;
+	width: 8px;
+	height: 8px;
+	background: var(--secondary-color);
+	border-radius: 50%;
+	box-shadow: 0 0 5px var(--secondary-color);
+}
+
+.channel-number {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #000;
+	color: #fff;
+	border-radius: 50%;
+	font-size: 12px;
+	margin-right: 12px;
+	border: 2px solid #666;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.channel-name {
+	flex: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: 500;
+}
+
+.channel-status {
+	margin-left: 8px;
+	color: var(--secondary-color);
+	animation: pulse 1.5s infinite;
+}
+
+/* 右侧内容区 - 收音机主体 */
+.radio-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	background: white;
+	position: relative;
+}
+
+.radio-content::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 10px,
+		rgba(0, 0, 0, 0.02) 10px,
+		rgba(0, 0, 0, 0.02) 20px
+	);
+	z-index: 0;
+}
+
+.empty-state {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+	background: repeating-linear-gradient(
+		45deg,
+		white,
+		white 10px,
+		#ebe7df 10px,
+		#ebe7df 20px
+	);
+	position: relative;
+	z-index: 1;
+}
+
+.empty-state i {
+	font-size: 48px;
+	margin-bottom: 16px;
+	opacity: 0.5;
+	color: #333;
+}
+
+.empty-state p {
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.podcast-player-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	position: relative;
+	z-index: 1;
+}
+
+/* 播客标题区 - 收音机显示屏 */
+.podcast-header {
+	padding: 20px;
+	border-bottom: 3px solid #000;
+	text-align: center;
+	background: #222;
+	color: #f8f8f8;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.podcast-title {
+	font-size: 20px;
+	font-weight: bold;
+	margin: 0 0 4px 0;
+	color: var(--secondary-color);
+	text-shadow: 0 0 5px var(--secondary-color);
+	font-family: "Digital-7", monospace;
+}
+
+.podcast-subtitle {
+	font-size: 14px;
+	color: var(--secondary-color);
+	margin: 0;
+	text-shadow: 0 0 5px rgba(255, 107, 107, 0.7);
+	font-family: "Digital-7", monospace;
+}
+
+/* 播放器区域 - 收音机控制面板 */
+.player-section {
+	padding: 20px;
+	border-bottom: 3px solid #000;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--milk-color);
+	position: relative;
+}
+
+.audio-player {
+	flex: 1;
+	height: 36px;
+	border-radius: 4px;
+}
+
+.language-switch {
+	display: flex;
+	border: 2px solid #000;
+	border-radius: 20px;
+	overflow: hidden;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.lang-btn {
+	padding: 4px 12px;
+	/* background: white; */
+	border: none;
+	cursor: pointer;
+	font-weight: bold;
+	transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+	background: #d3cfc7;
+}
+
+.lang-btn.active {
+	background: #000;
+	color: #fff;
+}
+
+/* 脚本区域 - 收音机扬声器区 */
+.transcript-section {
+	flex: 1;
+	padding: 20px;
+	overflow-y: auto;
+	position: relative;
+	background: white;
+}
+
+.transcript-section::before {
 	content: "";
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
+	background: radial-gradient(
+			circle at 20% 30%,
+			#d3cfc7 0,
+			#d3cfc7 2%,
+			transparent 2.5%
+		),
+		radial-gradient(circle at 40% 70%, #d3cfc7 0, #d3cfc7 2%, transparent 2.5%),
+		radial-gradient(circle at 60% 20%, #d3cfc7 0, #d3cfc7 2%, transparent 2.5%),
+		radial-gradient(circle at 80% 50%, #d3cfc7 0, #d3cfc7 2%, transparent 2.5%);
+	background-size: 50px 50px;
+	z-index: -1;
+}
+
+.transcript-content {
+	/* border: 3px solid #000; */
+	border-radius: 8px;
+	padding: 10px;
+	background: white;
+	/* box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2); */
+	position: relative;
+}
+
+.transcript-paragraph {
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+	position: relative;
+}
+
+.transcript-paragraph:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.english-text {
+	margin: 0 0 8px 0;
+	line-height: 1.5;
+	font-size: 15px;
+}
+
+.chinese-text {
+	margin: 0;
+	color: #666;
+	font-style: italic;
+	line-height: 1.5;
+	font-size: 14px;
+}
+
+.no-transcript {
+	text-align: center;
+	padding: 30px;
+	color: #666;
+	font-style: italic;
+	background: white;
+	border: 3px solid #000;
+	border-radius: 8px;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.no-data {
+	min-height: 300px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+	border: 3px solid #000;
+	border-radius: 16px;
+	background: white;
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+	position: relative;
+}
+
+.no-data::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	background: repeating-linear-gradient(
 		45deg,
 		transparent,
 		transparent 10px,
 		rgba(0, 0, 0, 0.03) 10px,
-		rgba(0, 0, 0, 0.03) 12px
+		rgba(0, 0, 0, 0.03) 20px
 	);
-	z-index: 0;
+	border-radius: 13px;
 }
 
-.podcast-title {
+.no-data i {
+	font-size: 48px;
+	margin-bottom: 16px;
+	opacity: 0.5;
 	position: relative;
-	z-index: 1;
-	display: flex;
-	align-items: center;
-	gap: 12px;
 }
 
-.podcast-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	background-color: white;
-	border: 2px solid black;
-	border-radius: 50%;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-	flex-shrink: 0;
-}
-
-.title-content {
-	flex: 1;
-	min-width: 0;
-}
-
-.welcome-title {
-	font-weight: bold;
-	color: black;
-	font-size: 16px;
-	margin: 0 0 0 0;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.episode-info {
-	font-size: 12px;
-	color: #666;
-}
-
-.podcast-badge {
-	padding: 4px 8px;
-	background-color: rgba(var(--secondary-color-rgb), 0.1);
-	border: 1px solid rgba(var(--secondary-color-rgb), 0.3);
-	border-radius: 6px;
-	font-size: 10px;
-	font-weight: 500;
-	color: var(--secondary-color);
-	transform: rotate(2deg);
-	white-space: nowrap;
-}
-
-/* 播放器样式 */
-.podcast-player {
-	background-color: white;
-	border-radius: 12px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	flex-shrink: 0; /* 防止播放器被压缩 */
-	border: 2px solid black;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.player-header {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	margin-bottom: 8px;
-}
-
-.host-avatar {
-	width: 48px;
-	height: 48px;
-	border-radius: 50%;
-	overflow: hidden;
-	background-color: #f0f0f0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 20px;
-	font-weight: bold;
-	color: #666;
-	border: 2px solid black;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
-}
-
-.host-avatar img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	border-radius: 50%;
-}
-
-.default-avatar {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-color: #e0e0e0;
-	color: #666;
-	border-radius: 50%;
-}
-
-.player-info {
-	flex: 1;
-	overflow: hidden;
-}
-
-.player-title {
-	font-size: 16px;
-	font-weight: 600;
-	margin: 0 0 4px 0;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.player-host {
-	font-size: 12px;
-	color: #666;
-	margin: 0;
-}
-
-.audio-controls {
-	width: 100%;
-}
-
-.audio-element {
-	width: 100%;
-	height: 36px;
-	margin-bottom: 8px;
-}
-
-.custom-controls {
-	display: none; /* 暂时隐藏自定义控件，使用浏览器原生控件 */
-}
-
-.progress-bar {
-	width: 100%;
-	height: 6px;
-	background-color: #f0f0f0;
-	border-radius: 3px;
+.no-data p {
 	position: relative;
-	cursor: pointer;
-	margin-bottom: 8px;
-}
-
-.progress-bg {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border-radius: 3px;
-	background-color: #e0e0e0;
-}
-
-.progress-fill {
-	position: absolute;
-	top: 0;
-	left: 0;
-	height: 100%;
-	border-radius: 3px;
-	background-color: #333;
-}
-
-.progress-handle {
-	position: absolute;
-	top: 50%;
-	transform: translate(-50%, -50%);
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	background-color: #333;
-	box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-}
-
-.time-display {
-	display: flex;
-	justify-content: space-between;
-	font-size: 12px;
-	color: #666;
-}
-
-/* 左侧播客列表 */
-
-.podcast-list {
-	max-width: 300px;
-	min-width: 200px;
-	border-radius: 12px;
-	background-color: rgba(255, 255, 255, 0.7);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	overflow-y: auto;
-	max-height: 600px;
-}
-
-.podcast-list-item {
-	padding: 18px 16px;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-	cursor: pointer;
-	transition: all 0.2s ease;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.podcast-list-item:hover {
-	background-color: rgba(0, 0, 0, 0.03);
-}
-
-.podcast-list-item.active {
-	background-color: rgba(0, 0, 0, 0.05);
-	border-left: 3px solid #333;
-}
-
-.podcast-item-content {
-	flex: 1;
-	overflow: hidden;
-}
-
-.podcast-title {
-	font-size: 14px;
 	font-weight: 500;
-	color: #333;
-	margin: 0 0 4px 0;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
-.podcast-host {
-	font-size: 12px;
-	color: #666;
-}
-
-.podcast-status {
-	display: flex;
-	align-items: center;
-}
-
-.status-icon {
-	width: 24px;
-	height: 24px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: rgba(0, 0, 0, 0.3);
-	border-radius: 50%;
-	background-color: rgba(0, 0, 0, 0.05);
-}
-
-.status-icon.playing {
-	color: #fff;
-	background-color: #333;
-	animation: pulse 1.5s infinite;
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+		box-shadow: 0 0 8px var(--secondary-color);
+	}
+	50% {
+		opacity: 0.3;
+		box-shadow: 0 0 2px var(--secondary-color);
+	}
 }
 
 @keyframes pulse {
-	0% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.1);
-	}
+	0%,
 	100% {
 		transform: scale(1);
 	}
+	50% {
+		transform: scale(1.2);
+	}
 }
 
-/* 右侧播客详情区域 */
-.podcast-detail {
-	flex: 1;
-	border-radius: 12px;
-	background-color: white;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	min-height: 550px; /* 确保右侧内容区域有足够的高度产生滚动效果 */
-}
-
-.empty-detail {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 100%;
-	color: #888;
-	font-style: italic;
-}
-
-/* 脚本容器样式 */
-.script-container {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	overflow: hidden;
-}
-
-/* 语言切换按钮组 */
-.language-toggle {
-	display: flex;
-	justify-content: center;
-	margin-bottom: 16px;
-	border-radius: 20px;
-	background-color: #f5f5f5;
-	padding: 4px;
-	width: fit-content;
-	align-self: center;
-}
-
-.toggle-btn {
-	padding: 6px 16px;
-	border-radius: 16px;
-	border: none;
-	background: none;
-	font-size: 14px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	color: #666;
-}
-
-.toggle-btn.active {
-	background-color: #333;
-	color: white;
-	font-weight: 500;
-}
-
-/* 脚本内容区域 */
-.script-content {
-	flex: 1;
-	overflow-y: auto;
-	padding: 12px 24px;
-}
-
-.script-text {
-	font-size: 16px;
-	line-height: 1.6;
-}
-
-.script-block {
-	margin-bottom: 24px;
-}
-
-.script-paragraph {
-	margin: 0;
-	text-align: justify;
-	color: #333;
-}
-
-.script-paragraph.original {
-	font-weight: 500;
-	margin-bottom: 16px;
-}
-
-.script-paragraph.translated {
-	font-size: 14px;
-	color: #666;
-	line-height: 1.5;
-	padding-top: 8px;
-	/* margin-top: 8px; */
-	border-top: 1px dashed #e0e0e0;
-}
-
-.script-text.original .script-paragraph {
-	font-weight: 400;
-}
-
-.script-text.translated .script-paragraph {
-	font-style: italic;
-	color: #555;
-}
-
-.no-script {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 100px;
-	color: #888;
-	font-style: italic;
-	background-color: #f9f9f9;
-	border-radius: 8px;
-	margin-top: 20px;
-}
-
-.no-data {
-	text-align: center;
-	padding: 24px;
-	color: #888;
-	font-style: italic;
-}
-
-/* 响应式调整 */
 @media (max-width: 768px) {
-	.podcast-layout {
+	.vintage-radio-container {
 		flex-direction: column;
 	}
 
-	.podcast-left-section {
+	.radio-sidebar {
 		width: 100%;
-		max-width: 100%;
-	}
-
-	.podcast-list {
-		width: 100%;
-		max-width: 100%;
-		max-height: 200px;
-	}
-
-	.podcast-detail {
-		margin-top: 16px;
-	}
-
-	.language-toggle {
-		width: 100%;
+		border-right: none;
+		border-bottom: 3px solid #000;
 	}
 }
 </style>

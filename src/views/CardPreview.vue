@@ -529,13 +529,6 @@ const handlePlayComplete = () => {
 	showBazingaPlay.value = false;
 };
 
-const toggleBazingaPlayMode = () => {
-	showBazingaPlay.value = !showBazingaPlay.value;
-	if (practiceCard.value) {
-		practiceCard.value.playAllDialogues();
-	}
-};
-
 const togglePracticeMode = () => {
 	if (needUnlock.value) {
 		console.log("hello");

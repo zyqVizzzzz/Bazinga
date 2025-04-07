@@ -1,14 +1,14 @@
 <template>
 	<div class="container w-full mx-auto mt-10 pt-2">
 		<TextEditor
-			v-if="isCustom && viewMode === 'editor'"
+			v-if="isCustom && viewMode === 'edit'"
 			v-model="editorContent"
 			@create-collection="handleCreateCollection"
 			@back-to-preview="backToPreview"
 		/>
 		<!-- 卡片编辑器 -->
 		<CardView
-			v-if="viewMode === 'card'"
+			v-if="viewMode !== 'edit'"
 			:view-mode="viewMode"
 			:scenes="scenes"
 			:is-custom="isCustom"
@@ -31,7 +31,7 @@ const editorContent = ref("");
 const isSaved = ref(false);
 const isCustom = ref(false);
 
-const viewMode = ref("editor"); // 'editor' | 'card'
+const viewMode = ref("edit"); // 'edit' | 'card' | 'preview'
 const scenes = ref([]); // 存储所有场景
 
 const handleCreateCollection = async (blocks) => {
@@ -45,11 +45,16 @@ const handleCreateCollection = async (blocks) => {
 			isTranslated: false,
 		}));
 
+		if (!processedBlocks.length) {
+			showToast({ message: "请输入内容", type: "error" });
+			return;
+		}
+
 		// 场景分割
 		scenes.value = splitIntoScenes(processedBlocks);
 		viewMode.value = "card";
 
-		showToast({ message: "开始制作卡片合辑...", type: "info" });
+		console.log(scenes.value);
 	} catch (error) {
 		console.error("制作卡片合辑失败:", error);
 		showToast({ message: "制作失败，请重试", type: "error" });
@@ -112,7 +117,7 @@ onMounted(async () => {
 	// 初始化
 	if (route.query.mode === "edit") {
 		isCustom.value = true;
-		viewMode.value = "editor";
+		viewMode.value = "edit";
 	} else {
 		isCustom.value = true;
 		viewMode.value = "card";
@@ -125,8 +130,12 @@ const backToPreview = () => {
 	const episode = route.params.episode;
 	const sign = route.query.sign;
 	const mode = route.query?.mode;
-	if (mode === "edit" && !isSaved.value) {
+	if (mode === "edit" && viewMode.value === "edit" && !isSaved.value) {
 		router.replace("/collections/" + courseId);
+		return;
+	}
+	if (mode === "edit" && viewMode.value === "card" && !isSaved.value) {
+		viewMode.value = "edit";
 		return;
 	}
 	router.replace({

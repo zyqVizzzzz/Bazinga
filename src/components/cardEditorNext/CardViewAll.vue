@@ -79,90 +79,126 @@
 					<!-- 场景内容显示区 -->
 					<div class="scene-content space-y-4">
 						<div class="original-text space-y-2">
-							<template v-for="(block, index) in currentBlocks" :key="index">
-								<!-- 工具栏 -->
-								<TextBlockToolbar
-									v-if="
-										isCustom && selectedBlockIndex === index && !block.isTitle
-									"
-									:toolbox-position="toolboxPosition"
-									:is-narration="block.narration"
-									:processing="processingBlockId === block.id"
-									@translate="handleTranslate(index)"
-									@auto-generate-knowledge="handleGenerateKnowledge(index)"
-									@toggle-narration="handleToggleNarration(index)"
-									@manual-knowledge="handleShowManualKnowledgeModal(index)"
-									@split-scene="handleSplitScene(index)"
-									@toggle-speaker="handleToggleSpeaker(index)"
-								/>
-								<!-- 文本块 -->
-								<div
-									class="text-sm p-2 rounded hover:bg-gray-50 cursor-pointer text-left"
-									:class="{
-										'font-bold': block.isTitle,
-										'translated-text': block.isTranslated,
-										'knowledge-block': block.isKnowledge,
-										'text-primary': block.narration,
-									}"
-									@click="handleBlockClick($event, index, block)"
-								>
-									<!-- 对话场景使用带说话者的布局 -->
-									<div
-										v-if="
-											block.speaker &&
-											!block.isTitle &&
-											!block.isTranslated &&
-											!block.isKnowledge &&
-											!block.narration
-										"
-										class="flex flex-col gap-1"
+							<template v-for="(scene, sceneIndex) in scenes" :key="sceneIndex">
+								<div :id="`scene-${sceneIndex}`" class="scene-block">
+									<template
+										v-for="(block, blockIndex) in scene"
+										:key="blockIndex"
 									>
+										<!-- 工具栏 -->
+										<TextBlockToolbar
+											v-if="
+												isCustom &&
+												selectedBlockIndex ===
+													getGlobalIndex(sceneIndex, blockIndex) &&
+												!block.isTitle
+											"
+											:toolbox-position="toolboxPosition"
+											:is-narration="block.narration"
+											:processing="processingBlockId === block.id"
+											@translate="
+												handleTranslate(getGlobalIndex(sceneIndex, blockIndex))
+											"
+											@auto-generate-knowledge="
+												handleGenerateKnowledge(
+													getGlobalIndex(sceneIndex, blockIndex)
+												)
+											"
+											@toggle-narration="
+												handleToggleNarration(
+													getGlobalIndex(sceneIndex, blockIndex)
+												)
+											"
+											@manual-knowledge="
+												handleShowManualKnowledgeModal(
+													getGlobalIndex(sceneIndex, blockIndex)
+												)
+											"
+											@split-scene="
+												handleSplitScene(getGlobalIndex(sceneIndex, blockIndex))
+											"
+											@toggle-speaker="
+												handleToggleSpeaker(
+													getGlobalIndex(sceneIndex, blockIndex)
+												)
+											"
+										/>
+										<!-- 文本块 -->
 										<div
-											class="speaker-badge self-start px-1.5 py-0.5 rounded text-xs text-gray-700 bg-gray-200 border border-gray-200"
+											class="text-sm p-2 rounded hover:bg-gray-50 cursor-pointer text-left"
+											:class="{
+												'font-bold': block.isTitle,
+												'translated-text': block.isTranslated,
+												'knowledge-block': block.isKnowledge,
+												'text-primary': block.narration,
+											}"
+											@click="
+												handleBlockClick(
+													$event,
+													getGlobalIndex(sceneIndex, blockIndex),
+													block
+												)
+											"
 										>
-											{{ block.speaker }}
+											<!-- 对话场景使用带说话者的布局 -->
+											<div
+												v-if="
+													block.speaker &&
+													!block.isTitle &&
+													!block.isTranslated &&
+													!block.isKnowledge &&
+													!block.narration
+												"
+												class="flex flex-col gap-1"
+											>
+												<div
+													class="speaker-badge self-start px-1.5 py-0.5 rounded text-xs text-gray-700 bg-gray-200 border border-gray-200"
+												>
+													{{ block.speaker }}
+												</div>
+											</div>
+
+											<!-- 标题使用可编辑的 div -->
+											<div
+												class="title-container relative group"
+												v-if="block.isTitle"
+											>
+												<div
+													contenteditable="true"
+													@blur="handleTitleEdit($event, index)"
+													@keydown.enter.prevent="$event.target.blur()"
+													v-html="block.text"
+													class="pr-8"
+												></div>
+												<button
+													class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+													@click.stop="handleAutoGenerateTitle(index)"
+													title="自动生成标题"
+												>
+													<i
+														class="bi bi-magic text-gray-500 hover:text-primary"
+													></i>
+												</button>
+											</div>
+
+											<!-- 普通文本使用简单布局 -->
+											<div
+												v-else-if="block.isTranslated"
+												contenteditable="true"
+												@blur="handleTranslationEdit($event, index)"
+												@keydown.enter.prevent="$event.target.blur()"
+												v-html="block.text"
+											></div>
+											<div
+												v-else
+												v-html="
+													block.isKnowledge
+														? block.text
+														: block.displayText || block.text
+												"
+											></div>
 										</div>
-									</div>
-
-									<!-- 标题使用可编辑的 div -->
-									<div
-										class="title-container relative group"
-										v-if="block.isTitle"
-									>
-										<div
-											contenteditable="true"
-											@blur="handleTitleEdit($event, index)"
-											@keydown.enter.prevent="$event.target.blur()"
-											v-html="block.text"
-											class="pr-8"
-										></div>
-										<button
-											class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-											@click.stop="handleAutoGenerateTitle(index)"
-											title="自动生成标题"
-										>
-											<i
-												class="bi bi-magic text-gray-500 hover:text-primary"
-											></i>
-										</button>
-									</div>
-
-									<!-- 普通文本使用简单布局 -->
-									<div
-										v-else-if="block.isTranslated"
-										contenteditable="true"
-										@blur="handleTranslationEdit($event, index)"
-										@keydown.enter.prevent="$event.target.blur()"
-										v-html="block.text"
-									></div>
-									<div
-										v-else
-										v-html="
-											block.isKnowledge
-												? block.text
-												: block.displayText || block.text
-										"
-									></div>
+									</template>
 								</div>
 							</template>
 						</div>
@@ -317,7 +353,9 @@ const props = defineProps({
 });
 
 const currentIndex = ref(0);
-const currentBlocks = ref([]);
+const currentBlocks = computed(() => {
+	return props.scenes.flat();
+});
 const blocksMap = ref(new Map()); // 用于存储和追踪所有文本块
 
 const selectedBlockIndex = ref(null);
@@ -387,19 +425,17 @@ const handleConfirmSpeaker = (speaker) => {
 		speakers.value.add(speaker);
 		// 更新块的说话者
 		block.speaker = speaker;
-	} else {
-		// 输入为空时，删除说话者属性
-		delete block.speaker;
-	}
-	// 更新场景数据
-	emit(
-		"update:scenes",
-		props.scenes.map((scene, index) =>
-			index === currentIndex.value ? currentBlocks.value : scene
-		)
-	);
 
-	hasUnsavedChanges.value = true;
+		// 更新场景数据
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, index) =>
+				index === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		hasUnsavedChanges.value = true;
+	}
 
 	// 关闭模态框
 	speakerModalRef.value?.close();
@@ -409,6 +445,14 @@ const handleConfirmSpeaker = (speaker) => {
 const removeSpeaker = (speaker) => {
 	speakers.value.delete(speaker);
 	localStorage.setItem("speakers", JSON.stringify(Array.from(speakers.value)));
+};
+
+const getGlobalIndex = (sceneIndex, blockIndex) => {
+	let globalIndex = blockIndex;
+	for (let i = 0; i < sceneIndex; i++) {
+		globalIndex += props.scenes[i].length;
+	}
+	return globalIndex;
 };
 
 // 计算过滤后的说话者列表
@@ -484,7 +528,7 @@ onBeforeRouteLeave((to, from, next) => {
 
 const initializeView = async () => {
 	try {
-		if (route.query.mode !== "edit" && route.query.mode !== "card") {
+		if (route.query.sign && route.query.mode !== "edit") {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
@@ -575,107 +619,72 @@ const initializeView = async () => {
 };
 
 const handleWholeScene = async () => {
-	try {
-		isLoading.value = true;
-
-		// 1. 获取当前场景的文本块
-		const currentScene = currentBlocks.value;
-		if (!currentScene || currentScene.length === 0) {
-			showToast({ message: "当前场景没有内容", type: "warning" });
-			return;
-		}
-
-		// 2. 过滤出需要处理的文本块(非标题、非翻译、非知识点)
-		let blocksToProcess = currentScene.filter(
-			(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
-		);
-
-		// 3. 计算总字符数和确定处理范围
-		let totalChars = 0;
-		let processEndIndex = blocksToProcess.length;
-
-		// 找到20000字符所在的文本块位置
-		for (let i = 0; i < blocksToProcess.length; i++) {
-			totalChars += blocksToProcess[i].text.length;
-			if (totalChars > 20000) {
-				processEndIndex = i;
-				// 显示提示
-				showToast({
-					message: `单个场景字符数超过20000，将只处理前${processEndIndex}个文本段落`,
-					type: "warning",
-					duration: 5000,
-				});
-				break;
-			}
-		}
-
-		// 4. 截取需要处理的块
-		blocksToProcess = blocksToProcess.slice(0, processEndIndex);
-
-		// 分割需要处理和保留的块
-		const blocksToHandle = blocksToProcess.slice(0, processEndIndex);
-		const remainingBlocks = blocksToProcess.slice(processEndIndex);
-
-		if (blocksToHandle.length === 0) {
-			showToast({ message: "没有需要处理的内容", type: "warning" });
-			return;
-		}
-
-		// 5. 批量翻译
-		try {
-			const response = await apiClient.post("/translation/batch", {
-				texts: blocksToHandle.map((block) => block.text),
-				source: "en",
-				target: "zh",
-			});
-
-			if (response.data.data.translations) {
-				// 为每个原文块添加翻译
-				for (const [index, block] of blocksToHandle.entries()) {
-					const translationBlock = {
-						id: `translation-${block.id}`,
-						text: response.data.data.translations[index],
-						isTitle: false,
-						isTranslated: true,
-						originalId: block.id,
-						originalIndex: block.id,
-					};
-
-					// 在原文块后插入翻译
-					const blockIndex = currentBlocks.value.findIndex(
-						(b) => b.id === block.id
-					);
-					if (blockIndex !== -1) {
-						currentBlocks.value.splice(blockIndex + 1, 0, translationBlock);
-					}
-				}
-			}
-		} catch (error) {
-			console.error("批量翻译失败:", error);
-			showToast({ message: "批量翻译失败，请重试", type: "error" });
-			return;
-		}
-
-		// 6. 生成知识点 - 只处理前面的块
-		await groupTextByLength(blocksToHandle);
-		await initKnowledgeDisplay();
-
-		// 7. 更新场景数据
-		emit(
-			"update:scenes",
-			props.scenes.map((scene, index) =>
-				index === currentIndex.value ? currentBlocks.value : scene
-			)
-		);
-
-		hasUnsavedChanges.value = true;
-		showToast({ message: "场景处理完成", type: "success" });
-	} catch (error) {
-		console.error("处理场景失败:", error);
-		showToast({ message: "处理场景失败，请重试", type: "error" });
-	} finally {
-		isLoading.value = false;
-	}
+	// 处理整个场景的逻辑
+	// try {
+	// 	// 如果有传入的场景数据，直接使用
+	// 	if (props.scenes.length > 0 && route.query.mode === "edit") {
+	// 		currentIndex.value = 0;
+	// 		currentBlocks.value = props.scenes[0];
+	// 		// 获取需要翻译的文本
+	// 		const blocksToTranslate = currentBlocks.value.filter(
+	// 			(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
+	// 		);
+	// 		if (blocksToTranslate.length > 0) {
+	// 			try {
+	// 				const response = await apiClient.post("/translation/batch", {
+	// 					texts: blocksToTranslate.map((block) => block.text),
+	// 					source: "en",
+	// 					target: "zh",
+	// 				});
+	// 				if (response.data.data.translations) {
+	// 					// 为每个原文块添加翻译
+	// 					blocksToTranslate.forEach((block, index) => {
+	// 						const translationBlock = {
+	// 							id: `translation-${block.id}`,
+	// 							text: response.data.data.translations[index],
+	// 							isTitle: false,
+	// 							isTranslated: true,
+	// 							originalId: block.id,
+	// 							originalIndex: block.id,
+	// 						};
+	// 						// 在原文块后插入翻译
+	// 						const blockIndex = currentBlocks.value.findIndex(
+	// 							(b) => b.id === block.id
+	// 						);
+	// 						if (blockIndex !== -1) {
+	// 							currentBlocks.value.splice(blockIndex + 1, 0, translationBlock);
+	// 						}
+	// 					});
+	// 					// 更新场景数据
+	// 					emit(
+	// 						"update:scenes",
+	// 						props.scenes.map((scene, index) =>
+	// 							index === currentIndex.value ? currentBlocks.value : scene
+	// 						)
+	// 					);
+	// 				}
+	// 			} catch (error) {
+	// 				console.error("批量翻译失败:", error);
+	// 				showToast({ message: "批量翻译失败，请重试", type: "error" });
+	// 			}
+	// 		}
+	// 		// 创建并打印临时分组结构
+	// 		const textGroups = await groupTextByLength(props.scenes[0]);
+	// 		console.log(
+	// 			"Text groups:",
+	// 			textGroups.map((group, index) => ({
+	// 				groupIndex: index,
+	// 				totalChars: group.reduce(
+	// 					(sum, block) => sum + (block.text?.length || 0),
+	// 					0
+	// 				),
+	// 				blocks: group,
+	// 			}))
+	// 		);
+	// 		await initKnowledgeDisplay();
+	// 		return;
+	// 	}
+	// } catch (e) {}
 };
 
 // 初始化知识点显示
@@ -685,12 +694,13 @@ const initKnowledgeDisplay = async () => {
 			await initKnowledges();
 		}
 
+		// 处理所有场景的知识点
 		props.scenes.forEach((scene, sceneIndex) => {
 			const sceneId = `Scene${sceneIndex + 1}`;
 			const processedKnowledgeInScene = new Set();
 
-			const sceneBlocks =
-				sceneIndex === currentIndex.value ? currentBlocks.value : scene;
+			// 直接使用场景数据，不需要判断 currentIndex
+			const sceneBlocks = scene;
 
 			// 收集该场景的知识点
 			const matchedKnowledge = Array.from(
@@ -734,7 +744,7 @@ const initKnowledgeDisplay = async () => {
 									text: formatKnowledgeDisplay(
 										{
 											...knowledge,
-											hasPodcast: false, // 传入标记
+											hasPodcast: false,
 										},
 										`knowledge-${blockId}-${kIndex}`
 									),
@@ -745,14 +755,7 @@ const initKnowledgeDisplay = async () => {
 								};
 
 								blocksMap.value.set(knowledgeBlock.id, knowledgeBlock);
-
-								if (sceneIndex === currentIndex.value) {
-									currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
-								} else {
-									scene.splice(insertIndex, 0, knowledgeBlock);
-								}
-
-								// 更新插入位置，使后续知识点插入到当前知识点之后
+								scene.splice(insertIndex, 0, knowledgeBlock);
 								insertIndex++;
 							});
 						}
@@ -760,6 +763,9 @@ const initKnowledgeDisplay = async () => {
 				}
 			}
 		});
+
+		// 更新场景数据
+		emit("update:scenes", [...props.scenes]);
 	} catch (error) {
 		console.error("初始化知识点显示失败:", error);
 	}
@@ -1108,27 +1114,6 @@ const groupTextByLength = async (blocks) => {
 			!block.narration
 	);
 
-	// 计算总字符数
-	const totalChars = originalBlocks.reduce(
-		(sum, block) => sum + (block.text?.length || 0),
-		0
-	);
-
-	// 根据总字符数确定分组大小和知识点密度
-	let groupSize, knowledgeDensity;
-
-	if (totalChars <= 4800) {
-		groupSize = 800;
-		knowledgeDensity = 150;
-	} else if (totalChars <= 9600) {
-		groupSize = 1600;
-		knowledgeDensity = 200;
-	} else {
-		groupSize = 2400;
-		knowledgeDensity = 300;
-	}
-
-	// 分组处理
 	originalBlocks.forEach((block) => {
 		const text = block.text || "";
 		const textLength = text.length;
@@ -1137,7 +1122,7 @@ const groupTextByLength = async (blocks) => {
 			currentGroup.push(block);
 			currentLength = textLength;
 		} else {
-			if (currentLength >= groupSize) {
+			if (currentLength > TARGET_LENGTH) {
 				groups.push([...currentGroup]);
 				currentGroup = [block];
 				currentLength = textLength;
@@ -1166,20 +1151,19 @@ const groupTextByLength = async (blocks) => {
 
 				if (originalTexts) {
 					const textLength = originalTexts.length;
-					// 根据知识点密度计算该组应该生成的知识点数量
-					const maxPhrases = Math.ceil(textLength / knowledgeDensity);
+					const maxPhrases = Math.ceil(textLength / 200);
 
 					const phrasesResponse = await apiClient.post(
 						"/translation/extract-key-phrases",
 						{
 							text: originalTexts,
 							options: {
-								maxPhrases: Math.max(1, Math.min(maxPhrases, 8)), // 每组最多8个知识点
+								maxPhrases: Math.max(1, Math.min(maxPhrases, 8)),
 							},
 						}
 					);
 
-					if (phrasesResponse.data.data.phrases.length) {
+					if (phrasesResponse.data.data.phrases) {
 						// 3. 批量生成知识点
 						const knowledgeResponse = await apiClient.post(
 							"/translation/generate-knowledge-batch",
@@ -1262,11 +1246,6 @@ const groupTextByLength = async (blocks) => {
 								}
 							});
 						}
-					} else {
-						showToast({
-							message: `未能提取到知识点，请至少输入一行完整的句子`,
-							type: "error",
-						});
 					}
 				}
 			} catch (error) {
@@ -1284,37 +1263,15 @@ const groupTextByLength = async (blocks) => {
 
 const switchScene = async (index) => {
 	currentIndex.value = index;
-	currentBlocks.value = props.scenes[index];
-	await updateCurrentSceneKnowledge();
+	// 滚动到对应场景的位置
+	const sceneElement = document.getElementById(`scene-${index}`);
+	if (sceneElement) {
+		sceneElement.scrollIntoView({ behavior: "smooth" });
+	}
 };
 
 const handleBack = () => {
-	if (hasUnsavedChanges.value) {
-		if (window.confirm("您有未保存的更改，确定要离开吗？")) {
-			// 清空所有状态
-			currentIndex.value = 0;
-			currentBlocks.value = [];
-			selectedBlockIndex.value = null;
-			currentKnowledge.value.clear();
-			podcastBlocksMap.value.clear();
-			deletedKnowledge.value.clear();
-			deletedPodcasts.value.clear();
-			hasUnsavedChanges.value = false;
-
-			emit("back");
-		}
-	} else {
-		// 直接清空所有状态
-		currentIndex.value = 0;
-		currentBlocks.value = [];
-		selectedBlockIndex.value = null;
-		currentKnowledge.value.clear();
-		podcastBlocksMap.value.clear();
-		deletedKnowledge.value.clear();
-		deletedPodcasts.value.clear();
-
-		emit("back");
-	}
+	emit("back");
 };
 
 const handleSave = async () => {
@@ -1725,6 +1682,7 @@ const handleBlockClick = (event, index, block) => {
 
 // 点击外部隐藏工具栏
 const handleClickOutside = (event) => {
+	console.log(event.target);
 	if (event.target.closest(".modal")) {
 		return;
 	}
@@ -3012,6 +2970,7 @@ const handleTranslationEdit = (event, index) => {
 	padding: 2rem;
 	border-radius: 8px;
 	background: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .loading-overlay::before {
