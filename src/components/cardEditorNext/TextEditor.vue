@@ -170,20 +170,8 @@ const handlePaste = (event) => {
 
 const backToPreview = () => {
 	const courseId = route.params.id;
-	const season = route.params.season;
-	const episode = route.params.episode;
-	const sign = route.query.sign;
-	const mode = route.query?.mode;
-	if (mode === "edit" && !isSaved.value) {
-		router.replace("/collections/" + courseId);
-		return;
-	}
-	router.replace({
-		path: `/collections/${courseId}/${season}/${episode}`,
-		query: {
-			sign: sign,
-		},
-	});
+	// 新建模式下直接返回列表页
+	router.replace(`/collections/${courseId}`);
 };
 
 const createCollection = async () => {

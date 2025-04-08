@@ -81,18 +81,26 @@
 			<!-- 添加编辑控制区域 -->
 			<div v-if="!isDefault" class="flex justify-between items-center mb-6">
 				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>
-				<button
-					class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out"
-					:class="
-						isEditMode
-							? 'border-primary text-primary bg-primary/10 hover:bg-primary/20'
-							: 'border-gray-300 text-gray-700 hover:bg-gray-50'
-					"
-					@click="isEditMode = !isEditMode"
-				>
-					<i class="bi bi-pencil-fill mr-2"></i>
-					<span>{{ isEditMode ? "完成" : "编辑" }}</span>
-				</button>
+				<div>
+					<button
+						class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out border-gray-300 text-gray-700 hover:bg-gray-100"
+						@click="isEditMode = !isEditMode"
+					>
+						<i
+							class="bi mr-2"
+							:class="isEditMode ? 'bi-check2' : 'bi-pencil-fill'"
+						></i>
+						<span>{{ isEditMode ? "完成" : "编辑" }}</span>
+					</button>
+					<button
+						v-if="isEditMode"
+						class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out border-primary border-gray-300 text-gray-700 hover:bg-gray-100"
+						@click="addNewEpisode"
+					>
+						<i class="bi bi-plus-lg mr-2"></i>
+						<span>新增文档</span>
+					</button>
+				</div>
 			</div>
 
 			<!-- 使用 draggable 替换原来的 div -->
@@ -122,18 +130,6 @@
 					/>
 				</template>
 			</draggable>
-
-			<!-- 添加新文档按钮 -->
-			<div v-if="isEditMode" class="retro-add-button" @click="addNewEpisode">
-				<div class="card-shadow">
-					<div class="card-edge">
-						<div class="card-face">
-							<i class="bi bi-plus-lg"></i>
-							<span class="ml-2">添加新文档</span>
-						</div>
-					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 </template>

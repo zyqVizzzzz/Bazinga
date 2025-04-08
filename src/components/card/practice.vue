@@ -41,7 +41,7 @@
 						</div>
 					</div>
 					<p class="vintage-text text-center">
-						当前场景还没有播客哦～ 点击下方
+						当前场景还没有播客～ 点击下方
 						<i class="bi bi-pencil-square"></i> 按钮，创建你的播客吧！
 					</p>
 				</div>
@@ -310,13 +310,14 @@ defineExpose({
 .circular-video-container {
 	position: relative;
 	z-index: 1;
-	width: 140px;
-	height: 140px;
-	border-radius: 50%;
+	width: 240px; /* 4:3 比例，宽度设为 240px */
+	height: 180px; /* 高度为宽度的 3/4 */
+	border-radius: 12px; /* 改用圆角矩形 */
 	overflow: hidden;
 	border: 3px solid #000;
 	box-shadow: 2px 2px 0 #000;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	margin: 0 auto;
 }
 
 .circular-video {

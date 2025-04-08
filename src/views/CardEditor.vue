@@ -1,38 +1,35 @@
 <template>
 	<div class="container w-full mx-auto mt-10 pt-2">
 		<TextEditor
-			v-if="isCustom && viewMode === 'edit'"
+			v-if="route.query.mode === 'edit'"
 			v-model="editorContent"
 			@create-collection="handleCreateCollection"
 			@back-to-preview="backToPreview"
 		/>
 		<!-- 卡片编辑器 -->
 		<CardView
-			v-if="viewMode !== 'edit'"
-			:view-mode="viewMode"
+			v-else
 			:scenes="scenes"
 			:is-custom="isCustom"
-			@back="backToPreview"
+			:from="from"
 			@update:scenes="updateScenes"
 		/>
 	</div>
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import { showToast } from "@/components/common/toast.js";
 import TextEditor from "@/components/cardEditorNext/TextEditor.vue";
 import CardView from "@/components/cardEditorNext/CardView.vue";
-import apiClient from "@/api";
 
 const route = useRoute();
 const router = useRouter();
 const editorContent = ref("");
-const isSaved = ref(false);
-const isCustom = ref(false);
+const isCustom = ref(true);
 
-const viewMode = ref("edit"); // 'edit' | 'card' | 'preview'
 const scenes = ref([]); // 存储所有场景
+const from = ref(""); // 来源：edit 或 card
 
 const handleCreateCollection = async (blocks) => {
 	try {
@@ -52,9 +49,12 @@ const handleCreateCollection = async (blocks) => {
 
 		// 场景分割
 		scenes.value = splitIntoScenes(processedBlocks);
-		viewMode.value = "card";
+		from.value = "edit";
 
-		console.log(scenes.value);
+		// 更新路由，移除 mode 参数
+		const query = { ...route.query };
+		delete query.mode;
+		router.replace({ query });
 	} catch (error) {
 		console.error("制作卡片合辑失败:", error);
 		showToast({ message: "制作失败，请重试", type: "error" });
@@ -111,39 +111,6 @@ const splitIntoScenes = (blocks) => {
 // 更新场景数据
 const updateScenes = (updatedScenes) => {
 	scenes.value = updatedScenes;
-};
-
-onMounted(async () => {
-	// 初始化
-	if (route.query.mode === "edit") {
-		isCustom.value = true;
-		viewMode.value = "edit";
-	} else {
-		isCustom.value = true;
-		viewMode.value = "card";
-	}
-});
-
-const backToPreview = () => {
-	const courseId = route.params.id;
-	const season = route.params.season;
-	const episode = route.params.episode;
-	const sign = route.query.sign;
-	const mode = route.query?.mode;
-	if (mode === "edit" && viewMode.value === "edit" && !isSaved.value) {
-		router.replace("/collections/" + courseId);
-		return;
-	}
-	if (mode === "edit" && viewMode.value === "card" && !isSaved.value) {
-		viewMode.value = "edit";
-		return;
-	}
-	router.replace({
-		path: `/collections/${courseId}/${season}/${episode}`,
-		query: {
-			sign: sign,
-		},
-	});
 };
 </script>
 <style scoped></style>

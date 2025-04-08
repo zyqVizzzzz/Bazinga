@@ -1,8 +1,5 @@
 <template>
-	<div
-		class="card-view mx-auto flex gap-4 justify-center items-start w-4/5"
-		v-if="viewMode === 'card'"
-	>
+	<div class="card-view mx-auto flex gap-4 justify-center items-start w-4/5">
 		<div class="editor-container w-4/5">
 			<!-- 控制按钮组 -->
 			<div class="editor-action-buttons">
@@ -28,29 +25,79 @@
 						</div>
 					</button>
 				</div>
-				<div class="tooltip" data-tip="操作说明">
-					<button class="retro-btn" @click="handleSave">
+				<div class="border-t border-gray-200"></div>
+				<div class="tooltip" data-tip="生成翻译" v-if="isCustom">
+					<button
+						class="retro-btn"
+						@click="handleBatchTranslate"
+						:disabled="isLoading"
+					>
 						<div class="btn-shadow">
 							<div class="btn-edge">
 								<div class="btn-face">
-									<i class="bi bi-question-circle text-lg"></i>
+									<TranslationIcon size="5" />
 								</div>
 							</div>
 						</div>
 					</button>
 				</div>
-				<div class="border-t border-gray-200"></div>
-				<div class="tooltip" data-tip="生成卡片" v-if="isCustom">
-					<button class="retro-btn" @click="handleWholeScene">
+				<div class="tooltip" data-tip="生成知识点" v-if="isCustom">
+					<button
+						class="retro-btn"
+						@click="handleBatchGenerateKnowledge"
+						:disabled="isLoading"
+					>
 						<div class="btn-shadow">
 							<div class="btn-edge">
 								<div class="btn-face">
+									<KnowledgeIcon size="5" />
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+				<div class="tooltip" data-tip="补充内容">
+					<button class="retro-btn" @click="handleSave">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<!-- <i class="bi bi-question-circle text-lg"></i> -->
 									<GenerateIcon size="5" />
 								</div>
 							</div>
 						</div>
 					</button>
 				</div>
+				<div class="border-t border-gray-200"></div>
+				<div class="tooltip" data-tip="导出文档">
+					<button
+						class="retro-btn"
+						@click="exportToMarkdown"
+						:disabled="isLoading"
+					>
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<ExportIcon size="5" />
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+
+				<div class="tooltip" data-tip="操作说明">
+					<button class="retro-btn" @click="handleSave">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<!-- <i class="bi bi-question-circle text-lg"></i> -->
+									<GuideIcon size="5" />
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+
 				<!-- <div class="tooltip" data-tip="生成播客" v-if="isCustom">
 					<button class="retro-btn" @click="handleShowPodcastModal">
 						<div class="btn-shadow">
@@ -294,7 +341,10 @@ import RecycleBinModal from "./RecycleBinModal.vue";
 import SpeakerModal from "./SpeakerModal.vue";
 import PodcastIcon from "@/components/icons/Podcast.vue";
 import GenerateIcon from "@/components/icons/Generate.vue";
-import HistoryIcon from "@/components/icons/History.vue";
+import TranslationIcon from "@/components/icons/Translation.vue";
+import KnowledgeIcon from "@/components/icons/Knowledge.vue";
+import ExportIcon from "@/components/icons/Export.vue";
+import GuideIcon from "@/components/icons/Guide.vue";
 import { generateTextHash } from "@/utils";
 
 const route = useRoute();
@@ -302,10 +352,6 @@ const router = useRouter();
 const hasUnsavedChanges = ref(false); // 未保存更改标记
 
 const props = defineProps({
-	viewMode: {
-		type: String,
-		required: true,
-	},
 	scenes: {
 		type: Array,
 		required: true,
@@ -313,6 +359,10 @@ const props = defineProps({
 	isCustom: {
 		type: Boolean,
 		default: false,
+	},
+	from: {
+		type: String,
+		default: "",
 	},
 });
 
@@ -348,73 +398,10 @@ const newSpeaker = ref("");
 const translatingBlockId = ref(null);
 // 知识点
 const currentKnowledge = ref(new Map());
-const autoSaving = ref(false);
 
 const isLoading = ref(false);
 
-const emit = defineEmits(["back", "save", "update:scenes"]);
-
-// 处理打开说话者选择弹窗
-const handleToggleSpeaker = (index) => {
-	// 先设置选中的块索引
-	selectedBlockIndex.value = index;
-	showSpeakerDropdown.value = true;
-
-	// 如果当前块已有说话者，预填充
-	if (currentBlocks.value[index].speaker) {
-		newSpeaker.value = currentBlocks.value[index].speaker;
-	} else {
-		newSpeaker.value = "";
-	}
-
-	nextTick(() => {
-		speakerModalRef.value?.showModal();
-	});
-};
-
-// 添加新的处理函数
-const handleSpeakerUpdate = (speaker) => {
-	speakers.value.add(speaker);
-};
-
-// 新增确认按钮处理函数
-const handleConfirmSpeaker = (speaker) => {
-	if (selectedBlockIndex.value === null) return;
-
-	const block = currentBlocks.value[selectedBlockIndex.value];
-	if (speaker) {
-		// 添加到说话者集合
-		speakers.value.add(speaker);
-		// 更新块的说话者
-		block.speaker = speaker;
-	} else {
-		// 输入为空时，删除说话者属性
-		delete block.speaker;
-	}
-	// 更新场景数据
-	emit(
-		"update:scenes",
-		props.scenes.map((scene, index) =>
-			index === currentIndex.value ? currentBlocks.value : scene
-		)
-	);
-
-	hasUnsavedChanges.value = true;
-
-	// 关闭模态框
-	speakerModalRef.value?.close();
-};
-
-// 移除说话者
-const removeSpeaker = (speaker) => {
-	speakers.value.delete(speaker);
-	localStorage.setItem("speakers", JSON.stringify(Array.from(speakers.value)));
-};
-
-// 计算过滤后的说话者列表
-const filteredSpeakers = computed(() => {
-	return Array.from(speakers.value);
-});
+const emit = defineEmits(["back", "update:scenes", "save-success"]);
 
 onMounted(async () => {
 	document.addEventListener("click", handleClickOutside);
@@ -437,7 +424,15 @@ onMounted(async () => {
 
 	isLoading.value = true;
 	try {
-		await initializeView();
+		if (!props.from) {
+			console.log("从新建场景进入");
+			await initializeView();
+		} else if (props.from === "edit") {
+			await handleSave();
+			await initializeView();
+		}
+
+		// 如果是从编辑器切换过来的，自动保存并更新路由
 	} finally {
 		isLoading.value = false;
 	}
@@ -469,22 +464,55 @@ const handleBeforeUnload = (e) => {
 	}
 };
 
-// 路由离开守卫
-onBeforeRouteLeave((to, from, next) => {
+const handleBack = () => {
+	const { id: courseId, season, episode } = route.params;
+	const { sign } = route.query;
+
 	if (hasUnsavedChanges.value) {
 		if (window.confirm("您有未保存的更改，确定要离开吗？")) {
-			next();
-		} else {
-			next(false);
+			clearAllStates();
+			router.replace({
+				path: `/collections/${courseId}/${season}/${episode}`,
+				query: { sign },
+			});
 		}
 	} else {
-		next();
+		clearAllStates();
+		router.replace({
+			path: `/collections/${courseId}/${season}/${episode}`,
+			query: { sign },
+		});
 	}
+};
+
+onBeforeRouteLeave((to, from, next) => {
+	// 如果有未保存的更改，先确认
+	if (hasUnsavedChanges.value) {
+		if (!window.confirm("您有未保存的更改，确定要离开吗？")) {
+			next(false);
+			return;
+		}
+	}
+
+	// 获取完整的目标路径
+	const { id: courseId, season, episode } = route.params;
+	const { sign } = route.query;
+
+	// 如果目标路径不是完整的课程路径，重定向到完整路径
+	if (!to.fullPath.includes(sign)) {
+		next({
+			path: `/collections/${courseId}/${season}/${episode}`,
+			query: { sign },
+		});
+		return;
+	}
+
+	next();
 });
 
 const initializeView = async () => {
 	try {
-		if (route.query.mode !== "edit" && route.query.mode !== "card") {
+		if (route.query.mode !== "edit") {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
@@ -574,7 +602,94 @@ const initializeView = async () => {
 	}
 };
 
-const handleWholeScene = async () => {
+// 整个场景生成翻译
+const handleBatchTranslate = async () => {
+	try {
+		isLoading.value = true;
+
+		// 1. 获取当前场景的文本块
+		const currentScene = currentBlocks.value;
+		if (!currentScene || currentScene.length === 0) {
+			showToast({ message: "当前场景没有内容", type: "warning" });
+			return;
+		}
+
+		// 2. 过滤出需要翻译的文本块(非标题、非翻译、非知识点)
+		let blocksToProcess = currentScene.filter(
+			(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
+		);
+
+		if (blocksToProcess.length === 0) {
+			showToast({ message: "没有需要翻译的内容", type: "warning" });
+			return;
+		}
+
+		// 3. 批量翻译
+		const response = await apiClient.post("/translation/batch", {
+			texts: blocksToProcess.map((block) => block.text),
+			source: "en",
+			target: "zh",
+		});
+
+		if (response.data.data.translations) {
+			// 为每个原文块处理翻译
+			for (const [index, block] of blocksToProcess.entries()) {
+				const translationBlock = {
+					id: `translation-${block.id}`,
+					text: response.data.data.translations[index],
+					isTitle: false,
+					isTranslated: true,
+					originalId: block.id,
+					originalIndex: block.id,
+				};
+
+				// 查找原文块位置
+				const blockIndex = currentBlocks.value.findIndex(
+					(b) => b.id === block.id
+				);
+
+				if (blockIndex !== -1) {
+					// 查找是否已存在对应的翻译块
+					const existingTranslationIndex = currentBlocks.value.findIndex(
+						(b) =>
+							b.isTranslated &&
+							(b.originalId === block.id || b.id === `translation-${block.id}`)
+					);
+
+					if (existingTranslationIndex !== -1) {
+						// 如果存在翻译块，替换它
+						currentBlocks.value.splice(
+							existingTranslationIndex,
+							1,
+							translationBlock
+						);
+					} else {
+						// 如果不存在翻译块，在原文后插入
+						currentBlocks.value.splice(blockIndex + 1, 0, translationBlock);
+					}
+				}
+			}
+		}
+
+		// 更新场景数据
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, index) =>
+				index === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		hasUnsavedChanges.value = true;
+		showToast({ message: "翻译完成", type: "success" });
+	} catch (error) {
+		console.error("批量翻译失败:", error);
+		showToast({ message: "批量翻译失败，请重试", type: "error" });
+	} finally {
+		isLoading.value = false;
+	}
+};
+
+const handleBatchGenerateKnowledge = async () => {
 	try {
 		isLoading.value = true;
 
@@ -590,77 +705,19 @@ const handleWholeScene = async () => {
 			(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
 		);
 
-		// 3. 计算总字符数和确定处理范围
-		let totalChars = 0;
-		let processEndIndex = blocksToProcess.length;
-
-		// 找到20000字符所在的文本块位置
-		for (let i = 0; i < blocksToProcess.length; i++) {
-			totalChars += blocksToProcess[i].text.length;
-			if (totalChars > 20000) {
-				processEndIndex = i;
-				// 显示提示
-				showToast({
-					message: `单个场景字符数超过20000，将只处理前${processEndIndex}个文本段落`,
-					type: "warning",
-					duration: 5000,
-				});
-				break;
-			}
-		}
-
-		// 4. 截取需要处理的块
-		blocksToProcess = blocksToProcess.slice(0, processEndIndex);
-
-		// 分割需要处理和保留的块
-		const blocksToHandle = blocksToProcess.slice(0, processEndIndex);
-		const remainingBlocks = blocksToProcess.slice(processEndIndex);
-
-		if (blocksToHandle.length === 0) {
+		if (blocksToProcess.length === 0) {
 			showToast({ message: "没有需要处理的内容", type: "warning" });
 			return;
 		}
 
-		// 5. 批量翻译
-		try {
-			const response = await apiClient.post("/translation/batch", {
-				texts: blocksToHandle.map((block) => block.text),
-				source: "en",
-				target: "zh",
-			});
+		// 3. 生成知识点
+		await groupTextByLength(blocksToProcess);
+		// await initKnowledgeDisplay();
 
-			if (response.data.data.translations) {
-				// 为每个原文块添加翻译
-				for (const [index, block] of blocksToHandle.entries()) {
-					const translationBlock = {
-						id: `translation-${block.id}`,
-						text: response.data.data.translations[index],
-						isTitle: false,
-						isTranslated: true,
-						originalId: block.id,
-						originalIndex: block.id,
-					};
+		// 在这里关闭加载状态
+		isLoading.value = false;
 
-					// 在原文块后插入翻译
-					const blockIndex = currentBlocks.value.findIndex(
-						(b) => b.id === block.id
-					);
-					if (blockIndex !== -1) {
-						currentBlocks.value.splice(blockIndex + 1, 0, translationBlock);
-					}
-				}
-			}
-		} catch (error) {
-			console.error("批量翻译失败:", error);
-			showToast({ message: "批量翻译失败，请重试", type: "error" });
-			return;
-		}
-
-		// 6. 生成知识点 - 只处理前面的块
-		await groupTextByLength(blocksToHandle);
-		await initKnowledgeDisplay();
-
-		// 7. 更新场景数据
+		// 4. 更新场景数据
 		emit(
 			"update:scenes",
 			props.scenes.map((scene, index) =>
@@ -669,11 +726,9 @@ const handleWholeScene = async () => {
 		);
 
 		hasUnsavedChanges.value = true;
-		showToast({ message: "场景处理完成", type: "success" });
 	} catch (error) {
-		console.error("处理场景失败:", error);
-		showToast({ message: "处理场景失败，请重试", type: "error" });
-	} finally {
+		console.error("生成知识点失败:", error);
+		showToast({ message: "生成知识点失败，请重试", type: "error" });
 		isLoading.value = false;
 	}
 };
@@ -1093,11 +1148,129 @@ const handlePodcastUpdate = (podcastData) => {
 	}
 };
 
+// 添加导出 Markdown 方法
+const exportToMarkdown = async () => {
+	try {
+		isLoading.value = true;
+		// 生成 Markdown 内容，遍历所有场景
+		let markdownContent = "";
+
+		console.log(props.scenes);
+
+		props.scenes.forEach((scene, sceneIndex) => {
+			// 添加场景标题
+			markdownContent += `## ${scene.title || `Scene ${sceneIndex + 1}`}\n\n`;
+
+			// 获取当前场景的块
+			const sceneBlocks =
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene.blocks;
+
+			// 遍历场景中的所有块
+			sceneBlocks.forEach((block) => {
+				if (block.isTitle) return;
+
+				// 处理说话者和原文
+				if (!block.isTranslated && !block.isKnowledge) {
+					const speakerText = block.speaker ? `[**${block.speaker}**] ` : "";
+					const cleanText = (block.displayText || block.text || "")
+						.replace(/<mark[^>]*>(.*?)<\/mark>/g, "**`$1`**")
+						.replace(/<[^>]+>/g, "");
+					markdownContent += `${speakerText}${cleanText}\n\n`;
+				}
+
+				// 处理翻译
+				if (block.isTranslated) {
+					const cleanText = (block.displayText || block.text || "").replace(
+						/<[^>]+>/g,
+						""
+					);
+					markdownContent += `*${cleanText}*\n\n`;
+
+					// 检查下一个块是否为知识点
+					const nextBlock = sceneBlocks[sceneBlocks.indexOf(block) + 1];
+
+					// 如果下一个块不是知识点，或者这是最后一个块，直接添加分隔线
+					if (!nextBlock || !nextBlock.isKnowledge) {
+						markdownContent += "---\n\n";
+					}
+				}
+
+				// 处理知识点
+				if (block.isKnowledge) {
+					const cleanText = (block.displayText || block.text || "")
+						.replace(/<[^>]+>/g, "")
+						.split("\n")
+						.filter((line) => line.trim())
+						.map((line) => line.trim());
+
+					if (cleanText.length >= 2) {
+						const [word, translation] = cleanText;
+						const knowledge = Array.from(currentKnowledge.value.values()).find(
+							(k) => (k && k.word === word) || (k && k.word_zh === translation)
+						);
+
+						if (knowledge) {
+							// 添加空值检查
+							const synonyms = knowledge.synonyms || "";
+							markdownContent += `> 💡 **${knowledge.word}** ｜ ${
+								knowledge.word_zh || ""
+							}
+> 📝 **解释**：${knowledge.definition_zh || ""}
+> 💫 **例句**：${knowledge.example || ""} / ${knowledge.example_zh || ""}
+> 🎯 **同义词**：${synonyms
+								.split("|")
+								.filter(Boolean)
+								.map((s, i) => `${i + 1}/ ${s.trim()}`)
+								.join(" ")}\n\n---\n\n`;
+						} else {
+							markdownContent += `> 💡 ${word || ""} - ${
+								translation || ""
+							}\n\n---\n\n`;
+						}
+					}
+				}
+			});
+
+			// 在场景之间添加额外的分隔
+			if (sceneIndex < props.scenes.length - 1) {
+				markdownContent += "\n\n";
+			}
+		});
+
+		// 创建 Blob
+		const blob = new Blob([markdownContent], { type: "text/markdown" });
+
+		// 创建下载链接
+		const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `全部场景_${Date.now()}.md`;
+
+		// 触发下载
+		document.body.appendChild(link);
+		link.click();
+
+		// 清理
+		window.URL.revokeObjectURL(url);
+		document.body.removeChild(link);
+
+		showToast({ message: "Markdown导出成功", type: "success" });
+	} catch (error) {
+		console.error("Markdown导出失败:", error);
+		showToast({ message: "Markdown导出失败，请重试", type: "error" });
+	} finally {
+		isLoading.value = false;
+	}
+};
+
 const groupTextByLength = async (blocks) => {
 	const groups = [];
 	let currentGroup = [];
 	let currentLength = 0;
-	const TARGET_LENGTH = 1600;
+	// 获取已存在的知识点
+	const existingPhrases = Array.from(currentKnowledge.value.values())
+		.map((k) => k.origin)
+		.filter(Boolean); // 过滤掉可能的空值
 
 	// 过滤出原文内容
 	const originalBlocks = blocks.filter(
@@ -1114,19 +1287,14 @@ const groupTextByLength = async (blocks) => {
 		0
 	);
 
-	// 根据总字符数确定分组大小和知识点密度
-	let groupSize, knowledgeDensity;
+	// 统计当前场景已有的知识点数量和分布
+	const existingKnowledgeStats = analyzeExistingKnowledge(currentBlocks.value);
 
-	if (totalChars <= 4800) {
-		groupSize = 800;
-		knowledgeDensity = 150;
-	} else if (totalChars <= 9600) {
-		groupSize = 1600;
-		knowledgeDensity = 200;
-	} else {
-		groupSize = 2400;
-		knowledgeDensity = 300;
-	}
+	// 根据总字符数和已有知识点情况确定分组大小和知识点密度
+	const { groupSize, knowledgeDensity } = calculateDynamicParameters(
+		totalChars,
+		existingKnowledgeStats
+	);
 
 	// 分组处理
 	originalBlocks.forEach((block) => {
@@ -1152,134 +1320,285 @@ const groupTextByLength = async (blocks) => {
 		groups.push(currentGroup);
 	}
 
+	let hasGeneratedPhrases = false; // 检查是否所有组都没有生成知识点
 	// 为每组文本生成知识点
-	groups.forEach(async (group, groupIndex) => {
-		requestQueue.add(async () => {
-			try {
-				const originalTexts = group
-					.filter(
-						(block) =>
-							!block.isTitle && !block.isTranslated && !block.isKnowledge
-					)
-					.map((block) => block.text)
-					.join("\n");
+	for (const group of groups) {
+		try {
+			const originalTexts = group
+				.filter(
+					(block) => !block.isTitle && !block.isTranslated && !block.isKnowledge
+				)
+				.map((block) => block.text)
+				.join("\n");
 
-				if (originalTexts) {
-					const textLength = originalTexts.length;
-					// 根据知识点密度计算该组应该生成的知识点数量
-					const maxPhrases = Math.ceil(textLength / knowledgeDensity);
+			if (!originalTexts) continue;
 
-					const phrasesResponse = await apiClient.post(
-						"/translation/extract-key-phrases",
-						{
-							text: originalTexts,
-							options: {
-								maxPhrases: Math.max(1, Math.min(maxPhrases, 8)), // 每组最多8个知识点
-							},
-						}
+			const textLength = originalTexts.length;
+			const maxPhrases = Math.ceil(textLength / knowledgeDensity);
+
+			// 1. 提取关键词
+			const phrasesResponse = await apiClient.post(
+				"/translation/extract-key-phrases",
+				{
+					text: originalTexts,
+					options: {
+						maxPhrases: Math.max(1, Math.min(maxPhrases, 8)),
+						existingPhrases,
+					},
+				}
+			);
+
+			if (phrasesResponse.data.data.phrases.length > 0) {
+				hasGeneratedPhrases = true; // 有生成知识点时设置标记
+			} else {
+				continue;
+			}
+
+			// 2. 生成知识点
+			const knowledgeResponse = await apiClient.post(
+				"/translation/generate-knowledge-batch",
+				{
+					words: phrasesResponse.data.data.phrases,
+				}
+			);
+
+			if (!knowledgeResponse.data.data) continue;
+
+			// 3. 处理每个原文块
+			group.forEach((block) => {
+				if (block.isTitle || block.isTranslated || block.isKnowledge) return;
+
+				const blockText = block.text.toLowerCase();
+				const matchedKnowledges = knowledgeResponse.data.data.filter((k) => {
+					// 检查是否已存在该知识点
+					const exists = Array.from(currentKnowledge.value.values()).some(
+						(existing) =>
+							existing.word === k.word || existing.origin === k.origin
+					);
+					return !exists && blockText.includes(k.origin.toLowerCase());
+				});
+
+				if (matchedKnowledges.length === 0) return;
+
+				// 获取现有知识点数量作为起始索引
+				const startKnowledgeCount = currentBlocks.value.filter(
+					(b) => b.isKnowledge && b.id.startsWith(`knowledge_${block.id}_`)
+				).length;
+
+				// 高亮原文中的所有知识点
+				console.log(matchedKnowledges);
+				let displayText = block.displayText || block.text;
+				matchedKnowledges.forEach((knowledge, kIndex) => {
+					// 添加到知识点集合
+					const sceneId = `Scene${currentIndex.value + 1}`;
+					knowledge.scenes = new Set([sceneId]);
+					currentKnowledge.value.set(knowledge.word, knowledge);
+
+					// 检查是否已经存在高亮
+					const highlightRegex = new RegExp(
+						`<mark class="highlight-knowledge">${knowledge.origin}</mark>|<mark class="highlight-knowledge">${knowledge.word}</mark>`,
+						"gi"
 					);
 
-					if (phrasesResponse.data.data.phrases.length) {
-						// 3. 批量生成知识点
-						const knowledgeResponse = await apiClient.post(
-							"/translation/generate-knowledge-batch",
-							{
-								words: phrasesResponse.data.data.phrases,
+					if (!highlightRegex.test(displayText)) {
+						// 如果没有高亮，添加新的高亮
+						const originRegex = new RegExp(knowledge.origin, "gi");
+						if (displayText.match(originRegex)) {
+							displayText = displayText.replace(
+								originRegex,
+								`<mark class="highlight-knowledge">${knowledge.origin}</mark>`
+							);
+						} else {
+							const wordRegex = new RegExp(knowledge.word, "gi");
+							if (displayText.match(wordRegex)) {
+								knowledge.origin = knowledge.word;
+								displayText = displayText.replace(
+									wordRegex,
+									`<mark class="highlight-knowledge">${knowledge.word}</mark>`
+								);
 							}
+						}
+					}
+
+					// 创建知识点块
+					const knowledgeBlock = {
+						id: `knowledge_${block.id}_${startKnowledgeCount + kIndex}`,
+						text: formatKnowledgeDisplay(
+							knowledge,
+							`knowledge_${block.id}_${startKnowledgeCount + kIndex}`
+						),
+						isTitle: false,
+						isKnowledge: true,
+						narration: false,
+						isTranslated: false,
+						knowledgeData: knowledge,
+					};
+
+					// 查找插入位置
+					const blockId = block.id || block.originalIndex;
+					const translationId = `translation-${blockId}`;
+					const translationIndex = currentBlocks.value.findIndex(
+						(b) => b.id === translationId || b.originalIndex === translationId
+					);
+
+					const lastKnowledgeIndex = [...currentBlocks.value]
+						.reverse()
+						.findIndex(
+							(b) => b.isKnowledge && b.id.startsWith(`knowledge_${block.id}_`)
 						);
 
-						if (knowledgeResponse.data.data) {
-							// 遍历每个原文块，检查是否包含知识点
-							group.forEach((block) => {
-								const blockText = block.text.toLowerCase();
-								// 修改为查找所有匹配的知识点
-								const matchedKnowledges = knowledgeResponse.data.data.filter(
-									(k) => blockText.includes(k.origin.toLowerCase())
-								);
+					const insertIndex =
+						lastKnowledgeIndex !== -1
+							? currentBlocks.value.length - lastKnowledgeIndex
+							: translationIndex >= 0
+							? translationIndex + 1
+							: currentBlocks.value.findIndex((b) => b.id === block.id) + 1;
 
-								if (matchedKnowledges.length > 0) {
-									// 高亮原文中的所有知识点
-									let displayText = block.text;
-									matchedKnowledges.forEach((knowledge) => {
-										// 先尝试用 origin 匹配
-										const originRegex = new RegExp(knowledge.origin, "gi");
-										if (block.text.match(originRegex)) {
-											displayText = displayText.replace(
-												originRegex,
-												`<mark class="highlight-knowledge">${knowledge.origin}</mark>`
-											);
-										} else {
-											// 如果 origin 没有匹配到，尝试用 word 匹配
-											const wordRegex = new RegExp(knowledge.word, "gi");
-											if (block.text.match(wordRegex)) {
-												// 如果 word 匹配到了，更新 knowledge.origin 为 word 的值
-												knowledge.origin = knowledge.word;
-												displayText = displayText.replace(
-													wordRegex,
-													`<mark class="highlight-knowledge">${knowledge.word}</mark>`
-												);
-											}
-										}
-									});
-									block.displayText = displayText;
-
-									// 找到原文块和翻译块的位置
-									const blockIndex = currentBlocks.value.findIndex(
-										(b) => b.id === block.id
-									);
-									const translationIndex = currentBlocks.value.findIndex(
-										(b) => b.id === `translation-${block.id}`
-									);
-									const insertIndex =
-										translationIndex !== -1
-											? translationIndex + 1
-											: blockIndex + 1;
-
-									// 为每个匹配的知识点创建知识点块
-									matchedKnowledges.forEach((knowledge, kIndex) => {
-										const knowledgeBlock = {
-											id: `knowledge_${block.id}_${kIndex}`,
-											text: formatKnowledgeDisplay(
-												knowledge,
-												`knowledge_${block.id}_${kIndex}`
-											),
-											isTitle: false,
-											isKnowledge: true,
-											narration: false,
-											isTranslated: false,
-											knowledgeData: knowledge,
-										};
-
-										if (insertIndex !== -1) {
-											// 按顺序插入知识点块
-											currentBlocks.value.splice(
-												insertIndex + kIndex,
-												0,
-												knowledgeBlock
-											);
-										}
-									});
-								}
-							});
-						}
-					} else {
-						showToast({
-							message: `未能提取到知识点，请至少输入一行完整的句子`,
-							type: "error",
-						});
-					}
-				}
-			} catch (error) {
-				console.error(`为第 ${groupIndex + 1} 组生成知识点失败:`, error);
-				showToast({
-					message: `为第 ${groupIndex + 1} 组生成知识点失败`,
-					type: "error",
+					// 插入知识点块
+					currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
 				});
-			}
+
+				// 更新原文块的显示文本
+				block.displayText = displayText;
+			});
+		} catch (error) {
+			console.error("处理知识点失败:", error);
+		}
+	}
+
+	// 在所有组处理完后检查是否有生成知识点
+	if (!hasGeneratedPhrases) {
+		showToast({
+			message: "已达到当前文本的知识点生成上限，您可以尝试手动选择知识点",
+			type: "warning",
 		});
-	});
+	}
 
 	return groups;
+};
+
+// 分析现有知识点的分布情况
+const analyzeExistingKnowledge = (blocks) => {
+	const stats = {
+		totalKnowledge: 0, // 总知识点数量
+		knowledgeBlocks: [], // 知识点块的位置
+		averageDistance: 0, // 知识点之间的平均字符距离
+		densityByRegion: new Map(), // 不同区域的知识点密度
+	};
+
+	let lastKnowledgePosition = 0;
+	let totalTextLength = 0;
+	let distances = [];
+
+	blocks.forEach((block, index) => {
+		if (block.isKnowledge) {
+			stats.totalKnowledge++;
+			stats.knowledgeBlocks.push(index);
+
+			// 计算与上一个知识点的距离
+			if (lastKnowledgePosition > 0) {
+				const distance = totalTextLength - lastKnowledgePosition;
+				distances.push(distance);
+			}
+			lastKnowledgePosition = totalTextLength;
+		} else if (!block.isTitle && !block.isTranslated) {
+			totalTextLength += block.text.length;
+		}
+	});
+
+	// 计算平均距离
+	if (distances.length > 0) {
+		stats.averageDistance =
+			distances.reduce((a, b) => a + b, 0) / distances.length;
+	}
+
+	// 计算区域密度（将文本分为3个区域）
+	const regionSize = totalTextLength / 3;
+	let currentRegion = 0;
+	let regionKnowledgeCount = 0;
+	let accumulatedLength = 0;
+
+	blocks.forEach((block) => {
+		if (!block.isTitle && !block.isTranslated) {
+			accumulatedLength += block.text.length;
+			if (block.isKnowledge) {
+				regionKnowledgeCount++;
+			}
+
+			if (accumulatedLength >= (currentRegion + 1) * regionSize) {
+				stats.densityByRegion.set(currentRegion, regionKnowledgeCount);
+				currentRegion++;
+				regionKnowledgeCount = 0;
+			}
+		}
+	});
+
+	return stats;
+};
+
+// 计算动态参数
+const calculateDynamicParameters = (totalChars, stats) => {
+	let baseGroupSize, baseKnowledgeDensity;
+
+	// 基础配置（与原来相同）
+	if (totalChars <= 4800) {
+		baseGroupSize = 800;
+		baseKnowledgeDensity = 150;
+	} else if (totalChars <= 9600) {
+		baseGroupSize = 1600;
+		baseKnowledgeDensity = 200;
+	} else {
+		baseGroupSize = 2400;
+		baseKnowledgeDensity = 300;
+	}
+
+	// 根据已有知识点密度调整参数
+	const adjustmentFactor = calculateAdjustmentFactor(stats);
+
+	return {
+		groupSize: Math.round(baseGroupSize * adjustmentFactor.groupSizeFactor),
+		knowledgeDensity: Math.round(
+			baseKnowledgeDensity * adjustmentFactor.densityFactor
+		),
+	};
+};
+
+// 计算调整因子
+const calculateAdjustmentFactor = (stats) => {
+	let groupSizeFactor = 1;
+	let densityFactor = 1;
+
+	// 1. 根据已有知识点数量调整
+	if (stats.totalKnowledge > 0) {
+		// 知识点数量越多，分组尺寸越大（降低生成频率）
+		groupSizeFactor = 1 + stats.totalKnowledge / 10; // 每10个知识点增加一倍分组大小
+
+		// 知识点数量越多，密度要求越低（避免过度生成）
+		densityFactor = 1 + stats.totalKnowledge / 20; // 每20个知识点降低一倍密度
+	}
+
+	// 2. 根据知识点分布均匀性调整
+	const regionDensities = Array.from(stats.densityByRegion.values());
+	const densityVariance = calculateVariance(regionDensities);
+
+	// 分布不均匀时，倾向于在低密度区域生成更多知识点
+	if (densityVariance > 2) {
+		densityFactor *= 0.8; // 降低密度要求，允许生成更多知识点
+	}
+
+	// 3. 确保调整因子在合理范围内
+	groupSizeFactor = Math.max(1, Math.min(groupSizeFactor, 3));
+	densityFactor = Math.max(0.5, Math.min(densityFactor, 2));
+
+	return { groupSizeFactor, densityFactor };
+};
+
+// 计算方差（用于评估分布均匀性）
+const calculateVariance = (numbers) => {
+	const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+	const variance =
+		numbers.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / numbers.length;
+	return Math.sqrt(variance);
 };
 
 const switchScene = async (index) => {
@@ -1288,33 +1607,15 @@ const switchScene = async (index) => {
 	await updateCurrentSceneKnowledge();
 };
 
-const handleBack = () => {
-	if (hasUnsavedChanges.value) {
-		if (window.confirm("您有未保存的更改，确定要离开吗？")) {
-			// 清空所有状态
-			currentIndex.value = 0;
-			currentBlocks.value = [];
-			selectedBlockIndex.value = null;
-			currentKnowledge.value.clear();
-			podcastBlocksMap.value.clear();
-			deletedKnowledge.value.clear();
-			deletedPodcasts.value.clear();
-			hasUnsavedChanges.value = false;
-
-			emit("back");
-		}
-	} else {
-		// 直接清空所有状态
-		currentIndex.value = 0;
-		currentBlocks.value = [];
-		selectedBlockIndex.value = null;
-		currentKnowledge.value.clear();
-		podcastBlocksMap.value.clear();
-		deletedKnowledge.value.clear();
-		deletedPodcasts.value.clear();
-
-		emit("back");
-	}
+const clearAllStates = () => {
+	currentIndex.value = 0;
+	currentBlocks.value = [];
+	selectedBlockIndex.value = null;
+	currentKnowledge.value.clear();
+	podcastBlocksMap.value.clear();
+	deletedKnowledge.value.clear();
+	deletedPodcasts.value.clear();
+	hasUnsavedChanges.value = false;
 };
 
 const handleSave = async () => {
@@ -1341,6 +1642,7 @@ const handleSave = async () => {
 		if (uploadSuccess && knowledgeSuccess && podcastSuccess) {
 			// 重置未保存标记
 			hasUnsavedChanges.value = false;
+			emit("save-success"); // 触发保存成功事件
 			showToast({ message: "保存成功", type: "success" });
 		} else {
 			showToast({ message: "保存失败，请重试", type: "error" });
@@ -2715,6 +3017,68 @@ const handleTranslationEdit = (event, index) => {
 		);
 	}
 };
+
+// 处理打开说话者选择弹窗
+const handleToggleSpeaker = (index) => {
+	// 先设置选中的块索引
+	selectedBlockIndex.value = index;
+	showSpeakerDropdown.value = true;
+
+	// 如果当前块已有说话者，预填充
+	if (currentBlocks.value[index].speaker) {
+		newSpeaker.value = currentBlocks.value[index].speaker;
+	} else {
+		newSpeaker.value = "";
+	}
+
+	nextTick(() => {
+		speakerModalRef.value?.showModal();
+	});
+};
+
+// 添加新的处理函数
+const handleSpeakerUpdate = (speaker) => {
+	speakers.value.add(speaker);
+};
+
+// 新增确认按钮处理函数
+const handleConfirmSpeaker = (speaker) => {
+	if (selectedBlockIndex.value === null) return;
+
+	const block = currentBlocks.value[selectedBlockIndex.value];
+	if (speaker) {
+		// 添加到说话者集合
+		speakers.value.add(speaker);
+		// 更新块的说话者
+		block.speaker = speaker;
+	} else {
+		// 输入为空时，删除说话者属性
+		delete block.speaker;
+	}
+	// 更新场景数据
+	emit(
+		"update:scenes",
+		props.scenes.map((scene, index) =>
+			index === currentIndex.value ? currentBlocks.value : scene
+		)
+	);
+
+	hasUnsavedChanges.value = true;
+
+	// 关闭模态框
+	speakerModalRef.value?.close();
+};
+
+// 移除说话者
+const removeSpeaker = (speaker) => {
+	speakers.value.delete(speaker);
+	localStorage.setItem("speakers", JSON.stringify(Array.from(speakers.value)));
+};
+
+// 计算过滤后的说话者列表
+const filteredSpeakers = computed(() => {
+	return Array.from(speakers.value);
+});
 </script>
 
 <style scoped>

@@ -62,7 +62,7 @@
 					</li>
 					<li v-if="isLogin">
 						<a class="retro-link" @click="logout">
-							<ExitIcon size="5" />
+							<i class="bi bi-box-arrow-right"></i>
 						</a>
 					</li>
 					<li v-if="!isLogin">
