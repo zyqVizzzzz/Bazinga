@@ -14,7 +14,7 @@
 						</div>
 					</button>
 				</div>
-				<div class="tooltip" data-tip="保存">
+				<div class="tooltip" data-tip="保存" v-if="isCustom">
 					<button class="retro-btn" @click="handleSave">
 						<div class="btn-shadow">
 							<div class="btn-edge">
@@ -25,50 +25,6 @@
 						</div>
 					</button>
 				</div>
-				<div class="border-t border-gray-200"></div>
-				<div class="tooltip" data-tip="生成翻译" v-if="isCustom">
-					<button
-						class="retro-btn"
-						@click="handleBatchTranslate"
-						:disabled="isLoading"
-					>
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<TranslationIcon size="5" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-				<div class="tooltip" data-tip="生成知识点" v-if="isCustom">
-					<button
-						class="retro-btn"
-						@click="handleBatchGenerateKnowledge"
-						:disabled="isLoading"
-					>
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<KnowledgeIcon size="5" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-				<div class="tooltip" data-tip="补充内容">
-					<button class="retro-btn" @click="handleSave">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<!-- <i class="bi bi-question-circle text-lg"></i> -->
-									<GenerateIcon size="5" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-				<div class="border-t border-gray-200"></div>
 				<div class="tooltip" data-tip="导出文档">
 					<button
 						class="retro-btn"
@@ -84,19 +40,65 @@
 						</div>
 					</button>
 				</div>
+				<template v-if="isCustom">
+					<div class="border-t border-gray-200"></div>
+					<div class="tooltip" data-tip="生成翻译">
+						<button
+							class="retro-btn"
+							@click="handleBatchTranslate"
+							:disabled="isLoading"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">
+										<TranslationIcon size="5" />
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
+					<div class="tooltip" data-tip="生成知识点">
+						<button
+							class="retro-btn"
+							@click="handleBatchGenerateKnowledge"
+							:disabled="isLoading"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">
+										<KnowledgeIcon size="5" />
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
+					<div class="tooltip" data-tip="补充内容">
+						<button class="retro-btn" @click="handleShowTextEditorModal">
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">
+										<!-- <i class="bi bi-question-circle text-lg"></i> -->
+										<GenerateIcon size="5" />
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
+				</template>
 
-				<div class="tooltip" data-tip="操作说明">
-					<button class="retro-btn" @click="handleSave">
+				<!-- <div class="border-t border-gray-200"></div> -->
+
+				<!-- <div class="tooltip" data-tip="操作说明">
+					<button class="retro-btn" @click="handleGuideModal">
 						<div class="btn-shadow">
 							<div class="btn-edge">
 								<div class="btn-face">
-									<!-- <i class="bi bi-question-circle text-lg"></i> -->
 									<GuideIcon size="5" />
 								</div>
 							</div>
 						</div>
 					</button>
-				</div>
+				</div> -->
 
 				<!-- <div class="tooltip" data-tip="生成播客" v-if="isCustom">
 					<button class="retro-btn" @click="handleShowPodcastModal">
@@ -177,13 +179,14 @@
 										v-if="block.isTitle"
 									>
 										<div
-											contenteditable="true"
+											:contenteditable="isCustom ? true : false"
 											@blur="handleTitleEdit($event, index)"
 											@keydown.enter.prevent="$event.target.blur()"
 											v-html="block.text"
 											class="pr-8"
 										></div>
 										<button
+											v-if="isCustom"
 											class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
 											@click.stop="handleAutoGenerateTitle(index)"
 											title="自动生成标题"
@@ -197,7 +200,7 @@
 									<!-- 普通文本使用简单布局 -->
 									<div
 										v-else-if="block.isTranslated"
-										contenteditable="true"
+										:contenteditable="isCustom ? true : false"
 										@blur="handleTranslationEdit($event, index)"
 										@keydown.enter.prevent="$event.target.blur()"
 										v-html="block.text"
@@ -260,11 +263,21 @@
 								<div class="cartridge-pins"></div>
 							</div>
 
-							<!-- 合并按钮改造成连接线样式 -->
-							<div v-if="index < scenes.length - 1" class="cartridge-connector">
+							<!-- 合并 -->
+							<div
+								v-if="index < scenes.length - 1"
+								class="cartridge-connector"
+								:class="{
+									'h-[12px]': !isCustom,
+									'h-[24px]': isCustom,
+								}"
+							>
 								<button
+									v-if="isCustom"
 									class="connector-btn"
-									:class="{ 'connector-btn-merging': isMerging }"
+									:class="{
+										'connector-btn-merging': isMerging,
+									}"
 									@click.stop="handleMergeScenes(index)"
 									title="合并场景"
 								>
@@ -316,6 +329,13 @@
 		@remove="removeSpeaker"
 		@confirm="handleConfirmSpeaker"
 	/>
+
+	<GuideModal ref="guideModalRef" />
+	<TextEditorModal
+		ref="textEditorModalRef"
+		:scenes="scenes"
+		@update="handleSceneUpdate"
+	/>
 </template>
 
 <script setup>
@@ -339,6 +359,8 @@ import DeleteKnowledgeModal from "./DeleteKnowledgeModal.vue";
 import PodcastModal from "./PodcastModal.vue";
 import RecycleBinModal from "./RecycleBinModal.vue";
 import SpeakerModal from "./SpeakerModal.vue";
+import TextEditorModal from "./TextEditorModal.vue";
+import GuideModal from "./GuideModal.vue";
 import PodcastIcon from "@/components/icons/Podcast.vue";
 import GenerateIcon from "@/components/icons/Generate.vue";
 import TranslationIcon from "@/components/icons/Translation.vue";
@@ -356,16 +378,13 @@ const props = defineProps({
 		type: Array,
 		required: true,
 	},
-	isCustom: {
-		type: Boolean,
-		default: false,
-	},
 	from: {
 		type: String,
 		default: "",
 	},
 });
 
+const isCustom = ref(false);
 const currentIndex = ref(0);
 const currentBlocks = ref([]);
 const blocksMap = ref(new Map()); // 用于存储和追踪所有文本块
@@ -398,8 +417,18 @@ const newSpeaker = ref("");
 const translatingBlockId = ref(null);
 // 知识点
 const currentKnowledge = ref(new Map());
-
 const isLoading = ref(false);
+
+const guideModalRef = ref(null);
+const textEditorModalRef = ref(null);
+
+const handleGuideModal = () => {
+	guideModalRef.value?.showModal();
+};
+
+const handleShowTextEditorModal = () => {
+	textEditorModalRef.value?.showModal();
+};
 
 const emit = defineEmits(["back", "update:scenes", "save-success"]);
 
@@ -425,7 +454,6 @@ onMounted(async () => {
 	isLoading.value = true;
 	try {
 		if (!props.from) {
-			console.log("从新建场景进入");
 			await initializeView();
 		} else if (props.from === "edit") {
 			await handleSave();
@@ -516,6 +544,7 @@ const initializeView = async () => {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
+				isCustom.value = res.data.data.isCustom;
 
 				if (scriptData?.scenes?.[0]?.dialogues) {
 					// 将对话按场景分组处理
@@ -593,6 +622,8 @@ const initializeView = async () => {
 				}
 			}
 		} else {
+			console.log("from edit mode");
+			isCustom.value = true;
 			currentIndex.value = 0;
 			currentBlocks.value = props.scenes[0];
 		}
@@ -2259,7 +2290,7 @@ const formatKnowledgeDisplay = (knowledgeData, blockId) => {
       </div>
       <div class="flex items-center gap-1">
 				${
-					props.isCustom
+					isCustom.value
 						? `
             <button class="knowledge-btn knowledge-regenerate-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('regenerateKnowledge', { detail: '${safeData.word}' }))">
               <i class="bi bi-arrow-clockwise"></i>
@@ -2271,19 +2302,23 @@ const formatKnowledgeDisplay = (knowledgeData, blockId) => {
         <button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showKnowledgeDetail', { detail: JSON.parse('${safeJsonString}') }))">
           <i class="bi bi-journal-text"></i>
         </button>
-				<button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showPodcastModal', { detail: '${safeJsonString}' }))">
-          <svg style="width:1.35rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
-						${
-							knowledgeData.hasPodcast
-								? `<path d="M422.4 601.6m-217.6 0a217.6 217.6 0 1 0 435.2 0 217.6 217.6 0 1 0-435.2 0Z" fill="#e8447a"></path>`
-								: ""
-						}
-            <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
-            <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
-          </svg>
-        </button>
+				${
+					isCustom.value
+						? `<button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showPodcastModal', { detail: '${safeJsonString}' }))">
+        <svg style="width:1.35rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          ${
+						knowledgeData.hasPodcast
+							? `<path d="M422.4 601.6m-217.6 0a217.6 217.6 0 1 0 435.2 0 217.6 217.6 0 1 0-435.2 0Z" fill="#e8447a"></path>`
+							: ""
+					}
+          <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
+          <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
+        </svg>
+      </button>`
+						: ""
+				}
         ${
-					props.isCustom
+					isCustom.value
 						? `
           <button class="knowledge-btn knowledge-delete-btn hover:text-secondary transition-colors" onclick="document.dispatchEvent(new CustomEvent('deleteKnowledge', { detail: '${safeData.word}' }))">
             <i class="bi bi-trash"></i>
@@ -3079,6 +3114,11 @@ const removeSpeaker = (speaker) => {
 const filteredSpeakers = computed(() => {
 	return Array.from(speakers.value);
 });
+
+const handleSceneUpdate = (updatedScenes) => {
+	hasUnsavedChanges.value = true;
+	emit("update:scenes", updatedScenes); // 向上传递更新事件
+};
 </script>
 
 <style scoped>
@@ -3603,8 +3643,8 @@ const filteredSpeakers = computed(() => {
 /* 连接器样式 */
 .cartridge-connector {
 	width: 2px;
-	height: 24px;
-	background: rgba(0, 0, 0, 0.1);
+	/* height: 24px; */
+	/* background: rgba(0, 0, 0, 0.1); */
 	position: relative;
 	margin: 8px 0;
 }

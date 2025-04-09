@@ -145,6 +145,24 @@
 				></audio>
 			</div>
 		</div>
+
+		<button
+			class="retro-btn-medium"
+			@click="batchReplaceText"
+			:disabled="replaceLoading"
+		>
+			<div class="btn-shadow">
+				<div class="btn-edge">
+					<div class="btn-face">
+						<span
+							v-if="replaceLoading"
+							class="loading loading-spinner loading-xs"
+						></span>
+						<span v-else>执行替换</span>
+					</div>
+				</div>
+			</div>
+		</button>
 	</div>
 </template>
 
@@ -220,6 +238,33 @@ const generateSpeech = async () => {
 		});
 	} finally {
 		ttsLoading.value = false;
+	}
+};
+// 添加批量替换文本相关的变量
+const replaceLoading = ref(false);
+const replaceResult = ref(null);
+const batchReplaceText = async () => {
+	if (replaceLoading.value) return;
+
+	try {
+		replaceLoading.value = true;
+		const response = await apiClient.post("/podcasts/batch-replace-text", {
+			resourceId: "67230dee6fc3d389ea1ffee1",
+			oldText: "Jinji",
+			newText: "Moryn",
+			updateOptions: true,
+		});
+
+		replaceResult.value = response.data;
+		showToast({ message: "文本替换成功", type: "success" });
+	} catch (error) {
+		console.error("文本替换失败:", error);
+		showToast({
+			message: error.response?.data?.message || "文本替换失败",
+			type: "error",
+		});
+	} finally {
+		replaceLoading.value = false;
 	}
 };
 </script>

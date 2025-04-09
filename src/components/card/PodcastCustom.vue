@@ -64,6 +64,15 @@
 							class="audio-player"
 						></audio>
 
+						<!-- 生成播客按钮 -->
+						<button
+							class="generate-podcast-btn"
+							@click="generatePodcast(selectedPodcast, currentPlayingIndex)"
+						>
+							<i class="bi bi-broadcast-pin"></i>
+							<span>生成播客</span>
+						</button>
+
 						<div class="language-switch">
 							<button
 								class="lang-btn"
@@ -122,6 +131,10 @@
 </template>
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
+import apiClient from "@/api";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 // 定义组件接收的props
 const props = defineProps({
@@ -151,6 +164,7 @@ const audioPlayer = ref(null);
 const currentTime = ref(0);
 const duration = ref(0);
 const audioProgress = ref(0);
+const isGenerating = ref({});
 
 // 脚本显示控制
 const showOriginal = ref(true);
@@ -172,6 +186,32 @@ const selectPodcast = (podcast, index) => {
 		setTimeout(() => {
 			audioPlayer.value.load();
 		}, 0);
+	}
+};
+
+const generatePodcast = async (podcast, index, isRegenerate = false) => {
+	// 设置生成状态
+	isGenerating.value[index] = true;
+	console.log(podcast, index, isRegenerate);
+
+	const audioResponse = await apiClient.post(
+		"/podcasts/generate-audio-hailuo",
+		{
+			knowledge: podcast.knowledge,
+			script: podcast.script.join("\n"),
+			resourceId: route.query.sign || "",
+			sceneId: podcast.sceneId?.toString() || "0",
+		}
+	);
+
+	if (audioResponse.data.code === 200) {
+		podcast.audioPath = audioResponse.data.data.result.audioUrl;
+		// 如果当前选中的是这个播客，更新音频播放器
+		if (audioPlayer.value && currentPlayingIndex.value === index) {
+			setTimeout(() => {
+				audioPlayer.value.load();
+			}, 0);
+		}
 	}
 };
 
@@ -508,9 +548,9 @@ defineExpose({
 	padding: 20px;
 	border-bottom: 3px solid #000;
 	text-align: center;
-	background: #222;
+	background: #fff;
 	color: #f8f8f8;
-	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .podcast-title {
@@ -518,8 +558,8 @@ defineExpose({
 	font-weight: bold;
 	margin: 0 0 4px 0;
 	color: var(--secondary-color);
-	text-shadow: 0 0 5px var(--secondary-color);
-	font-family: "Digital-7", monospace;
+	/* text-shadow: 0 0 5px var(--secondary-color); */
+	font-family: monospace;
 }
 
 .podcast-subtitle {
@@ -723,6 +763,67 @@ defineExpose({
 		width: 100%;
 		border-right: none;
 		border-bottom: 3px solid #000;
+	}
+}
+
+/* 播放器区域 - 收音机控制面板 */
+.player-section {
+	padding: 20px;
+	border-bottom: 3px solid #000;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--milk-color);
+	position: relative;
+}
+
+.audio-player {
+	flex: 1;
+	height: 36px;
+	border-radius: 4px;
+}
+
+.generate-podcast-btn,
+.regenerate-podcast-btn,
+.generating-podcast {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 2px solid #000;
+	border-radius: 20px;
+	background: white;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.generate-podcast-btn:hover {
+	background: var(--secondary-color);
+	color: white;
+}
+
+.regenerate-podcast-btn:hover {
+	background: #e0e0e0;
+}
+
+.generating-podcast {
+	background: #f0f0f0;
+	color: #888;
+	cursor: default;
+}
+
+.generating-podcast i {
+	animation: spin 1.5s infinite linear;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
 	}
 }
 </style>
