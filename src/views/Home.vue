@@ -42,6 +42,9 @@
 							<div class="content-container" :style="{ color: scene.theme }">
 								<h2 class="text-lg font-bold">{{ scene.showName }}</h2>
 								<p class="subtitle mt-2">{{ scene.name }}</p>
+								<div class="status-badge" :class="{ private: scene.isCustom }">
+									{{ scene.isCustom ? "Private" : "Public" }}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -70,10 +73,9 @@ import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
 
 const loginStore = useLoginStore();
-const { setLoginState, setUserInfo } = loginStore;
 const isLogin = computed(() => loginStore.isLogin);
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const router = useRouter();
 const scenes = ref([]);
 
@@ -207,7 +209,22 @@ const goToCollection = (id) => {
 	height: 100%;
 }
 
+/* 角标样式 */
+.status-badge {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	padding: 2px 8px;
+	font-size: 0.75rem;
+	border-radius: 4px;
+	background-color: #333;
+	color: white;
+	font-weight: bold;
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 .content-container {
+	position: relative;
 	height: 180px;
 	padding: 1.5rem;
 	display: flex;

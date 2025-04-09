@@ -35,6 +35,14 @@
 					</h1>
 				</div>
 
+				<!-- 公开/私人标识 -->
+				<div
+					class="collection-status-badge"
+					:class="{ private: infoData.isCustom }"
+				>
+					{{ infoData.isCustom ? "private" : "public" }}
+				</div>
+
 				<!-- 描述文本 -->
 				<h2 class="font-semibold my-2 text-gray-200 w-4/5 retro-text-shadow">
 					{{ infoData.description }}
@@ -805,5 +813,28 @@ button:disabled {
 
 .retro-add-button:hover {
 	transform: translateY(-2px);
+}
+
+/* 集合状态标识样式 */
+.collection-status-badge {
+	position: absolute;
+	top: 0px;
+	right: 20px;
+	padding: 4px 12px;
+	font-size: 0.8rem;
+	border-radius: 4px;
+	background-color: #333;
+	color: white;
+	font-weight: bold;
+	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	z-index: 20;
+	border: 2px solid rgba(255, 255, 255, 0.7);
+	transform: rotate(3deg);
+}
+
+.collection-status-badge.private {
+	background-color: #333;
 }
 </style>
