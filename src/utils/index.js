@@ -55,7 +55,7 @@ export const canAccessResource = (
 };
 
 // 中文检测
-const isChinese = (text) => {
+export const isChinese = (text) => {
 	// 检查是否包含中文字符
 	const hasChinese = /[\u4e00-\u9fa5]/.test(text);
 
