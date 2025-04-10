@@ -51,7 +51,7 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face">
-										<TranslationIcon size="5" />
+										<TranslationIcon size="5" :fill="true" />
 									</div>
 								</div>
 							</div>
@@ -66,19 +66,19 @@
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face">
-										<KnowledgeIcon size="5" />
+										<KnowledgeIcon size="5" :fill="true" />
 									</div>
 								</div>
 							</div>
 						</button>
 					</div>
-					<div class="tooltip" data-tip="补充内容">
+					<div class="tooltip" data-tip="编辑场景">
 						<button class="retro-btn" @click="handleShowTextEditorModal">
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face">
 										<!-- <i class="bi bi-question-circle text-lg"></i> -->
-										<GenerateIcon size="5" />
+										<SceneIcon size="5" />
 									</div>
 								</div>
 							</div>
@@ -143,6 +143,7 @@
 									@manual-knowledge="handleShowManualKnowledgeModal(index)"
 									@split-scene="handleSplitScene(index)"
 									@toggle-speaker="handleToggleSpeaker(index)"
+									@delete-block="handleDeleteBlock(index)"
 								/>
 								<!-- 文本块 -->
 								<div
@@ -241,11 +242,6 @@
 								:class="{ 'cartridge-active': currentIndex === index }"
 								@click="switchScene(index)"
 							>
-								<!-- 卡带顶部纹路 -->
-								<div class="cartridge-ridges">
-									<div v-for="n in 8" :key="n" class="ridge"></div>
-								</div>
-
 								<!-- 卡带主体 -->
 								<div class="cartridge-body">
 									<div class="cartridge-label">
@@ -266,13 +262,9 @@
 							<!-- 合并 -->
 							<div
 								v-if="index < scenes.length - 1"
-								class="cartridge-connector"
-								:class="{
-									'h-[12px]': !isCustom,
-									'h-[24px]': isCustom,
-								}"
+								class="cartridge-connector h-[4px]"
 							>
-								<button
+								<!-- <button
 									v-if="isCustom"
 									class="connector-btn"
 									:class="{
@@ -282,7 +274,7 @@
 									title="合并场景"
 								>
 									<i class="bi bi-arrows-collapse"></i>
-								</button>
+								</button> -->
 							</div>
 						</div>
 					</template>
@@ -336,6 +328,27 @@
 		:scenes="scenes"
 		@update="handleSceneUpdate"
 	/>
+
+	<dialog ref="deleteBlockModalRef" class="modal">
+		<div class="modal-box">
+			<h3 class="font-bold text-lg">删除文本块</h3>
+			<p class="py-4">确定要删除这个文本块吗？</p>
+			<div class="modal-action justify-center">
+				<form method="dialog" class="flex gap-2">
+					<button
+						class="btn btn-sm btn-secondary text-white"
+						@click="handleConfirmDeleteBlock"
+					>
+						确认删除
+					</button>
+					<button class="btn btn-sm">取消</button>
+				</form>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>关闭</button>
+		</form>
+	</dialog>
 </template>
 
 <script setup>
@@ -367,6 +380,7 @@ import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import GuideIcon from "@/components/icons/Guide.vue";
+import SceneIcon from "@/components/icons/Scene.vue";
 import { generateTextHash } from "@/utils";
 
 const route = useRoute();
@@ -402,6 +416,10 @@ const deleteKnowledgeModalRef = ref(null);
 const pendingDeleteWord = ref(null); // 待删除知识点
 const deletedKnowledge = ref(new Set()); // 添加删除缓存
 const deletedPodcasts = ref(new Map()); // 删除的播客数据缓存
+
+const deleteBlockModalRef = ref(null);
+const pendingDeleteBlockIndex = ref(null);
+const deletedBlocks = ref([]); // 存储已删除的块缓存
 
 const recycleBinModalRef = ref(null); // 已删除内容弹框
 
@@ -1179,6 +1197,71 @@ const handlePodcastUpdate = (podcastData) => {
 	}
 };
 
+// 添加删除处理函数
+const handleDeleteBlock = (index) => {
+	pendingDeleteBlockIndex.value = index;
+	deleteBlockModalRef.value?.showModal();
+};
+
+const handleConfirmDeleteBlock = () => {
+	if (pendingDeleteBlockIndex.value !== null) {
+		const index = pendingDeleteBlockIndex.value;
+		const block = currentBlocks.value[index];
+		const blockId = block.id || block.originalIndex;
+
+		const indexesToDelete = [];
+		const blocksToDelete = []; // 存储要删除的块
+		indexesToDelete.push(index); // 找出所有需要删除的关联块的索引
+		blocksToDelete.push(block); // 添加原文本块
+
+		// 查找关联的翻译块和知识点块
+		currentBlocks.value.forEach((b, i) => {
+			// 查找翻译块
+			if (
+				b.isTranslated &&
+				(b.originalId === blockId || b.id === `translation-${blockId}`)
+			) {
+				indexesToDelete.push(i);
+				blocksToDelete.push(b);
+			}
+			// 查找知识点块
+			if (b.isKnowledge && b.id?.startsWith(`knowledge-${blockId}`)) {
+				indexesToDelete.push(i);
+				blocksToDelete.push(b);
+			}
+		});
+
+		// 从大到小排序索引，以便从后向前删除
+		indexesToDelete.sort((a, b) => b - a);
+
+		// 删除所有相关块
+		indexesToDelete.forEach((i) => {
+			currentBlocks.value.splice(i, 1);
+		});
+
+		// 将删除的块添加到删除列表
+		deletedBlocks.value.push({
+			timestamp: new Date().toISOString(),
+			sceneIndex: currentIndex.value,
+			blocks: blocksToDelete,
+		});
+
+		// 更新场景
+		emit(
+			"update:scenes",
+			props.scenes.map((scene, sceneIndex) =>
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene
+			)
+		);
+
+		// 重置状态
+		selectedBlockIndex.value = null;
+		pendingDeleteBlockIndex.value = null;
+
+		showToast({ message: "删除成功", type: "success" });
+	}
+};
+
 // 添加导出 Markdown 方法
 const exportToMarkdown = async () => {
 	try {
@@ -1190,11 +1273,16 @@ const exportToMarkdown = async () => {
 
 		props.scenes.forEach((scene, sceneIndex) => {
 			// 添加场景标题
-			markdownContent += `## ${scene.title || `Scene ${sceneIndex + 1}`}\n\n`;
+			markdownContent += `## ${
+				scene[0]?.isTitle
+					? scene[0].text.replace(/^#\s*/, "")
+					: `Scene ${sceneIndex + 1}`
+			}\n\n`;
 
 			// 获取当前场景的块
 			const sceneBlocks =
-				sceneIndex === currentIndex.value ? currentBlocks.value : scene.blocks;
+				sceneIndex === currentIndex.value ? currentBlocks.value : scene;
+			console.log(sceneBlocks);
 
 			// 遍历场景中的所有块
 			sceneBlocks.forEach((block) => {
@@ -1206,6 +1294,7 @@ const exportToMarkdown = async () => {
 					const cleanText = (block.displayText || block.text || "")
 						.replace(/<mark[^>]*>(.*?)<\/mark>/g, "**`$1`**")
 						.replace(/<[^>]+>/g, "");
+					console.log(speakerText, cleanText);
 					markdownContent += `${speakerText}${cleanText}\n\n`;
 				}
 
@@ -2837,172 +2926,6 @@ const handleSplitScene = (index) => {
 	hasUnsavedChanges.value = true;
 
 	showToast({ message: "场景分割成功", type: "success" });
-};
-
-const isMerging = ref(false);
-// 合并场景
-const handleMergeScenes = async (index) => {
-	isMerging.value = true;
-
-	// 添加动画类到要合并的卡带
-	const cartridgeElement = document.querySelectorAll(".cartridge")[index + 1];
-	if (cartridgeElement) {
-		cartridgeElement.classList.add("cartridge-merging");
-	}
-
-	// 等待动画完成后再执行合并
-	await new Promise((resolve) => setTimeout(resolve, 800));
-
-	// 获取要合并的两个场景
-	const upperScene = [...props.scenes[index]];
-	const lowerScene = [...props.scenes[index + 1]];
-
-	// 获取上面场景中最后一个非标题块的索引
-	let lastUpperBlockIndex = 0;
-	upperScene.forEach((block) => {
-		if (!block.isTitle && !block.isTranslated && !block.isKnowledge) {
-			lastUpperBlockIndex++;
-		}
-	});
-
-	// 更新下面场景中所有块的 ID
-	let blockIndex = lastUpperBlockIndex;
-	lowerScene.forEach((block) => {
-		if (block.isTitle) return;
-
-		if (!block.isTranslated && !block.isKnowledge) {
-			// 更新原文块 ID
-			const oldId = block.id;
-			block.id = `block_${index}_${blockIndex}`;
-
-			// 更新翻译块
-			const translationBlock = lowerScene.find(
-				(b) =>
-					b.isTranslated &&
-					(b.originalId === oldId || b.id === `translation-${oldId}`)
-			);
-			if (translationBlock) {
-				translationBlock.id = `translation-block_${index}_${blockIndex}`;
-				translationBlock.originalId = block.id;
-			}
-
-			// 更新知识点块和相关的播客数据
-			const knowledgeBlocks = lowerScene.filter(
-				(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
-			);
-			knowledgeBlocks.forEach((kb, kIndex) => {
-				const oldKnowledgeId = kb.id;
-				// 直接使用原始的 kIndex，不加上 upperKnowledgeCount
-				const newKnowledgeId = `knowledge-block_${index}_${blockIndex}-${kIndex}`;
-
-				// 更新知识点块ID
-				kb.id = newKnowledgeId;
-				kb.originalId = block.id;
-
-				// 更新播客数据
-				if (podcastBlocksMap.value.has(oldKnowledgeId)) {
-					const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
-					podcastData.sceneIndex = index;
-					podcastBlocksMap.value.delete(oldKnowledgeId);
-					podcastBlocksMap.value.set(newKnowledgeId, podcastData);
-				}
-			});
-
-			blockIndex++;
-		}
-	});
-
-	// 移除下面场景的标题块
-	const mergedScene = [
-		...upperScene,
-		...lowerScene.filter((block) => !block.isTitle),
-	];
-
-	// 更新场景数据
-	const updatedScenes = [...props.scenes];
-	updatedScenes[index] = mergedScene;
-	updatedScenes.splice(index + 1, 1);
-
-	// 更新后续场景的编号和块ID
-	for (let i = index + 1; i < updatedScenes.length; i++) {
-		const scene = updatedScenes[i];
-		const sceneNumber = i;
-		let blockIndex = 0;
-
-		// 更新场景标题
-		const sceneTitle = scene.find((block) => block.isTitle);
-		if (sceneTitle) {
-			sceneTitle.id = `title_${sceneNumber}`;
-		}
-
-		// 更新场景中所有块的 ID
-		scene.forEach((block) => {
-			if (block.isTitle) return;
-
-			if (!block.isTranslated && !block.isKnowledge) {
-				// 更新原文块 ID
-				const oldId = block.id;
-				block.id = `block_${sceneNumber}_${blockIndex}`;
-
-				// 更新翻译块
-				const translationBlock = scene.find(
-					(b) =>
-						b.isTranslated &&
-						(b.originalId === oldId || b.id === `translation-${oldId}`)
-				);
-				if (translationBlock) {
-					translationBlock.id = `translation-block_${sceneNumber}_${blockIndex}`;
-					translationBlock.originalId = block.id;
-				}
-
-				// 更新知识点块和相关的播客数据
-				const knowledgeBlocks = scene.filter(
-					(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
-				);
-				knowledgeBlocks.forEach((kb, kIndex) => {
-					const oldKnowledgeId = kb.id;
-					const newKnowledgeId = `knowledge-block_${sceneNumber}_${blockIndex}-${kIndex}`;
-
-					// 更新知识点块ID
-					kb.id = newKnowledgeId;
-					kb.originalId = block.id;
-
-					// 更新播客数据
-					if (podcastBlocksMap.value.has(oldKnowledgeId)) {
-						const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
-						// 更新场景索引
-						podcastData.sceneIndex = sceneNumber;
-						// 使用新的知识点块ID作为key
-						podcastBlocksMap.value.delete(oldKnowledgeId);
-						podcastBlocksMap.value.set(newKnowledgeId, podcastData);
-					}
-				});
-
-				blockIndex++;
-			}
-		});
-	}
-
-	// 发送更新事件
-	emit("update:scenes", updatedScenes);
-
-	// 如果当前正在查看被合并的场景，切换到合并后的场景
-	if (currentIndex.value === index + 1) {
-		currentIndex.value = index;
-	} else if (currentIndex.value > index + 1) {
-		// 如果在查看后面的场景，索引减1
-		currentIndex.value--;
-	}
-
-	// 更新当前显示的场景内容
-	currentBlocks.value = updatedScenes[currentIndex.value];
-
-	isMerging.value = false;
-	if (cartridgeElement) {
-		cartridgeElement.classList.remove("cartridge-merging");
-	}
-	hasUnsavedChanges.value = true;
-	showToast({ message: "场景合并成功", type: "success" });
 };
 
 const handleAutoGenerateTitle = async (index) => {

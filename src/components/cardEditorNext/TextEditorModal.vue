@@ -34,8 +34,15 @@
 												}}
 												<!-- </span> -->
 											</h3>
+											<!-- 合并按钮 -->
 											<i
-												class="bi bi-trash text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer px-2 py-1 hover:bg-red-100 rounded"
+												v-if="sceneIndex > 0"
+												class="bi bi-arrow-up-square text-primary opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer px-2 py-1 hover:bg-blue-50 rounded"
+												@click.stop="mergeSceneUp(sceneIndex)"
+												title="向上合并场景"
+											></i>
+											<i
+												class="bi bi-trash text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer px-2 py-1 hover:bg-red-50 rounded"
 												@click.stop="deleteScene(sceneIndex)"
 											></i>
 										</div>
@@ -237,6 +244,34 @@ const deleteScene = (index) => {
 		sceneStates.value.splice(index, 1);
 
 		showToast({ message: "场景删除成功", type: "success" });
+	}
+};
+
+// 向上合并场景
+const mergeSceneUp = (index) => {
+	if (index <= 0) return; // 第一个场景不能向上合并
+
+	if (confirm("确定要将此场景合并到上一个场景吗？")) {
+		const updatedScenes = [...props.scenes];
+		const currentScene = updatedScenes[index];
+		const previousScene = updatedScenes[index - 1];
+
+		// 过滤掉当前场景的标题块，只保留内容块
+		const contentBlocks = currentScene.filter((block) => !block.isTitle);
+
+		// 将内容块添加到上一个场景
+		previousScene.push(...contentBlocks);
+
+		// 从场景列表中移除当前场景
+		updatedScenes.splice(index, 1);
+
+		// 更新场景
+		emit("update", updatedScenes);
+
+		// 更新场景状态
+		sceneStates.value.splice(index, 1);
+
+		showToast({ message: "场景合并成功", type: "success" });
 	}
 };
 

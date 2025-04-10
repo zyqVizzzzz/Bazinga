@@ -8,18 +8,32 @@
 	>
 		<!-- 左侧按钮组 -->
 		<div class="flex items-center gap-3">
-			<button class="ghost-btn" @click="$emit('split-scene')">
-				标记为新场景
+			<button
+				class="ghost-btn"
+				@click="$emit('split-scene')"
+				title="标记为新场景"
+			>
+				<SplitIcon size="4" :fill="false" />
 			</button>
 
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
-			<button class="ghost-btn" @click="$emit('translate')">翻译</button>
-
-			<button class="ghost-btn" @click="$emit('auto-generate-knowledge')">
-				生成知识点
+			<button class="ghost-btn" @click="$emit('translate')" title="翻译">
+				<TranslationIcon size="4" :fill="false" />
 			</button>
-			<button class="ghost-btn" @click="$emit('manual-knowledge')">
-				手动选择知识点
+
+			<button
+				class="ghost-btn"
+				@click="$emit('auto-generate-knowledge')"
+				title="生成知识点"
+			>
+				<KnowledgeIcon size="4" :fill="false" />
+			</button>
+			<button
+				class="ghost-btn"
+				@click="$emit('manual-knowledge')"
+				title="手动选择知识点"
+			>
+				<GenerateIcon size="4" :fill="false" />
 			</button>
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
 
@@ -28,10 +42,7 @@
 				@click="$emit('toggle-narration')"
 				title="标记为注释"
 			>
-				<i
-					class="bi"
-					:class="isNarration ? 'bi-chat-square-text' : 'bi-chat-square'"
-				></i>
+				<i class="bi bi-chat-square-text"></i>
 			</button>
 			<button
 				class="ghost-btn"
@@ -43,9 +54,9 @@
 					:class="hasSpeaker ? 'bi-emoji-surprise-fill' : 'bi-emoji-surprise'"
 				></i>
 			</button>
-			<!-- <button class="ghost-btn" @click="$emit('delete-block')" title="删除">
+			<button class="ghost-btn" @click="$emit('delete-block')" title="删除">
 				<i class="bi bi-trash"></i>
-			</button> -->
+			</button>
 		</div>
 		<div v-if="processing" class="flex items-center gap-3 ml-6">
 			<div class="flex items-center justify-center w-6 h-6">
@@ -56,6 +67,10 @@
 </template>
 
 <script setup>
+import TranslationIcon from "@/components/icons/Translation.vue";
+import KnowledgeIcon from "@/components/icons/Knowledge.vue";
+import GenerateIcon from "@/components/icons/Generate.vue";
+import SplitIcon from "@/components/icons/Split.vue";
 defineProps({
 	toolboxPosition: {
 		type: Object,

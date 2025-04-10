@@ -9,6 +9,7 @@
 		xmlns:xlink="http://www.w3.org/1999/xlink"
 	>
 		<path
+			v-if="fill"
 			d="M742.4 281.6m-281.6 0a281.6 281.6 0 1 0 563.2 0 281.6 281.6 0 1 0-563.2 0Z"
 			fill="#d4237a"
 			p-id="28677"
