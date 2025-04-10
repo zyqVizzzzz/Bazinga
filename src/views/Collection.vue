@@ -91,6 +91,14 @@
 				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>
 				<div>
 					<button
+						v-if="isEditMode"
+						class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out border-primary border-gray-300 text-gray-700 hover:bg-gray-100"
+						@click="addNewEpisode"
+					>
+						<i class="bi bi-plus-lg mr-2"></i>
+						<span>新增</span>
+					</button>
+					<button
 						class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out border-gray-300 text-gray-700 hover:bg-gray-100"
 						@click="isEditMode = !isEditMode"
 					>
@@ -99,14 +107,6 @@
 							:class="isEditMode ? 'bi-check2' : 'bi-pencil-fill'"
 						></i>
 						<span>{{ isEditMode ? "完成" : "编辑" }}</span>
-					</button>
-					<button
-						v-if="isEditMode"
-						class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out border-primary border-gray-300 text-gray-700 hover:bg-gray-100"
-						@click="addNewEpisode"
-					>
-						<i class="bi bi-plus-lg mr-2"></i>
-						<span>新增文档</span>
 					</button>
 				</div>
 			</div>

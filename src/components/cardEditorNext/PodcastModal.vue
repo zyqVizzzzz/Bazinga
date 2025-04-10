@@ -216,7 +216,7 @@ const generatePodcast = async () => {
 			{
 				keyPhrases: [props.knowledge.word],
 				model: "deepseek-ai/DeepSeek-V3",
-				voice: "Furin",
+				voice: "Doryn",
 			}
 		);
 

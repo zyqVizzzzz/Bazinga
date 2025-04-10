@@ -22,7 +22,7 @@ const messages = {
 		collections: {
 			title: "书架",
 			subTitle: "Bookshelf",
-			create: "新增合辑",
+			create: "创建合辑",
 		},
 		collection: {
 			continue: "继续上次进度",

@@ -6,11 +6,12 @@
 		<Swiper
 			v-show="showHints && localKnowledgePoints.length > 0"
 			ref="mySwiper"
-			:modules="[Pagination]"
+			:modules="[Pagination, Navigation]"
 			:loop="false"
 			:slides-per-view="1"
 			space-between="30"
 			:pagination="pagination"
+			:navigation="navigation"
 			@slideChange="onSlideChange"
 			class="h-full"
 		>
@@ -76,7 +77,12 @@
 				</div>
 			</SwiperSlide>
 		</Swiper>
-		<div class="swiper-pagination"></div>
+		<div class="custom-pagination-container">
+			<div class="swiper-button-prev custom-nav-btn"></div>
+			<div class="swiper-pagination"></div>
+			<div class="swiper-button-next custom-nav-btn"></div>
+		</div>
+
 		<div
 			v-show="!localKnowledgePoints.length"
 			class="h-full min-h-[200px] p-6 bg-gray-50/50 rounded-l flex justify-center items-center"
@@ -183,7 +189,7 @@
 import { onMounted, ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/swiper-bundle.css";
-import { Pagination } from "swiper/modules";
+import { Pagination, Navigation } from "swiper/modules";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 
@@ -191,6 +197,22 @@ const mySwiper = ref(null); // Swiper 实例
 const pagination = {
 	el: ".swiper-pagination", // 分页点的容器
 	clickable: true, // 允许点击切换
+	type: "fraction", // 使用分数形式的页码 (如 "1/5")
+	renderFraction: function (currentClass, totalClass) {
+		return (
+			'<span class="' +
+			currentClass +
+			'"></span>' +
+			" / " +
+			'<span class="' +
+			totalClass +
+			'"></span>'
+		);
+	},
+};
+const navigation = {
+	nextEl: ".swiper-button-next",
+	prevEl: ".swiper-button-prev",
 };
 
 const props = defineProps({
@@ -357,5 +379,64 @@ onMounted(() => {
 .btn-outline.btn-secondary:hover {
 	--tw-text-opacity: 1;
 	color: white;
+}
+</style>
+<style>
+.custom-pagination-container {
+	position: absolute;
+	bottom: 15px;
+	left: 0;
+	right: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+}
+
+.swiper-pagination {
+	position: static;
+	width: auto;
+	margin: 0 10px;
+	transform: none;
+}
+
+.swiper-pagination-fraction {
+	background-color: rgba(255, 255, 255, 0.3);
+	color: var(--color-secondary, #333);
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	min-width: 60px;
+	text-align: center;
+}
+
+.custom-nav-btn {
+	position: static;
+	margin: 0;
+	color: var(--color-secondary, #333);
+	background-color: rgba(255, 255, 255, 0.3);
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+
+.custom-nav-btn:hover {
+	background-color: var(--color-secondary, #333);
+	color: white;
+	transform: scale(1.05);
+}
+
+.custom-nav-btn::after {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.swiper-button-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 </style>
