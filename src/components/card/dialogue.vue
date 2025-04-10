@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="px-6 py-2 text-left overflow-y-auto"
+		class="px-6 py-2 text-left overflow-y-auto relative"
 		:class="
 			(showHints && currentKnowledgePoints.length > 0 ? 'w-full' : 'w-full',
 			{ 'listen-mode-active': lessonStore.isListenMode })

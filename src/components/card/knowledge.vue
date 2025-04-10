@@ -425,9 +425,9 @@ onMounted(() => {
 }
 
 .custom-nav-btn:hover {
-	background-color: var(--color-secondary, #333);
-	color: white;
-	transform: scale(1.05);
+	background-color: rgba(200, 200, 200, 0.2);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .custom-nav-btn::after {

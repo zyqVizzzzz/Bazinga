@@ -54,6 +54,12 @@
 											<div
 												class="p-4 bg-white border-2 border-black rounded-lg relative dialogue-box"
 											>
+												<button
+													class="option absolute top-2 right-3 z-20 translation-toggle-btn"
+													@click="toggleTransMode"
+												>
+													<TranslationIcon size="4" />
+												</button>
 												<DialogueCard
 													v-if="!guestNotAllow"
 													ref="dialogueCard"
@@ -127,36 +133,6 @@
 						</button> -->
 
 						<button
-							v-if="!isFlipped"
-							class="retro-btn option"
-							:class="{ 'btn-active': showTrans }"
-							@click="toggleTransMode"
-						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<TranslationIcon size="5" />
-									</div>
-								</div>
-							</div>
-						</button>
-
-						<button
-							v-if="isFlipped"
-							class="retro-btn option"
-							:class="{ 'btn-active': showBazingaTrans }"
-							@click="toggleBazingaTransMode"
-						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<TranslationIcon size="5" />
-									</div>
-								</div>
-							</div>
-						</button>
-
-						<button
 							class="retro-btn option"
 							:class="{ 'btn-active': isFlipped }"
 							@click="togglePracticeMode"
@@ -179,7 +155,8 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face flex items-center justify-center">
-											<i class="bi text-xl bi-pencil-square"></i>
+											<!-- <i class="bi text-xl bi-pencil-square"></i> -->
+											<EditIcon size="5" />
 										</div>
 									</div>
 								</div>
@@ -1077,5 +1054,24 @@ const jumpToPageBlur = (isTrue) => {
 	background-color: #ddd;
 	border-color: #999;
 	color: #999;
+}
+.translation-toggle-btn {
+	padding: 4px;
+	border-radius: 6px;
+	background-color: transparent;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.2s ease-in-out;
+}
+
+.translation-toggle-btn:hover {
+	background-color: rgba(200, 200, 200, 0.2);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.scene {
+	position: relative;
+	min-height: 590px;
+	overflow: hidden;
 }
 </style>

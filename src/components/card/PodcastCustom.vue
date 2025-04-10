@@ -47,11 +47,6 @@
 				</div>
 
 				<div v-else-if="selectedPodcast" class="podcast-player-container">
-					<div class="podcast-header">
-						<h2 class="podcast-title">{{ selectedPodcast.knowledge }}</h2>
-						<!-- <p class="podcast-subtitle">一系列</p> -->
-					</div>
-
 					<div class="player-section">
 						<audio
 							ref="audioPlayer"
@@ -65,36 +60,26 @@
 						></audio>
 
 						<!-- 生成播客按钮 -->
-						<button
-							class="generate-podcast-btn"
+						<!-- <button
+							class="generate-podcast-btn text-sm"
 							@click="generatePodcast(selectedPodcast, currentPlayingIndex)"
 						>
 							<i class="bi bi-broadcast-pin"></i>
 							<span>生成播客</span>
-						</button>
+						</button> -->
 
-						<div class="language-switch">
-							<button
-								class="lang-btn"
-								:class="{ active: showOriginal }"
-								@click="
-									showOriginal = true;
-									showTranslated = false;
-								"
-							>
-								英
-							</button>
-							<button
-								class="lang-btn"
-								:class="{ active: showTranslated }"
-								@click="
-									showOriginal = false;
-									showTranslated = true;
-								"
-							>
-								中
-							</button>
-						</div>
+						<!-- 语言切换按钮 -->
+						<button
+							class="translation-toggle-btn text-sm"
+							:class="{ active: showTranslated }"
+							@click="toggleTranslation"
+							title="显示/隐藏中文翻译"
+						>
+							<TranslationIcon size="4" />
+							<!-- <span class="toggle-status">{{
+								showTranslated ? "隐藏翻译" : "显示翻译"
+							}}</span> -->
+						</button>
 					</div>
 
 					<div class="transcript-section">
@@ -133,6 +118,7 @@
 import { ref, onMounted, watch, computed } from "vue";
 import apiClient from "@/api";
 import { useRoute } from "vue-router";
+import TranslationIcon from "@/components/icons/Translation.vue";
 
 const route = useRoute();
 
@@ -169,6 +155,11 @@ const isGenerating = ref({});
 // 脚本显示控制
 const showOriginal = ref(true);
 const showTranslated = ref(false);
+
+// 切换翻译显示状态
+const toggleTranslation = () => {
+	showTranslated.value = !showTranslated.value;
+};
 
 // 选择播客
 const selectPodcast = (podcast, index) => {
@@ -589,7 +580,7 @@ defineExpose({
 
 .language-switch {
 	display: flex;
-	border: 2px solid #000;
+	border: 2px solid #333;
 	border-radius: 20px;
 	overflow: hidden;
 	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
@@ -609,7 +600,7 @@ defineExpose({
 }
 
 .lang-btn.active {
-	background: #000;
+	background: #333;
 	color: #fff;
 }
 
@@ -792,7 +783,6 @@ defineExpose({
 	padding: 6px 12px;
 	border: 2px solid #000;
 	border-radius: 20px;
-	background: white;
 	font-weight: bold;
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -800,8 +790,31 @@ defineExpose({
 }
 
 .generate-podcast-btn:hover {
-	background: var(--secondary-color);
+	background-color: rgba(0, 0, 0, 0.05);
+	transform: translateY(-1px);
+}
+
+.generate-podcast-btn.active {
+	background: #333;
 	color: white;
+}
+
+.generate-podcast-btn .toggle-status {
+	font-size: 12px;
+}
+/* 翻译切换按钮样式 */
+.translation-toggle-btn {
+	padding: 8px;
+	border-radius: 6px;
+	background-color: transparent;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.2s ease-in-out;
+}
+
+.translation-toggle-btn:hover {
+	background-color: rgba(200, 200, 200, 0.2);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .regenerate-podcast-btn:hover {

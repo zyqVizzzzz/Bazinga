@@ -53,3 +53,16 @@ export const canAccessResource = (
 			return false;
 	}
 };
+
+// 中文检测
+const isChinese = (text) => {
+	// 检查是否包含中文字符
+	const hasChinese = /[\u4e00-\u9fa5]/.test(text);
+
+	// 检查是否只包含中文字符、标点符号和空白字符
+	const onlyChineseAndPunctuation =
+		/^[\u4e00-\u9fa5\s，。！？、：；""''（）【】《》…—]+$/u.test(text);
+
+	// 只有当文本中包含中文且不包含英文字母、数字等非中文内容时，才认为是纯中文
+	return hasChinese && onlyChineseAndPunctuation;
+};

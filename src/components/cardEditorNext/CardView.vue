@@ -367,7 +367,7 @@ import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import GuideIcon from "@/components/icons/Guide.vue";
-import { generateTextHash } from "@/utils";
+import { isChinese } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -655,9 +655,19 @@ const handleBatchTranslate = async () => {
 			return;
 		}
 
+		// 过滤掉中文内容
+		const englishBlocks = blocksToProcess.filter(
+			(block) => !isChinese(block.text)
+		);
+
+		if (englishBlocks.length === 0) {
+			showToast({ message: "没有需要翻译的英文内容", type: "warning" });
+			return;
+		}
+
 		// 3. 批量翻译
 		const response = await apiClient.post("/translation/batch", {
-			texts: blocksToProcess.map((block) => block.text),
+			texts: englishBlocks.map((block) => block.text),
 			source: "en",
 			target: "zh",
 		});
@@ -2117,6 +2127,13 @@ const handleTranslate = async (index) => {
 		const hasExistingTranslation = currentBlocks.value.some(
 			(b) => b.id === translationId || b.originalIndex === translationId
 		);
+
+		if (isChinese(block.text)) {
+			showToast({ message: "检测到纯中文内容，无需翻译", type: "warning" });
+			isLoading.value = false;
+			translatingBlockId.value = null;
+			return;
+		}
 
 		const response = await apiClient.post("/translation", {
 			text: block.text,
