@@ -250,6 +250,7 @@ const updateEpisodeTitle = async (updatedEpisode) => {
 const addNewEpisode = async () => {
 	const currentEpisodes = episodes.value[currentSeason.value.seasonNumber];
 	const newEp = {
+		catalogId: route.params.id,
 		ep: currentEpisodes.length + 1,
 		epName: ``,
 		seasonNumber: currentSeason.value.seasonNumber,
