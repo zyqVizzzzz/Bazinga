@@ -367,7 +367,7 @@ import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import GuideIcon from "@/components/icons/Guide.vue";
-import { isChinese } from "@/utils";
+import { generateTextHash } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -655,19 +655,9 @@ const handleBatchTranslate = async () => {
 			return;
 		}
 
-		// 过滤掉中文内容
-		const englishBlocks = blocksToProcess.filter(
-			(block) => !isChinese(block.text)
-		);
-
-		if (englishBlocks.length === 0) {
-			showToast({ message: "没有需要翻译的英文内容", type: "warning" });
-			return;
-		}
-
 		// 3. 批量翻译
 		const response = await apiClient.post("/translation/batch", {
-			texts: englishBlocks.map((block) => block.text),
+			texts: blocksToProcess.map((block) => block.text),
 			source: "en",
 			target: "zh",
 		});
@@ -755,7 +745,7 @@ const handleBatchGenerateKnowledge = async () => {
 		await groupTextByLength(blocksToProcess);
 		// await initKnowledgeDisplay();
 
-		// 在这里关闭加载状态
+		// 关闭加载状态
 		isLoading.value = false;
 
 		// 4. 更新场景数据
@@ -1377,11 +1367,27 @@ const groupTextByLength = async (blocks) => {
 			const textLength = originalTexts.length;
 			const maxPhrases = Math.ceil(textLength / knowledgeDensity);
 
+			// 移除所有中文字符和中文标点
+			const removeChinese = (text) => {
+				return text
+					.replace(/[\u4e00-\u9fa5，。！？、：；""''“”（）【】《》…—]/g, "")
+					.replace(/\s+/g, " ")
+					.trim();
+			};
+
+			// 处理文本，移除中文
+			const processedText = removeChinese(originalTexts);
+
+			// 如果处理后文本为空，跳过当前循环
+			if (!processedText) {
+				continue;
+			}
+
 			// 1. 提取关键词
 			const phrasesResponse = await apiClient.post(
 				"/translation/extract-key-phrases",
 				{
-					text: originalTexts,
+					text: processedText,
 					options: {
 						maxPhrases: Math.max(1, Math.min(maxPhrases, 8)),
 						existingPhrases,
@@ -2128,13 +2134,6 @@ const handleTranslate = async (index) => {
 			(b) => b.id === translationId || b.originalIndex === translationId
 		);
 
-		if (isChinese(block.text)) {
-			showToast({ message: "检测到纯中文内容，无需翻译", type: "warning" });
-			isLoading.value = false;
-			translatingBlockId.value = null;
-			return;
-		}
-
 		const response = await apiClient.post("/translation", {
 			text: block.text,
 			source: "en",
@@ -2181,7 +2180,7 @@ const handleTranslate = async (index) => {
 			)
 		);
 
-		showToast({ message: "翻译成功", type: "success" });
+		// showToast({ message: "翻译成功", type: "success" });
 	} catch (error) {
 		console.error("Translation failed:", error);
 		showToast({ message: "翻译失败，请重试", type: "error" });
@@ -2195,6 +2194,26 @@ const handleTranslate = async (index) => {
 const extractKeyPhrases = async (text, existingPhrases = []) => {
 	const textLength = text.length;
 	const existingCount = existingPhrases.length;
+
+	// 移除所有中文字符和中文标点
+	const removeChinese = (text) => {
+		return text
+			.replace(/[\u4e00-\u9fa5，。！？、：；""''（）【】《》…—]/g, "")
+			.replace(/\s+/g, " ")
+			.trim();
+	};
+
+	// 处理文本，移除中文
+	const processedText = removeChinese(text);
+
+	// 如果处理后文本为空，直接返回
+	if (!processedText) {
+		showToast({
+			message: "无法提取知识点：文本中没有英文内容",
+			type: "warning",
+		});
+		return null;
+	}
 
 	// 根据文本长度计算最大知识点数量
 	let maxPhrases;
@@ -2237,7 +2256,7 @@ const extractKeyPhrases = async (text, existingPhrases = []) => {
 
 	try {
 		const response = await apiClient.post("/translation/extract-key-phrases", {
-			text,
+			text: processedText,
 			options: { maxPhrases, existingPhrases },
 		});
 

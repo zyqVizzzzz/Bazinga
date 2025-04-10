@@ -85,11 +85,6 @@
 								style="animation-delay: 0.4s"
 							></span>
 						</span>
-						<!-- 播放状态指示 -->
-						<i
-							v-if="currentPlayingText === dialogue.line"
-							class="bi bi-volume-up ml-2 text-primary"
-						></i>
 					</span>
 				</p>
 
