@@ -2665,8 +2665,14 @@ const handleToggleNarration = (index) => {
 	if (!block || block.isTitle || block.isTranslated || block.isKnowledge)
 		return;
 
+	console.log(block);
+
 	// 切换 narration 状态
 	block.narration = !block.narration;
+
+	if (!block.narration && block.speaker) {
+		block.speaker = "";
+	}
 
 	// 更新场景数据
 	emit(
