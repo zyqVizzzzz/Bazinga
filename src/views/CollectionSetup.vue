@@ -94,38 +94,10 @@
 								</div>
 
 								<!-- Banner上传区域 -->
-								<div class="form-control">
-									<label class="retro-label">
-										<span class="label-text">{{
-											t("collectionSetup.form.banner")
-										}}</span>
-									</label>
-									<div class="retro-upload-area" @click="triggerFileInput">
-										<template v-if="!bannerPreview">
-											<div class="upload-content">
-												<i class="bi bi-upload text-2xl"></i>
-												<span class="mt-2">{{
-													t("collectionSetup.form.bannerInput")
-												}}</span>
-											</div>
-										</template>
-										<template v-else>
-											<img
-												:src="bannerPreview"
-												alt="Preview"
-												class="preview-image"
-											/>
-										</template>
-									</div>
-									<input
-										ref="fileInput"
-										@change="handleFileUpload"
-										type="file"
-										class="hidden"
-										accept="image/*"
-									/>
-								</div>
-
+								<banner-uploader
+									v-model="noteForm.banner"
+									@file-selected="handleBannerFileSelected"
+								/>
 								<!-- 主题色选择器 -->
 								<div class="form-control">
 									<label class="retro-label">
@@ -265,6 +237,7 @@ import { useI18n } from "vue-i18n";
 import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
 import { useAppStore } from "@/store";
+import BannerUploader from "@/components/common/BannerUploader.vue";
 
 const { t, locale } = useI18n();
 
@@ -432,6 +405,12 @@ const clearLocalProgressByCatalogId = (catalogId) => {
 	} catch (error) {
 		console.error("Failed to clear local progress:", error);
 	}
+};
+
+// 处理子组件选择的文件
+const handleBannerFileSelected = (file) => {
+	noteForm.value.bannerFile = file;
+	bannerPreview.value = URL.createObjectURL(file);
 };
 
 const closeDeleteModal = () => {
