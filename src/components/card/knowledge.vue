@@ -77,7 +77,10 @@
 				</div>
 			</SwiperSlide>
 		</Swiper>
-		<div class="custom-pagination-container">
+		<div
+			class="custom-pagination-container"
+			v-show="localKnowledgePoints.length > 0 && showHints"
+		>
 			<div class="swiper-button-prev custom-nav-btn"></div>
 			<div class="swiper-pagination"></div>
 			<div class="swiper-button-next custom-nav-btn"></div>

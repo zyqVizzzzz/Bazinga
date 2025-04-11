@@ -58,7 +58,7 @@
 													class="option absolute top-2 right-3 z-20 translation-toggle-btn"
 													@click="toggleTransMode"
 												>
-													<TranslationIcon size="4" />
+													<TranslationIcon size="4" :fill="true" />
 												</button>
 												<DialogueCard
 													v-if="!guestNotAllow"
@@ -155,8 +155,8 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face flex items-center justify-center">
-											<!-- <i class="bi text-xl bi-pencil-square"></i> -->
-											<EditIcon size="5" />
+											<i class="bi text-xl bi-pencil-square"></i>
+											<!-- <EditIcon size="5" /> -->
 										</div>
 									</div>
 								</div>

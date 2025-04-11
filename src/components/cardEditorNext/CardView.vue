@@ -474,11 +474,9 @@ onMounted(async () => {
 		if (!props.from) {
 			await initializeView();
 		} else if (props.from === "edit") {
-			await handleSave();
+			await handleSave(true);
 			await initializeView();
 		}
-
-		// 如果是从编辑器切换过来的，自动保存并更新路由
 	} finally {
 		isLoading.value = false;
 	}
@@ -1754,7 +1752,7 @@ const clearAllStates = () => {
 	hasUnsavedChanges.value = false;
 };
 
-const handleSave = async () => {
+const handleSave = async (isFirst = false) => {
 	try {
 		// 处理场景数据
 		const processedData = processSceneData();
@@ -1779,13 +1777,14 @@ const handleSave = async () => {
 			// 重置未保存标记
 			hasUnsavedChanges.value = false;
 			emit("save-success"); // 触发保存成功事件
-			showToast({ message: "保存成功", type: "success" });
+			!isFirst && showToast({ message: "保存成功", type: "success" });
 		} else {
 			showToast({ message: "保存失败，请重试", type: "error" });
 		}
 	} catch (error) {
-		console.error("保存失败:", error);
 		showToast({ message: "保存失败，请重试", type: "error" });
+	} finally {
+		isFirst.value = false;
 	}
 };
 

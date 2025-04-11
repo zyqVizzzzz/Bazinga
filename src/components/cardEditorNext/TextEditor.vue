@@ -14,7 +14,7 @@
 			</div>
 		</div>
 		<!-- 添加制作卡片合辑按钮 -->
-		<div class="flex justify-center mt-6">
+		<!-- <div class="flex justify-center mt-6">
 			<button class="retro-btn-large" @click="createCollection">
 				<div class="btn-shadow">
 					<div class="btn-edge">
@@ -24,7 +24,7 @@
 					</div>
 				</div>
 			</button>
-		</div>
+		</div> -->
 	</div>
 </template>
 <script setup>
@@ -46,27 +46,166 @@ const isCustom = ref(false);
 // 添加导入状态变量
 const importing = ref(false);
 
+// bazinga:use 说明书
+// bazinga:lfg/omg/wtf 确认
+// 提示：是否确认。
+// bazinga:article 自动生成(默认为article/medium)
+// bazinga:dialogues:easy/medium/hard/insane
+// bazinga:url:[url] 导入 url
+// bazinga:md/pdf 导入文件
+
 const emit = defineEmits([
 	"update:modelValue",
 	"create-collection",
 	"back-to-preview",
 ]);
 
+const waitingForConfirmation = ref(false);
+const isReconfirming = ref(false); // 重新确认状态标志
 const checkCommand = (event) => {
-	const text = editorContent.value.trim();
-	if (text === "bazinga:sample") {
+	// 获取文本内容并按行分割
+	const allLines = editorContent.value.split("\n");
+	// 获取最后一行文本并去除首尾空格
+	const lastLine = allLines[allLines.length - 1].trim();
+
+	// 检查最后一行是否为命令
+	if (lastLine.includes("bazinga/article")) {
 		event.preventDefault(); // 阻止回车键的默认行为
+		// 移除包含命令的最后一行
+		editorContent.value = allLines.slice(0, -1).join("\n");
 		handleAutoGenerate();
+		return;
 	}
 
-	const urlCommandRegex = /^bazinga:url:(https?:\/\/.+)$/i;
-	const match = text.match(urlCommandRegex);
+	if (
+		lastLine.includes("bazinga/lfg") ||
+		lastLine.includes("bazinga/omg") ||
+		lastLine.includes("bazinga/wtf")
+	) {
+		event.preventDefault();
+		// 移除包含命令的最后一行
+		editorContent.value = allLines.slice(0, -1).join("\n");
+
+		// 添加确认提示，如果有内容则添加换行符
+		const trimmedContent = editorContent.value.trim();
+		if (trimmedContent) {
+			editorContent.value =
+				trimmedContent +
+				"\n\n即将生成卡片，请确认文本内容无误，输入 yes 继续，输入 no 取消：\n\n";
+		} else {
+			editorContent.value =
+				"即将生成卡片，请确认文本内容无误，输入 yes 继续，输入 no 取消：\n\n";
+		}
+
+		// 设置确认状态
+		waitingForConfirmation.value = true;
+		return;
+	}
+
+	// 处理确认响应
+	if (waitingForConfirmation.value) {
+		event.preventDefault();
+
+		// 获取用户响应
+		const response = lastLine.trim().toLowerCase();
+
+		// 根据是否是重新确认，选择不同的分割文本
+		let contentWithoutConfirmation;
+		if (isReconfirming.value) {
+			contentWithoutConfirmation =
+				editorContent.value.split("请输入 yes 或 no：")[0];
+			isReconfirming.value = false; // 重置重新确认标志
+		} else {
+			contentWithoutConfirmation = editorContent.value.split(
+				"即将生成卡片，请确认文本内容无误，输入 yes 继续，输入 no 取消："
+			)[0];
+		}
+
+		if (response === "yes" || response === "y") {
+			// 用户确认继续
+			editorContent.value = contentWithoutConfirmation;
+
+			showRitualAnimation().then((success) => {
+				// 只有在动画成功完成时才执行生成操作
+				if (success) {
+					createCollection();
+				}
+			});
+		} else if (response === "no" || response === "n") {
+			// 用户取消操作
+			editorContent.value = contentWithoutConfirmation;
+		} else {
+			// 无效响应，保持确认状态
+			editorContent.value =
+				contentWithoutConfirmation + "请输入 yes 或 no：\n\n";
+
+			// 保持确认状态，但设置重新确认标志
+			isReconfirming.value = true;
+			return;
+		}
+
+		// 重置确认状态
+		waitingForConfirmation.value = false;
+		return;
+	}
+
+	const urlCommandRegex = /bazinga\/url\/(https?:\/\/.+)/i;
+	const match = lastLine.match(urlCommandRegex);
 
 	if (match) {
-		event.preventDefault(); // 阻止回车键的默认行为
+		event.preventDefault();
+		// 移除包含命令的最后一行
+		editorContent.value = allLines.slice(0, -1).join("\n");
 		const url = match[1];
 		importFromUrl(url);
+		return;
 	}
+};
+
+const showRitualAnimation = async () => {
+	// 检查内容是否为空
+	const trimmedContent = editorContent.value.trim();
+	if (!trimmedContent) {
+		// 内容为空，显示提示
+		editorContent.value = "文本内容为空，请先添加文本再生成卡片。";
+		// 等待用户查看提示
+		await new Promise((resolve) => setTimeout(resolve, 2000));
+		// 清空提示
+		editorContent.value = "";
+		return Promise.resolve(false);
+	}
+
+	const messages = [
+		"正在分析文本内容...",
+		"正在构建卡片结构...",
+		"卡片马上呈现 🚀",
+		"Bazinga !!",
+	];
+
+	// 清除当前内容末尾的空行
+	let content = trimmedContent;
+
+	// 依次显示消息
+	for (let i = 0; i < messages.length; i++) {
+		// 第一条消息不添加换行符，后续消息添加
+		if (i === 0) {
+			content += "\n\n" + messages[i];
+		} else {
+			content += "\n" + messages[i];
+		}
+		editorContent.value = content;
+
+		// 等待一小段时间
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	}
+
+	// 最后一条消息显示后再等待一会
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
+	// 清除动画消息
+	editorContent.value = editorContent.value.split("正在分析文本内容")[0].trim();
+
+	return Promise.resolve(true);
 };
 
 // 从URL导入内容
@@ -123,34 +262,53 @@ const importFromUrl = async (url) => {
 // 添加自动生成方法
 const handleAutoGenerate = async () => {
 	try {
-		// 清空当前输入的命令
-		editorContent.value = "";
-
 		// 显示加载中提示
 		showToast({ message: "正在生成文章...", type: "info" });
 
-		// 这里实现自动生成文章的逻辑
-		// 示例：生成一个简单的文章结构
-		const generatedContent = `# 自动生成的文章标题
+		// 获取命令中可能包含的主题信息
+		const allLines = editorContent.value.split("\n");
+		const lastLine = allLines[allLines.length - 1].trim();
 
-## 第一部分
+		// 检查是否包含主题信息 (bazinga/article:主题)
+		let topic = null;
+		const topicMatch = lastLine.match(/bazinga\/article(?::(.+))?/);
+		if (topicMatch && topicMatch[1]) {
+			topic = topicMatch[1].trim();
+		}
 
-这是自动生成的第一个段落内容。这里可以放置一些介绍性的文字，说明文章的主要内容和目的。
+		// 清空当前输入的命令
+		editorContent.value = "";
 
-## 第二部分
+		// 调用后端API生成文章
+		const response = await apiClient.post("/translation/generate-article", {
+			topic: topic,
+		});
 
-这是第二个部分的内容。在这里可以展开论述文章的主要观点和论据。
+		if (response.data.code === 200 && response.data.data.article) {
+			// 添加标题和格式化
+			let formattedArticle = "";
 
-## 第三部分
+			// 如果文章没有以#开头，添加一个标题
+			if (!response.data.data.article.trim().startsWith("#")) {
+				formattedArticle = `# ${topic || "Default Title"}\n\n`;
+			}
 
-这是文章的结论部分，总结前面的内容并给出最终的观点或建议。`;
+			// 添加文章内容
+			formattedArticle += response.data.data.article;
 
-		// 设置生成的内容到编辑器
-		editorContent.value = generatedContent;
+			// 设置生成的内容到编辑器
+			editorContent.value = formattedArticle;
 
-		showToast({ message: "文章生成成功", type: "success" });
+			showToast({ message: "文章生成成功", type: "success" });
+		} else {
+			throw new Error("生成文章失败");
+		}
 	} catch (error) {
 		console.error("自动生成文章失败:", error);
+		// 恢复一个基本的文章结构，以防API调用失败
+		editorContent.value = `# 自动生成的文章
+
+很抱歉，无法从服务器获取文章内容。请稍后再试。`;
 		showToast({ message: "生成失败，请重试", type: "error" });
 	}
 };
@@ -404,7 +562,7 @@ const getDefaultKnowledge = () => {
 .editor-container {
 	position: relative;
 	text-align: left;
-	height: calc(100vh - 230px);
+	height: calc(100vh - 130px);
 	overflow: visible;
 	background: transparent;
 }
