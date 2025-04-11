@@ -1,7 +1,8 @@
 <template>
 	<svg
 		t="1742463449410"
-		:class="size ? `w-${size} h-${size}` : 'w-7 h-7'"
+		:width="sizeInPx"
+		:height="sizeInPx"
 		viewBox="0 0 1024 1024"
 		version="1.1"
 		xmlns="http://www.w3.org/2000/svg"
@@ -24,11 +25,25 @@
 	</svg>
 </template>
 <script setup>
-defineProps({
+import { computed } from "vue";
+
+const props = defineProps({
 	size: {
 		type: [String, Number],
-		default: null,
+		default: "5",
 	},
-	fill: Boolean,
+	fill: {
+		type: Boolean,
+		default: false,
+	},
+});
+
+// 计算尺寸，将Tailwind的尺寸单位转换为像素
+const sizeInPx = computed(() => {
+	const sizeNum =
+		typeof props.size === "number"
+			? props.size
+			: parseInt(props.size || "5", 10);
+	return `${sizeNum * 4}px`; // Tailwind的尺寸单位通常是4px的倍数
 });
 </script>
