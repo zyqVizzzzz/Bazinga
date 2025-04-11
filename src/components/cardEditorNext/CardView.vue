@@ -15,7 +15,7 @@
 					</button>
 				</div>
 				<div class="tooltip" data-tip="保存" v-if="isCustom">
-					<button class="retro-btn" @click="handleSave">
+					<button class="retro-btn" @click="handleSave(false)">
 						<div class="btn-shadow">
 							<div class="btn-edge">
 								<div class="btn-face">
@@ -246,7 +246,7 @@
 								<div class="cartridge-body">
 									<div class="cartridge-label">
 										<div
-											class="cartridge-title line-clamp-2"
+											class="cartridge-title line-clamp-2 text-sm"
 											v-if="scene[0]?.text"
 										>
 											{{ scene[0].text.replace(/^#\s*/, "") }}
@@ -256,25 +256,37 @@
 								</div>
 
 								<!-- 卡带底部 -->
-								<div class="cartridge-pins"></div>
-							</div>
+								<div class="cartridge-pins">
+									<!-- 添加操作按钮 -->
+									<div v-if="isCustom" class="cartridge-actions">
+										<!-- 左侧拖动按钮（摇杆风格） -->
+										<button
+											class="action-btn drag-btn"
+											@mousedown="handleDragStart($event, index)"
+											title="拖动场景"
+										>
+											<i class="bi bi-arrows-move"></i>
+										</button>
 
-							<!-- 合并 -->
-							<div
-								v-if="index < scenes.length - 1"
-								class="cartridge-connector h-[4px]"
-							>
-								<!-- <button
-									v-if="isCustom"
-									class="connector-btn"
-									:class="{
-										'connector-btn-merging': isMerging,
-									}"
-									@click.stop="handleMergeScenes(index)"
-									title="合并场景"
-								>
-									<i class="bi bi-arrows-collapse"></i>
-								</button> -->
+										<!-- 右侧操作按钮组 -->
+										<div class="right-actions">
+											<button
+												class="action-btn merge-btn"
+												@click.stop="handleMergeScenes(index)"
+												title="向上合并场景"
+											>
+												<i class="bi bi-arrow-bar-up"></i>
+											</button>
+											<button
+												class="action-btn delete-btn"
+												@click.stop="handleDeleteScene(index)"
+												title="删除场景"
+											>
+												<i class="bi bi-trash"></i>
+											</button>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</template>
@@ -374,14 +386,13 @@ import RecycleBinModal from "./RecycleBinModal.vue";
 import SpeakerModal from "./SpeakerModal.vue";
 import TextEditorModal from "./TextEditorModal.vue";
 import GuideModal from "./GuideModal.vue";
-import PodcastIcon from "@/components/icons/Podcast.vue";
-import GenerateIcon from "@/components/icons/Generate.vue";
 import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import GuideIcon from "@/components/icons/Guide.vue";
 import SceneIcon from "@/components/icons/Scene.vue";
 import { generateTextHash } from "@/utils";
+import draggable from "vuedraggable";
 
 const route = useRoute();
 const router = useRouter();
@@ -471,6 +482,7 @@ onMounted(async () => {
 
 	isLoading.value = true;
 	try {
+		console.log(props.from);
 		if (!props.from) {
 			await initializeView();
 		} else if (props.from === "edit") {
@@ -1783,8 +1795,6 @@ const handleSave = async (isFirst = false) => {
 		}
 	} catch (error) {
 		showToast({ message: "保存失败，请重试", type: "error" });
-	} finally {
-		isFirst.value = false;
 	}
 };
 
@@ -2927,6 +2937,265 @@ const handleSplitScene = (index) => {
 	showToast({ message: "场景分割成功", type: "success" });
 };
 
+const isMerging = ref(false);
+// 合并场景
+const handleMergeScenes = async (index) => {
+	console.log(index);
+	isMerging.value = true;
+
+	// 添加动画类到要合并的卡带（当前点击的卡带）
+	const cartridgeElement = document.querySelectorAll(".cartridge")[index];
+	if (cartridgeElement) {
+		cartridgeElement.classList.add("cartridge-merging");
+	}
+
+	// 等待动画完成后再执行合并
+	await new Promise((resolve) => setTimeout(resolve, 800));
+
+	// 获取要合并的两个场景（当前点击的场景和它的上一个场景）
+	const targetIndex = index - 1; // 目标场景索引（上一个场景）
+	const upperScene = [...props.scenes[targetIndex]];
+	const lowerScene = [...props.scenes[index]]; // 当前点击的场景
+
+	// 获取上面场景中最后一个非标题块的索引
+	let lastUpperBlockIndex = 0;
+	upperScene.forEach((block) => {
+		if (!block.isTitle && !block.isTranslated && !block.isKnowledge) {
+			lastUpperBlockIndex++;
+		}
+	});
+
+	// 更新下面场景中所有块的 ID
+	let blockIndex = lastUpperBlockIndex;
+	lowerScene.forEach((block) => {
+		if (block.isTitle) return;
+
+		if (!block.isTranslated && !block.isKnowledge) {
+			// 更新原文块 ID
+			const oldId = block.id;
+			block.id = `block_${targetIndex}_${blockIndex}`;
+
+			// 更新翻译块
+			const translationBlock = lowerScene.find(
+				(b) =>
+					b.isTranslated &&
+					(b.originalId === oldId || b.id === `translation-${oldId}`)
+			);
+			if (translationBlock) {
+				translationBlock.id = `translation-block_${targetIndex}_${blockIndex}`;
+				translationBlock.originalId = block.id;
+			}
+
+			// 更新知识点块和相关的播客数据
+			const knowledgeBlocks = lowerScene.filter(
+				(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
+			);
+			knowledgeBlocks.forEach((kb, kIndex) => {
+				const oldKnowledgeId = kb.id;
+				// 直接使用原始的 kIndex，不加上 upperKnowledgeCount
+				const newKnowledgeId = `knowledge-block_${targetIndex}_${blockIndex}-${kIndex}`;
+
+				// 更新知识点块ID
+				kb.id = newKnowledgeId;
+				kb.originalId = block.id;
+
+				// 更新播客数据
+				if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+					const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+					podcastData.sceneIndex = targetIndex;
+					podcastBlocksMap.value.delete(oldKnowledgeId);
+					podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+				}
+			});
+
+			blockIndex++;
+		}
+	});
+
+	// 移除下面场景的标题块
+	const mergedScene = [
+		...upperScene,
+		...lowerScene.filter((block) => !block.isTitle),
+	];
+
+	// 更新场景数据
+	const updatedScenes = [...props.scenes];
+	updatedScenes[targetIndex] = mergedScene;
+	updatedScenes.splice(index, 1);
+
+	// 更新后续场景的编号和块ID
+	for (let i = targetIndex + 1; i < updatedScenes.length; i++) {
+		const scene = updatedScenes[i];
+		const sceneNumber = i;
+		let blockIndex = 0;
+
+		// 更新场景标题
+		const sceneTitle = scene.find((block) => block.isTitle);
+		if (sceneTitle) {
+			sceneTitle.id = `title_${sceneNumber}`;
+		}
+
+		// 更新场景中所有块的 ID
+		scene.forEach((block) => {
+			if (block.isTitle) return;
+
+			if (!block.isTranslated && !block.isKnowledge) {
+				// 更新原文块 ID
+				const oldId = block.id;
+				block.id = `block_${sceneNumber}_${blockIndex}`;
+
+				// 更新翻译块
+				const translationBlock = scene.find(
+					(b) =>
+						b.isTranslated &&
+						(b.originalId === oldId || b.id === `translation-${oldId}`)
+				);
+				if (translationBlock) {
+					translationBlock.id = `translation-block_${sceneNumber}_${blockIndex}`;
+					translationBlock.originalId = block.id;
+				}
+
+				// 更新知识点块和相关的播客数据
+				const knowledgeBlocks = scene.filter(
+					(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
+				);
+				knowledgeBlocks.forEach((kb, kIndex) => {
+					const oldKnowledgeId = kb.id;
+					const newKnowledgeId = `knowledge-block_${sceneNumber}_${blockIndex}-${kIndex}`;
+
+					// 更新知识点块ID
+					kb.id = newKnowledgeId;
+					kb.originalId = block.id;
+
+					// 更新播客数据
+					if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+						const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+						// 更新场景索引
+						podcastData.sceneIndex = sceneNumber;
+						// 使用新的知识点块ID作为key
+						podcastBlocksMap.value.delete(oldKnowledgeId);
+						podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+					}
+				});
+
+				blockIndex++;
+			}
+		});
+	}
+
+	// 发送更新事件
+	emit("update:scenes", updatedScenes);
+
+	// 更新当前场景索引 - 始终切换到合并后的场景（目标场景）
+	currentIndex.value = targetIndex;
+
+	// 更新当前显示的场景内容
+	currentBlocks.value = updatedScenes[currentIndex.value];
+
+	isMerging.value = false;
+	hasUnsavedChanges.value = true;
+	showToast({ message: "场景合并成功", type: "success" });
+};
+
+// 在现有的方法后添加场景删除功能
+const handleDeleteScene = async (index) => {
+	// 检查是否只剩下一个场景，不允许删除最后一个场景
+	if (props.scenes.length <= 1) {
+		showToast({ message: "无法删除唯一的场景", type: "warning" });
+		return;
+	}
+
+	// 确认删除
+	if (!confirm(`确定要删除第 ${index + 1} 个场景吗？此操作不可撤销。`)) {
+		return;
+	}
+
+	// 获取要删除的场景
+	const sceneToDelete = props.scenes[index];
+
+	// 创建更新后的场景数组
+	const updatedScenes = [...props.scenes];
+	updatedScenes.splice(index, 1);
+
+	// 更新后续场景的编号和ID
+	for (let i = index; i < updatedScenes.length; i++) {
+		const scene = updatedScenes[i];
+		const sceneNumber = i;
+		let blockIndex = 0;
+
+		// 更新场景标题
+		const sceneTitle = scene.find((block) => block.isTitle);
+		if (sceneTitle) {
+			sceneTitle.id = `title_${sceneNumber}`;
+		}
+
+		// 更新场景中所有块的ID
+		scene.forEach((block) => {
+			if (block.isTitle) return;
+
+			if (!block.isTranslated && !block.isKnowledge) {
+				// 更新原文块ID
+				const oldId = block.id;
+				block.id = `block_${sceneNumber}_${blockIndex}`;
+
+				// 更新翻译块
+				const translationBlock = scene.find(
+					(b) =>
+						b.isTranslated &&
+						(b.originalId === oldId || b.id === `translation-${oldId}`)
+				);
+				if (translationBlock) {
+					translationBlock.id = `translation-block_${sceneNumber}_${blockIndex}`;
+					translationBlock.originalId = block.id;
+				}
+
+				// 更新知识点块和相关的播客数据
+				const knowledgeBlocks = scene.filter(
+					(b) => b.isKnowledge && b.id.startsWith(`knowledge-${oldId}`)
+				);
+				knowledgeBlocks.forEach((kb, kIndex) => {
+					const oldKnowledgeId = kb.id;
+					const newKnowledgeId = `knowledge-block_${sceneNumber}_${blockIndex}-${kIndex}`;
+
+					// 更新知识点块ID
+					kb.id = newKnowledgeId;
+					kb.originalId = block.id;
+
+					// 更新播客数据
+					if (podcastBlocksMap.value.has(oldKnowledgeId)) {
+						const podcastData = podcastBlocksMap.value.get(oldKnowledgeId);
+						// 更新场景索引
+						podcastData.sceneIndex = sceneNumber;
+						// 使用新的知识点块ID作为key
+						podcastBlocksMap.value.delete(oldKnowledgeId);
+						podcastBlocksMap.value.set(newKnowledgeId, podcastData);
+					}
+				});
+
+				blockIndex++;
+			}
+		});
+	}
+
+	// 发送更新事件
+	emit("update:scenes", updatedScenes);
+
+	// 更新当前场景索引
+	if (currentIndex.value === index) {
+		// 如果删除的是当前场景，切换到前一个场景或第一个场景
+		currentIndex.value = index > 0 ? index - 1 : 0;
+	} else if (currentIndex.value > index) {
+		// 如果删除的场景在当前场景之前，当前索引减1
+		currentIndex.value--;
+	}
+
+	// 更新当前显示的场景内容
+	currentBlocks.value = updatedScenes[currentIndex.value];
+
+	hasUnsavedChanges.value = true;
+	showToast({ message: "场景删除成功", type: "success" });
+};
+
 const handleAutoGenerateTitle = async (index) => {
 	try {
 		isLoading.value = true;
@@ -3529,6 +3798,7 @@ const handleSceneUpdate = (updatedScenes) => {
 	cursor: pointer;
 	position: relative;
 	border: 2px solid #eee;
+	margin-bottom: 12px;
 }
 
 /* 卡带激活状态 */
@@ -3563,7 +3833,6 @@ const handleSceneUpdate = (updatedScenes) => {
 
 .cartridge-title {
 	color: #333;
-	font-size: 0.875rem;
 	margin-bottom: 4px;
 }
 
@@ -3590,18 +3859,125 @@ const handleSceneUpdate = (updatedScenes) => {
 	background: rgba(0, 0, 0, 0.1);
 }
 
-/* 卡带底部引脚 */
-.cartridge-pins {
-	height: 12px;
+.cartridge-actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	padding: 0 8px;
+	margin-top: 4px;
+	/* 移除透明度和过渡效果，让按钮始终显示 */
+	opacity: 1;
+}
+
+.right-actions {
+	display: flex;
+	gap: 8px;
+	transform: rotate(5deg); /* 添加整体旋转角度 */
+	margin-top: 2px; /* 微调位置 */
+}
+
+/* 添加手柄轮廓效果 */
+.right-actions::before {
+	content: "";
+	position: absolute;
+	top: -2px;
+	left: -2px;
+	right: -2px;
+	bottom: -2px;
+	background-color: #f6f6f6;
+	border-radius: 14px;
+	z-index: -1;
+	box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 添加手柄纹理效果 */
+.right-actions::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	background: linear-gradient(
-		90deg,
+		135deg,
 		transparent 0%,
-		transparent 10%,
-		rgba(var(--secondary-color-rgb), 0.1) 10%,
-		rgba(var(--secondary-color-rgb), 0.1) 90%,
-		transparent 90%
+		rgba(255, 255, 255, 0.1) 50%,
+		transparent 100%
 	);
-	border-radius: 0 0 2px 2px;
+	border-radius: 12px;
+	z-index: -1;
+}
+
+.action-btn {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	/* 复古游戏手柄按钮风格 */
+	background-color: #f8f8f8;
+	/* border: 1px solid #999; */
+	box-shadow: inset 0 -2px 0 #999, 0 1px 2px rgba(0, 0, 0, 0.2);
+	transition: all 0.1s ease;
+}
+
+.action-btn:hover {
+	transform: translateY(1px);
+	box-shadow: inset 0 -1px 0 #999, 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:active {
+	transform: translateY(2px);
+	box-shadow: none;
+}
+
+/* 拖动按钮样式（摇杆风格） */
+.drag-btn {
+	background-color: #f8f8f8;
+	border-color: #f8f8f8;
+	color: #333;
+	box-shadow: inset 0 -2px 0 #acacac, 0 1px 2px rgba(0, 0, 0, 0.1);
+	width: 24px;
+	height: 24px;
+	font-size: 12px;
+	position: relative;
+	left: -2px;
+}
+
+.drag-btn:hover {
+	box-shadow: inset 0 -1px 0 #acacac, 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.drag-btn:active {
+	transform: translateY(2px) rotate(15deg);
+	box-shadow: none;
+}
+
+.merge-btn {
+	transform: rotate(-3deg);
+	color: #333;
+}
+
+.merge-btn:hover {
+	color: white;
+	background-color: color-mix(in srgb, var(--primary-color), #fff 10%);
+	box-shadow: inset 0 -1px 0 var(--primary-color-dark, color-mix(in srgb, var(--primary-color), #000
+						20%)),
+		0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.delete-btn {
+	transform: rotate(-3deg);
+	color: #333;
+}
+
+.delete-btn:hover {
+	color: white;
+	background-color: #e25555;
+	box-shadow: inset 0 -1px 0 #d23a3a, 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 /* 连接器样式 */
