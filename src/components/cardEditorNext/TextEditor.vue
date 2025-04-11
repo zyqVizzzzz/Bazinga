@@ -2,31 +2,6 @@
 	<div>
 		<!-- 原文编辑器 -->
 		<div class="editor-container w-4/5 mx-auto relative" v-if="isCustom">
-			<!-- 按钮组 -->
-			<div class="editor-action-buttons">
-				<div class="tooltip" data-tip="退出">
-					<button class="retro-btn" @click="backToPreview">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-box-arrow-left text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-				<div class="tooltip" data-tip="从URL导入">
-					<button class="retro-btn" @click="openImportDialog">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-cloud-download text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-			</div>
 			<div class="editor-wrapper mx-auto text-sm w-4/5">
 				<textarea
 					id="editor"
@@ -34,6 +9,7 @@
 					v-model="editorContent"
 					placeholder="请在此编辑文本..."
 					@paste="handlePaste($event)"
+					@keydown.enter="checkCommand($event)"
 				></textarea>
 			</div>
 		</div>
@@ -43,39 +19,32 @@
 				<div class="btn-shadow">
 					<div class="btn-edge">
 						<div class="btn-face">
-							<span>下一步</span>
+							<span>生成卡片</span>
 						</div>
 					</div>
 				</div>
 			</button>
 		</div>
-
-		<!-- 在 components 中添加引用 -->
-		<ImportDialog ref="importDialogRef" @confirm="handleImportConfirm" />
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRoute, useRouter } from "vue-router";
-import ImportDialog from "@/components/cardEditorNext/ImportDialog.vue";
+import apiClient from "@/api";
 
 const route = useRoute();
 const router = useRouter();
-const editor = ref(null);
 const totalDialogues = ref(0); // 总对话数
 
 const currentDialogue = ref({}); // 当前对话
 const currentKnowledge = ref(new Map()); // 当前知识点
 const scriptJson = ref(null);
 
-const isSaved = ref(false);
-
 const editorContent = ref("");
-
 const isCustom = ref(false);
-
-const importDialogRef = ref(null);
+// 添加导入状态变量
+const importing = ref(false);
 
 const emit = defineEmits([
 	"update:modelValue",
@@ -83,69 +52,107 @@ const emit = defineEmits([
 	"back-to-preview",
 ]);
 
-const openImportDialog = () => {
-	importDialogRef.value?.openDialog();
+const checkCommand = (event) => {
+	const text = editorContent.value.trim();
+	if (text === "bazinga:sample") {
+		event.preventDefault(); // 阻止回车键的默认行为
+		handleAutoGenerate();
+	}
+
+	const urlCommandRegex = /^bazinga:url:(https?:\/\/.+)$/i;
+	const match = text.match(urlCommandRegex);
+
+	if (match) {
+		event.preventDefault(); // 阻止回车键的默认行为
+		const url = match[1];
+		importFromUrl(url);
+	}
 };
 
-const handleImportConfirm = async (importData) => {
-	const { content, type, mode } = importData;
+// 从URL导入内容
+const importFromUrl = async (url) => {
+	if (!url || importing.value) return;
 
-	// 根据导入类型和模式处理数据
-	let newBlocks = [];
+	try {
+		// 清空当前输入的命令
+		editorContent.value = "";
 
-	if (type === "scene") {
-		// 按场景导入
-		content.scenes.forEach((scene, sceneIndex) => {
-			// 添加场景标题
-			newBlocks.push({
-				type: "paragraph",
-				data: {
-					text: `# Header`,
-				},
-			});
+		// 显示加载中提示
+		importing.value = true;
+		showToast({ message: "正在导入内容...", type: "info" });
 
-			// 添加场景内容
-			scene.forEach((paragraph) => {
-				newBlocks.push({
-					type: "paragraph",
-					data: {
-						text: paragraph,
-					},
-				});
-			});
-		});
-	} else {
-		// 按段落导入
-		newBlocks.push({
-			type: "paragraph",
-			data: {
-				text: `# Header`,
-			},
+		const response = await apiClient.post("/scripts/import-url", {
+			url: url,
 		});
 
-		// 添加场景内容
-		content.paragraphs.forEach((paragraph) => {
-			newBlocks.push({
-				type: "paragraph",
-				data: {
-					text: paragraph,
-				},
+		if (response.data.code === 200) {
+			const content = response.data.data.content;
+
+			// 处理导入的内容
+			let importedContent = "";
+
+			// 添加标题
+			importedContent += "# 导入的内容\n\n";
+
+			// 添加段落，保持段落间距
+			content.paragraphs.forEach((paragraph) => {
+				if (paragraph.trim()) {
+					// 只添加非空段落
+					importedContent += paragraph + "\n\n"; // 使用两个换行符增加段间距
+				}
 			});
+
+			// 设置到编辑器
+			editorContent.value = importedContent.trim();
+
+			showToast({ message: "内容导入成功", type: "success" });
+		} else {
+			showToast({ message: response.data.message, type: "error" });
+		}
+	} catch (error) {
+		console.error("导入失败:", error);
+		showToast({
+			message: error.response?.data?.message || "导入失败，请检查URL是否正确",
+			type: "error",
 		});
+	} finally {
+		importing.value = false;
 	}
+};
 
-	if (mode === "replace") {
-		// 替换模式：清空现有内容
-		await editor.value.clear();
-		await editor.value.render({ blocks: newBlocks });
-	} else {
-		// 追加模式：获取现有内容后追加
-		const currentContent = await editor.value.save();
-		const updatedBlocks = [...currentContent.blocks, ...newBlocks];
-		await editor.value.render({ blocks: updatedBlocks });
+// 添加自动生成方法
+const handleAutoGenerate = async () => {
+	try {
+		// 清空当前输入的命令
+		editorContent.value = "";
+
+		// 显示加载中提示
+		showToast({ message: "正在生成文章...", type: "info" });
+
+		// 这里实现自动生成文章的逻辑
+		// 示例：生成一个简单的文章结构
+		const generatedContent = `# 自动生成的文章标题
+
+## 第一部分
+
+这是自动生成的第一个段落内容。这里可以放置一些介绍性的文字，说明文章的主要内容和目的。
+
+## 第二部分
+
+这是第二个部分的内容。在这里可以展开论述文章的主要观点和论据。
+
+## 第三部分
+
+这是文章的结论部分，总结前面的内容并给出最终的观点或建议。`;
+
+		// 设置生成的内容到编辑器
+		editorContent.value = generatedContent;
+
+		showToast({ message: "文章生成成功", type: "success" });
+	} catch (error) {
+		console.error("自动生成文章失败:", error);
+		showToast({ message: "生成失败，请重试", type: "error" });
 	}
-
-	showToast({ message: "导入成功", type: "success" });
 };
 
 onMounted(async () => {
@@ -160,8 +167,10 @@ const handlePaste = (event) => {
 	const clipboardData = event.clipboardData;
 	const pastedData = clipboardData.getData("text/plain");
 
-	// 处理空行：两个或两个以上空行变成1个，1个空行保留
-	const processedData = pastedData.replace(/\n{2,}/g, "\n");
+	// 处理空行：保留段落间的空行，但合并多个空行为一个
+	const processedData = pastedData
+		.replace(/\n{3,}/g, "\n\n") // 三个以上换行符替换为两个（保留段落间距）
+		.replace(/([^\n])\n([^\n])/g, "$1 $2"); // 单个换行符替换为空格（减少行间距）
 
 	// 阻止默认粘贴，但在这里手动插入处理后的内容
 	event.preventDefault();
@@ -176,29 +185,51 @@ const backToPreview = () => {
 
 const createCollection = async () => {
 	try {
-		// 获取文本内容并按空行分割成场景
+		// 获取文本内容
 		const textContent = editorContent.value;
-		const scenes = textContent.split(/\n\s*\n/).filter((scene) => scene.trim());
+
+		// 按行分割文本
+		const allLines = textContent
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line);
+
+		// 存储所有场景
+		const scenes = [];
+		let currentScene = [];
+
+		// 遍历所有行，按标题分割场景
+		allLines.forEach((line) => {
+			// 如果是标题行（以"# "开头，注意井号后有空格）且不是第一行，则开始新场景
+			if (line.match(/^#\s/) && currentScene.length > 0) {
+				scenes.push([...currentScene]);
+				currentScene = [line];
+			} else {
+				currentScene.push(line);
+			}
+		});
+
+		// 添加最后一个场景
+		if (currentScene.length > 0) {
+			scenes.push(currentScene);
+		}
 
 		// 处理每个场景
 		const blocks = [];
 		scenes.forEach((scene, sceneIndex) => {
-			// 将场景按行分割
-			const lines = scene.split("\n").filter((line) => line.trim());
-
-			// 检查第一行是否为标题（以#开头）
-			if (lines.length > 0) {
-				if (lines[0].startsWith("#")) {
+			// 检查第一行是否为标题（以"# "开头，注意井号后有空格）
+			if (scene.length > 0) {
+				if (scene[0].match(/^#\s/)) {
 					// 使用现有标题
 					blocks.push({
 						id: `title_${sceneIndex}`,
 						type: "paragraph",
 						data: {
-							text: lines[0],
+							text: scene[0],
 						},
 					});
 					// 处理剩余行
-					lines.slice(1).forEach((line, lineIndex) => {
+					scene.slice(1).forEach((line, lineIndex) => {
 						blocks.push({
 							id: `block_${sceneIndex}_${lineIndex}`,
 							type: "paragraph",
@@ -208,7 +239,7 @@ const createCollection = async () => {
 						});
 					});
 				} else {
-					// 添加空标题
+					// 添加默认标题
 					blocks.push({
 						id: `title_${sceneIndex}`,
 						type: "paragraph",
@@ -217,7 +248,7 @@ const createCollection = async () => {
 						},
 					});
 					// 处理所有行
-					lines.forEach((line, lineIndex) => {
+					scene.forEach((line, lineIndex) => {
 						blocks.push({
 							id: `block_${sceneIndex}_${lineIndex}`,
 							type: "paragraph",
@@ -387,8 +418,12 @@ const getDefaultKnowledge = () => {
 	outline: none;
 	resize: none;
 	font-family: inherit;
-	line-height: 2.5;
+	line-height: 2;
 	background: transparent;
+}
+
+.editorjs-container::placeholder {
+	color: #aaa;
 }
 
 .editor-action-buttons {

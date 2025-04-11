@@ -13,12 +13,12 @@
 				@click="$emit('split-scene')"
 				title="标记为新场景"
 			>
-				<SplitIcon size="4" :fill="false" />
+				<SplitIcon size="4" />
 			</button>
 
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
 			<button class="ghost-btn" @click="$emit('translate')" title="翻译">
-				<TranslationIcon size="4" :fill="false" />
+				<TranslationIcon size="4" />
 			</button>
 
 			<button
@@ -26,14 +26,14 @@
 				@click="$emit('auto-generate-knowledge')"
 				title="生成知识点"
 			>
-				<KnowledgeIcon size="4" :fill="false" />
+				<KnowledgeIcon size="4" />
 			</button>
 			<button
 				class="ghost-btn"
 				@click="$emit('manual-knowledge')"
 				title="手动选择知识点"
 			>
-				<GenerateIcon size="4" :fill="false" />
+				<GenerateIcon size="4" />
 			</button>
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
 

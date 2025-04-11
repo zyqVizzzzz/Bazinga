@@ -32,29 +32,6 @@
 
 			<!-- 导入预览区域 -->
 			<div v-if="content" class="mt-4 space-y-4">
-				<!-- 统计信息 -->
-				<div
-					class="stats stats-vertical lg:stats-horizontal shadow w-full text-sm"
-				>
-					<div class="stat py-2">
-						<div class="stat-title text-xs">总字数</div>
-						<div class="stat-value text-base">{{ content.totalLength }}</div>
-					</div>
-					<div class="stat py-2">
-						<div class="stat-title text-xs">段落数</div>
-						<div class="stat-value text-base">{{ content.paragraphCount }}</div>
-					</div>
-					<div class="stat py-2">
-						<div class="stat-title text-xs">场景数（自动划分）</div>
-						<div
-							class="stat-value text-base flex items-center justify-center gap-2"
-						>
-							{{ content.scenes?.length || 0 }}
-							<span class="text-xs text-gray-400">AI优化</span>
-						</div>
-					</div>
-				</div>
-
 				<!-- 预览内容 -->
 				<div class="bg-base-100 rounded-lg border p-4 max-h-96 overflow-y-auto">
 					<h4 class="font-bold mb-2">内容预览:</h4>
@@ -68,64 +45,18 @@
 						</div>
 					</div>
 				</div>
-			</div>
-
-			<div v-if="content" class="mt-4 space-y-2">
-				<!-- 导入选项 -->
-				<div class="flex flex-col p-2 bg-base-200 rounded-lg">
-					<div class="flex items-center gap-4">
-						<div class="form-control">
-							<label class="label cursor-pointer gap-2">
-								<input
-									type="radio"
-									name="importType"
-									class="radio radio-sm"
-									value="scene"
-									v-model="importType"
-								/>
-								<span class="label-text">按场景导入</span>
-							</label>
-						</div>
-						<div class="form-control">
-							<label class="label cursor-pointer gap-2">
-								<input
-									type="radio"
-									name="importType"
-									class="radio radio-sm"
-									value="paragraph"
-									v-model="importType"
-								/>
-								<span class="label-text">全部导入</span>
-							</label>
-						</div>
+				<!-- 统计信息 -->
+				<div
+					class="stats stats-vertical lg:stats-horizontal shadow w-full text-sm"
+				>
+					<div class="stat py-2">
+						<div class="stat-title text-xs">总字数</div>
+						<div class="stat-value text-base">{{ content.totalLength }}</div>
 					</div>
-
-					<!-- <div class="flex items-center gap-4">
-						<div class="form-control">
-							<label class="label cursor-pointer gap-2">
-								<input
-									type="radio"
-									name="importMode"
-									class="radio radio-sm"
-									value="append"
-									v-model="importMode"
-								/>
-								<span class="label-text">追加到末尾</span>
-							</label>
-						</div>
-						<div class="form-control">
-							<label class="label cursor-pointer gap-2">
-								<input
-									type="radio"
-									name="importMode"
-									class="radio radio-sm"
-									value="replace"
-									v-model="importMode"
-								/>
-								<span class="label-text">替换现有内容</span>
-							</label>
-						</div>
-					</div> -->
+					<div class="stat py-2">
+						<div class="stat-title text-xs">段落数</div>
+						<div class="stat-value text-base">{{ content.paragraphCount }}</div>
+					</div>
 				</div>
 			</div>
 
