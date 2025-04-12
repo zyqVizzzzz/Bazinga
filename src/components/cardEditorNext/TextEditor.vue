@@ -2,6 +2,21 @@
 	<div>
 		<!-- 原文编辑器 -->
 		<div class="editor-container w-4/5 mx-auto relative" v-if="isCustom">
+			<!-- 添加指南按钮 -->
+			<div class="editor-action-buttons">
+				<div class="tooltip" data-tip="使用指南">
+					<button class="retro-btn" @click="showGuideModal">
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<i class="bi bi-question-circle text-lg"></i>
+								</div>
+							</div>
+						</div>
+					</button>
+				</div>
+			</div>
+
 			<div class="editor-wrapper mx-auto text-sm w-4/5">
 				<textarea
 					id="editor"
@@ -13,18 +28,115 @@
 				></textarea>
 			</div>
 		</div>
-		<!-- 添加制作卡片合辑按钮 -->
-		<!-- <div class="flex justify-center mt-6">
-			<button class="retro-btn-large" @click="createCollection">
-				<div class="btn-shadow">
-					<div class="btn-edge">
-						<div class="btn-face">
-							<span>生成卡片</span>
+
+		<!-- 使用指南弹窗 -->
+		<dialog ref="guideModalRef" class="modal">
+			<div class="modal-box guide-modal retro-bw-modal">
+				<h2 class="text-xl font-bold text-center mb-4 retro-title">
+					文本编辑器使用指南
+				</h2>
+
+				<div class="guide-section">
+					<h3 class="font-bold mb-2 flex items-center justify-center">
+						<i class="bi bi-card-text"></i>
+					</h3>
+					<div class="structure-guide text-sm">
+						<p class="mb-2">
+							1. <strong>标题</strong>：使用
+							<strong># 标题文本</strong> 创建标题，通过标题划分不同场景/卡片
+						</p>
+						<p class="mb-2">
+							2. <strong>段落</strong>：空行分隔段落，可以让结构更清晰
+						</p>
+						<p class="mb-2">3. <strong>目前仅支持输入文本</strong></p>
+						<div class="example-box">
+							<pre class="text-sm">
+# 第一个场景
+这是第一个场景的内容。
+
+# 第二个场景
+新的标题开始了新的场景。
+          </pre
+							>
 						</div>
 					</div>
 				</div>
-			</button>
-		</div> -->
+
+				<div class="guide-section">
+					<h3 class="font-bold mb-2 flex items-center justify-center">
+						<i class="bi bi-keyboard text-lg"></i>
+					</h3>
+
+					<div class="command-list text-sm">
+						<div class="command-item">
+							<span class="command-code"
+								>/bazinga/article +
+								<span class="enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc">自动生成文章</span>
+						</div>
+						<!-- <div class="command-item">
+							<span class="command-code"
+								>/bazinga/article:主题 +
+								<span class="enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc">生成指定主题的文章</span>
+						</div> -->
+						<div class="command-item">
+							<span class="command-code"
+								>/bazinga/url:链接 +
+								<span class="enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc">从URL导入内容</span>
+						</div>
+						<div class="command-item">
+							<span class="command-code text-secondary">
+								/bazinga/go +
+								<span class="text-secondary enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px] text-secondary"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc text-secondary font-bold"
+								>确认生成卡片</span
+							>
+						</div>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<div class="guide-section text-sm">
+					<!-- <h3 class="font-bold mb-2 flex items-center justify-center">
+						<i class="bi bi-lightbulb text-medium"></i>
+					</h3> -->
+					<ul class="tips-list">
+						<li>每个场景是一张卡片</li>
+						<li>每个场景/卡片控制在20000字符以内，效果更佳</li>
+					</ul>
+				</div>
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>关闭</button>
+			</form>
+		</dialog>
 	</div>
 </template>
 <script setup>
@@ -45,6 +157,14 @@ const editorContent = ref("");
 const isCustom = ref(false);
 // 添加导入状态变量
 const importing = ref(false);
+
+// 添加指南弹窗引用
+const guideModalRef = ref(null);
+
+// 显示指南弹窗方法
+const showGuideModal = () => {
+	guideModalRef.value?.showModal();
+};
 
 // bazinga:use 说明书
 // bazinga:lfg/omg/wtf 确认
@@ -78,6 +198,7 @@ const checkCommand = (event) => {
 	}
 
 	if (
+		lastLine.includes("bazinga/go") ||
 		lastLine.includes("bazinga/lfg") ||
 		lastLine.includes("bazinga/omg") ||
 		lastLine.includes("bazinga/wtf")
@@ -149,7 +270,7 @@ const checkCommand = (event) => {
 		return;
 	}
 
-	const urlCommandRegex = /bazinga\/url\/(https?:\/\/.+)/i;
+	const urlCommandRegex = /bazinga\/url:(https?:\/\/.+)/i;
 	const match = lastLine.match(urlCommandRegex);
 
 	if (match) {
@@ -597,5 +718,155 @@ const getDefaultKnowledge = () => {
 	border-radius: 12px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(5px);
+}
+
+/* 黑白复古风格弹窗 */
+.retro-bw-modal {
+	max-width: 600px;
+	background-color: #f8f8f8;
+	border: 3px solid #222;
+	border-radius: 8px;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+	color: #222;
+}
+
+.retro-title {
+	font-family: "Courier New", monospace;
+	color: #222;
+	letter-spacing: 1px;
+	border-bottom: 2px solid #222;
+	padding-bottom: 8px;
+	position: relative;
+}
+
+.retro-title::after {
+	content: "";
+	position: absolute;
+	bottom: -5px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 50%;
+	height: 1px;
+	background-color: #222;
+}
+
+.guide-section {
+	margin-bottom: 1rem;
+	padding: 1rem;
+	background-color: white;
+	border: 2px solid #222;
+	border-radius: 4px;
+	text-align: left;
+}
+
+.command-list {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.5rem;
+}
+
+.command-item {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding: 0.5rem;
+	background-color: #f0f0f0;
+	border: 1px solid #222;
+	border-left: 4px solid #222;
+	align-items: center;
+}
+
+.command-note {
+	font-size: 0.75rem;
+	color: #666;
+	margin-top: 4px;
+	padding-left: 2px;
+	font-style: italic;
+	width: 100%;
+}
+
+.command-code {
+	font-weight: bold;
+	color: #222;
+	/* padding: 2px 6px; */
+}
+.text-secondary {
+	color: var(--secondary-color) !important;
+}
+
+.command-desc {
+	color: #444;
+	font-size: 0.875rem;
+	text-align: right;
+}
+
+.example-box {
+	white-space: pre-wrap;
+	background-color: #f0f0f0;
+	border: 1px dashed #222;
+	padding: 10px;
+	margin-top: 10px;
+}
+
+pre {
+	font-family: "Comic Sans MS", Hannotate SC, "Courier New", Courier, monospace;
+}
+
+.tips-list {
+	list-style-type: none;
+	padding: 0;
+}
+
+.tips-list li {
+	padding: 5px 5px 5px 20px;
+	position: relative;
+}
+
+.tips-list li::before {
+	content: ">";
+	position: absolute;
+	left: 5px;
+	color: #222;
+	font-weight: bold;
+}
+
+/* 移除之前的样式 */
+.comic-title {
+	font-family: "Comic Sans MS", cursive, sans-serif;
+	color: #e63946;
+	text-shadow: 2px 2px 0 #fff, 3px 3px 0 #333;
+	letter-spacing: 1px;
+}
+
+.retro-btn-medium {
+	position: relative;
+	height: 38px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	padding: 0 16px;
+	width: 150px;
+}
+
+.retro-btn-medium .btn-face {
+	padding: 0 16px;
+	font-size: 14px;
+}
+
+.enter-hint {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 4px;
+	padding: 1px 4px;
+	border: 1px solid #999;
+	border-radius: 3px;
+	font-size: 0.65rem;
+	color: #666;
+	background-color: #f8f8f8;
+	vertical-align: middle;
+}
+
+.enter-hint i {
+	margin-right: 4px;
 }
 </style>

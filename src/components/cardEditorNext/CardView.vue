@@ -234,62 +234,69 @@
 			<!-- 场景缩略图列表 -->
 			<div class="scene-thumbnails-container w-1/5">
 				<div class="scene-thumbnails">
-					<template v-for="(scene, index) in scenes" :key="index">
-						<!-- 场景缩略图卡带 -->
-						<div class="cartridge-container">
-							<div
-								class="cartridge"
-								:class="{ 'cartridge-active': currentIndex === index }"
-								@click="switchScene(index)"
-							>
-								<!-- 卡带主体 -->
-								<div class="cartridge-body">
-									<div class="cartridge-label">
-										<div
-											class="cartridge-title line-clamp-2 text-sm"
-											v-if="scene[0]?.text"
-										>
-											{{ scene[0].text.replace(/^#\s*/, "") }}
+					<draggable
+						v-model="scenesWithIds"
+						item-key="sceneId"
+						handle=".drag-btn"
+						:disabled="!isCustom"
+						@change="handleScenesDragChange"
+						ghost-class="ghost-card"
+						chosen-class="dragging-card"
+						drag-class="dragging"
+						animation="300"
+					>
+						<template #item="{ element, index }">
+							<div class="cartridge-container">
+								<div
+									class="cartridge"
+									:class="{ 'cartridge-active': currentIndex === index }"
+									@click="switchScene(index)"
+								>
+									<!-- 卡带主体 -->
+									<div class="cartridge-body">
+										<div class="cartridge-label">
+											<div
+												class="cartridge-title line-clamp-2 text-sm"
+												v-if="element.blocks[0]?.text"
+											>
+												{{ element.blocks[0].text.replace(/^#\s*/, "") }}
+											</div>
+											<div class="cartridge-number">NO. {{ index + 1 }}</div>
 										</div>
-										<div class="cartridge-number">NO. {{ index + 1 }}</div>
 									</div>
-								</div>
 
-								<!-- 卡带底部 -->
-								<div class="cartridge-pins">
-									<!-- 添加操作按钮 -->
-									<div v-if="isCustom" class="cartridge-actions">
-										<!-- 左侧拖动按钮（摇杆风格） -->
-										<button
-											class="action-btn drag-btn"
-											@mousedown="handleDragStart($event, index)"
-											title="拖动场景"
-										>
-											<i class="bi bi-arrows-move"></i>
-										</button>
+									<!-- 卡带底部 -->
+									<div class="cartridge-pins">
+										<!-- 添加操作按钮 -->
+										<div v-if="isCustom" class="cartridge-actions">
+											<!-- 左侧拖动按钮（摇杆风格） -->
+											<button class="action-btn drag-btn" title="拖动场景">
+												<i class="bi bi-arrows-move"></i>
+											</button>
 
-										<!-- 右侧操作按钮组 -->
-										<div class="right-actions">
-											<button
-												class="action-btn merge-btn"
-												@click.stop="handleMergeScenes(index)"
-												title="向上合并场景"
-											>
-												<i class="bi bi-arrow-bar-up"></i>
-											</button>
-											<button
-												class="action-btn delete-btn"
-												@click.stop="handleDeleteScene(index)"
-												title="删除场景"
-											>
-												<i class="bi bi-trash"></i>
-											</button>
+											<!-- 右侧操作按钮组 -->
+											<div class="right-actions">
+												<button
+													class="action-btn merge-btn"
+													@click.stop="handleMergeScenes(index)"
+													title="向上合并场景"
+												>
+													<i class="bi bi-arrow-bar-up"></i>
+												</button>
+												<button
+													class="action-btn delete-btn"
+													@click.stop="handleDeleteScene(index)"
+													title="删除场景"
+												>
+													<i class="bi bi-trash"></i>
+												</button>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-					</template>
+						</template>
+					</draggable>
 				</div>
 			</div>
 		</div>
@@ -450,6 +457,60 @@ const isLoading = ref(false);
 
 const guideModalRef = ref(null);
 const textEditorModalRef = ref(null);
+
+// 使用响应式变量代替计算属性
+const scenesWithIds = ref([]);
+
+// 监听 props.scenes 变化，更新本地数据
+watch(
+	() => props.scenes,
+	(newScenes) => {
+		scenesWithIds.value = newScenes.map((scene, index) => ({
+			sceneId: `scene-${index}`,
+			blocks: scene,
+		}));
+	},
+	{ immediate: true, deep: true }
+);
+
+// 处理场景拖拽变化
+const handleScenesDragChange = (evt) => {
+	if (evt.moved) {
+		const { oldIndex, newIndex } = evt.moved;
+
+		// 更新当前索引
+		if (currentIndex.value === oldIndex) {
+			currentIndex.value = newIndex;
+		} else if (
+			currentIndex.value > oldIndex &&
+			currentIndex.value <= newIndex
+		) {
+			currentIndex.value--;
+		} else if (
+			currentIndex.value < oldIndex &&
+			currentIndex.value >= newIndex
+		) {
+			currentIndex.value++;
+		}
+
+		// 提取原始场景数据
+		const newScenes = scenesWithIds.value.map((item) => item.blocks);
+
+		// 更新场景数据
+		emit("update:scenes", newScenes);
+
+		// 更新当前场景内容
+		if (currentIndex.value < newScenes.length) {
+			currentBlocks.value = newScenes[currentIndex.value];
+		}
+
+		// 标记有未保存的更改
+		hasUnsavedChanges.value = true;
+
+		// 显示提示
+		showToast({ message: "场景顺序已更新", type: "success" });
+	}
+};
 
 const handleGuideModal = () => {
 	guideModalRef.value?.showModal();
@@ -4010,5 +4071,42 @@ const handleSceneUpdate = (updatedScenes) => {
 	background: #f8f8f8;
 	border-color: #ddd;
 	transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* 拖动时的样式 */
+.ghost-card {
+	opacity: 0.5;
+	background: rgba(var(--primary-color-rgb), 0.4);
+	border: 2px dashed var(--primary-color);
+	border-radius: 8px;
+}
+
+.dragging-card {
+	z-index: 100;
+}
+
+.dragging {
+	transform: rotate(2deg);
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 拖动按钮悬停效果 */
+.drag-btn {
+	cursor: grab;
+	transition: all 0.2s;
+}
+
+.drag-btn:hover {
+	color: var(--primary-color);
+	transform: scale(1.1);
+}
+
+.drag-btn:active {
+	cursor: grabbing;
+}
+
+/* 拖动时的过渡动画 */
+.cartridge-container {
+	transition: transform 0.2s ease, opacity 0.2s ease;
 }
 </style>
