@@ -2,29 +2,25 @@
 	<div>
 		<!-- 原文编辑器 -->
 		<div class="editor-container w-4/5 mx-auto relative" v-if="isCustom">
-			<!-- 添加指南按钮 -->
-			<div class="editor-action-buttons">
-				<div class="tooltip" data-tip="使用指南">
-					<button class="retro-btn" @click="showGuideModal">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-question-circle text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
-			</div>
-
-			<div class="editor-wrapper mx-auto text-sm w-4/5">
+			<!-- 使用指南按钮 -->
+			<button
+				class="absolute right-[11%] top-[-2rem] flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+				@click="showGuideModal"
+			>
+				<i class="bi bi-question-circle text-lg"></i>
+				<span class="text-sm">使用指南</span>
+			</button>
+			<div class="editor-wrapper mx-auto text-sm w-4/5 relative">
 				<textarea
 					id="editor"
 					class="editorjs-container"
 					v-model="editorContent"
 					placeholder="请在此编辑文本..."
+					spellcheck="false"
+					:disabled="isGenerating"
 					@paste="handlePaste($event)"
 					@keydown.enter="checkCommand($event)"
+					@keydown.esc="handleCancel"
 				></textarea>
 			</div>
 		</div>
@@ -157,22 +153,28 @@ const editorContent = ref("");
 const isCustom = ref(false);
 // 添加导入状态变量
 const importing = ref(false);
+const isGenerating = ref(false);
 
-// 添加指南弹窗引用
-const guideModalRef = ref(null);
+const abortController = ref(null);
+
+const guideModalRef = ref(null); // 指南弹窗引用
 
 // 显示指南弹窗方法
 const showGuideModal = () => {
 	guideModalRef.value?.showModal();
 };
 
-// bazinga:use 说明书
-// bazinga:lfg/omg/wtf 确认
-// 提示：是否确认。
-// bazinga:article 自动生成(默认为article/medium)
-// bazinga:dialogues:easy/medium/hard/insane
-// bazinga:url:[url] 导入 url
-// bazinga:md/pdf 导入文件
+// 取消处理函数
+const handleCancel = () => {
+	if (isGenerating.value && abortController.value) {
+		abortController.value.abort();
+		abortController.value = null;
+		isGenerating.value = false;
+		// 恢复原有内容
+		const existingContent = editorContent.value.split("正在生成文章")[0].trim();
+		editorContent.value = existingContent || "";
+	}
+};
 
 const emit = defineEmits([
 	"update:modelValue",
@@ -189,7 +191,7 @@ const checkCommand = (event) => {
 	const lastLine = allLines[allLines.length - 1].trim();
 
 	// 检查最后一行是否为命令
-	if (lastLine.includes("bazinga/article")) {
+	if (lastLine.includes("bazinga/new")) {
 		event.preventDefault(); // 阻止回车键的默认行为
 		// 移除包含命令的最后一行
 		editorContent.value = allLines.slice(0, -1).join("\n");
@@ -334,103 +336,109 @@ const importFromUrl = async (url) => {
 	if (!url || importing.value) return;
 
 	try {
-		// 清空当前输入的命令
-		editorContent.value = "";
+		isGenerating.value = true;
+		abortController.value = new AbortController();
 
-		// 显示加载中提示
-		importing.value = true;
-		showToast({ message: "正在导入内容...", type: "info" });
+		// 保存现有内容
+		const existingContent = editorContent.value.split("bazinga/url")[0].trim();
+		// 启动加载动画
+		startLoadingAnimation("导入");
 
-		const response = await apiClient.post("/scripts/import-url", {
-			url: url,
-		});
+		const response = await apiClient.post(
+			"/scripts/import-url",
+			{ url: url },
+			{ signal: abortController.value.signal }
+		);
 
 		if (response.data.code === 200) {
 			const content = response.data.data.content;
-
-			// 处理导入的内容
 			let importedContent = "";
+			importedContent += "# Default Title\n\n";
 
-			// 添加标题
-			importedContent += "# 导入的内容\n\n";
-
-			// 添加段落，保持段落间距
 			content.paragraphs.forEach((paragraph) => {
 				if (paragraph.trim()) {
-					// 只添加非空段落
-					importedContent += paragraph + "\n\n"; // 使用两个换行符增加段间距
+					importedContent += paragraph + "\n\n";
 				}
 			});
 
-			// 设置到编辑器
-			editorContent.value = importedContent.trim();
+			// 将新内容追加到现有内容后
+			editorContent.value = existingContent
+				? existingContent + "\n\n" + importedContent.trim()
+				: importedContent.trim();
 
 			showToast({ message: "内容导入成功", type: "success" });
 		} else {
-			showToast({ message: response.data.message, type: "error" });
+			throw new Error(response.data.message);
 		}
 	} catch (error) {
+		if (error.name === "AbortError") {
+			console.log("导入已取消");
+			return;
+		}
 		console.error("导入失败:", error);
+		// 保持原有内容，在后面添加错误信息
+		const existingContent = editorContent.value.split("正在导入")[0].trim();
+		editorContent.value = existingContent ? existingContent + "\n\n" : "";
 		showToast({
 			message: error.response?.data?.message || "导入失败，请检查URL是否正确",
 			type: "error",
 		});
 	} finally {
-		importing.value = false;
+		isGenerating.value = false;
+		abortController.value = null;
 	}
 };
 
-// 添加自动生成方法
+// 自动生成文章
 const handleAutoGenerate = async () => {
 	try {
-		// 显示加载中提示
-		showToast({ message: "正在生成文章...", type: "info" });
+		isGenerating.value = true;
+		abortController.value = new AbortController();
 
-		// 获取命令中可能包含的主题信息
 		const allLines = editorContent.value.split("\n");
 		const lastLine = allLines[allLines.length - 1].trim();
-
-		// 检查是否包含主题信息 (bazinga/article:主题)
 		let topic = null;
-		const topicMatch = lastLine.match(/bazinga\/article(?::(.+))?/);
+		const topicMatch = lastLine.match(/bazinga\/new(?::(.+))?/);
 		if (topicMatch && topicMatch[1]) {
 			topic = topicMatch[1].trim();
 		}
 
-		// 清空当前输入的命令
-		editorContent.value = "";
+		// 保存现有内容
+		const existingContent = editorContent.value.split("bazinga/new")[0].trim();
+		// 启动加载动画
+		startLoadingAnimation("生成");
 
-		// 调用后端API生成文章
-		const response = await apiClient.post("/translation/generate-article", {
-			topic: topic,
-		});
+		const response = await apiClient.post(
+			"/translation/generate-article",
+			{ topic: topic },
+			{ signal: abortController.value.signal }
+		);
 
 		if (response.data.code === 200 && response.data.data.article) {
-			// 添加标题和格式化
 			let formattedArticle = "";
-
-			// 如果文章没有以#开头，添加一个标题
 			if (!response.data.data.article.trim().startsWith("#")) {
-				formattedArticle = `# ${topic || "Default Title"}\n\n`;
+				formattedArticle = `\n\n# ${topic || "Default Title"}\n\n`;
 			}
-
-			// 添加文章内容
 			formattedArticle += response.data.data.article;
 
-			// 设置生成的内容到编辑器
-			editorContent.value = formattedArticle;
-
-			showToast({ message: "文章生成成功", type: "success" });
+			// 将新内容追加到现有内容后
+			editorContent.value = existingContent
+				? existingContent + formattedArticle
+				: formattedArticle.trim();
 		} else {
 			throw new Error("生成文章失败");
 		}
 	} catch (error) {
-		console.error("自动生成文章失败:", error);
-		// 恢复一个基本的文章结构，以防API调用失败
-		editorContent.value = `# 自动生成的文章
-
-很抱歉，无法从服务器获取文章内容。请稍后再试。`;
-		showToast({ message: "生成失败，请重试", type: "error" });
+		if (error.name === "AbortError") {
+			console.log("生成已取消");
+			return;
+		}
+		// 保持原有内容，在后面添加错误信息
+		const existingContent = editorContent.value.split("正在生成文章")[0].trim();
+		editorContent.value = existingContent ? existingContent + "\n\n" : "";
+	} finally {
+		isGenerating.value = false;
+		abortController.value = null;
 	}
 };
 
@@ -441,7 +449,7 @@ onMounted(async () => {
 	}
 });
 
-// 添加粘贴事件监听
+// 粘贴内容格式处理
 const handlePaste = (event) => {
 	const clipboardData = event.clipboardData;
 	const pastedData = clipboardData.getData("text/plain");
@@ -456,10 +464,30 @@ const handlePaste = (event) => {
 	document.execCommand("insertText", false, processedData);
 };
 
-const backToPreview = () => {
-	const courseId = route.params.id;
-	// 新建模式下直接返回列表页
-	router.replace(`/collections/${courseId}`);
+// 动态省略号动画函数
+const startLoadingAnimation = (type = "生成") => {
+	let count = 0;
+	const baseContent = editorContent.value
+		.split(`bazinga/${type === "生成" ? "new" : "url"}`)[0]
+		.trim();
+	// 先设置初始文本
+	editorContent.value = baseContent
+		? `${baseContent}\n\n正在${type}文章\n按 ESC 取消`
+		: `正在${type}文章\n按 ESC 取消`;
+
+	const interval = setInterval(() => {
+		if (!isGenerating.value) {
+			clearInterval(interval);
+			return;
+		}
+		count = (count + 1) % 4;
+		// 只更新省略号部分
+		const currentContent = editorContent.value;
+		const baseText =
+			currentContent.split(`正在${type}文章`)[0] + `正在${type}文章`;
+		const suffix = "\n按 ESC 取消";
+		editorContent.value = baseText + ".".repeat(count) + suffix;
+	}, 500);
 };
 
 const createCollection = async () => {

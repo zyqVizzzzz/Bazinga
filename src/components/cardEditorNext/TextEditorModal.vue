@@ -50,7 +50,7 @@
 									>
 								</div>
 								<div class="command-item">
-									<span class="command-code">/bazinga/url:链接</span>
+									<span class="command-code">/bazinga/url:{url}</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>从URL导入内容</span
 									>
@@ -62,7 +62,7 @@
 									>
 								</div>
 								<div class="command-item">
-									<span class="command-code">/bazinga/go:数字</span>
+									<span class="command-code">/bazinga/go:{number}</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>确认生成卡片并插入到指定位置</span
 									>
