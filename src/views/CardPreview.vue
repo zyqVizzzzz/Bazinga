@@ -155,8 +155,7 @@
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face flex items-center justify-center">
-											<i class="bi text-xl bi-pencil-square"></i>
-											<!-- <EditIcon size="5" /> -->
+											<PreviewIcon class="relative top-[1px]" size="6" />
 										</div>
 									</div>
 								</div>
@@ -171,12 +170,10 @@
 							@click="prevDialogue"
 							:disabled="currentDialogueIndex === 0"
 						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
+							<div class="btn-edge">
+								<div class="btn-shadow">
 									<div class="btn-face flex items-center justify-center">
-										<span class="text-2xl transform -translate-y-0.5"
-											>&#x27E8;</span
-										>
+										<i class="bi bi-chevron-left text-xl"></i>
 									</div>
 								</div>
 							</div>
@@ -216,10 +213,10 @@
 						>
 							<div class="btn-shadow">
 								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<span class="text-2xl transform -translate-y-0.5"
-											>&#x27E9;</span
-										>
+									<div class="btn-shadow">
+										<div class="btn-face flex items-center justify-center">
+											<i class="bi bi-chevron-right text-xl"></i>
+										</div>
 									</div>
 								</div>
 							</div>

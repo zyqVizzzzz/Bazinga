@@ -25,21 +25,7 @@
 						</div>
 					</button>
 				</div>
-				<div class="tooltip" data-tip="导出文档">
-					<button
-						class="retro-btn"
-						@click="exportToMarkdown"
-						:disabled="isLoading"
-					>
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<ExportIcon size="5" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
+
 				<template v-if="isCustom">
 					<div class="border-t border-gray-200"></div>
 					<div class="tooltip" data-tip="生成翻译">
@@ -72,13 +58,28 @@
 							</div>
 						</button>
 					</div>
-					<div class="tooltip" data-tip="编辑场景">
+					<div class="tooltip" data-tip="新增文本内容">
 						<button class="retro-btn" @click="handleShowTextEditorModal">
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face">
 										<!-- <i class="bi bi-question-circle text-lg"></i> -->
 										<SceneIcon size="5" />
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
+					<div class="tooltip" data-tip="导出文档">
+						<button
+							class="retro-btn"
+							@click="exportToMarkdown"
+							:disabled="isLoading"
+						>
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">
+										<ExportIcon size="5" />
 									</div>
 								</div>
 							</div>
@@ -633,7 +634,7 @@ const initializeView = async () => {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
-				isCustom.value = res.data.data.isCustom;
+				isCustom.value = !res.data.data.isCustom;
 
 				if (scriptData?.scenes?.[0]?.dialogues) {
 					// 将对话按场景分组处理
