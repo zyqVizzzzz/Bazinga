@@ -3,11 +3,25 @@
 		<div class="modal-box max-w-5xl min-h-[600px] p-0">
 			<!-- 添加右上角关闭按钮 -->
 
-			<form method="dialog" class="absolute right-3 top-3" style="z-index: 100">
-				<button class="btn btn-sm btn-circle btn-ghost">
-					<i class="bi bi-x-lg"></i>
+			<div
+				class="absolute right-3 top-3 flex items-center gap-2"
+				style="z-index: 100"
+			>
+				<!-- 使用说明按钮 -->
+				<button
+					class="btn btn-sm btn-circle btn-ghost"
+					@click.prevent="toggleGuide"
+				>
+					<i class="bi bi-question-circle"></i>
 				</button>
-			</form>
+
+				<!-- 关闭按钮 -->
+				<form method="dialog">
+					<button class="btn btn-sm btn-circle btn-ghost">
+						<i class="bi bi-x-lg"></i>
+					</button>
+				</form>
+			</div>
 
 			<div class="editor-wrapper text-sm h-full text-left">
 				<div class="decorated-card px-4 min-h-[600px]">
@@ -22,6 +36,38 @@
 								@paste="handlePaste($event)"
 								@keydown.enter="checkCommand($event)"
 							></textarea>
+						</div>
+
+						<div
+							v-if="showGuidePanel"
+							class="guide-panel p-4 border-t-2 border-gray-200"
+						>
+							<div class="command-list text-sm space-y-2">
+								<div class="command-item">
+									<span class="command-code">/bazinga/article</span>
+									<span class="command-desc ml-2 text-gray-600"
+										>自动生成文章</span
+									>
+								</div>
+								<div class="command-item">
+									<span class="command-code">/bazinga/url:链接</span>
+									<span class="command-desc ml-2 text-gray-600"
+										>从URL导入内容</span
+									>
+								</div>
+								<div class="command-item">
+									<span class="command-code">/bazinga/go</span>
+									<span class="command-desc ml-2 text-gray-600"
+										>确认生成卡片</span
+									>
+								</div>
+								<div class="command-item">
+									<span class="command-code">/bazinga/go:数字</span>
+									<span class="command-desc ml-2 text-gray-600"
+										>确认生成卡片并插入到指定位置</span
+									>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -69,6 +115,14 @@ const isReconfirming = ref(false);
 
 const insertScenePosition = ref(-1); // 默认为-1，表示插入到最后
 
+// 添加指南面板显示状态
+const showGuidePanel = ref(false);
+
+// 切换指南面板显示状态
+const toggleGuide = () => {
+	showGuidePanel.value = !showGuidePanel.value;
+};
+
 // 初始化场景状态
 
 onMounted(() => {
@@ -102,11 +156,12 @@ const checkCommand = (event) => {
 
 	// 检查是否为场景插入命令
 
-	const lfgCommandRegex = /bazinga\/lfg(?:\/(\d+))?/i;
+	const lfgCommandRegex = /bazinga\/go(?:\/(\d+))?/i;
 
 	const lfgMatch = lastLine.match(lfgCommandRegex);
 
 	if (
+		lastLine.includes("bazinga/go") ||
 		lastLine.includes("bazinga/lfg") ||
 		lastLine.includes("bazinga/omg") ||
 		lastLine.includes("bazinga/wtf")
@@ -206,7 +261,7 @@ const checkCommand = (event) => {
 		return;
 	}
 
-	const urlCommandRegex = /bazinga\/url\/(https?:\/\/.+)/i;
+	const urlCommandRegex = /bazinga\/url:(https?:\/\/.+)/i;
 
 	const match = lastLine.match(urlCommandRegex);
 
@@ -564,7 +619,7 @@ defineExpose({
 .new-scene-area {
 	background: rgba(255, 255, 255, 0.8);
 
-	padding: 1rem 0;
+	padding: 2rem 0;
 
 	display: flex;
 
@@ -621,5 +676,12 @@ defineExpose({
 
 .editor-wrapper::-webkit-scrollbar {
 	display: none; /* Chrome, Safari and Opera */
+}
+
+.command-code {
+	font-family: monospace;
+	background: #f5f5f5;
+	padding: 2px 6px;
+	border-radius: 4px;
 }
 </style>
