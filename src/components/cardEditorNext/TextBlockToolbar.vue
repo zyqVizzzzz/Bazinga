@@ -8,55 +8,48 @@
 	>
 		<!-- 左侧按钮组 -->
 		<div class="flex items-center gap-3">
-			<button
-				class="ghost-btn"
-				@click="$emit('split-scene')"
-				title="标记为新场景"
-			>
-				<SplitIcon size="4" />
-			</button>
+			<div class="tooltip" data-tip="标记为新场景">
+				<button class="ghost-btn" @click="$emit('split-scene')">
+					<SplitIcon size="4" />
+				</button>
+			</div>
 
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
-			<button class="ghost-btn" @click="$emit('translate')" title="翻译">
-				<TranslationIcon size="4" />
-			</button>
-
-			<button
-				class="ghost-btn"
-				@click="$emit('auto-generate-knowledge')"
-				title="生成知识点"
-			>
-				<KnowledgeIcon size="4" />
-			</button>
-			<button
-				class="ghost-btn"
-				@click="$emit('manual-knowledge')"
-				title="手动选择知识点"
-			>
-				<GenerateIcon size="4" />
-			</button>
+			<div class="tooltip" data-tip="翻译">
+				<button class="ghost-btn" @click="$emit('translate')">
+					<TranslationIcon size="4" />
+				</button>
+			</div>
+			<div class="tooltip" data-tip="生成知识点">
+				<button class="ghost-btn" @click="$emit('auto-generate-knowledge')">
+					<KnowledgeIcon size="4" />
+				</button>
+			</div>
+			<div class="tooltip" data-tip="手动选择知识点">
+				<button class="ghost-btn" @click="$emit('manual-knowledge')">
+					<GenerateIcon size="4" />
+				</button>
+			</div>
 			<div class="h-6 w-px bg-gray-300 mx-2"></div>
 
-			<button
-				class="ghost-btn"
-				@click="$emit('toggle-narration')"
-				title="标记为注释"
-			>
-				<i class="bi bi-chat-square-text"></i>
-			</button>
-			<button
-				class="ghost-btn"
-				@click="$emit('toggle-speaker')"
-				title="添加角色"
-			>
-				<i
-					class="bi"
-					:class="hasSpeaker ? 'bi-emoji-surprise-fill' : 'bi-emoji-surprise'"
-				></i>
-			</button>
-			<button class="ghost-btn" @click="$emit('delete-block')" title="删除">
-				<i class="bi bi-trash"></i>
-			</button>
+			<div class="tooltip" data-tip="标记为注释">
+				<button class="ghost-btn" @click="$emit('toggle-narration')">
+					<i class="bi bi-chat-square-text"></i>
+				</button>
+			</div>
+			<div class="tooltip" data-tip="添加角色">
+				<button class="ghost-btn" @click="$emit('toggle-speaker')">
+					<i
+						class="bi"
+						:class="hasSpeaker ? 'bi-emoji-surprise-fill' : 'bi-emoji-surprise'"
+					></i>
+				</button>
+			</div>
+			<div class="tooltip" data-tip="删除">
+				<button class="ghost-btn" @click="$emit('delete-block')">
+					<i class="bi bi-trash"></i>
+				</button>
+			</div>
 		</div>
 		<div v-if="processing" class="flex items-center gap-3 ml-6">
 			<div class="flex items-center justify-center w-6 h-6">

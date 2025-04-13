@@ -14,19 +14,19 @@
 						</div>
 					</button>
 				</div>
-				<div class="tooltip" data-tip="保存" v-if="isCustom">
-					<button class="retro-btn" @click="handleSave(false)">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<i class="bi bi-floppy text-lg"></i>
-								</div>
-							</div>
-						</div>
-					</button>
-				</div>
 
 				<template v-if="isCustom">
+					<div class="tooltip" data-tip="保存" v-if="isCustom">
+						<button class="retro-btn" @click="handleSave(false)">
+							<div class="btn-shadow">
+								<div class="btn-edge">
+									<div class="btn-face">
+										<i class="bi bi-floppy text-lg"></i>
+									</div>
+								</div>
+							</div>
+						</button>
+					</div>
 					<div class="border-t border-gray-200"></div>
 					<div class="tooltip" data-tip="生成翻译">
 						<button
@@ -70,22 +70,22 @@
 							</div>
 						</button>
 					</div>
-					<div class="tooltip" data-tip="导出文档">
-						<button
-							class="retro-btn"
-							@click="exportToMarkdown"
-							:disabled="isLoading"
-						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face">
-										<ExportIcon size="5" />
-									</div>
+				</template>
+				<div class="tooltip" data-tip="导出文档">
+					<button
+						class="retro-btn"
+						@click="exportToMarkdown"
+						:disabled="isLoading"
+					>
+						<div class="btn-shadow">
+							<div class="btn-edge">
+								<div class="btn-face">
+									<ExportIcon size="5" />
 								</div>
 							</div>
-						</button>
-					</div>
-				</template>
+						</div>
+					</button>
+				</div>
 
 				<!-- <div class="border-t border-gray-200"></div> -->
 
@@ -271,26 +271,30 @@
 										<!-- 添加操作按钮 -->
 										<div v-if="isCustom" class="cartridge-actions">
 											<!-- 左侧拖动按钮（摇杆风格） -->
+
 											<button class="action-btn drag-btn" title="拖动场景">
 												<i class="bi bi-arrows-move"></i>
 											</button>
 
 											<!-- 右侧操作按钮组 -->
 											<div class="right-actions">
-												<button
-													class="action-btn merge-btn"
-													@click.stop="handleMergeScenes(index)"
-													title="向上合并场景"
-												>
-													<i class="bi bi-arrow-bar-up"></i>
-												</button>
-												<button
-													class="action-btn delete-btn"
-													@click.stop="handleDeleteScene(index)"
-													title="删除场景"
-												>
-													<i class="bi bi-trash"></i>
-												</button>
+												<div class="tooltip" data-tip="向上合并">
+													<button
+														class="action-btn merge-btn"
+														@click.stop="handleMergeScenes(index)"
+													>
+														<i class="bi bi-arrow-bar-up"></i>
+													</button>
+												</div>
+												<div class="tooltip" data-tip="删除">
+													<button
+														class="action-btn delete-btn"
+														@click.stop="handleDeleteScene(index)"
+														title=""
+													>
+														<i class="bi bi-trash"></i>
+													</button>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -634,7 +638,7 @@ const initializeView = async () => {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
-				isCustom.value = !res.data.data.isCustom;
+				isCustom.value = res.data.data.isCustom;
 
 				if (scriptData?.scenes?.[0]?.dialogues) {
 					// 将对话按场景分组处理
