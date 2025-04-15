@@ -117,45 +117,28 @@
 				>
 					<!-- 控制按钮组 -->
 					<div class="flex justify-center gap-6 mt-6">
-						<!-- <button
-							v-if="!isFlipped"
-							class="retro-btn option"
-							:class="{ 'btn-active': isListenMode }"
-							@click="toggleListenMode"
-						>
+						<!-- 编辑按钮 -->
+						<button class="retro-btn option" @click="editCard">
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face flex items-center justify-center">
-										<i class="bi bi-headphones text-xl"></i>
-									</div>
-								</div>
-							</div>
-						</button> -->
-
-						<button
-							class="retro-btn option"
-							:class="{ 'btn-active': isFlipped }"
-							@click="togglePracticeMode"
-						>
-							<div class="btn-shadow">
-								<div class="btn-edge">
-									<div class="btn-face flex items-center justify-center">
-										<PodcastIcon />
+										<PreviewIcon class="relative top-[1px]" size="6" />
 									</div>
 								</div>
 							</div>
 						</button>
-
 						<div class="flex items-center gap-6">
 							<!-- 竖线分隔符 -->
 							<div class="h-8 w-[2px] bg-black"></div>
-
-							<!-- 编辑按钮 -->
-							<button class="retro-btn option" @click="editCard">
+							<button
+								class="retro-btn option"
+								:class="{ 'btn-active': isFlipped }"
+								@click="togglePracticeMode"
+							>
 								<div class="btn-shadow">
 									<div class="btn-edge">
 										<div class="btn-face flex items-center justify-center">
-											<PreviewIcon class="relative top-[1px]" size="6" />
+											<PodcastIcon />
 										</div>
 									</div>
 								</div>

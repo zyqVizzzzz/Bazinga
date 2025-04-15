@@ -1,73 +1,52 @@
 <template>
 	<div class="retro-edit-card">
-		<!-- 词汇标题区 -->
-		<div class="word-header">
-			<div class="word-title">
-				<span class="word-text">{{ selectedNote.word }}</span>
-				<div class="flex items-center gap-2">
+		<!-- 标题区域 -->
+		<div class="manual-header">
+			<div class="manual-title">
+				<div class="title-content">
+					<h3 class="word-title">{{ selectedNote.word }}</h3>
+					<div class="word-subtitle">{{ selectedNote.word_zh }}</div>
+				</div>
+				<div class="title-actions">
 					<button
 						v-if="hasPodcast"
 						class="podcast-btn"
 						@click="showPodcastModal = true"
 						title="查看播客内容"
 					>
-						<!-- <i class="bi bi-mic-fill text-secondary text-lg"></i> -->
-						<PodcastIcon />
+						<PodcastIcon size="6" />
+					</button>
+					<button class="ghost-btn" @click="handleDelete" title="查看播客内容">
+						<i class="bi bi-trash"></i>
 					</button>
 				</div>
 			</div>
-			<div class="flex items-center gap-2">
-				<!-- <button class="bookmark-btn" @click="toggleImportantBadge">
-					<i
-						class="text-xl"
-						:class="[
-							'bi',
-							selectedNote.isImportant ? 'bi-star-fill' : 'bi-star',
-						]"
-					></i>
-				</button> -->
-				<button
-					class="retro-btn ghost-btn"
-					@click="handleDelete"
-					title="删除笔记"
-				>
-					<div class="btn-shadow">
-						<div class="btn-edge">
-							<div class="btn-face">
-								<i class="bi bi-trash mr-2 relative top-[1px]"></i>
-								删除
-							</div>
-						</div>
-					</div>
-				</button>
-			</div>
 		</div>
 
-		<div class="pt-2 pb-4 space-y-4">
+		<div class="manual-content">
+			<div class="manual-logo"></div>
+
 			<!-- 中文释义 -->
-			<div class="text-sm text-gray-500 text-left">
-				{{ selectedNote.word_zh }}
-			</div>
-
-			<!-- 分割线 -->
-			<div class="border-b border-gray-200"></div>
-
-			<!-- 详细释义 -->
-			<div>
-				<h4 class="font-medium mb-2 text-left">释义</h4>
-				<p class="text-sm text-gray-600 text-left">
+			<div class="manual-section">
+				<div class="section-title">
+					<div class="title-decoration">◆</div>
+					<h4 class="text-sm">中文释义</h4>
+				</div>
+				<p class="section-content text-left">
 					{{ selectedNote.definition_zh }}
 				</p>
 			</div>
 
 			<!-- 同义词 -->
-			<div v-if="selectedNote.synonyms">
-				<h4 class="font-medium mb-2 text-left">同义词</h4>
-				<ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+			<div v-if="selectedNote.synonyms" class="manual-section">
+				<div class="section-title">
+					<div class="title-decoration">◆</div>
+					<h4 class="text-sm">同义词</h4>
+				</div>
+				<ol class="section-list text-left">
 					<li
 						v-for="(synonym, index) in selectedNote.synonyms.split('|')"
 						:key="index"
-						class="text-left"
 					>
 						{{ synonym.trim() }}
 					</li>
@@ -75,22 +54,24 @@
 			</div>
 
 			<!-- 例句 -->
-			<div v-if="selectedNote.example" class="space-y-1">
-				<h4 class="font-medium mb-2 text-left">例句</h4>
-				<p class="text-sm text-gray-600 text-left">
-					{{ selectedNote.example }}
-				</p>
-				<p class="text-sm text-gray-500 text-left">
-					{{ selectedNote.example_zh }}
-				</p>
+			<div v-if="selectedNote.example" class="manual-section">
+				<div class="section-title">
+					<div class="title-decoration">◆</div>
+					<h4 class="text-sm">例句</h4>
+				</div>
+				<div class="example-box text-left">
+					<p>{{ selectedNote.example }}</p>
+					<p class="example-translation">{{ selectedNote.example_zh }}</p>
+				</div>
 			</div>
 
 			<!-- 笔记 -->
-			<div v-if="selectedNote.note">
-				<h4 class="font-medium mb-2 text-left">补充说明</h4>
-				<p class="text-sm text-gray-600 text-left">
-					{{ selectedNote.note }}
-				</p>
+			<div v-if="selectedNote.note" class="text-left mb-0">
+				<div class="section-title">
+					<div class="title-decoration">◆</div>
+					<h4 class="text-sm">补充说明</h4>
+				</div>
+				<p class="section-content">{{ selectedNote.note }}</p>
 			</div>
 		</div>
 
@@ -267,12 +248,6 @@ watch(
 	align-items: center;
 }
 
-.word-title {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-}
-
 .word-text {
 	font-size: 1.2rem;
 	font-weight: bold;
@@ -330,8 +305,6 @@ watch(
 	background: rgba(var(--primary-color-rgb), 0.05);
 	padding: 0.5rem 1rem 1rem;
 	border-radius: 8px;
-	border-left: 3px solid var(--primary-color);
-	margin-left: -1rem;
 }
 
 .example {
@@ -429,23 +402,28 @@ watch(
 	pointer-events: none;
 }
 
-/* 滚动条样式 */
+/* 装饰效果 */
+.retro-edit-card::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+.retro-edit-card {
+	/* padding: 0.5rem 1rem; */
+	height: 100%;
+	overflow-y: auto;
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
+}
+
 .retro-edit-card::-webkit-scrollbar {
-	width: 8px;
-}
-
-.retro-edit-card::-webkit-scrollbar-track {
-	background: rgba(0, 0, 0, 0.05);
-	border-radius: 4px;
-}
-
-.retro-edit-card::-webkit-scrollbar-thumb {
-	background: rgba(0, 0, 0, 0.2);
-	border-radius: 4px;
-}
-
-.retro-edit-card::-webkit-scrollbar-thumb:hover {
-	background: rgba(0, 0, 0, 0.3);
+	display: none; /* Chrome, Safari and Opera */
 }
 
 .podcast-btn {
@@ -486,7 +464,7 @@ watch(
 }
 
 .ghost-btn {
-	width: 80px;
+	width: 36px;
 	height: 36px;
 	transition: transform 0.3s;
 }
@@ -498,25 +476,36 @@ watch(
 	font-weight: 500;
 }
 
-.ghost-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
+.manual-title {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	width: 100%;
 }
 
-/* 卡片悬停效果 */
-.ghost-btn:hover {
-	transform: translateY(-2px);
+.title-content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.5rem;
 }
 
-.ghost-btn:active .btn-edge,
-.ghost-btn:active .btn-face {
-	transform: translateY(-1px);
+.title-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-/* 添加通用悬停效果 */
-.ghost-btn:hover .btn-face {
-	color: var(--secondary-color);
-	transition: all 0.3s ease;
-	transform: translateY(-3px);
+.word-title {
+	/* color: var(--secondary-color); */
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: 1px;
+	line-height: 1.2;
+}
+
+.word-subtitle {
+	font-size: 0.875rem;
+	color: #666;
 }
 </style>

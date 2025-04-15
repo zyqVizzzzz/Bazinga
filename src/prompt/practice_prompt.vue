@@ -328,9 +328,9 @@ const submitContent = async () => {
 const submitSingleContent = async () => {
 	const dialogue = {
 		english:
-			"Yup, and it’s so flexible! You can slap it on anything—like 'how was your trip?' or 'how was your class?' It’s basically the ultimate convo starter, no cap!",
-		character: "Jinji",
-		emoji: "surprised",
+			"Hey everyone! Welcome back to bazinga, I'm your host Moryn. Today's vibe is super cool!",
+		character: "Moryn",
+		emoji: "happy",
 	};
 	try {
 		// 使用文本转语音API生成URL

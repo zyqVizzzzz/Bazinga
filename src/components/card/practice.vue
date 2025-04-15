@@ -25,10 +25,10 @@
 							ref="welcomeVideo"
 							class="circular-video"
 							@click="playWelcomeVideo"
-							poster="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/jinji.png"
+							poster="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn.png"
 						>
 							<source
-								src="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/jinji.mp4"
+								src="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn.mp4"
 								type="video/mp4"
 							/>
 						</video>
@@ -40,10 +40,7 @@
 							<i class="bi bi-play play-icon"></i>
 						</div>
 					</div>
-					<p class="vintage-text text-center">
-						当前场景还没有播客～ 点击下方
-						<i class="bi bi-pencil-square"></i> 按钮，创建你的播客吧！
-					</p>
+					<p class="vintage-text text-center">当前场景尚未创建播客～</p>
 				</div>
 			</div>
 		</div>
@@ -311,7 +308,7 @@ defineExpose({
 	position: relative;
 	z-index: 1;
 	width: 240px; /* 4:3 比例，宽度设为 240px */
-	height: 180px; /* 高度为宽度的 3/4 */
+	height: 320px; /* 高度为宽度的 3/4 */
 	border-radius: 12px; /* 改用圆角矩形 */
 	overflow: hidden;
 	border: 3px solid #000;

@@ -12,8 +12,20 @@
 				</div>
 
 				<div class="scene-display">
-					<div class="scene-number">Scene {{ props.currentPage }}</div>
-					<div class="frequency">FM MOLIDOKI</div>
+					<div class="host-info">
+						<div class="host-avatar-wrapper">
+							<img
+								:src="hostInfo.avatar"
+								:alt="hostInfo.name"
+								class="host-avatar"
+							/>
+							<div class="status-indicator"></div>
+						</div>
+						<div class="host-details">
+							<span class="host-name">{{ hostInfo.name }}</span>
+							<span class="host-title">主播</span>
+						</div>
+					</div>
 				</div>
 
 				<div class="channel-list">
@@ -160,6 +172,32 @@ const showTranslated = ref(false);
 const toggleTranslation = () => {
 	showTranslated.value = !showTranslated.value;
 };
+
+const hostInfo = computed(() => {
+	if (!selectedPodcast.value?.script)
+		return {
+			name: "Doryn",
+			avatar:
+				"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/doryn-avatar.png",
+		};
+
+	// 检查前两段是否包含 Moryn
+	const isMoryn = selectedPodcast.value.script
+		.slice(0, 2)
+		.some((text) => text.includes("Moryn"));
+
+	return isMoryn
+		? {
+				name: "Moryn",
+				avatar:
+					"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn-avatar.png",
+		  }
+		: {
+				name: "Doryn",
+				avatar:
+					"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/doryn-avatar.png",
+		  };
+});
 
 // 选择播客
 const selectPodcast = (podcast, index) => {
@@ -837,6 +875,122 @@ defineExpose({
 	}
 	100% {
 		transform: rotate(360deg);
+	}
+}
+/* 场景显示面板样式更新 */
+.scene-display {
+	padding: 16px;
+	border-bottom: 3px solid #000;
+	background: #222;
+	color: #f8f8f8;
+	position: relative;
+	z-index: 1;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.scene-info {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.broadcast-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.frequency {
+	font-size: 14px;
+	color: var(--secondary-color);
+	font-family: "Digital-7", monospace;
+}
+
+.on-air {
+	color: #ff4444;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 2px 8px;
+	border: 1px solid #ff4444;
+	border-radius: 4px;
+	animation: blink 2s infinite;
+}
+
+.host-info {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 12px;
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 8px;
+}
+
+.host-avatar-wrapper {
+	position: relative;
+}
+
+.host-avatar {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	border: 2px solid var(--secondary-color);
+}
+
+.status-indicator {
+	position: absolute;
+	bottom: 2px;
+	right: 2px;
+	width: 12px;
+	height: 12px;
+	background: #4caf50;
+	border-radius: 50%;
+	border: 2px solid #222;
+	animation: pulse 2s infinite;
+}
+
+.host-details {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.host-name {
+	color: var(--secondary-color);
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.host-title {
+	color: #888;
+	font-size: 12px;
+}
+
+.broadcast-time {
+	color: #aaa;
+	font-size: 11px;
+	margin-top: 2px;
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.1);
+	}
+	100% {
+		transform: scale(1);
 	}
 }
 </style>

@@ -13,6 +13,9 @@
 			<template v-else>
 				<div class="relative w-full h-full group">
 					<img :src="previewUrl" alt="Preview" class="preview-image" />
+					<div class="image-overlay">
+						<span class="overlay-text">更换图片</span>
+					</div>
 					<div
 						class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
 					>
@@ -217,25 +220,27 @@ const openImageEditor = (event) => {
 	// 确保图片适应模态框
 	setTimeout(() => {
 		if (editingImage.value) {
-			// 如果图片过高，调整初始缩放比例
+			const cropFrame = imageEditorWrapper.value.querySelector(".crop-frame");
+			if (!cropFrame) return;
+
 			const imgNaturalRatio =
 				editingImage.value.naturalWidth / editingImage.value.naturalHeight;
-			const containerRatio =
-				imageEditorWrapper.value.clientWidth /
-				imageEditorWrapper.value.clientHeight;
+			const containerWidth = imageEditorWrapper.value.clientWidth;
+			const cropHeight = cropFrame.clientHeight;
 
-			// 如果图片比例与容器比例不匹配，调整缩放
-			if (imgNaturalRatio < containerRatio) {
-				// 图片较窄，确保宽度填满
-				imageScale.value = 1;
+			if (imgNaturalRatio > 1) {
+				// 横图
+				const targetHeight = containerWidth / imgNaturalRatio;
+				if (targetHeight < cropHeight) {
+					imageScale.value = cropHeight / targetHeight;
+				}
 			} else {
-				// 图片较宽，确保高度合适
-				const cropFrame = imageEditorWrapper.value.querySelector(".crop-frame");
-				if (cropFrame) {
-					const cropHeight = cropFrame.clientHeight;
-					const idealHeight = cropHeight * 1.5; // 理想高度为裁剪框的1.5倍
-					const currentHeight = editingImage.value.clientHeight;
-					imageScale.value = idealHeight / currentHeight;
+				// 竖图
+				// 计算以容器宽度为基准的缩放比例
+				const imgDisplayHeight = containerWidth / imgNaturalRatio;
+				// 确保图片高度至少能覆盖裁剪框
+				if (imgDisplayHeight < cropHeight) {
+					imageScale.value = cropHeight / imgDisplayHeight;
 				}
 			}
 		}
@@ -626,5 +631,25 @@ const endDrag = () => {
 	margin-bottom: 0.5rem;
 	font-weight: bold;
 	color: #333;
+}
+.image-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+
+.retro-upload-area:hover .image-overlay {
+	opacity: 1;
+}
+
+.overlay-text {
+	color: rgb(211, 210, 210);
+	font-size: 0.875rem;
+	font-weight: 500;
 }
 </style>

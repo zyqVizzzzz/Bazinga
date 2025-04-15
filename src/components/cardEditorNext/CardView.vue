@@ -3165,23 +3165,22 @@ const handleMergeScenes = async (index) => {
 
 // 在现有的方法后添加场景删除功能
 const handleDeleteScene = async (index) => {
-	// 检查是否只剩下一个场景，不允许删除最后一个场景
-	if (props.scenes.length <= 1) {
-		showToast({ message: "无法删除唯一的场景", type: "warning" });
-		return;
-	}
-
 	// 确认删除
 	if (!confirm(`确定要删除第 ${index + 1} 个场景吗？此操作不可撤销。`)) {
 		return;
 	}
 
-	// 获取要删除的场景
-	const sceneToDelete = props.scenes[index];
-
 	// 创建更新后的场景数组
 	const updatedScenes = [...props.scenes];
 	updatedScenes.splice(index, 1);
+
+	// 如果删除后没有场景了，返回编辑模式
+	if (updatedScenes.length === 0) {
+		// 更新路由参数，添加 mode=edit
+		const query = { ...route.query, mode: "edit" };
+		router.replace({ query });
+		return;
+	}
 
 	// 更新后续场景的编号和ID
 	for (let i = index; i < updatedScenes.length; i++) {
@@ -3754,61 +3753,6 @@ const handleSceneUpdate = (updatedScenes) => {
 	color: #333; /* 深色图标 */
 	transform: scale(1.1);
 }
-</style>
-<style>
-/* 知识点按钮样式 - 全局定义以应用于动态生成的内容 */
-.knowledge-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	border-radius: 4px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	margin-left: 4px;
-	transition: all 0.2s;
-}
-
-.knowledge-btn:hover {
-	background-color: rgba(0, 0, 0, 0.05);
-}
-
-.knowledge-detail-btn {
-	color: #222; /* 蓝色 */
-}
-
-.knowledge-delete-btn {
-	color: #222; /* 红色 */
-}
-
-.knowledge-btn i {
-	font-size: 14px;
-}
-
-/* 悬浮按钮组样式 */
-.fixed-action-buttons {
-	position: fixed;
-	right: 20px;
-	top: 50%;
-	transform: translateY(-50%);
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
-	z-index: 100;
-	background-color: rgba(255, 255, 255, 0.8);
-	padding: 12px;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	backdrop-filter: blur(5px);
-}
-
-/* 确保tooltip正确显示 */
-.fixed-action-buttons .tooltip {
-	margin: 5px 0;
-}
-
 /* 卡带容器样式 */
 .cartridge-container {
 	display: flex;
@@ -4113,5 +4057,59 @@ const handleSceneUpdate = (updatedScenes) => {
 /* 拖动时的过渡动画 */
 .cartridge-container {
 	transition: transform 0.2s ease, opacity 0.2s ease;
+}
+</style>
+<style>
+/* 知识点按钮样式 - 全局定义以应用于动态生成的内容 */
+.knowledge-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	margin-left: 4px;
+	transition: all 0.2s;
+}
+
+.knowledge-btn:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.knowledge-detail-btn {
+	color: #222; /* 蓝色 */
+}
+
+.knowledge-delete-btn {
+	color: #222; /* 红色 */
+}
+
+.knowledge-btn i {
+	font-size: 14px;
+}
+
+/* 悬浮按钮组样式 */
+.fixed-action-buttons {
+	position: fixed;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	z-index: 100;
+	background-color: rgba(255, 255, 255, 0.8);
+	padding: 12px;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(5px);
+}
+
+/* 确保tooltip正确显示 */
+.fixed-action-buttons .tooltip {
+	margin: 5px 0;
 }
 </style>

@@ -3,15 +3,14 @@
 		<!-- Roadmap -->
 		<div class="w-full text-center flex flex-col items-center">
 			<!-- 标题 -->
-			<div class="terminal-title text-center" @click="toggleShowDevLog">
+			<!-- <div class="terminal-title text-center" @click="toggleShowDevLog">
 				<div class="terminal-header">
 					<span class="relative -top-[1px]"
 						><i class="bi bi-code-square"></i
 					></span>
-					<span class="terminal-title-text">站内信.log</span>
 					<span class="cursor text-xs">_</span>
 				</div>
-			</div>
+			</div> -->
 
 			<dialog
 				id="dev_log_modal"
