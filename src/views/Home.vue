@@ -42,9 +42,7 @@
 							<div class="content-container" :style="{ color: scene.theme }">
 								<h2 class="text-lg font-bold">{{ scene.showName }}</h2>
 								<p class="subtitle mt-2">{{ scene.name }}</p>
-								<div class="status-badge" :class="{ private: scene.isCustom }">
-									{{ scene.isCustom ? "Private" : "Public" }}
-								</div>
+								<div class="status-badge" v-if="!scene.isCustom">Public</div>
 							</div>
 						</div>
 					</div>

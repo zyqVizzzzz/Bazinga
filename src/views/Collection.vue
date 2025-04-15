@@ -36,46 +36,27 @@
 				</div>
 
 				<!-- 公开/私人标识 -->
-				<div
-					class="collection-status-badge"
-					:class="{ private: infoData.isCustom }"
-				>
-					{{ infoData.isCustom ? "private" : "public" }}
+				<div v-if="!infoData.isCustom" class="collection-status-badge">
+					public
 				</div>
 
 				<!-- 描述文本 -->
-				<h2 class="font-semibold my-2 text-gray-200 w-4/5 retro-text-shadow">
-					{{ infoData.description }}
-				</h2>
-
-				<!-- 难度等级 -->
-				<div class="retro-display-box w-3/5 mt-4 mb-4">
+				<div
+					class="retro-display-box w-3/5 mt-8 mb-4"
+					v-if="infoData.description"
+				>
 					<div class="display-face p-4">
-						<div
-							class="font-semibold flex items-center justify-center text-gray-800"
-						>
-							<div
-								class="rating rating-sm ml-2"
-								v-for="item in parseInt(infoData.difficulty)"
-							>
-								<div class="retro-star"></div>
-							</div>
-						</div>
-						<p
-							class="text-sm text-left text-gray-700 mt-2"
-							v-if="infoData.difficultyDetails"
-						>
-							{{ infoData.difficultyDetails }}
+						<p class="text-sm text-center text-gray-700">
+							{{ infoData.description }}
 						</p>
 					</div>
 				</div>
 
 				<!-- 设置 -->
-				<!--  -->
 				<button
 					v-if="!isDefault"
 					@click="goToCollectionEdit"
-					class="retro-btn-small mt-6"
+					class="retro-btn-small mt-10"
 				>
 					<div class="btn-face">
 						<i class="bi bi-gear-fill text-lg"></i>
@@ -111,7 +92,6 @@
 				</div>
 			</div>
 
-			<!-- 使用 draggable 替换原来的 div -->
 			<draggable
 				v-model="currentSeasonEpisodes"
 				:disabled="!isEditMode"
@@ -135,11 +115,39 @@
 						"
 						@delete="deleteEpisode"
 						@update="updateEpisodeTitle"
+						@move="handleMoveEpisode"
 					/>
 				</template>
 			</draggable>
 		</div>
 	</div>
+
+	<!-- 添加移动模态框 -->
+	<dialog ref="moveModal" class="modal">
+		<div class="modal-box">
+			<h3 class="font-bold text-lg mb-4">移动到其他合集</h3>
+			<div class="space-y-4">
+				<div v-if="collections.length === 0" class="text-center text-gray-500">
+					暂无其他合集
+				</div>
+				<div
+					v-for="collection in collections"
+					:key="collection._id"
+					class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+					@click="confirmMove(collection._id, selectedEpisode)"
+				>
+					<div>{{ collection.showName }}</div>
+					<i class="bi bi-chevron-right"></i>
+				</div>
+			</div>
+			<div class="modal-action">
+				<button class="btn" @click="closeMoveModal">取消</button>
+			</div>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
 </template>
 
 <script setup>
@@ -170,10 +178,15 @@ const currentProgress = ref({}); // 当前进度
 
 const hasPackageAccess = ref(false); // 检测是否已购入资源包
 
-// 添加编辑相关的状态
+// 编辑相关状态
 const isEditMode = ref(false);
 const editingEp = ref(null);
 const isDragging = ref(false);
+
+// 移动相关状态
+const moveModal = ref(null);
+const collections = ref([]);
+const selectedEpisode = ref(null);
 
 // 拖拽相关的方法
 const dragStart = () => {
@@ -182,6 +195,62 @@ const dragStart = () => {
 
 const dragEnd = () => {
 	isDragging.value = false;
+};
+
+// 获取可移动的目标合集列表
+const loadCollections = async () => {
+	try {
+		const res = await apiClient.get("/catalogs/user-catalogs");
+		if (res.data.code === 200) {
+			// 过滤掉当前合集
+			collections.value = res.data.data.filter(
+				(c) => c._id !== route.params.id
+			);
+		}
+	} catch (error) {
+		console.error("Failed to load collections:", error);
+		showToast({ message: "加载合集列表失败", type: "error" });
+	}
+};
+
+// 处理移动按钮点击
+const handleMoveEpisode = async (episode) => {
+	selectedEpisode.value = episode;
+	await loadCollections();
+	moveModal.value?.showModal();
+};
+
+// 确认移动
+const confirmMove = async (targetCatalogId, episode) => {
+	try {
+		console.log({
+			episodeId: episode._id,
+			fromCatalogId: route.params.id,
+			toCatalogId: targetCatalogId,
+			seasonNumber: currentSeason.value.seasonNumber,
+		});
+		const res = await apiClient.post("/catalogs/episodes/move", {
+			episodeId: episode._id,
+			fromCatalogId: route.params.id,
+			toCatalogId: targetCatalogId,
+			seasonNumber: currentSeason.value.seasonNumber,
+		});
+
+		if (res.data.code === 200) {
+			await loadCategoryData();
+			showToast({ message: "移动成功", type: "success" });
+			moveModal.value?.close();
+		}
+	} catch (error) {
+		console.error("Failed to move episode:", error);
+		showToast({ message: "移动失败", type: "error" });
+	}
+};
+
+// 关闭移动模态框
+const closeMoveModal = () => {
+	moveModal.value?.close();
+	selectedEpisode.value = null;
 };
 
 const handleChange = async (evt) => {
@@ -344,29 +413,6 @@ onMounted(async () => {
 	isLogin.value && getUserProfile();
 });
 
-// 处理解锁点击
-const handleUnlock = () => {
-	if (!isLogin.value) {
-		router.push("/login");
-		return;
-	}
-
-	router.push({
-		path: "/purchase",
-		query: {
-			catalogId: route.params.id,
-			returnTo: route.fullPath,
-		},
-	});
-};
-
-const goToLessonProgress = () => {
-	router.push({
-		path: `/collections/${route.params.id}/${currentProgress.value.season}/${currentProgress.value.episode}`,
-		query: { sign: currentProgress.value.sign, progress: true },
-	});
-};
-
 const goToLesson = (seasonNumber, episode) => {
 	if (!seasonNumber || !episode) return;
 	const params = `${route.params.id}/${seasonNumber}/${episode.ep.toString()}`;
@@ -424,39 +470,8 @@ const getRandomLayout = () => {
 	margin-bottom: 1rem;
 }
 
-.title-decoration {
-	position: absolute;
-	width: 30px;
-	height: 30px;
-	border: 4px solid white;
-}
-
-.title-decoration.left {
-	left: -15px;
-	top: 50%;
-	transform: translateY(-50%) rotate(45deg);
-}
-
-.title-decoration.right {
-	right: -15px;
-	top: 50%;
-	transform: translateY(-50%) rotate(45deg);
-}
-
 .retro-display-box {
 	position: relative;
-}
-
-.display-shadow {
-	background-color: #666;
-	border-radius: 12px;
-	transform: translateY(3px);
-}
-
-.display-edge {
-	background-color: rgb(136, 136, 136);
-	border-radius: 12px;
-	transform: translateY(-3px);
 }
 
 .display-face {
@@ -466,38 +481,9 @@ const getRandomLayout = () => {
 	transform: translateY(-3px);
 }
 
-/* 星星 */
-.retro-star {
-	width: 20px;
-	height: 20px;
-	background-color: #333;
-	clip-path: polygon(
-		50% 0%,
-		61% 35%,
-		98% 35%,
-		68% 57%,
-		79% 91%,
-		50% 70%,
-		21% 91%,
-		32% 57%,
-		2% 35%,
-		39% 35%
-	);
-	margin: 0 2px;
-}
-
 .retro-btn-small {
 	position: relative;
 	width: 4rem;
-	height: 2.5rem;
-	border: none;
-	background: none;
-	cursor: pointer;
-}
-
-.retro-nav-btn {
-	position: relative;
-	width: 6rem;
 	height: 2.5rem;
 	border: none;
 	background: none;
@@ -549,60 +535,6 @@ const getRandomLayout = () => {
 	background-color: rgba(240, 240, 240, 0.8);
 }
 
-.retro-episode-card {
-	position: relative;
-	aspect-ratio: 4/3;
-	cursor: pointer;
-	transition: transform 0.3s;
-}
-
-.card-shadow {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border-radius: 12px;
-	transform: translateY(4px);
-}
-
-.card-edge {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(102, 102, 102, 0.5);
-	border-radius: 12px;
-	transform: translateY(-4px);
-	transition: transform 0.1s;
-}
-
-.card-face {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: white;
-	border: 3px solid #333;
-	border-radius: 12px;
-	transform: translateY(-4px);
-	transition: transform 0.1s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.retro-episode-card:hover {
-	transform: translateY(-2px);
-}
-
-.retro-episode-card:active .card-edge,
-.retro-episode-card:active .card-face {
-	transform: translateY(-2px);
-}
-
 button:hover .btn-face {
 	background-color: white;
 }
@@ -615,205 +547,6 @@ button:active .btn-face {
 button:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
-}
-
-.retro-alert {
-	position: relative;
-	border: 3px solid #333;
-	border-radius: 8px;
-	background-color: rgba(var(--primary-color-rgb), 0.1);
-	padding: 0.75rem 1rem;
-	box-shadow: 4px 4px 0 rgba(var(--primary-color-rgb), 0.3);
-}
-
-.retro-link {
-	color: var(--primary-color);
-	font-weight: bold;
-	cursor: pointer;
-	position: relative;
-	text-decoration: underline;
-	text-decoration-style: dotted;
-	text-underline-offset: 4px;
-}
-
-/* 字幕框装饰 */
-.manga-subtitle-box {
-	position: relative;
-	display: inline-block;
-	padding: 0.5rem 2rem;
-}
-
-.package-status {
-	z-index: 10;
-	width: 100%;
-	max-width: 480px;
-	margin: 0 auto;
-	text-align: center;
-}
-
-/* 已解锁状态 */
-.retro-badge.success {
-	width: 50%;
-	background: rgba(var(--accent-color-rgb), 0.6);
-	padding: 8px 16px;
-	border-radius: 8px;
-	border: 2px solid #fff;
-	box-shadow: 0 2px 0 #000, 2px 4px 8px rgba(0, 0, 0, 0.1);
-	margin: 0 auto;
-}
-
-.badge-content {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: white;
-	font-weight: 500; /* 减小字重 */
-	font-size: 0.9rem; /* 减小字号 */
-}
-
-.badge-content i {
-	font-size: 0.9rem; /* 减小图标大小 */
-}
-/* 未解锁促销样式 */
-.retro-promo {
-	background: rgba(255, 255, 255, 0.95);
-	border: 3px solid #000;
-	border-radius: 12px;
-	padding: 16px 24px;
-	cursor: pointer;
-	position: relative;
-	transition: all 0.3s ease;
-	box-shadow: 0 4px 0 #000, 4px 8px 15px rgba(0, 0, 0, 0.2);
-}
-
-.retro-promo:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 6px 0 #000, 4px 10px 20px rgba(0, 0, 0, 0.25);
-}
-.retro-promo:active {
-	transform: translateY(2px);
-	box-shadow: 0 2px 0 #000, 2px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.promo-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	color: #000;
-	gap: 16px;
-}
-
-.promo-text h3 {
-	color: #000;
-	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
-	white-space: nowrap; /* 确保文本不换行 */
-}
-
-.promo-price {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 8px;
-}
-
-.unlock-btn {
-	display: flex;
-	align-items: center;
-	background: var(--secondary-color);
-	color: white;
-	padding: 8px 16px;
-	border-radius: 8px;
-	border: 2px solid #000;
-	font-weight: 600;
-	transition: all 0.2s ease;
-	box-shadow: 0 2px 0 #000;
-	white-space: nowrap; /* 确保按钮内容不换行 */
-}
-
-.price {
-	font-weight: bold;
-	color: white; /* 改为白色以配合按钮背景 */
-	text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
-}
-
-.unlock-btn:hover {
-	background: rgba(var(--secondary-color-rgb), 0.95);
-	transform: translateY(-1px);
-}
-
-.unlock-btn:active {
-	transform: translateY(1px);
-	box-shadow: 0 1px 0 #000;
-}
-
-/* 装饰元素 */
-.promo-decoration {
-	position: absolute;
-	font-size: 1.5rem;
-	color: var(--secondary-color);
-	animation: spin 4s linear infinite;
-}
-.left-star {
-	left: -10px;
-	top: 50%;
-	transform: translateY(-50%);
-}
-
-.right-star {
-	right: -10px;
-	top: 50%;
-	transform: translateY(-50%);
-}
-
-@keyframes spin {
-	from {
-		transform: translateY(-50%) rotate(0deg);
-	}
-	to {
-		transform: translateY(-50%) rotate(360deg);
-	}
-}
-
-.retro-add-button {
-	position: relative;
-	height: 3rem;
-	cursor: pointer;
-	transition: transform 0.3s;
-}
-
-.retro-add-button .card-shadow,
-.retro-add-button .card-edge,
-.retro-add-button .card-face {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	border-radius: 12px;
-}
-
-.retro-add-button .card-shadow {
-	transform: translateY(4px);
-}
-
-.retro-add-button .card-edge {
-	background-color: rgba(102, 102, 102, 0.5);
-	transform: translateY(-4px);
-}
-
-.retro-add-button .card-face {
-	background-color: white;
-	border: 3px solid #333;
-	transform: translateY(-4px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 0.875rem;
-	color: #666;
-}
-
-.retro-add-button:hover {
-	transform: translateY(-2px);
 }
 
 /* 集合状态标识样式 */

@@ -25,6 +25,11 @@
 			<div class="flex-none">
 				<ul class="menu menu-horizontal gap-2">
 					<li v-if="isLogin">
+						<a class="retro-link create-card-btn mr-8" @click="createNewCard">
+							<i class="bi bi-plus-circle"></i> 快速制作卡片
+						</a>
+					</li>
+					<li v-if="isLogin">
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/' }"
@@ -81,6 +86,8 @@ import { ref, onMounted, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
 import ExitIcon from "@/components/icons/Exit.vue";
+import { showToast } from "@/components/common/toast.js";
+import apiClient from "@/api";
 
 const { t, locale } = useI18n();
 
@@ -104,6 +111,76 @@ const goToHome = () => {
 // 跳转到其他页面
 const goToLink = (path) => {
 	router.push("/" + path);
+};
+
+// 创建新卡片
+const createNewCard = async () => {
+	try {
+		// 获取用户的默认合集
+		const res = await apiClient.get("/catalogs/default");
+		if (res.data.code === 200 && res.data.data) {
+			const defaultCatalog = res.data.data;
+			// 获取默认合集的第一个季节
+			if (defaultCatalog.seasons && defaultCatalog.seasons.length > 0) {
+				const season = defaultCatalog.seasons[0];
+
+				// 检查是否有episodes
+				if (season.episodes && season.episodes.length > 0) {
+					// 获取最后一个episode
+					const lastEpisode = season.episodes[season.episodes.length - 1];
+
+					// 如果最后一个episode的scriptUrl为空，直接打开它
+					if (!lastEpisode.scriptUrl || lastEpisode.scriptUrl === "") {
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${lastEpisode.ep}`,
+							query: { mode: "edit", sign: lastEpisode._id },
+						});
+						return; // 提前返回，不创建新的
+					}
+
+					// 如果最后一个episode有内容，创建新的
+					const nextEp = season.episodes.length + 1;
+					const createRes = await apiClient.post("/catalogs/episodes/create", {
+						catalogId: defaultCatalog._id,
+						ep: nextEp,
+						epName: "未命名文档",
+						seasonNumber: season.seasonNumber,
+					});
+
+					if (createRes.data.code === 200) {
+						const newEpisode = createRes.data.data;
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${nextEp}`,
+							query: { mode: "edit", sign: newEpisode._id },
+						});
+					}
+				} else {
+					// 没有episodes，创建第一个
+					const createRes = await apiClient.post("/catalogs/episodes/create", {
+						catalogId: defaultCatalog._id,
+						ep: 1,
+						epName: "未命名文档",
+						seasonNumber: season.seasonNumber,
+					});
+
+					if (createRes.data.code === 200) {
+						const newEpisode = createRes.data.data;
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/1`,
+							query: { mode: "edit", sign: newEpisode._id },
+						});
+					}
+				}
+			} else {
+				showToast({ message: "默认合集没有可用的季节", type: "error" });
+			}
+		} else {
+			showToast({ message: "未找到默认合集", type: "error" });
+		}
+	} catch (error) {
+		console.error("获取默认合集失败:", error);
+		showToast({ message: "获取默认合集失败", type: "error" });
+	}
 };
 
 // 登出逻辑
@@ -261,5 +338,22 @@ watch(
 
 .navbar[data-theme="dark"] .retro-link::after {
 	background: #fff;
+}
+
+.retro-link.active::after {
+	transform: scaleX(1);
+}
+
+/* 创建卡片按钮样式 */
+.create-card-btn {
+	background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+	border: 2px dashed var(--primary-color) !important;
+	color: var(--primary-color) !important;
+}
+
+.create-card-btn:hover {
+	background-color: var(--primary-color) !important;
+	border: 2px solid var(--primary-color) !important;
+	color: white !important;
 }
 </style>

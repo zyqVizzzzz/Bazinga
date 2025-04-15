@@ -56,7 +56,7 @@ const handleCreateCollection = async (blocks) => {
 		delete query.mode;
 		router.replace({ query });
 	} catch (error) {
-		console.error("制作卡片合辑失败:", error);
+		console.error("制作卡片合集失败:", error);
 		showToast({ message: "制作失败，请重试", type: "error" });
 	}
 };

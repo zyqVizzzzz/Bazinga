@@ -7,7 +7,7 @@ const messages = {
 		},
 		nav: {
 			home: "首页",
-			collections: "合辑",
+			collections: "合集",
 			notes: "卡片",
 			profile: "个人主页",
 			login: "登录",
@@ -15,14 +15,14 @@ const messages = {
 		},
 		home: {
 			title: "Collections",
-			subTitle: "合辑",
+			subTitle: "合集",
 			devLog: "日志",
 			more: "查看更多",
 		},
 		collections: {
 			title: "书架",
 			subTitle: "Bookshelf",
-			create: "创建合辑",
+			create: "创建合集",
 		},
 		collection: {
 			continue: "继续上次进度",
@@ -30,8 +30,8 @@ const messages = {
 			create: "新增故事合辑",
 		},
 		collectionSetup: {
-			createTitle: "创建合辑",
-			updateTitle: "更新合辑",
+			createTitle: "创建合集",
+			updateTitle: "更新合集",
 			form: {
 				title: "合辑名",
 				titleDesc: "必填项",
@@ -143,7 +143,7 @@ const messages = {
 		},
 		home: {
 			title: "Collections",
-			subTitle: "合辑(复数)",
+			subTitle: "合集(复数)",
 			devLog: "PLAN_B",
 			more: "More",
 		},

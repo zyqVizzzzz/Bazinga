@@ -6,13 +6,13 @@
 				<span class="text-shadow-retro"
 					><mark class="retro-highlight">Compilation</mark></span
 				>
-				<span class="pronunciation mt-2">n. 合辑 - /ˌkɑːmpɪˈleɪʃən/</span>
+				<span class="pronunciation mt-2">n. 合集 - /ˌkɑːmpɪˈleɪʃən/</span>
 			</h1> -->
 			<!-- <div class="title-decoration left"></div>
 			<div class="title-decoration right"></div> -->
 		</div>
 
-		<!-- 合辑 -->
+		<!-- 合集 -->
 		<div class="grid-container justify-items-center">
 			<div
 				v-for="scene in scenes"
@@ -39,9 +39,7 @@
 							<div class="content-container" :style="{ color: scene.theme }">
 								<h2 class="title text-lg">{{ scene.showName }}</h2>
 								<p class="subtitle">{{ scene.name }}</p>
-								<div class="status-badge" :class="{ private: scene.isCustom }">
-									{{ scene.isCustom ? "Private" : "Public" }}
-								</div>
+								<div class="status-badge" v-if="!scene.isCustom">Public</div>
 							</div>
 						</div>
 					</div>
@@ -55,9 +53,7 @@
 						<div class="card-face">
 							<div class="add-content">
 								<i class="bi bi-folder-plus text-3xl mb-2"></i>
-								<span class="text-lg font-bold">{{
-									t("collections.create")
-								}}</span>
+								<span class="font-bold">{{ t("collections.create") }}</span>
 							</div>
 						</div>
 					</div>

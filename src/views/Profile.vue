@@ -11,7 +11,6 @@
 					<i class="bi bi-key-fill mr-1"></i>
 					更新密码
 				</button>
-
 				<!-- 密码更新气泡 -->
 				<div class="password-bubble" :class="{ show: isUpdatingPassword }">
 					<div class="bubble-content">
@@ -24,6 +23,7 @@
 						<PasswordEdit />
 					</div>
 				</div>
+
 				<button
 					class="action-btn update-email -rotate-3 hover:rotate-1"
 					:class="{ 'btn-hide': isUpdatingPassword || isUpdatingEmail }"
@@ -32,7 +32,6 @@
 					<i class="bi bi-envelope-fill mr-1"></i>
 					更新邮箱
 				</button>
-
 				<!-- 邮箱更新气泡 -->
 				<div class="email-bubble" :class="{ show: isUpdatingEmail }">
 					<div class="bubble-content">
@@ -103,7 +102,7 @@
 									placeholder="输入你的昵称"
 								/>
 								<div
-									class="text-red-500 text-xs mt-1"
+									class="text-red-500 text-xs mt-1 text-left"
 									v-if="v$.tempNickname.$error"
 								>
 									{{ v$.tempNickname.$errors[0].$message }}
@@ -119,7 +118,7 @@
 									placeholder="写下你的个性签名"
 								></textarea>
 								<div
-									class="text-red-500 text-xs mt-1"
+									class="text-red-500 text-xs mt-1 text-left"
 									v-if="v$.tempSignature.$error"
 								>
 									{{ v$.tempSignature.$errors[0].$message }}
@@ -147,9 +146,7 @@
 import { ref, onMounted, computed } from "vue";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-
 import CharacterCard from "@/components/profile/character.vue";
-import ProfileEditor from "@/components/profile/editor.vue";
 import Footer from "../layout/footer.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
@@ -166,11 +163,17 @@ const checkInStatus = ref({
 	loading: false,
 });
 
+// 修改验证规则和响应式数据的绑定
 const tempNickname = ref("");
 const tempSignature = ref("");
 
+const formData = computed(() => ({
+	tempNickname: tempNickname.value,
+	tempSignature: tempSignature.value,
+}));
+
 // 验证规则
-const rules = computed(() => ({
+const rules = {
 	tempNickname: {
 		required: helpers.withMessage("请输入昵称", required),
 		maxLength: helpers.withMessage("昵称不能超过20个字符", maxLength(20)),
@@ -179,12 +182,9 @@ const rules = computed(() => ({
 		required: helpers.withMessage("请输入个性签名", required),
 		maxLength: helpers.withMessage("个性签名不能超过140个字符", maxLength(140)),
 	},
-}));
+};
 
-const v$ = useVuelidate(rules, {
-	tempNickname,
-	tempSignature,
-});
+const v$ = useVuelidate(rules, formData);
 
 const isUpdatingPassword = ref(false);
 
@@ -196,11 +196,6 @@ const isUpdatingEmail = ref(false);
 
 const toggleEmailUpdate = () => {
 	isUpdatingEmail.value = !isUpdatingEmail.value;
-};
-
-// 更新用户信息
-const updateUserInfo = (updatedUser) => {
-	user.value = updatedUser;
 };
 
 const getUserProfile = async () => {
@@ -231,8 +226,29 @@ const getUserLearnInfo = async () => {
 
 // 保存个人资料
 const saveProfileChanges = async () => {
-	const isFormCorrect = await v$.value.$validate();
-	if (!isFormCorrect) return;
+	// 执行验证
+	await v$.value.$validate();
+
+	// 手动检查是否有错误
+	if (
+		v$.value.tempNickname.$errors.length > 0 ||
+		v$.value.tempSignature.$errors.length > 0
+	) {
+		showToast({
+			message: "请检查输入是否正确",
+			type: "error",
+		});
+		return;
+	}
+
+	// 如果没有昵称，提示错误
+	if (!tempNickname.value.trim()) {
+		showToast({
+			message: "昵称不能为空",
+			type: "error",
+		});
+		return;
+	}
 
 	try {
 		const response = await apiClient.post("/users/me/update", {
@@ -247,7 +263,7 @@ const saveProfileChanges = async () => {
 				signature: response.data.data.signature,
 			};
 			showToast({ message: "个人信息已更新", type: "success" });
-			toggleEdit(); // 关闭编辑气泡
+			toggleEdit();
 		} else {
 			showToast({ message: response.data.message, type: "error" });
 		}
@@ -271,26 +287,17 @@ const getCheckInStatus = async () => {
 // 签到成功的回调函数
 const onCheckInSuccess = () => {
 	// 更新用户积分
-	user.value.points = (user.value.points || 0) + 20;
+	user.value.points = (user.value.points || 0) + 100;
 	checkInStatus.value.hasChecked = true;
-};
-
-// 将编辑按钮点击事件与 toggleEdit 关联
-const editProfile = () => {
-	// 确保用户数据已加载
-	if (Object.keys(user.value).length > 0) {
-		console.log("编辑时的用户数据:", user.value);
-		toggleEdit();
-	} else {
-		showToast({ message: "用户数据加载中，请稍后再试", type: "warning" });
-	}
 };
 
 const toggleEdit = () => {
 	if (!isEditing.value) {
 		// 打开编辑时，初始化表单数据
-		tempNickname.value = user.value.nickname || "";
-		tempSignature.value = user.value.signature || "";
+		tempNickname.value = user.value.nickname ?? "";
+		tempSignature.value = user.value.signature ?? "";
+		// 重置验证状态
+		v$.value.$reset();
 	}
 	isEditing.value = !isEditing.value;
 };

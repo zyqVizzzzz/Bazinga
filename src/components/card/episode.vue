@@ -42,8 +42,20 @@
 
 					<!-- 编辑模式下的控制按钮 -->
 					<div v-if="isEditMode" class="absolute top-[-10px] right-[-10px]">
-						<button class="retro-btn-tiny" @click="$emit('delete', episode)">
+						<button
+							class="retro-btn-tiny close"
+							@click="$emit('delete', episode)"
+						>
 							<i class="bi bi-x"></i>
+						</button>
+					</div>
+					<div v-if="isEditMode" class="absolute bottom-[-10px] left-[-10px]">
+						<button
+							class="retro-btn-tiny move"
+							@click.stop="$emit('move', episode)"
+							title="移动到其他合集"
+						>
+							<i class="bi bi-shuffle text-xs"></i>
 						</button>
 					</div>
 				</div>
@@ -204,8 +216,13 @@ const saveTitle = () => {
 	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
-.retro-btn-tiny:hover {
+.retro-btn-tiny.close:hover {
 	background-color: var(--secondary-color);
+	color: #fff;
+}
+
+.retro-btn-tiny.move:hover {
+	background-color: var(--primary-color);
 	color: #fff;
 }
 

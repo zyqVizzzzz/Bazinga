@@ -70,7 +70,7 @@
 									</div>
 								</div>
 
-								<!-- 合辑简介 -->
+								<!-- 合集简介 -->
 								<div class="form-control">
 									<label class="retro-label">
 										<span class="label-text">{{
@@ -99,7 +99,7 @@
 									@file-selected="handleBannerFileSelected"
 								/>
 								<!-- 主题色选择器 -->
-								<div class="form-control">
+								<!-- <div class="form-control">
 									<label class="retro-label">
 										<span class="label-text">{{
 											t("collectionSetup.form.themeColor")
@@ -113,10 +113,10 @@
 											class="w-full h-8 flex"
 										/>
 									</div>
-								</div>
+								</div> -->
 
 								<!-- 难度滑块 -->
-								<div class="form-control">
+								<!-- <div class="form-control">
 									<div class="retro-range-wrapper mt-2">
 										<input
 											v-model="noteForm.difficulty"
@@ -130,10 +130,10 @@
 											{{ noteForm.difficulty }}
 										</div>
 									</div>
-								</div>
+								</div> -->
 
 								<!-- 难度描述 -->
-								<div class="form-control">
+								<!-- <div class="form-control">
 									<div class="retro-textarea-wrapper">
 										<textarea
 											v-model="noteForm.difficultyDetails"
@@ -148,7 +148,7 @@
 									>
 										{{ v$.difficultyDetails.$errors[0].$message }}
 									</div>
-								</div>
+								</div> -->
 							</form>
 						</div>
 					</div>
@@ -341,10 +341,10 @@ const getCollection = async () => {
 			bannerPreview.value = res.data.data.banner;
 			selectedSeasonIndex.value = 0;
 		} else {
-			showToast({ message: "合辑获取失败，请重试！", type: "error" });
+			showToast({ message: "合集获取失败，请重试！", type: "error" });
 		}
 	} catch (error) {
-		showToast({ message: "合辑获取失败，请重试！", type: "error" });
+		showToast({ message: "合集获取失败，请重试！", type: "error" });
 		console.error("Failed to create note:", error);
 	}
 };
@@ -379,15 +379,15 @@ const confirmDelete = async () => {
 		const res = await apiClient.delete("/catalogs/" + resourceId.value);
 		if (res.data.code === 200) {
 			clearLocalProgressByCatalogId(resourceId.value);
-			showToast({ message: "删除合辑成功", type: "success" });
+			showToast({ message: "删除合集成功", type: "success" });
 			router.replace({
 				path: "/collections",
 			});
 		} else {
-			showToast({ message: "删除合辑失败", type: "error" });
+			showToast({ message: "删除合集失败", type: "error" });
 		}
 	} catch (error) {
-		showToast({ message: "删除合辑失败", type: "error" });
+		showToast({ message: "删除合集失败", type: "error" });
 	}
 };
 
@@ -443,7 +443,7 @@ const submitNote = async () => {
 				updateLocalProgress(resourceId.value, noteForm.value);
 			}
 
-			const successMessage = resourceId.value ? "合辑更新成功" : "新增合辑成功";
+			const successMessage = resourceId.value ? "合集更新成功" : "新增合集成功";
 			showToast({ message: successMessage, type: "success" });
 			setTimeout(() => {
 				resourceId.value

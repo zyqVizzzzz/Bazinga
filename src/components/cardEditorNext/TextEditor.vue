@@ -571,7 +571,7 @@ const createCollection = async () => {
 		// 触发事件，将数据传递给父组件
 		emit("create-collection", blocks);
 	} catch (error) {
-		console.error("制作卡片合辑失败:", error);
+		console.error("制作卡片合集失败:", error);
 		showToast({ message: "制作失败，请重试", type: "error" });
 	}
 };
