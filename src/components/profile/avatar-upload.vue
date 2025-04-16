@@ -2,9 +2,13 @@
 	<div class="avatar-container relative group">
 		<!-- 头像图片 -->
 		<img
-			:src="props.user.profilePic || '/default-avatar.png'"
+			v-if="props.user.profilePic"
+			:src="props.user.profilePic"
 			alt="Profile Avatar"
 		/>
+		<div v-else class="default-avatar flex items-center justify-center">
+			<span class="text-3xl font-bold">{{ getInitials() }}</span>
+		</div>
 
 		<!-- 悬停遮罩层 -->
 		<div
@@ -53,6 +57,24 @@ const emit = defineEmits(["update:avatarUrl"]);
 
 const fileInput = ref(null);
 const uploading = ref(false);
+
+// 获取用户名首字母作为默认头像
+const getInitials = () => {
+	if (!props.user) return "?";
+
+	// 优先使用用户名
+	if (props.user.username) {
+		return props.user.username.charAt(0).toUpperCase();
+	}
+
+	// 其次使用邮箱
+	if (props.user.email) {
+		return props.user.email.charAt(0).toUpperCase();
+	}
+
+	// 默认显示问号
+	return "?";
+};
 
 // 触发文件选择
 const triggerFileInput = () => {
@@ -119,5 +141,14 @@ const handleFileChange = async (event) => {
 	min-height: 235px;
 	object-fit: cover;
 	display: block;
+}
+
+.default-avatar {
+	width: 100%;
+	height: 100%;
+	min-width: 236px;
+	min-height: 235px;
+	background: linear-gradient(135deg, #6366f1, #8b5cf6);
+	color: white;
 }
 </style>

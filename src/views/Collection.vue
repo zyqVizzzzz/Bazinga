@@ -1,9 +1,13 @@
 <template>
-	<div class="collection w-full mx-auto flex flex-col items-center">
+	<div
+		class="collection w-full mx-auto flex flex-col items-center"
+		:class="{ 'default-collection': isDefault }"
+	>
 		<!-- Banner 区域 -->
 		<div
+			v-if="!isDefault"
 			class="collection-content relative w-full mb-8 retro-banner"
-			:style="isDefault ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
+			:style="!isCustom ? 'padding-bottom: 46px' : 'padding-bottom: 26px'"
 		>
 			<div
 				v-if="infoData"
@@ -54,7 +58,7 @@
 
 				<!-- 设置 -->
 				<button
-					v-if="!isDefault"
+					v-if="isCustom"
 					@click="goToCollectionEdit"
 					class="retro-btn-small mt-10"
 				>
@@ -68,7 +72,7 @@
 		<!-- 内容区域 -->
 		<div class="w-2/3 relative mt-4">
 			<!-- 添加编辑控制区域 -->
-			<div v-if="!isDefault" class="flex justify-between items-center mb-6">
+			<div v-if="isCustom" class="flex justify-between items-center mb-6">
 				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>
 				<div>
 					<button
@@ -173,7 +177,8 @@ const infoData = ref(null); // 存储 Info 数据
 const seasons = ref([]); // 存储 season 的 key (如 S01, S02)
 const episodes = ref({}); // 存储每季的集数
 const currentSeasonIndex = ref(0); // 当前季的索引
-const isDefault = ref(true); // 是否是系统默认数据
+const isDefault = ref(false); // 是否是系统默认数据
+const isCustom = ref(false); // 是否由用户创建
 const currentProgress = ref({}); // 当前进度
 
 const hasPackageAccess = ref(false); // 检测是否已购入资源包
@@ -363,7 +368,10 @@ const loadCategoryData = async () => {
 			}
 			// 判断是否是默认课程
 			if (infoData.value.userId && infoData.value.isCustom) {
-				isDefault.value = false;
+				isCustom.value = true;
+			}
+			if (infoData.value.isDefault) {
+				isDefault.value = true;
 			}
 		} else {
 			showToast({ message: res.data.message, type: "error" });
@@ -447,8 +455,20 @@ const getRandomLayout = () => {
 	margin-top: -64px;
 }
 
+.default-collection {
+	margin-top: 20px; /* 默认合集不需要负margin */
+}
+
 .collection-content {
 	padding-top: 96px;
+}
+
+.default-collection-header {
+	text-align: center;
+	margin-bottom: 2rem;
+	padding: 2rem 1rem;
+	width: 100%;
+	max-width: 800px;
 }
 
 /* 纹理遮罩 */

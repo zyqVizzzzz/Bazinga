@@ -1,19 +1,7 @@
 <template>
 	<div class="all-collections">
-		<!-- 标题 -->
-		<div class="retro-title-box text-center mb-10">
-			<!-- <h1 class="text-2xl font-bold">
-				<span class="text-shadow-retro"
-					><mark class="retro-highlight">Compilation</mark></span
-				>
-				<span class="pronunciation mt-2">n. 合集 - /ˌkɑːmpɪˈleɪʃən/</span>
-			</h1> -->
-			<!-- <div class="title-decoration left"></div>
-			<div class="title-decoration right"></div> -->
-		</div>
-
 		<!-- 合集 -->
-		<div class="grid-container justify-items-center">
+		<div class="grid-container justify-items-center mt-10">
 			<div
 				v-for="scene in scenes"
 				:key="scene.id"
@@ -45,7 +33,38 @@
 					</div>
 				</div>
 			</div>
+			<div
+				v-if="defaultCatalog"
+				class="retro-card"
+				@click="goToCollection(defaultCatalog._id)"
+			>
+				<div class="card-shadow">
+					<div class="card-edge">
+						<div class="card-face">
+							<!-- 默认合集图标区域 - 替代Banner -->
+							<div class="banner-container default-banner">
+								<div class="default-icon">
+									<i class="bi bi-journal-text text-5xl"></i>
+								</div>
+							</div>
 
+							<!-- 内容区域 -->
+							<div
+								class="content-container"
+								:style="{ color: 'var(--primary-color)' }"
+							>
+								<h2 class="title text-lg">未分类文档</h2>
+								<p class="subtitle text-sm mb-4">
+									通过「快速开始」创建的文档合集
+								</p>
+								<div class="document-badge">
+									{{ getDocumentCount() }} 个文档
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			<!-- 新增合辑 -->
 			<div class="retro-card add-card" @click="addNewScene">
 				<div class="card-shadow">
@@ -78,9 +97,13 @@ const isLogin = computed(() => loginStore.isLogin);
 
 const router = useRouter();
 const scenes = ref([]);
+const defaultCatalog = ref(null);
 
 onMounted(() => {
 	getAllScenes();
+	if (isLogin.value) {
+		getDefaultCatalog();
+	}
 });
 
 const getAllScenes = async () => {
@@ -94,6 +117,30 @@ const getAllScenes = async () => {
 	} catch (error) {
 		console.error("Failed to fetch scenes", error);
 	}
+};
+
+const getDefaultCatalog = async () => {
+	try {
+		const res = await apiClient.get("/catalogs/default");
+		if (res.data.code === 200 && res.data.data) {
+			defaultCatalog.value = res.data.data;
+		}
+	} catch (error) {
+		console.error("Failed to fetch default catalog", error);
+	}
+};
+
+const getDocumentCount = () => {
+	if (!defaultCatalog.value || !defaultCatalog.value.seasons) return 0;
+
+	let count = 0;
+	defaultCatalog.value.seasons.forEach((season) => {
+		if (season.episodes) {
+			count += season.episodes.length;
+		}
+	});
+
+	return count;
 };
 
 const goToCollection = (id) => {
@@ -123,6 +170,43 @@ const addNewScene = () => {
 	grid-template-columns: repeat(3, 1fr);
 	gap: 2rem;
 	padding: 1rem;
+}
+
+/* 默认合集样式 */
+.default-banner {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
+}
+
+.default-icon {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--primary-color);
+	height: 100%;
+}
+
+.document-badge {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	background-color: var(--primary-color);
+	color: white;
+	border-radius: 20px;
+	font-size: 0.875rem;
+	font-weight: bold;
+	margin-top: 0.5rem;
+}
+
+.document-count {
+	display: inline-block;
+	padding: 0.25rem 0.75rem;
+	background-color: var(--primary-color);
+	color: white;
+	border-radius: 20px;
+	font-size: 0.875rem;
+	font-weight: bold;
 }
 
 .retro-title-box {

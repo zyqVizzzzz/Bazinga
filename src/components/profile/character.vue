@@ -49,7 +49,7 @@
 							></i>
 						</div>
 						<div class="check-in-text">
-							{{ checkInStatus.hasChecked ? "今日已签到" : "每日签到 +20" }}
+							{{ checkInStatus.hasChecked ? "今日已签到" : "每日签到 +100" }}
 						</div>
 					</div>
 					<div class="glitch-effect"></div>
@@ -76,7 +76,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import AvatarUpload from "@/components/profile/avatar-upload.vue";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
@@ -111,8 +110,8 @@ const handleCheckIn = async () => {
 
 		if (response.data.data) {
 			emit("check-in-success");
-			pointsStore.updatePoints(20);
-			showToast({ message: "签到成功！获得20积分", type: "success" });
+			pointsStore.updatePoints(100);
+			showToast({ message: "签到成功！获得100积分", type: "success" });
 		}
 	} catch (error) {
 		showToast({

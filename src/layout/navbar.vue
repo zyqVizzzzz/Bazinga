@@ -26,7 +26,7 @@
 				<ul class="menu menu-horizontal gap-2">
 					<li v-if="isLogin">
 						<a class="retro-link create-card-btn mr-8" @click="createNewCard">
-							<i class="bi bi-plus-circle"></i> 快速制作卡片
+							<i class="bi bi-plus-circle"></i> 快速开始
 						</a>
 					</li>
 					<li v-if="isLogin">
@@ -53,7 +53,7 @@
 							:class="{ active: route.path === '/notebook' }"
 							@click="goToLink('notebook')"
 						>
-							{{ t("nav.notes") }}
+							笔记本
 						</a>
 					</li>
 					<li v-if="isLogin">
@@ -62,7 +62,7 @@
 							:class="{ active: route.path === '/profile' }"
 							@click="goToLink('profile')"
 						>
-							{{ t("nav.profile") }}
+							个人资料
 						</a>
 					</li>
 					<li v-if="isLogin">
