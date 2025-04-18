@@ -34,32 +34,6 @@
 
 				<div class="guide-section">
 					<h3 class="font-bold mb-2 flex items-center justify-center">
-						<i class="bi bi-card-text"></i>
-					</h3>
-					<div class="structure-guide text-sm">
-						<p class="mb-2">
-							1. <strong>标题</strong>：使用
-							<strong># 标题文本</strong> 创建标题，通过标题划分不同场景/卡片
-						</p>
-						<p class="mb-2">
-							2. <strong>段落</strong>：空行分隔段落，可以让结构更清晰
-						</p>
-						<p class="mb-2">3. <strong>目前仅支持输入文本</strong></p>
-						<div class="example-box">
-							<pre class="text-sm">
-# 第一个场景
-这是第一个场景的内容。
-
-# 第二个场景
-新的标题开始了新的场景。
-          </pre
-							>
-						</div>
-					</div>
-				</div>
-
-				<div class="guide-section">
-					<h3 class="font-bold mb-2 flex items-center justify-center">
 						<i class="bi bi-keyboard text-lg"></i>
 					</h3>
 
@@ -76,18 +50,6 @@
 							>
 							<span class="command-desc">自动生成文章</span>
 						</div>
-						<!-- <div class="command-item">
-							<span class="command-code"
-								>/bazinga/article:主题 +
-								<span class="enter-hint">
-									<i
-										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
-									></i>
-									Enter
-								</span></span
-							>
-							<span class="command-desc">生成指定主题的文章</span>
-						</div> -->
 						<div class="command-item">
 							<span class="command-code"
 								>/bazinga/url:链接 +
@@ -117,6 +79,29 @@
 					</div>
 				</div>
 
+				<div class="guide-section">
+					<h3 class="font-bold mb-2 flex items-center justify-center">
+						<i class="bi bi-card-text"></i>
+					</h3>
+					<div class="structure-guide text-sm">
+						<p class="mb-2">
+							1. <strong>标题</strong>：使用
+							<strong># 标题文本</strong> 创建标题，通过标题划分不同场景/卡片
+						</p>
+						<p class="mb-2">2. <strong>目前仅支持输入文本</strong></p>
+						<div class="example-box">
+							<pre class="text-sm">
+# 第一个场景
+这是第一个场景的内容。
+
+# 第二个场景
+新的标题开始了新的场景。
+          </pre
+							>
+						</div>
+					</div>
+				</div>
+
 				<div class="divider"></div>
 
 				<div class="guide-section text-sm">
@@ -124,7 +109,6 @@
 						<i class="bi bi-lightbulb text-medium"></i>
 					</h3> -->
 					<ul class="tips-list">
-						<li>每个场景是一张卡片</li>
 						<li>每个场景/卡片控制在20000字符以内，效果更佳</li>
 					</ul>
 				</div>
@@ -176,11 +160,7 @@ const handleCancel = () => {
 	}
 };
 
-const emit = defineEmits([
-	"update:modelValue",
-	"create-collection",
-	"back-to-preview",
-]);
+const emit = defineEmits(["update:modelValue", "create-collection"]);
 
 const waitingForConfirmation = ref(false);
 const isReconfirming = ref(false); // 重新确认状态标志
@@ -203,7 +183,8 @@ const checkCommand = (event) => {
 		lastLine.includes("bazinga/go") ||
 		lastLine.includes("bazinga/lfg") ||
 		lastLine.includes("bazinga/omg") ||
-		lastLine.includes("bazinga/wtf")
+		lastLine.includes("bazinga/wtf") ||
+		lastLine === "/bazinga"
 	) {
 		event.preventDefault();
 		// 移除包含命令的最后一行

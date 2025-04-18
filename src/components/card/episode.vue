@@ -155,12 +155,13 @@ const saveTitle = () => {
 	justify-content: center;
 }
 
-.retro-episode-card:hover {
+/* 只在非编辑模式下显示悬停效果 */
+.retro-episode-card:not(.edit-mode):hover {
 	transform: translateY(-2px);
 }
 
-.retro-episode-card:active .card-edge,
-.retro-episode-card:active .card-face {
+.retro-episode-card:not(.edit-mode):active .card-edge,
+.retro-episode-card:not(.edit-mode):active .card-face {
 	transform: translateY(-2px);
 }
 
@@ -233,17 +234,6 @@ const saveTitle = () => {
 	font-size: 0.875rem;
 	background: white;
 	width: 100%;
-}
-
-.add-card .card-face {
-	color: #666;
-	cursor: pointer;
-	transition: all 0.2s;
-}
-
-.add-card:hover .card-face {
-	color: var(--primary-color);
-	transform: translateY(-6px);
 }
 
 /* 标题容器基础样式 */
@@ -365,14 +355,14 @@ const saveTitle = () => {
 	-webkit-box-orient: vertical;
 }
 
-/* 添加通用悬停效果 */
-.retro-episode-card:hover .card-face {
+/* 通用悬停效果 */
+.retro-episode-card:not(.edit-mode):hover .card-face {
 	transition: all 0.3s ease;
 	transform: translateY(-6px);
 }
 
 /* 卡片悬停效果 */
-.retro-episode-card:hover {
+.retro-episode-card:not(.edit-mode):hover {
 	transform: translateY(-4px);
 	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }

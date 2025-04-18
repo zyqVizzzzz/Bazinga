@@ -126,26 +126,69 @@
 		</div>
 	</div>
 
-	<!-- 添加移动模态框 -->
+	<!-- 移动模态框 -->
 	<dialog ref="moveModal" class="modal">
-		<div class="modal-box">
-			<h3 class="font-bold text-lg mb-4">移动到其他合集</h3>
+		<div class="modal-box vintage-modal max-w-md min-h-[300px] p-6">
+			<!-- 关闭按钮 -->
+			<form method="dialog" class="absolute right-4 top-4">
+				<button class="btn btn-sm btn-circle btn-ghost">
+					<i class="bi bi-x-lg"></i>
+				</button>
+			</form>
+
+			<h3 class="font-bold text-lg mb-6">移动到其他合集</h3>
+
 			<div class="space-y-4">
-				<div v-if="collections.length === 0" class="text-center text-gray-500">
+				<div
+					v-if="collections.length === 0"
+					class="text-center text-gray-500 py-8"
+				>
 					暂无其他合集
 				</div>
-				<div
-					v-for="collection in collections"
-					:key="collection._id"
-					class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-					@click="confirmMove(collection._id, selectedEpisode)"
-				>
-					<div>{{ collection.showName }}</div>
-					<i class="bi bi-chevron-right"></i>
+				<div v-for="collection in collections" :key="collection._id">
+					<div
+						class="collection-item flex items-center justify-between p-4 border-2 border-black rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+						@click="selectedTargetCollection = collection"
+						:class="{
+							'border-primary':
+								selectedTargetCollection?._id === collection._id,
+						}"
+					>
+						<div class="font-medium">{{ collection.showName }}</div>
+						<i class="bi bi-chevron-right"></i>
+					</div>
+					<!-- 确认提示 -->
+					<div
+						v-if="selectedTargetCollection?._id === collection._id"
+						class="mt-2 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+					>
+						<p class="text-sm text-gray-600">
+							是否确定移动到 合集 "{{ collection.showName }}"？
+						</p>
+						<div class="flex justify-end mt-4 gap-2">
+							<button
+								class="retro-btn-small"
+								@click="selectedTargetCollection = null"
+							>
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">取消</div>
+									</div>
+								</div>
+							</button>
+							<button
+								class="retro-btn-small"
+								@click="confirmMove(collection._id, selectedEpisode)"
+							>
+								<div class="btn-shadow">
+									<div class="btn-edge">
+										<div class="btn-face">确定</div>
+									</div>
+								</div>
+							</button>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div class="modal-action">
-				<button class="btn" @click="closeMoveModal">取消</button>
 			</div>
 		</div>
 		<form method="dialog" class="modal-backdrop">
@@ -225,15 +268,10 @@ const handleMoveEpisode = async (episode) => {
 	moveModal.value?.showModal();
 };
 
+const selectedTargetCollection = ref(null);
 // 确认移动
 const confirmMove = async (targetCatalogId, episode) => {
 	try {
-		console.log({
-			episodeId: episode._id,
-			fromCatalogId: route.params.id,
-			toCatalogId: targetCatalogId,
-			seasonNumber: currentSeason.value.seasonNumber,
-		});
 		const res = await apiClient.post("/catalogs/episodes/move", {
 			episodeId: episode._id,
 			fromCatalogId: route.params.id,
@@ -244,6 +282,7 @@ const confirmMove = async (targetCatalogId, episode) => {
 		if (res.data.code === 200) {
 			await loadCategoryData();
 			showToast({ message: "移动成功", type: "success" });
+			selectedTargetCollection.value = null; // 重置选中状态
 			moveModal.value?.close();
 		}
 	} catch (error) {
@@ -252,10 +291,11 @@ const confirmMove = async (targetCatalogId, episode) => {
 	}
 };
 
-// 关闭移动模态框
+// 修改 closeMoveModal 方法
 const closeMoveModal = () => {
 	moveModal.value?.close();
 	selectedEpisode.value = null;
+	selectedTargetCollection.value = null; // 重置选中状态
 };
 
 const handleChange = async (evt) => {
@@ -503,7 +543,7 @@ const getRandomLayout = () => {
 
 .retro-btn-small {
 	position: relative;
-	width: 4rem;
+	width: 6rem;
 	height: 2.5rem;
 	border: none;
 	background: none;
@@ -549,10 +589,7 @@ const getRandomLayout = () => {
 	align-items: center;
 	justify-content: center;
 	font-weight: bold;
-}
-
-.retro-btn-small .btn-face {
-	background-color: rgba(240, 240, 240, 0.8);
+	font-size: 0.875rem;
 }
 
 button:hover .btn-face {
@@ -590,5 +627,75 @@ button:disabled {
 
 .collection-status-badge.private {
 	background-color: #333;
+}
+
+.vintage-modal {
+	background: #ffffff;
+	border: 2px solid #000;
+	box-shadow: 3px 3px 0 #000;
+	overflow: hidden;
+}
+
+.collection-item {
+	background: #f5f5f5;
+	/* box-shadow: 2px 2px 0 #000; */
+}
+
+.retro-btn {
+	position: relative;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+.btn-shadow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #666;
+	border-radius: 6px;
+	transform: translateY(2px);
+}
+
+.btn-edge {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #888;
+	border-radius: 6px;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+}
+
+.btn-face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #f0f0f0;
+	border: 2px solid #333;
+	border-radius: 6px;
+	color: #333;
+	font-weight: bold;
+	transform: translateY(-2px);
+	transition: transform 0.1s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 16px;
+}
+
+.retro-btn:hover .btn-face {
+	background-color: white;
+}
+
+.retro-btn:active .btn-edge,
+.retro-btn:active .btn-face {
+	transform: translateY(0);
 }
 </style>

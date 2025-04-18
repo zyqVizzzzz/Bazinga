@@ -96,17 +96,12 @@ const emit = defineEmits(["update"]);
 
 // 新场景表单数据
 const newSceneContent = ref("");
-
-// 添加导入状态变量
+// 导入状态变量
 const importing = ref(false);
-
-// 添加确认状态变量
+// 确认状态变量
 const waitingForConfirmation = ref(false);
-
 const isReconfirming = ref(false);
-
 const insertScenePosition = ref(-1); // 默认为-1，表示插入到最后
-
 // 添加指南面板显示状态
 const showGuidePanel = ref(false);
 
@@ -116,24 +111,18 @@ const toggleGuide = () => {
 };
 
 // 初始化场景状态
-
 onMounted(() => {
 	sceneStates.value = props.scenes.map(() => false); // 默认全部展开
 });
 
 // 添加命令检查功能
-
 const checkCommand = (event) => {
 	// 获取文本内容并按行分割
-
 	const allLines = newSceneContent.value.split("\n");
-
 	// 获取最后一行文本并去除首尾空格
-
 	const lastLine = allLines[allLines.length - 1].trim();
 
 	// 检查最后一行是否为命令
-
 	if (lastLine.includes("bazinga/new")) {
 		console.log("ddd");
 		event.preventDefault(); // 阻止回车键的默认行为
@@ -145,7 +134,6 @@ const checkCommand = (event) => {
 	}
 
 	// 检查是否为场景插入命令
-
 	const lfgCommandRegex = /bazinga\/go(?:\/(\d+))?/i;
 	const lfgMatch = lastLine.match(lfgCommandRegex);
 
@@ -153,7 +141,8 @@ const checkCommand = (event) => {
 		lastLine.includes("bazinga/go") ||
 		lastLine.includes("bazinga/lfg") ||
 		lastLine.includes("bazinga/omg") ||
-		lastLine.includes("bazinga/wtf")
+		lastLine.includes("bazinga/wtf") ||
+		lastLine === "/bazinga"
 	) {
 		event.preventDefault();
 
@@ -251,20 +240,14 @@ const checkCommand = (event) => {
 	}
 
 	const urlCommandRegex = /bazinga\/url:(https?:\/\/.+)/i;
-
 	const match = lastLine.match(urlCommandRegex);
 
 	if (match) {
 		event.preventDefault();
-
 		// 移除包含命令的最后一行
-
 		newSceneContent.value = allLines.slice(0, -1).join("\n");
-
 		const url = match[1];
-
 		importFromUrl(url);
-
 		return;
 	}
 };

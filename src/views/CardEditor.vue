@@ -4,7 +4,6 @@
 			v-if="route.query.mode === 'edit'"
 			v-model="editorContent"
 			@create-collection="handleCreateCollection"
-			@back-to-preview="backToPreview"
 		/>
 		<!-- 卡片编辑器 -->
 		<CardView

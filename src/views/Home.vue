@@ -15,7 +15,7 @@
 		<!-- 卡片展示区 -->
 		<div class="flex flex-wrap justify-center my-10 gap-12">
 			<div
-				v-for="scene in scenes.slice(0, 3)"
+				v-for="scene in displayedScenes"
 				:key="scene.id"
 				class="retro-card"
 				@click="goToCollection(scene._id)"
@@ -50,11 +50,13 @@
 			</div>
 		</div>
 		<!-- More -->
-		<div class="text-center">
-			<button class="retro-btn-medium" @click="goToAllScenes">
+		<div class="text-center" v-if="displayedScenes.length > 3">
+			<button class="retro-btn-medium" @click="toggleExpand">
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face text-sm">{{ t("home.more") }}</div>
+						<div class="btn-face text-sm">
+							{{ isExpanded ? "收起" : "查看更多" }}
+						</div>
 					</div>
 				</div>
 			</button>
@@ -66,14 +68,12 @@ import { ref, onMounted, computed } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
-import { useI18n } from "vue-i18n";
 
 import { useLoginStore } from "@/store/index";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 
-const { t } = useI18n();
 const router = useRouter();
 const scenes = ref([]);
 
@@ -85,7 +85,7 @@ const getCatalogs = async () => {
 	try {
 		const response = await apiClient.get("/catalogs");
 		if (response.data.code === 200) {
-			scenes.value = response.data.data;
+			scenes.value = response.data.data.filter((catalog) => !catalog.isCustom);
 		} else {
 			showToast({
 				message: response.data.message,
@@ -98,8 +98,13 @@ const getCatalogs = async () => {
 	}
 };
 
-const goToAllScenes = () => {
-	router.push("/collections");
+const isExpanded = ref(false);
+const displayedScenes = computed(() => {
+	return isExpanded.value ? scenes.value : scenes.value.slice(0, 3);
+});
+
+const toggleExpand = () => {
+	isExpanded.value = !isExpanded.value;
 };
 
 const goToCollection = (id) => {

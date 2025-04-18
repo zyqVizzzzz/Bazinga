@@ -14,11 +14,7 @@
 					@click="goToHome"
 					class="nav-brand btn btn-ghost hover:bg-transparent hover:text-inherit"
 				>
-					<img
-						src="../assets/logo-trans@4x.png"
-						alt="Bazinga Logo"
-						class="logo-image"
-					/>
+					<img src="../assets/logo.png" alt="Bazinga Logo" class="logo-image" />
 					azinga!
 				</a>
 			</div>
@@ -241,12 +237,12 @@ watch(
 }
 
 .logo-image {
-	height: 28px;
+	height: 32px;
 	width: auto;
 	object-fit: contain;
-	transform: rotate(8deg); /* 添加倾斜和旋转效果，与文字风格匹配 */
-	transition: all 0.3s ease; /* 添加过渡效果 */
-	margin-right: -8px;
+	transform: rotate(4deg);
+	transition: all 0.3s ease;
+	margin-right: -9px;
 }
 
 .navbar {
@@ -346,14 +342,14 @@ watch(
 
 /* 创建卡片按钮样式 */
 .create-card-btn {
-	background-color: rgba(var(--primary-color-rgb), 0.1) !important;
-	border: 2px dashed var(--primary-color) !important;
-	color: var(--primary-color) !important;
+	background-color: rgba(255, 255, 255, 0.1) !important;
+	border: 2px dashed #222 !important;
+	color: #222 !important;
 }
 
 .create-card-btn:hover {
-	background-color: var(--primary-color) !important;
-	border: 2px solid var(--primary-color) !important;
+	background-color: #222 !important;
+	border: 2px solid #222 !important;
 	color: white !important;
 }
 </style>
