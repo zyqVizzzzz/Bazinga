@@ -77,7 +77,8 @@ const props = defineProps({
 	},
 	deletedBlocks: {
 		type: Array,
-		required: true,
+		required: false, // 改为 false
+		default: () => [], // 提供默认值
 	},
 });
 

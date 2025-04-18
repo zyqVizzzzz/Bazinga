@@ -44,7 +44,7 @@
 						>
 							<div class="command-list text-sm space-y-2">
 								<div class="command-item">
-									<span class="command-code">/bazinga/article</span>
+									<span class="command-code">/bazinga/new</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>自动生成文章</span
 									>
@@ -78,37 +78,29 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-
 import { showToast } from "@/components/common/toast.js";
-
 import apiClient from "@/api";
 
 const props = defineProps({
 	scenes: {
 		type: Array,
-
 		required: true,
 	},
 });
 
 const modalRef = ref(null);
-
 // 添加场景状态管理
-
 const sceneStates = ref([]);
 
 const emit = defineEmits(["update"]);
 
 // 新场景表单数据
-
 const newSceneContent = ref("");
 
 // 添加导入状态变量
-
 const importing = ref(false);
 
 // 添加确认状态变量
-
 const waitingForConfirmation = ref(false);
 
 const isReconfirming = ref(false);
@@ -142,22 +134,19 @@ const checkCommand = (event) => {
 
 	// 检查最后一行是否为命令
 
-	if (lastLine.includes("bazinga/article")) {
+	if (lastLine.includes("bazinga/new")) {
+		console.log("ddd");
 		event.preventDefault(); // 阻止回车键的默认行为
 
 		// 移除包含命令的最后一行
-
 		newSceneContent.value = allLines.slice(0, -1).join("\n");
-
 		handleAutoGenerate();
-
 		return;
 	}
 
 	// 检查是否为场景插入命令
 
 	const lfgCommandRegex = /bazinga\/go(?:\/(\d+))?/i;
-
 	const lfgMatch = lastLine.match(lfgCommandRegex);
 
 	if (
@@ -342,70 +331,48 @@ const importFromUrl = async (url) => {
 
 const handleAutoGenerate = async () => {
 	try {
-		// 显示加载中提示
-
 		showToast({ message: "正在生成文章...", type: "info" });
 
 		// 获取命令中可能包含的主题信息
-
 		const allLines = newSceneContent.value.split("\n");
-
 		const lastLine = allLines[allLines.length - 1].trim();
 
-		// 检查是否包含主题信息 (bazinga/article:主题)
-
 		let topic = null;
-
-		const topicMatch = lastLine.match(/bazinga\/article(?::(.+))?/);
-
+		const topicMatch = lastLine.match(/bazinga\/new(?::(.+))?/);
 		if (topicMatch && topicMatch[1]) {
 			topic = topicMatch[1].trim();
 		}
 
 		// 清空当前输入的命令
-
 		newSceneContent.value = "";
 
 		// 调用后端API生成文章
-
 		const response = await apiClient.post("/translation/generate-article", {
 			topic: topic,
 		});
 
-		if (response.data.code === 200 && response.data.data.article) {
-			// 添加标题和格式化
-
-			let formattedArticle = "";
-
-			// 如果文章没有以#开头，添加一个标题
-
-			if (!response.data.data.article.trim().startsWith("#")) {
-				formattedArticle = `# ${topic || "Default Title"}\n\n`;
+		if (response.data.code === 200) {
+			if (response.data.data.error) {
+				showToast({ message: response.data.data.error, type: "error" });
+				return;
 			}
 
-			// 添加文章内容
+			if (response.data.data.article) {
+				let formattedArticle = "";
+				if (!response.data.data.article.trim().startsWith("#")) {
+					formattedArticle = `# ${topic || "Default Title"}\n\n`;
+				}
+				formattedArticle += response.data.data.article;
 
-			formattedArticle += response.data.data.article;
-
-			// 设置生成的内容到编辑器
-
-			newSceneContent.value = formattedArticle;
-
-			showToast({ message: "文章生成成功", type: "success" });
+				// 直接设置到 newSceneContent
+				newSceneContent.value = formattedArticle.trim();
+			}
 		} else {
 			throw new Error("生成文章失败");
 		}
 	} catch (error) {
 		console.error("自动生成文章失败:", error);
-
-		// 恢复一个基本的文章结构，以防API调用失败
-
-		newSceneContent.value = `# 自动生成的文章
-	
-		
-	
-	很抱歉，无法从服务器获取文章内容。请稍后再试。`;
-
+		newSceneContent.value = `# 自动生成的文章\n\n很抱歉，无法从服务器获取文章内容。请稍后再试。`;
 		showToast({ message: "生成失败，请重试", type: "error" });
 	}
 };

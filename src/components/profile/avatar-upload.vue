@@ -94,16 +94,52 @@ const handleFileChange = async (event) => {
 		return;
 	}
 
-	// 验证文件大小 (2MB)
-	if (file.size > 2 * 1024 * 1024) {
-		alert("图片大小不能超过2MB");
+	// 验证文件大小 (10MB)
+	if (file.size > 10 * 1024 * 1024) {
+		alert("图片大小不能超过10MB");
 		return;
 	}
 
 	try {
 		uploading.value = true;
+
+		// 创建图片对象
+		const img = new Image();
+		img.src = URL.createObjectURL(file);
+		await new Promise((resolve) => (img.onload = resolve));
+
+		// 创建 canvas
+		const canvas = document.createElement("canvas");
+		const ctx = canvas.getContext("2d");
+
+		// 计算正方形裁剪区域
+		const size = Math.min(img.width, img.height);
+		const x = (img.width - size) / 2;
+		const y = (img.height - size) / 2;
+
+		// 设置 canvas 大小
+		canvas.width = size;
+		canvas.height = size;
+
+		// 绘制裁剪后的图片
+		ctx.drawImage(img, x, y, size, size, 0, 0, size, size);
+
+		// 压缩图片
+		let quality = 0.9;
+		let blob = await new Promise((resolve) =>
+			canvas.toBlob(resolve, "image/jpeg", quality)
+		);
+
+		// 如果图片仍然大于1MB，继续压缩
+		while (blob.size > 1 * 1024 * 1024 && quality > 0.5) {
+			quality -= 0.1;
+			blob = await new Promise((resolve) =>
+				canvas.toBlob(resolve, "image/jpeg", quality)
+			);
+		}
+
 		const formData = new FormData();
-		formData.append("file", file);
+		formData.append("file", blob, "avatar.jpg");
 
 		const response = await apiClient.post("/users/avatar/upload", formData, {
 			headers: {

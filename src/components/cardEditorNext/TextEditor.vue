@@ -66,7 +66,7 @@
 					<div class="command-list text-sm">
 						<div class="command-item">
 							<span class="command-code"
-								>/bazinga/article +
+								>/bazinga/new +
 								<span class="enter-hint">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
@@ -414,17 +414,24 @@ const handleAutoGenerate = async () => {
 			{ signal: abortController.value.signal }
 		);
 
-		if (response.data.code === 200 && response.data.data.article) {
-			let formattedArticle = "";
-			if (!response.data.data.article.trim().startsWith("#")) {
-				formattedArticle = `\n\n# ${topic || "Default Title"}\n\n`;
+		if (response.data.code === 200) {
+			if (response.data.data.error) {
+				showToast({ message: response.data.data.error, type: "error" });
+				throw new Error();
 			}
-			formattedArticle += response.data.data.article;
 
-			// 将新内容追加到现有内容后
-			editorContent.value = existingContent
-				? existingContent + formattedArticle
-				: formattedArticle.trim();
+			if (response.data.data.article) {
+				let formattedArticle = "";
+				if (!response.data.data.article.trim().startsWith("#")) {
+					formattedArticle = `\n\n# ${topic || "Default Title"}\n\n`;
+				}
+				formattedArticle += response.data.data.article;
+
+				// 将新内容追加到现有内容后
+				editorContent.value = existingContent
+					? existingContent + formattedArticle
+					: formattedArticle.trim();
+			}
 		} else {
 			throw new Error("生成文章失败");
 		}

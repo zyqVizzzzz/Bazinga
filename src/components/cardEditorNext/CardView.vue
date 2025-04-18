@@ -59,7 +59,11 @@
 						</button>
 					</div>
 					<div class="tooltip" data-tip="新增文本内容">
-						<button class="retro-btn" @click="handleShowTextEditorModal">
+						<button
+							class="retro-btn"
+							@click="handleShowTextEditorModal"
+							:disabled="isLoading"
+						>
 							<div class="btn-shadow">
 								<div class="btn-edge">
 									<div class="btn-face">
@@ -401,7 +405,6 @@ import GuideModal from "./GuideModal.vue";
 import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
-import GuideIcon from "@/components/icons/Guide.vue";
 import SceneIcon from "@/components/icons/Scene.vue";
 import { generateTextHash } from "@/utils";
 import draggable from "vuedraggable";
@@ -411,6 +414,10 @@ const router = useRouter();
 const hasUnsavedChanges = ref(false); // 未保存更改标记
 
 const props = defineProps({
+	isCustom: {
+		type: Boolean,
+		default: false,
+	},
 	scenes: {
 		type: Array,
 		required: true,
@@ -548,7 +555,6 @@ onMounted(async () => {
 
 	isLoading.value = true;
 	try {
-		console.log(props.from);
 		if (!props.from) {
 			await initializeView();
 		} else if (props.from === "edit") {
@@ -711,12 +717,11 @@ const initializeView = async () => {
 					// 初始化播客
 					await initPodcasts();
 
-					console.log("Scenes:", scenes);
-					console.log("Podcast:", podcastBlocksMap.value);
+					// console.log("Scenes:", scenes);
+					// console.log("Podcast:", podcastBlocksMap.value);
 				}
 			}
 		} else {
-			console.log("from edit mode");
 			isCustom.value = true;
 			currentIndex.value = 0;
 			currentBlocks.value = props.scenes[0];
@@ -1215,7 +1220,6 @@ const handleRestoreKnowledge = (item) => {
 };
 
 const handleShowPodcastModal = async (knowledge) => {
-	console.log(knowledge);
 	try {
 		if (knowledge.word) {
 			// 在 podcastBlocksMap 中查找匹配的播客
@@ -1242,7 +1246,6 @@ const handleShowPodcastModal = async (knowledge) => {
 				};
 			}
 		}
-		console.log(selectedPodcastKnowledge.value);
 		podcastModalRef.value?.showModal();
 	} catch (error) {
 		console.error("打开播客模态框失败:", error);
@@ -1574,7 +1577,26 @@ const groupTextByLength = async (blocks) => {
 				}
 			);
 
+			// 检查是否返回错误信息
+			if (knowledgeResponse.data.data?.[0]?.error) {
+				showToast({
+					message: knowledgeResponse.data.data[0].error,
+					type: "error",
+				});
+				return; // 终止当前处理
+			}
+
 			if (!knowledgeResponse.data.data) continue;
+
+			// 处理返回的知识点数据，将 phrases 中的 origin 赋值给对应的知识点
+			knowledgeResponse.data.data.forEach((knowledge, index) => {
+				const phrase = phrasesResponse.data.data.phrases[index];
+				if (phrase) {
+					const [word, origin] = phrase.split("/");
+					knowledge.word = word;
+					knowledge.origin = origin;
+				}
+			});
 
 			// 3. 处理每个原文块
 			group.forEach((block) => {
@@ -1598,7 +1620,6 @@ const groupTextByLength = async (blocks) => {
 				).length;
 
 				// 高亮原文中的所有知识点
-				console.log(matchedKnowledges);
 				let displayText = block.displayText || block.text;
 				matchedKnowledges.forEach((knowledge, kIndex) => {
 					// 添加到知识点集合
@@ -2444,14 +2465,18 @@ const generateKnowledge = async (phrases) => {
 			}
 		);
 
+		// 检查是否返回错误信息
+		if (response.data.data?.[0]?.error) {
+			return "积分不足"; // 终止当前处理
+		}
+
 		if (response.data.code === 200) {
-			console.log(response.data.data);
 			return response.data.data;
 		}
+
 		return null;
 	} catch (error) {
-		console.error("生成知识点失败:", error);
-		throw error;
+		return null;
 	}
 };
 
@@ -2583,10 +2608,23 @@ const handleGenerateKnowledge = async (index) => {
 
 		// 2. 生成知识点
 		const knowledgeDataArray = await generateKnowledge(phrases);
-		if (!knowledgeDataArray || knowledgeDataArray.length === 0) {
-			showToast({ message: "生成知识点失败", type: "warning" });
+		if (knowledgeDataArray === "积分不足") {
+			showToast({ message: "积分不足", type: "error" });
 			return;
 		}
+		if (!knowledgeDataArray || knowledgeDataArray.length === 0) {
+			showToast({ message: "生成知识点失败", type: "error" });
+			return;
+		}
+
+		// 修正 word 和 origin：generateKnowledge 生成的 word 和 origin 可能不准确，需要用 extractKeyPhrases 生成的内容来修正
+		phrases.forEach((phrase, index) => {
+			if (knowledgeDataArray[index]) {
+				const [word, origin] = phrase.split("/");
+				knowledgeDataArray[index].word = word;
+				knowledgeDataArray[index].origin = origin;
+			}
+		});
 
 		const sceneId = `Scene${currentIndex.value + 1}`;
 		let displayText = block.displayText || block.text;
@@ -2689,6 +2727,12 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 		isLoading.value = true;
 		processingBlockId.value = block.id;
 
+		const blockIndex = currentBlocks.value.findIndex((b) => b.id === block.id);
+		if (blockIndex === -1) {
+			showToast({ message: "无法找到选中的文本块", type: "error" });
+			return;
+		}
+
 		// 过滤掉已存在的知识点文本
 		const existingKnowledgeBlocks = currentBlocks.value.filter((b) => {
 			return b.isKnowledge && b.id.startsWith(`knowledge-${block.id}`);
@@ -2715,7 +2759,6 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 		}
 
 		const formattedTexts = filteredTexts.map((text) => `${text}/${text}`);
-		console.log(formattedTexts);
 		// 并行处理所有选中的文本
 		const knowledgeResults = await apiClient.post(
 			"/translation/generate-knowledge-batch",
@@ -2729,6 +2772,15 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 			return;
 		}
 
+		// 检查是否返回错误信息
+		if (knowledgeResults.data.data?.[0]?.error) {
+			showToast({
+				message: knowledgeResults.data.data[0].error,
+				type: "error",
+			});
+			return; // 终止当前处理
+		}
+
 		// 过滤掉生成失败的结果
 		const validKnowledgeData = knowledgeResults.data.data;
 
@@ -2737,7 +2789,6 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 		let displayText = block.displayText || block.text;
 
 		validKnowledgeData.forEach((knowledgeData, index) => {
-			console.log(knowledgeData);
 			// 添加到知识点集合
 			knowledgeData.scenes = new Set([sceneId]);
 			currentKnowledge.value.set(knowledgeData.word, knowledgeData);
@@ -2760,9 +2811,8 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 				knowledgeData: knowledgeData,
 			};
 
-			// 查找插入位置
-			const blockId = block.id || block.originalIndex;
-			const translationId = `translation-${blockId}`;
+			// 查找插入位置：在原文块之后，翻译块之后（如果有的话）
+			const translationId = `translation-${block.id}`;
 			const translationIndex = currentBlocks.value.findIndex(
 				(b) => b.id === translationId || b.originalIndex === translationId
 			);
@@ -2778,7 +2828,7 @@ const handleManualGenerateKnowledge = async (selectedTexts) => {
 					? currentBlocks.value.length - lastKnowledgeIndex
 					: translationIndex >= 0
 					? translationIndex + 1
-					: block.index + 1;
+					: blockIndex + 1;
 
 			// 插入知识点块
 			currentBlocks.value.splice(insertIndex, 0, knowledgeBlock);
@@ -2828,8 +2878,6 @@ const handleToggleNarration = (index) => {
 	const block = currentBlocks.value[index];
 	if (!block || block.isTitle || block.isTranslated || block.isKnowledge)
 		return;
-
-	console.log(block);
 
 	// 切换 narration 状态
 	block.narration = !block.narration;

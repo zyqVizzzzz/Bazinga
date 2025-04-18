@@ -3,7 +3,7 @@
 		<div
 			v-if="visible"
 			class="fixed top-1 left-1/2 transform -translate-x-1/2 z-9999"
-			style="z-index: 9999"
+			style="z-index: 99999"
 		>
 			<div
 				class="toast-container"
@@ -171,7 +171,7 @@ onUnmounted(() => {
 		rgba(255, 255, 255, 0.9)
 	);
 	backdrop-filter: blur(8px); /* 背景模糊 */
-	z-index: 9999;
+	z-index: 99999;
 	transition: opacity 0.3s ease;
 	min-width: 250px;
 	max-width: 500px;

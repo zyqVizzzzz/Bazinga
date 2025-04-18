@@ -161,7 +161,8 @@ import { useRoute } from "vue-router";
 const props = defineProps({
 	knowledge: {
 		type: Object,
-		required: true,
+		required: false,
+		default: null,
 	},
 	sceneIndex: {
 		type: Number,
@@ -221,13 +222,16 @@ const generatePodcast = async () => {
 		);
 
 		if (scriptResponse.data.code === 200) {
+			if (scriptResponse.data.data.error) {
+				showToast({ message: scriptResponse.data.data.error, type: "error" });
+				return;
+			}
 			const podcastData = scriptResponse.data.data.podcast;
 			podcastScript.value = podcastData.map((item) => item.lines);
 			podcastChineseScript.value = podcastData.map(
 				(item) => item.chinese_lines || ""
 			);
 
-			console.log("生成音频", props.sceneIndex?.toString());
 			// 2. 生成音频
 			const audioResponse = await apiClient.post("/podcasts/generate-audio", {
 				knowledge: props.knowledge.word,

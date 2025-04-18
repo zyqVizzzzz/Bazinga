@@ -10,7 +10,7 @@
 		<CardView
 			v-else
 			:scenes="scenes"
-			:is-custom="isCustom"
+			:isCustom="isCustom"
 			:from="from"
 			@update:scenes="updateScenes"
 		/>
