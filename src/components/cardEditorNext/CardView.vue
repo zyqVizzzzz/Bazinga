@@ -16,7 +16,7 @@
 				</div>
 
 				<template v-if="isCustom">
-					<div class="tooltip" data-tip="保存" v-if="isCustom">
+					<div class="tooltip" data-tip="保存">
 						<button class="retro-btn" @click="handleSave(false)">
 							<div class="btn-shadow">
 								<div class="btn-edge">
@@ -75,7 +75,7 @@
 						</button>
 					</div>
 				</template>
-				<div class="tooltip" data-tip="导出文档">
+				<div class="tooltip" data-tip="导出文档" v-if="isLogin">
 					<button
 						class="retro-btn"
 						@click="exportToMarkdown"
@@ -90,43 +90,6 @@
 						</div>
 					</button>
 				</div>
-
-				<!-- <div class="border-t border-gray-200"></div> -->
-
-				<!-- <div class="tooltip" data-tip="操作说明">
-					<button class="retro-btn" @click="handleGuideModal">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<GuideIcon size="5" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div> -->
-
-				<!-- <div class="tooltip" data-tip="生成播客" v-if="isCustom">
-					<button class="retro-btn" @click="handleShowPodcastModal">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<PodcastIcon size="7" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div> -->
-				<!-- <div class="tooltip" data-tip="已删除内容" v-if="isCustom">
-					<button class="retro-btn" @click="handleShowRecycleBin">
-						<div class="btn-shadow">
-							<div class="btn-edge">
-								<div class="btn-face">
-									<HistoryIcon size="6" />
-								</div>
-							</div>
-						</div>
-					</button>
-				</div> -->
 			</div>
 			<div class="editor-wrapper text-sm">
 				<div class="decorated-card py-6 px-4">
@@ -227,23 +190,31 @@
 			</div>
 			<!-- 全局 Loading -->
 			<div
-				v-if="isLoading"
+				v-if="isLoading && (isBatchTranslating || isBatchGeneratingKnowledge)"
 				class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
 				style="border-radius: 12px; pointer-events: auto"
 				@click.stop
 			>
-				<div class="crt-loading">
+				<div class="crt-loading bg-white">
 					<span class="loading loading-bars"></span>
+				</div>
+				<div
+					class="text-sm text-gray-800 mt-2 bg-white px-3 py-2 rounded-lg font-bold"
+				>
+					处理时间取决于文本长度，最多可能需要4-5分钟，请耐心等待...
 				</div>
 			</div>
 			<!-- 场景缩略图列表 -->
-			<div class="scene-thumbnails-container w-1/5">
+			<div
+				class="scene-thumbnails-container w-1/5"
+				:class="{ 'opacity-75 pointer-events-none': isLoading }"
+			>
 				<div class="scene-thumbnails">
 					<draggable
 						v-model="scenesWithIds"
 						item-key="sceneId"
 						handle=".drag-btn"
-						:disabled="!isCustom"
+						:disabled="!isCustom || isLoading"
 						@change="handleScenesDragChange"
 						ghost-class="ghost-card"
 						chosen-class="dragging-card"
@@ -392,6 +363,7 @@ import {
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
+import { useLoginStore } from "@/store/index";
 
 import KnowledgeDetailModal from "./KnowledgeDetailModal.vue";
 import TextBlockToolbar from "./TextBlockToolbar.vue";
@@ -406,12 +378,14 @@ import TranslationIcon from "@/components/icons/Translation.vue";
 import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import SceneIcon from "@/components/icons/Scene.vue";
-import { generateTextHash } from "@/utils";
 import draggable from "vuedraggable";
 
 const route = useRoute();
 const router = useRouter();
 const hasUnsavedChanges = ref(false); // 未保存更改标记
+
+const loginStore = useLoginStore();
+const isLogin = computed(() => loginStore.isLogin);
 
 const props = defineProps({
 	isCustom: {
@@ -731,11 +705,13 @@ const initializeView = async () => {
 		showToast({ message: "加载数据失败，请重试", type: "error" });
 	}
 };
-
+const isBatchTranslating = ref(false);
+const isBatchGeneratingKnowledge = ref(false);
 // 整个场景生成翻译
 const handleBatchTranslate = async () => {
 	try {
 		isLoading.value = true;
+		isBatchTranslating.value = true;
 
 		// 1. 获取当前场景的文本块
 		const currentScene = currentBlocks.value;
@@ -816,13 +792,14 @@ const handleBatchTranslate = async () => {
 		showToast({ message: "批量翻译失败，请重试", type: "error" });
 	} finally {
 		isLoading.value = false;
+		isBatchTranslating.value = false;
 	}
 };
 
 const handleBatchGenerateKnowledge = async () => {
 	try {
 		isLoading.value = true;
-
+		isBatchGeneratingKnowledge.value = true;
 		// 1. 获取当前场景的文本块
 		const currentScene = currentBlocks.value;
 		if (!currentScene || currentScene.length === 0) {
@@ -860,6 +837,7 @@ const handleBatchGenerateKnowledge = async () => {
 		console.error("生成知识点失败:", error);
 		showToast({ message: "生成知识点失败，请重试", type: "error" });
 		isLoading.value = false;
+		isBatchGeneratingKnowledge.value = false;
 	}
 };
 
@@ -3703,6 +3681,7 @@ const handleSceneUpdate = (updatedScenes) => {
 	animation: fade-in 0.3s ease forwards;
 	z-index: 1000; /* 添加较高的 z-index */
 	pointer-events: none;
+	flex-direction: column;
 }
 .loading-overlay::before,
 .loading-overlay::after {
@@ -3759,7 +3738,6 @@ const handleSceneUpdate = (updatedScenes) => {
 
 .crt-loading {
 	position: relative;
-	padding: 2rem;
 	border-radius: 8px;
 	background: rgba(255, 255, 255, 0.1);
 }

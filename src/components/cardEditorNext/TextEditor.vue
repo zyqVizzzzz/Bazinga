@@ -5,7 +5,7 @@
 			<!-- 使用指南按钮 -->
 			<button
 				class="absolute right-[11%] top-[-2rem] flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-				@click="showGuideModal"
+				@click="toggleGuide"
 			>
 				<i class="bi bi-question-circle text-lg"></i>
 				<span class="text-sm">使用指南</span>
@@ -22,101 +22,62 @@
 					@keydown.enter="checkCommand($event)"
 					@keydown.esc="handleCancel"
 				></textarea>
-			</div>
-		</div>
-
-		<!-- 使用指南弹窗 -->
-		<dialog ref="guideModalRef" class="modal">
-			<div class="modal-box guide-modal retro-bw-modal">
-				<h2 class="text-xl font-bold text-center mb-4 retro-title">
-					文本编辑器使用指南
-				</h2>
-
-				<div class="guide-section">
-					<h3 class="font-bold mb-2 flex items-center justify-center">
-						<i class="bi bi-keyboard text-lg"></i>
-					</h3>
-
-					<div class="command-list text-sm">
+				<div
+					v-if="showGuidePanel"
+					class="guide-panel absolute bottom-0 left-0 w-full p-4 bg-white border-t border-gray-200"
+				>
+					<div class="command-list text-sm space-y-1">
 						<div class="command-item">
-							<span class="command-code"
-								>/bazinga/new +
-								<span class="enter-hint">
-									<i
-										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
-									></i>
-									Enter
-								</span></span
-							>
-							<span class="command-desc">自动生成文章</span>
-						</div>
-						<div class="command-item">
-							<span class="command-code"
-								>/bazinga/url:链接 +
-								<span class="enter-hint">
-									<i
-										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
-									></i>
-									Enter
-								</span></span
-							>
-							<span class="command-desc">从URL导入内容</span>
-						</div>
-						<div class="command-item">
-							<span class="command-code text-secondary">
-								/bazinga/go +
+							<span class="command-code text-secondary"
+								>/go +
 								<span class="text-secondary enter-hint">
 									<i
-										class="bi bi-arrow-return-left text-xxs relative top-[1px] text-secondary"
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
 									Enter
 								</span></span
 							>
-							<span class="command-desc text-secondary font-bold"
+							<span class="command-desc ml-2 text-gray-600 text-secondary"
 								>确认生成卡片</span
 							>
 						</div>
-					</div>
-				</div>
-
-				<div class="guide-section">
-					<h3 class="font-bold mb-2 flex items-center justify-center">
-						<i class="bi bi-card-text"></i>
-					</h3>
-					<div class="structure-guide text-sm">
-						<p class="mb-2">
-							1. <strong>标题</strong>：使用
-							<strong># 标题文本</strong> 创建标题，通过标题划分不同场景/卡片
-						</p>
-						<p class="mb-2">2. <strong>目前仅支持输入文本</strong></p>
-						<div class="example-box">
-							<pre class="text-sm">
-# 第一个场景
-这是第一个场景的内容。
-
-# 第二个场景
-新的标题开始了新的场景。
-          </pre
+						<div class="command-item">
+							<span class="command-code"
+								>/new +
+								<span class="enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc ml-2 text-gray-600">自动生成文章</span>
+						</div>
+						<div class="command-item">
+							<span class="command-code"
+								>/url:{url} +
+								<span class="enter-hint">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span></span
+							>
+							<span class="command-desc ml-2 text-gray-600">从URL导入内容</span>
+						</div>
+						<div class="command-item">
+							<span class="command-code"># 标题文本 </span>
+							<span class="command-desc ml-2 text-gray-600"
+								>标题用于分割场景 / 卡片</span
 							>
 						</div>
 					</div>
-				</div>
-
-				<div class="divider"></div>
-
-				<div class="guide-section text-sm">
-					<!-- <h3 class="font-bold mb-2 flex items-center justify-center">
-						<i class="bi bi-lightbulb text-medium"></i>
-					</h3> -->
-					<ul class="tips-list">
-						<li>每个场景/卡片控制在20000字符以内，效果更佳</li>
-					</ul>
+					<p class="text-right text-xs mt-4 mr-2">
+						单个场景/卡片控制在20000字符以内，效果更佳
+					</p>
 				</div>
 			</div>
-			<form method="dialog" class="modal-backdrop">
-				<button>关闭</button>
-			</form>
-		</dialog>
+		</div>
 	</div>
 </template>
 <script setup>
@@ -140,12 +101,16 @@ const importing = ref(false);
 const isGenerating = ref(false);
 
 const abortController = ref(null);
+const waitingForConfirmation = ref(false);
+const isReconfirming = ref(false); // 重新确认状态标志
+// 添加指南面板显示状态
+const showGuidePanel = ref(false);
 
-const guideModalRef = ref(null); // 指南弹窗引用
+const emit = defineEmits(["update:modelValue", "create-collection"]);
 
-// 显示指南弹窗方法
-const showGuideModal = () => {
-	guideModalRef.value?.showModal();
+// 切换指南面板显示状态
+const toggleGuide = () => {
+	showGuidePanel.value = !showGuidePanel.value;
 };
 
 // 取消处理函数
@@ -160,18 +125,15 @@ const handleCancel = () => {
 	}
 };
 
-const emit = defineEmits(["update:modelValue", "create-collection"]);
-
-const waitingForConfirmation = ref(false);
-const isReconfirming = ref(false); // 重新确认状态标志
 const checkCommand = (event) => {
 	// 获取文本内容并按行分割
-	const allLines = editorContent.value.split("\n");
-	// 获取最后一行文本并去除首尾空格
+	const allLines = editorContent.value
+		.split("\n")
+		.filter((line) => line.trim() !== "");
 	const lastLine = allLines[allLines.length - 1].trim();
 
 	// 检查最后一行是否为命令
-	if (lastLine.includes("bazinga/new")) {
+	if (lastLine.includes("/new")) {
 		event.preventDefault(); // 阻止回车键的默认行为
 		// 移除包含命令的最后一行
 		editorContent.value = allLines.slice(0, -1).join("\n");
@@ -180,11 +142,10 @@ const checkCommand = (event) => {
 	}
 
 	if (
-		lastLine.includes("bazinga/go") ||
-		lastLine.includes("bazinga/lfg") ||
-		lastLine.includes("bazinga/omg") ||
-		lastLine.includes("bazinga/wtf") ||
-		lastLine === "/bazinga"
+		lastLine.includes("/go") ||
+		lastLine.includes("/lfg") ||
+		lastLine.includes("/omg") ||
+		lastLine.includes("/wtf")
 	) {
 		event.preventDefault();
 		// 移除包含命令的最后一行
@@ -253,7 +214,7 @@ const checkCommand = (event) => {
 		return;
 	}
 
-	const urlCommandRegex = /bazinga\/url:(https?:\/\/.+)/i;
+	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
 	const match = lastLine.match(urlCommandRegex);
 
 	if (match) {
@@ -321,7 +282,7 @@ const importFromUrl = async (url) => {
 		abortController.value = new AbortController();
 
 		// 保存现有内容
-		const existingContent = editorContent.value.split("bazinga/url")[0].trim();
+		const existingContent = editorContent.value.split("/url")[0].trim();
 		// 启动加载动画
 		startLoadingAnimation("导入");
 
@@ -379,13 +340,13 @@ const handleAutoGenerate = async () => {
 		const allLines = editorContent.value.split("\n");
 		const lastLine = allLines[allLines.length - 1].trim();
 		let topic = null;
-		const topicMatch = lastLine.match(/bazinga\/new(?::(.+))?/);
+		const topicMatch = lastLine.match(/\/new(?::(.+))?/);
 		if (topicMatch && topicMatch[1]) {
 			topic = topicMatch[1].trim();
 		}
 
 		// 保存现有内容
-		const existingContent = editorContent.value.split("bazinga/new")[0].trim();
+		const existingContent = editorContent.value.split("/new")[0].trim();
 		// 启动加载动画
 		startLoadingAnimation("生成");
 
@@ -456,7 +417,7 @@ const handlePaste = (event) => {
 const startLoadingAnimation = (type = "生成") => {
 	let count = 0;
 	const baseContent = editorContent.value
-		.split(`bazinga/${type === "生成" ? "new" : "url"}`)[0]
+		.split(`/${type === "生成" ? "new" : "url"}`)[0]
 		.trim();
 	// 先设置初始文本
 	editorContent.value = baseContent
@@ -596,71 +557,6 @@ const getDefaultKnowledge = () => {
 };
 </script>
 <style scoped>
-.retro-btn {
-	position: relative;
-	width: 36px;
-	height: 36px;
-	border: none;
-	background: none;
-	cursor: pointer;
-}
-
-.retro-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.btn-shadow {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: #666;
-	border-radius: 6px;
-	transform: translateY(2px);
-}
-
-.btn-edge {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: #888;
-	border-radius: 6px;
-	transform: translateY(-2px);
-	transition: transform 0.1s;
-}
-
-.btn-face {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: #f0f0f0;
-	border: 2px solid #333;
-	border-radius: 6px;
-	color: #333;
-	font-weight: bold;
-	transform: translateY(-2px);
-	transition: transform 0.1s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-/* 按钮交互效果 */
-.retro-btn:hover:not(:disabled) .btn-face {
-	background-color: white;
-}
-
-.retro-btn:active:not(:disabled) .btn-edge,
-.retro-btn:active:not(:disabled) .btn-face {
-	transform: translateY(0);
-}
-
 .editor-wrapper {
 	height: 100%;
 	overflow: visible;
@@ -674,25 +570,6 @@ const getDefaultKnowledge = () => {
 
 .editor-wrapper::-webkit-scrollbar {
 	display: none; /* Chrome, Safari and Opera */
-}
-
-.retro-btn-large {
-	position: relative;
-	height: 42px;
-	border: none;
-	background: none;
-	cursor: pointer;
-	padding: 0 24px;
-	width: 300px;
-}
-
-.retro-btn-large .btn-face {
-	padding: 0 24px;
-	font-size: 16px;
-}
-
-.retro-btn-large .btn-face i {
-	font-size: 18px;
 }
 
 /* 编辑器容器 */
@@ -721,64 +598,10 @@ const getDefaultKnowledge = () => {
 	color: #aaa;
 }
 
-.editor-action-buttons {
-	position: absolute;
-	left: 20px;
-	top: 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
-	z-index: 1000;
-	background-color: rgba(255, 255, 255, 0.8);
-	padding: 12px;
-	border-radius: 12px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	backdrop-filter: blur(5px);
-}
-
-/* 黑白复古风格弹窗 */
-.retro-bw-modal {
-	max-width: 600px;
-	background-color: #f8f8f8;
-	border: 3px solid #222;
-	border-radius: 8px;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
-	color: #222;
-}
-
-.retro-title {
-	font-family: "Courier New", monospace;
-	color: #222;
-	letter-spacing: 1px;
-	border-bottom: 2px solid #222;
-	padding-bottom: 8px;
-	position: relative;
-}
-
-.retro-title::after {
-	content: "";
-	position: absolute;
-	bottom: -5px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 50%;
-	height: 1px;
-	background-color: #222;
-}
-
-.guide-section {
-	margin-bottom: 1rem;
-	padding: 1rem;
-	background-color: white;
-	border: 2px solid #222;
-	border-radius: 4px;
-	text-align: left;
-}
-
 .command-list {
 	display: grid;
 	grid-template-columns: 1fr;
-	gap: 0.5rem;
+	gap: 0.25rem;
 }
 
 .command-item {
@@ -786,10 +609,11 @@ const getDefaultKnowledge = () => {
 	flex-wrap: wrap;
 	justify-content: space-between;
 	padding: 0.5rem;
-	background-color: #f0f0f0;
-	border: 1px solid #222;
-	border-left: 4px solid #222;
+	border-radius: 4px;
 	align-items: center;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 2px 3px rgba(0, 0, 0, 0.03);
+	background-color: white;
+	transition: box-shadow 0.2s ease;
 }
 
 .command-note {
@@ -804,8 +628,8 @@ const getDefaultKnowledge = () => {
 .command-code {
 	font-weight: bold;
 	color: #222;
-	/* padding: 2px 6px; */
 }
+
 .text-secondary {
 	color: var(--secondary-color) !important;
 }
@@ -816,69 +640,15 @@ const getDefaultKnowledge = () => {
 	text-align: right;
 }
 
-.example-box {
-	white-space: pre-wrap;
-	background-color: #f0f0f0;
-	border: 1px dashed #222;
-	padding: 10px;
-	margin-top: 10px;
-}
-
-pre {
-	font-family: "Comic Sans MS", Hannotate SC, "Courier New", Courier, monospace;
-}
-
-.tips-list {
-	list-style-type: none;
-	padding: 0;
-}
-
-.tips-list li {
-	padding: 5px 5px 5px 20px;
-	position: relative;
-}
-
-.tips-list li::before {
-	content: ">";
-	position: absolute;
-	left: 5px;
-	color: #222;
-	font-weight: bold;
-}
-
-/* 移除之前的样式 */
-.comic-title {
-	font-family: "Comic Sans MS", cursive, sans-serif;
-	color: #e63946;
-	text-shadow: 2px 2px 0 #fff, 3px 3px 0 #333;
-	letter-spacing: 1px;
-}
-
-.retro-btn-medium {
-	position: relative;
-	height: 38px;
-	border: none;
-	background: none;
-	cursor: pointer;
-	padding: 0 16px;
-	width: 150px;
-}
-
-.retro-btn-medium .btn-face {
-	padding: 0 16px;
-	font-size: 14px;
-}
-
 .enter-hint {
 	display: inline-flex;
 	align-items: center;
 	margin-left: 4px;
 	padding: 1px 4px;
-	border: 1px solid #999;
 	border-radius: 3px;
 	font-size: 0.65rem;
 	color: #666;
-	background-color: #f8f8f8;
+	background-color: #eeeeee;
 	vertical-align: middle;
 }
 

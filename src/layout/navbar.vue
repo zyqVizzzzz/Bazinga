@@ -20,12 +20,12 @@
 			</div>
 			<div class="flex-none">
 				<ul class="menu menu-horizontal gap-2">
-					<li v-if="isLogin">
+					<li>
 						<a class="retro-link create-card-btn mr-8" @click="createNewCard">
 							<i class="bi bi-plus-circle"></i> 快速开始
 						</a>
 					</li>
-					<li v-if="isLogin">
+					<li>
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/' }"
@@ -34,7 +34,7 @@
 							{{ t("nav.home") }}
 						</a>
 					</li>
-					<li v-if="isLogin">
+					<li>
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/collections' }"
@@ -43,7 +43,7 @@
 							{{ t("nav.collections") }}
 						</a>
 					</li>
-					<li v-if="isLogin">
+					<li>
 						<a
 							class="retro-link"
 							:class="{ active: route.path === '/notebook' }"
@@ -111,6 +111,14 @@ const goToLink = (path) => {
 
 // 创建新卡片
 const createNewCard = async () => {
+	if (!isLogin.value) {
+		showToast({
+			message: "登录后解锁全部功能",
+			type: "info",
+			duration: 3000,
+		});
+		return;
+	}
 	try {
 		// 获取用户的默认合集
 		const res = await apiClient.get("/catalogs/default");

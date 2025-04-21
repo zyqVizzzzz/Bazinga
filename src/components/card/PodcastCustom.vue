@@ -177,8 +177,7 @@ const hostInfo = computed(() => {
 	if (!selectedPodcast.value?.script)
 		return {
 			name: "Doryn",
-			avatar:
-				"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/doryn-avatar.png",
+			avatar: "https://static.molidoki.com/default/doryn-avatar.png",
 		};
 
 	// 检查前两段是否包含 Moryn
@@ -189,13 +188,11 @@ const hostInfo = computed(() => {
 	return isMoryn
 		? {
 				name: "Moryn",
-				avatar:
-					"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn-avatar.png",
+				avatar: "https://static.molidoki.com/default/moryn-avatar.png",
 		  }
 		: {
 				name: "Doryn",
-				avatar:
-					"https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/doryn-avatar.png",
+				avatar: "https://static.molidoki.com/default/doryn-avatar.png",
 		  };
 });
 

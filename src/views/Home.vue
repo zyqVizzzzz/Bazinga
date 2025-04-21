@@ -1,5 +1,5 @@
 <template>
-	<div class="home" v-if="isLogin">
+	<div class="home">
 		<!-- 标题 -->
 		<div class="retro-title-box text-center mb-10">
 			<h1 class="text-2xl font-bold">
@@ -108,6 +108,7 @@ const toggleExpand = () => {
 };
 
 const goToCollection = (id) => {
+	if (!isLogin.value) return;
 	router.push("/collections/" + id);
 };
 </script>

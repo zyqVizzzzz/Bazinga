@@ -15,22 +15,15 @@
 					<h2 class="radio-title">BAZINGA RADIO SYSTEM</h2>
 				</div>
 
-				<!-- <div class="scene-display">
-					<div class="frequency">FM MOLIDOKI</div>
-				</div> -->
-
 				<div class="empty-content">
 					<div class="circular-video-container mx-auto relative top-[-40px]">
 						<video
 							ref="welcomeVideo"
 							class="circular-video"
 							@click="playWelcomeVideo"
-							poster="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn.png"
+							:poster="randomCharacter.poster"
 						>
-							<source
-								src="https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/moryn.mp4"
-								type="video/mp4"
-							/>
+							<source :src="randomCharacter.video" type="video/mp4" />
 						</video>
 						<div
 							v-if="!isWelcomePlaying"
@@ -80,6 +73,23 @@ const podcastData = ref(null);
 // 欢迎语音播放状态
 const welcomeVideo = ref(null);
 const isWelcomePlaying = ref(false);
+
+const characters = [
+	{
+		name: "moryn",
+		poster: "https://static.molidoki.com/default/moryn.png",
+		video: "https://static.molidoki.com/default/moryn.mp4",
+	},
+	{
+		name: "doryn",
+		poster: "https://static.molidoki.com/default/doryn.png",
+		video: "https://static.molidoki.com/default/doryn.mp4",
+	},
+];
+
+const randomCharacter = ref(
+	characters[Math.floor(Math.random() * characters.length)]
+);
 
 onMounted(() => {
 	// displayedDialogues.value = props.currentPractice.dialogues;

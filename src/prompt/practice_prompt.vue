@@ -60,7 +60,7 @@
 				提交
 			</button>
 			<button
-				@click="submitSingleContent"
+				@click="submitSingleContentByDoryn"
 				class="bg-green-500 ml-2 text-white px-4 py-2 rounded-md hover:bg-green-600 mb-4"
 			>
 				校正
@@ -124,7 +124,7 @@ import {
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67b86d75e93057b3448b2658");
+const lessonId = ref("67b84db843370048fe40c8f0");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -163,7 +163,7 @@ const uploadPodcast = async () => {
 			options: {
 				voice: parsedContent.character || "jinji", // 使用传入的角色，默认为 jinji
 				speed: "normal",
-				model: "Qwen/QwQ-32B-Preview",
+				model: "Gemini-2.5-Pro",
 			},
 		};
 
@@ -328,7 +328,7 @@ const submitContent = async () => {
 const submitSingleContent = async () => {
 	const dialogue = {
 		english:
-			"Hey everyone! Welcome back to bazinga, I'm your host Moryn. Today's vibe is super cool!",
+			"Alright folks, that's a wrap for today! Keep having fun and keep moving forward. I'm Moryn, signing off for now. Catch you next time!",
 		character: "Moryn",
 		emoji: "happy",
 	};
@@ -352,6 +352,16 @@ const submitSingleContent = async () => {
 	} catch (error) {
 		console.error("生成语音URL失败:", error);
 	}
+};
+
+const submitSingleContentByDoryn = async () => {
+	await apiClient.post("/podcasts/generate-audio", {
+		knowledge: "Doryn",
+		script:
+			"Hey guys, welcome back to Bazinga. This is Doryn. Today's vibe is super cool!",
+		resourceId: "6806053310c5a81577fd6638",
+		sceneId: "0",
+	});
 };
 </script>
 <!-- 

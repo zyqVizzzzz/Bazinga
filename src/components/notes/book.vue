@@ -2,7 +2,7 @@
 	<div class="retro-notebook">
 		<!-- 搜索框区域 -->
 		<div class="flex justify-between items-center mb-4 px-2">
-			<div class="search-area">
+			<div class="search-area" v-if="isLogin">
 				<div class="search-box flex items-center space-x-2 relative">
 					<div class="retro-input-wrapper">
 						<input
@@ -18,6 +18,7 @@
 				</div>
 			</div>
 			<div
+				v-if="totalPages.length"
 				class="pagination-controls static transform-none flex items-center gap-4"
 			>
 				<button
@@ -173,6 +174,13 @@ const getNotebook = async (page = 1, limit = 10) => {
 };
 
 const generateNewCard = async () => {
+	if (!isLogin.value) {
+		showToast({
+			message: "登录后可生成单词卡片",
+			type: "info",
+		});
+		return;
+	}
 	if (!searchQuery.value.trim() || isGenerating.value) return;
 
 	try {

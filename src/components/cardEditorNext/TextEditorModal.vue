@@ -44,25 +44,25 @@
 						>
 							<div class="command-list text-sm space-y-2">
 								<div class="command-item">
-									<span class="command-code">/bazinga/new</span>
+									<span class="command-code">/new</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>自动生成文章</span
 									>
 								</div>
 								<div class="command-item">
-									<span class="command-code">/bazinga/url:{url}</span>
+									<span class="command-code">/url:{url}</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>从URL导入内容</span
 									>
 								</div>
 								<div class="command-item">
-									<span class="command-code">/bazinga/go</span>
+									<span class="command-code">/go</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>确认生成卡片</span
 									>
 								</div>
 								<div class="command-item">
-									<span class="command-code">/bazinga/go:{number}</span>
+									<span class="command-code">/go:{number}</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>确认生成卡片并插入到指定位置</span
 									>
@@ -123,8 +123,7 @@ const checkCommand = (event) => {
 	const lastLine = allLines[allLines.length - 1].trim();
 
 	// 检查最后一行是否为命令
-	if (lastLine.includes("bazinga/new")) {
-		console.log("ddd");
+	if (lastLine.includes("/new")) {
 		event.preventDefault(); // 阻止回车键的默认行为
 
 		// 移除包含命令的最后一行
@@ -134,15 +133,14 @@ const checkCommand = (event) => {
 	}
 
 	// 检查是否为场景插入命令
-	const lfgCommandRegex = /bazinga\/go(?:\/(\d+))?/i;
+	const lfgCommandRegex = /\/go(?:\/(\d+))?/i;
 	const lfgMatch = lastLine.match(lfgCommandRegex);
 
 	if (
-		lastLine.includes("bazinga/go") ||
-		lastLine.includes("bazinga/lfg") ||
-		lastLine.includes("bazinga/omg") ||
-		lastLine.includes("bazinga/wtf") ||
-		lastLine === "/bazinga"
+		lastLine.includes("/go") ||
+		lastLine.includes("/lfg") ||
+		lastLine.includes("/omg") ||
+		lastLine.includes("/wtf")
 	) {
 		event.preventDefault();
 
@@ -150,7 +148,7 @@ const checkCommand = (event) => {
 
 		newSceneContent.value = allLines.slice(0, -1).join("\n");
 
-		// 如果是 bazinga/lfg/数字 格式，提取插入位置
+		// 如果是 /lfg/数字 格式，提取插入位置
 
 		let insertPosition = -1; // 默认为-1，表示插入到最后
 
@@ -239,7 +237,7 @@ const checkCommand = (event) => {
 		return;
 	}
 
-	const urlCommandRegex = /bazinga\/url:(https?:\/\/.+)/i;
+	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
 	const match = lastLine.match(urlCommandRegex);
 
 	if (match) {
@@ -321,7 +319,7 @@ const handleAutoGenerate = async () => {
 		const lastLine = allLines[allLines.length - 1].trim();
 
 		let topic = null;
-		const topicMatch = lastLine.match(/bazinga\/new(?::(.+))?/);
+		const topicMatch = lastLine.match(/\/new(?::(.+))?/);
 		if (topicMatch && topicMatch[1]) {
 			topic = topicMatch[1].trim();
 		}

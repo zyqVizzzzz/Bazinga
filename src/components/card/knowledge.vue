@@ -38,7 +38,7 @@
 						<p class="text-left text-sm text-gray-500 font-light mt-4 mb-4">
 							{{ point.definition_zh }}
 						</p>
-						<p
+						<!-- <p
 							v-if="point.example"
 							class="text-left text-sm font-extralight mt-2"
 						>
@@ -49,7 +49,7 @@
 							class="china-font text-left text-xs mt-1"
 						>
 							<strong></strong> {{ point.example_zh }}
-						</p>
+						</p> -->
 
 						<!-- 详细释义 -->
 						<div class="flex items-center mt-4">

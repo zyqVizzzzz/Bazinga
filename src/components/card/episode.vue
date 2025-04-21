@@ -22,8 +22,10 @@
 							<div class="ep-number" v-show="!isEditing">
 								EP.{{ episode.ep }}
 							</div>
-							<div class="main-title">
-								{{ episode.epName || `New Episode` }}
+							<div :class="isEditMode ? 'tooltip' : ''" data-tip="点击编辑标题">
+								<div class="main-title">
+									{{ episode.epName || `New Episode` }}
+								</div>
 							</div>
 						</template>
 
@@ -263,6 +265,7 @@ const saveTitle = () => {
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
+	cursor: pointer;
 }
 
 .layout-1 .title-container {

@@ -36,7 +36,7 @@
 					class="w-10 h-10 rounded-full overflow-hidden border-2 border-black shadow-custom"
 				>
 					<img
-						:src="`https://bazinga-1251994034.cos.ap-shanghai.myqcloud.com/default/${dialogue.character.toLowerCase()}.jpg`"
+						:src="`https://static.molidoki.com/default/${dialogue.character.toLowerCase()}.jpg`"
 						:alt="dialogue.character"
 						class="w-full h-full object-cover"
 					/>
