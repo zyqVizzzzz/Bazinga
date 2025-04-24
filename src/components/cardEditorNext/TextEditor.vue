@@ -23,56 +23,114 @@
 					@keydown.esc="handleCancel"
 				></textarea>
 				<div
-					v-if="showGuidePanel"
-					class="guide-panel absolute bottom-0 left-0 w-full p-4 bg-white border-t border-gray-200"
+					v-if="!showGuidePanel"
+					class="fixed-action-panel absolute bottom-0 left-0 w-full p-2 bg-white/95 backdrop-blur-sm border-gray-100 flex justify-end items-center gap-3"
+					:class="{
+						'panel-collapsed': isPanelCollapsed,
+						'border-t': !isPanelCollapsed,
+					}"
 				>
-					<div class="command-list text-sm space-y-1">
+					<button
+						class="collapse-btn absolute w-5 h-5 left-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-xs"
+						@click="togglePanel"
+					>
+						<i
+							class="bi"
+							:class="
+								isPanelCollapsed ? 'bi-arrow-bar-left' : 'bi-arrow-bar-right'
+							"
+						></i>
+					</button>
+
+					<div
+						class="action-buttons flex items-center gap-3"
+						:class="{ 'opacity-0': isPanelCollapsed }"
+					>
+						<button
+							class="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors flex items-center gap-1"
+							@click="handleAutoGenerate"
+							:disabled="isGenerating"
+							:class="{ 'opacity-50 cursor-not-allowed': isGenerating }"
+						>
+							<i class="bi bi-magic text-sm"></i>
+							生成文章
+						</button>
+						<button
+							class="px-3 py-1.5 bg-[#333] text-white rounded-full text-xs font-medium hover:bg-secondary-dark transition-colors flex items-center gap-1 mr-2"
+							@click="handleCreateNote"
+							:disabled="isGenerating"
+							:class="{ 'opacity-50 cursor-not-allowed': isGenerating }"
+						>
+							<i class="bi bi-lightning-charge-fill text-sm"></i>
+							创建笔记
+						</button>
+					</div>
+				</div>
+				<div
+					v-if="showGuidePanel"
+					class="guide-panel absolute bottom-0 left-0 w-full p-3 bg-white/90 backdrop-blur-sm border-t border-gray-100"
+				>
+					<div class="command-list text-sm space-y-1.5">
+						<p
+							class="text-xs text-gray-400 mb-1 ml-2 font-medium tracking-wider uppercase"
+						>
+							快捷指令
+						</p>
 						<div class="command-item">
-							<span class="command-code text-secondary"
+							<span class="command-code text-secondary font-mono"
 								>/go +
-								<span class="text-secondary enter-hint">
+								<span class="text-secondary enter-hint mr-4 font-sans">
+									<i
+										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
+									></i>
+									Enter
+								</span>
+							</span>
+							<span class="command-desc ml-2 text-gray-500 font-normal"
+								>确认创建卡片</span
+							>
+						</div>
+						<div class="command-item">
+							<span class="command-code font-mono">
+								/new +
+								<span class="enter-hint mr-4 font-sans">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
 									Enter
 								</span></span
-							>
-							<span class="command-desc ml-2 text-gray-600 text-secondary"
-								>确认生成卡片</span
+							><span class="command-desc ml-2 text-gray-500 font-normal"
+								>自动生成文章</span
 							>
 						</div>
 						<div class="command-item">
-							<span class="command-code"
-								>/new +
-								<span class="enter-hint">
-									<i
-										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
-									></i>
-									Enter
-								</span></span
-							>
-							<span class="command-desc ml-2 text-gray-600">自动生成文章</span>
-						</div>
-						<div class="command-item">
-							<span class="command-code"
+							<span class="command-code font-mono"
 								>/url:{url} +
-								<span class="enter-hint">
+								<span class="enter-hint mr-4 font-sans">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
 									Enter
 								</span></span
+							><span class="command-desc ml-2 text-gray-500 font-normal"
+								>从URL导入内容</span
 							>
-							<span class="command-desc ml-2 text-gray-600">从URL导入内容</span>
 						</div>
-						<div class="command-item">
-							<span class="command-code"># 标题文本 </span>
-							<span class="command-desc ml-2 text-gray-600"
-								>标题用于分割场景 / 卡片</span
+						<div class="mt-6">
+							<p
+								class="text-xs text-gray-400 mb-2 ml-2 font-medium tracking-wider uppercase"
 							>
+								格式
+							</p>
+							<div class="command-item">
+								<span class="command-code font-mono"># Title </span>
+								<span class="command-desc ml-2 text-gray-500 font-normal"
+									>标题用于分割场景 / 卡片</span
+								>
+							</div>
 						</div>
 					</div>
-					<p class="text-right text-xs mt-4 mr-2">
+					<p class="text-right text-xs mt-6 mr-2 text-gray-400 font-light">
 						单个场景/卡片控制在20000字符以内，效果更佳
 					</p>
 				</div>
@@ -105,12 +163,17 @@ const waitingForConfirmation = ref(false);
 const isReconfirming = ref(false); // 重新确认状态标志
 // 添加指南面板显示状态
 const showGuidePanel = ref(false);
+const isPanelCollapsed = ref(false);
 
 const emit = defineEmits(["update:modelValue", "create-collection"]);
 
 // 切换指南面板显示状态
 const toggleGuide = () => {
 	showGuidePanel.value = !showGuidePanel.value;
+};
+
+const togglePanel = () => {
+	isPanelCollapsed.value = !isPanelCollapsed.value;
 };
 
 // 取消处理函数
@@ -122,6 +185,23 @@ const handleCancel = () => {
 		// 恢复原有内容
 		const existingContent = editorContent.value.split("正在生成文章")[0].trim();
 		editorContent.value = existingContent || "";
+	}
+};
+
+const handleCreateNote = () => {
+	const trimmedContent = editorContent.trim();
+	if (trimmedContent) {
+		editorContent = trimmedContent;
+		showRitualAnimation().then((success) => {
+			if (success) {
+				createCollection();
+			}
+		});
+	} else {
+		editorContent = "文本内容为空，请先添加文本再生成卡片。";
+		setTimeout(() => {
+			editorContent = "";
+		}, 2000);
 	}
 };
 
@@ -421,8 +501,8 @@ const startLoadingAnimation = (type = "生成") => {
 		.trim();
 	// 先设置初始文本
 	editorContent.value = baseContent
-		? `${baseContent}\n\n正在${type}文章\n按 ESC 取消`
-		: `正在${type}文章\n按 ESC 取消`;
+		? `${baseContent}\n\n正在${type}文章`
+		: `正在${type}文章`;
 
 	const interval = setInterval(() => {
 		if (!isGenerating.value) {
@@ -434,8 +514,7 @@ const startLoadingAnimation = (type = "生成") => {
 		const currentContent = editorContent.value;
 		const baseText =
 			currentContent.split(`正在${type}文章`)[0] + `正在${type}文章`;
-		const suffix = "\n按 ESC 取消";
-		editorContent.value = baseText + ".".repeat(count) + suffix;
+		editorContent.value = baseText + ".".repeat(count);
 	}, 500);
 };
 
@@ -583,6 +662,7 @@ const getDefaultKnowledge = () => {
 
 .editorjs-container {
 	padding: 2rem;
+	padding-bottom: calc(2rem + 56px);
 	min-height: 100%;
 	width: 100%;
 	height: 100%;
@@ -608,51 +688,74 @@ const getDefaultKnowledge = () => {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	padding: 0.5rem;
-	border-radius: 4px;
+	padding: 0.5rem 0.75rem;
+	border-radius: 6px;
 	align-items: center;
-	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 2px 3px rgba(0, 0, 0, 0.03);
 	background-color: white;
-	transition: box-shadow 0.2s ease;
+	transition: all 0.2s ease;
+	border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.command-note {
-	font-size: 0.75rem;
-	color: #666;
-	margin-top: 4px;
-	padding-left: 2px;
-	font-style: italic;
-	width: 100%;
+.command-item:hover {
+	border-color: rgba(0, 0, 0, 0.06);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .command-code {
-	font-weight: bold;
-	color: #222;
-}
-
-.text-secondary {
-	color: var(--secondary-color) !important;
-}
-
-.command-desc {
-	color: #444;
-	font-size: 0.875rem;
-	text-align: right;
+	font-weight: 500;
+	color: #333;
+	letter-spacing: -0.01em;
 }
 
 .enter-hint {
 	display: inline-flex;
 	align-items: center;
-	margin-left: 4px;
+	margin-left: 3px;
 	padding: 1px 4px;
 	border-radius: 3px;
-	font-size: 0.65rem;
+	font-size: 0.6rem;
 	color: #666;
-	background-color: #eeeeee;
+	background-color: rgba(0, 0, 0, 0.03);
 	vertical-align: middle;
 }
 
 .enter-hint i {
-	margin-right: 4px;
+	margin-right: 3px;
+}
+
+.fixed-action-panel {
+	transform-origin: center right;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	z-index: 50;
+}
+
+.panel-collapsed {
+	transform: translateX(calc(100% - 2.5rem));
+}
+
+.panel-collapsed .collapse-btn {
+	background-color: #333;
+}
+
+.panel-collapsed .collapse-btn i {
+	color: white;
+}
+
+/* .action-buttons {
+	transition: all 0.3s ease;
+	background: white;
+	padding: 0.5rem;
+	border-radius: 9999px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+} */
+
+.collapse-btn {
+	z-index: 60;
+	transition: all 0.3s ease;
+}
+
+.collapse-btn i {
+	transition: all 0.3s ease;
 }
 </style>

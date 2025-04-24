@@ -149,11 +149,11 @@ const goToCollection = (id) => {
 };
 
 const addNewScene = () => {
-	if (isLogin.value) {
-		router.push("/setup-collection");
-	} else {
+	if (!isLogin.value) {
 		showToast({ message: "登录后可创建合辑", type: "info" });
+		return;
 	}
+	router.push("/setup-collection");
 };
 </script>
 

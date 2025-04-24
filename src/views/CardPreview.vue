@@ -43,7 +43,7 @@
 										</h2>
 										<div class="flex items-center gap-2" v-if="!guestNotAllow">
 											<span class="badge badge-primary badge-outline rotate-2">
-												Scene {{ currentPage }}
+												{{ route.query.title }}
 											</span>
 										</div>
 									</div>

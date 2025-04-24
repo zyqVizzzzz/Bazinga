@@ -89,7 +89,7 @@
 					>
 						<i
 							class="bi mr-2"
-							:class="isEditMode ? 'bi-check2' : 'bi-pencil-fill'"
+							:class="isEditMode ? 'bi-check2 ' : 'bi-pencil-fill'"
 						></i>
 						<span>{{ isEditMode ? "完成" : "编辑" }}</span>
 					</button>
@@ -252,7 +252,7 @@ const loadCollections = async () => {
 		if (res.data.code === 200) {
 			// 过滤掉当前合集
 			collections.value = res.data.data.filter(
-				(c) => c._id !== route.params.id
+				(c) => c._id !== route.params.id && !c.isDefault
 			);
 		}
 	} catch (error) {
@@ -464,7 +464,7 @@ onMounted(async () => {
 const goToLesson = (seasonNumber, episode) => {
 	if (!seasonNumber || !episode) return;
 	const params = `${route.params.id}/${seasonNumber}/${episode.ep.toString()}`;
-	const query = { sign: episode._id };
+	const query = { sign: episode._id, title: episode.epName };
 	episode.scriptUrl
 		? router.push({ path: `/collections/${params}`, query })
 		: router.push({

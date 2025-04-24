@@ -120,6 +120,9 @@ const createNewCard = async () => {
 		return;
 	}
 	try {
+		const today = new Date();
+		const dateStr = today.toLocaleDateString("zh-CN").replace(/\//g, "-");
+		const defaultDocName = `Doc-${dateStr}`;
 		// 获取用户的默认合集
 		const res = await apiClient.get("/catalogs/default");
 		if (res.data.code === 200 && res.data.data) {
@@ -147,7 +150,7 @@ const createNewCard = async () => {
 					const createRes = await apiClient.post("/catalogs/episodes/create", {
 						catalogId: defaultCatalog._id,
 						ep: nextEp,
-						epName: "未命名文档",
+						epName: defaultDocName,
 						seasonNumber: season.seasonNumber,
 					});
 
@@ -163,7 +166,7 @@ const createNewCard = async () => {
 					const createRes = await apiClient.post("/catalogs/episodes/create", {
 						catalogId: defaultCatalog._id,
 						ep: 1,
-						epName: "未命名文档",
+						epName: defaultDocName,
 						seasonNumber: season.seasonNumber,
 					});
 

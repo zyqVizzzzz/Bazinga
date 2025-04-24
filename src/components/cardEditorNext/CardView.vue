@@ -75,7 +75,7 @@
 						</button>
 					</div>
 				</template>
-				<div class="tooltip" data-tip="导出文档" v-if="isLogin">
+				<div class="tooltip" data-tip="导出文档">
 					<button
 						class="retro-btn"
 						@click="exportToMarkdown"
@@ -1321,6 +1321,9 @@ const handleConfirmDeleteBlock = () => {
 
 // 添加导出 Markdown 方法
 const exportToMarkdown = async () => {
+	if (!isLogin.value) {
+		showToast({ message: "登录后可使用导出功能", type: "info" });
+	}
 	try {
 		isLoading.value = true;
 		// 生成 Markdown 内容，遍历所有场景

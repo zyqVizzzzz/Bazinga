@@ -29,7 +29,6 @@
 				</div>
 
 				<div class="channel-list">
-					<!-- <div class="channel-header">播客列表</div> -->
 					<div
 						v-for="(podcast, index) in podcastData"
 						:key="index"
@@ -71,15 +70,6 @@
 							class="audio-player"
 						></audio>
 
-						<!-- 生成播客按钮 -->
-						<!-- <button
-							class="generate-podcast-btn text-sm"
-							@click="generatePodcast(selectedPodcast, currentPlayingIndex)"
-						>
-							<i class="bi bi-broadcast-pin"></i>
-							<span>生成播客</span>
-						</button> -->
-
 						<!-- 语言切换按钮 -->
 						<button
 							class="translation-toggle-btn text-sm"
@@ -88,9 +78,6 @@
 							title="显示/隐藏中文翻译"
 						>
 							<TranslationIcon size="4" />
-							<!-- <span class="toggle-status">{{
-								showTranslated ? "隐藏翻译" : "显示翻译"
-							}}</span> -->
 						</button>
 					</div>
 

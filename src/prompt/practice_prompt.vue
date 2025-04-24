@@ -124,7 +124,7 @@ import {
 
 // 响应式状态
 const catalogId = ref("67230dee6fc3d389ea1ffedf");
-const lessonId = ref("67b84db843370048fe40c8f0");
+const lessonId = ref("67230dee6fc3d389ea1ffee1");
 const sceneId = ref(localStorage.getItem("sceneId") || "");
 const extra = ref("");
 const step = ref("1");
@@ -212,6 +212,7 @@ const transformData = (data) => {
 	// 提取关键词和解释
 	const keyword = data.map((item) => ({
 		knowledge: item.word,
+		knowledge_zh: item.word_zh,
 		explanation: item.definition_zh,
 	}));
 
