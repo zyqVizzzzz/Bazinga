@@ -189,18 +189,18 @@ const handleCancel = () => {
 };
 
 const handleCreateNote = () => {
-	const trimmedContent = editorContent.trim();
+	const trimmedContent = editorContent.value.trim();
 	if (trimmedContent) {
-		editorContent = trimmedContent;
+		editorContent.value = trimmedContent; // 使用 .value 更新
 		showRitualAnimation().then((success) => {
 			if (success) {
 				createCollection();
 			}
 		});
 	} else {
-		editorContent = "文本内容为空，请先添加文本再生成卡片。";
+		editorContent.value = "文本内容为空，请先添加文本再生成卡片。"; // 使用 .value 更新
 		setTimeout(() => {
-			editorContent = "";
+			editorContent.value = ""; // 使用 .value 更新
 		}, 2000);
 	}
 };
