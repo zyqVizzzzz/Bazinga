@@ -409,7 +409,6 @@ const submitNote = async () => {
 		if (!bannerUrl) return;
 		noteForm.value.banner = bannerUrl;
 	}
-	console.log(noteForm.value);
 	try {
 		// 判断是新增还是编辑操作
 		const res = resourceId.value

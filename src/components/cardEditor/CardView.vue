@@ -1329,8 +1329,6 @@ const exportToMarkdown = async () => {
 		// 生成 Markdown 内容，遍历所有场景
 		let markdownContent = "";
 
-		console.log(props.scenes);
-
 		props.scenes.forEach((scene, sceneIndex) => {
 			// 添加场景标题
 			markdownContent += `## ${
@@ -1342,7 +1340,6 @@ const exportToMarkdown = async () => {
 			// 获取当前场景的块
 			const sceneBlocks =
 				sceneIndex === currentIndex.value ? currentBlocks.value : scene;
-			console.log(sceneBlocks);
 
 			// 遍历场景中的所有块
 			sceneBlocks.forEach((block) => {
@@ -1354,7 +1351,6 @@ const exportToMarkdown = async () => {
 					const cleanText = (block.displayText || block.text || "")
 						.replace(/<mark[^>]*>(.*?)<\/mark>/g, "**`$1`**")
 						.replace(/<[^>]+>/g, "");
-					console.log(speakerText, cleanText);
 					markdownContent += `${speakerText}${cleanText}\n\n`;
 				}
 
@@ -3035,7 +3031,6 @@ const handleSplitScene = (index) => {
 const isMerging = ref(false);
 // 合并场景
 const handleMergeScenes = async (index) => {
-	console.log(index);
 	isMerging.value = true;
 
 	// 添加动画类到要合并的卡带（当前点击的卡带）

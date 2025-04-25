@@ -1,5 +1,11 @@
+@font-face {
+	font-family: "Kanaka";
+	src: url("/fonts/2002.ttf") format("truetype");
+}
 :root {
-	font-family: "Comic Sans MS", Hannotate SC, "Courier New", monospace;
+	/*  */
+	font-family: "Comic Sans MS", Hannotate SC, "Kanaka", "Hiragino Sans GB",
+		"Microsoft YaHei", "Courier New", monospace;
 	line-height: 1.5;
 	font-weight: 400;
 

@@ -205,7 +205,6 @@ const selectPodcast = (podcast, index) => {
 const generatePodcast = async (podcast, index, isRegenerate = false) => {
 	// 设置生成状态
 	isGenerating.value[index] = true;
-	console.log(podcast, index, isRegenerate);
 
 	const audioResponse = await apiClient.post(
 		"/podcasts/generate-audio-hailuo",
@@ -300,7 +299,6 @@ watch(
 watch(
 	() => props.currentPage,
 	(newPage) => {
-		console.log("当前页面变更为:", newPage);
 		// 页面变化时重置播放器状态
 		resetPlayer();
 

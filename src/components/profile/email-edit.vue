@@ -161,7 +161,6 @@ const validateAndSaveEmail = async () => {
 
 		if (res.data.code === 200) {
 			const data = res.data.data;
-			console.log(data);
 			if (data.message === "failed") {
 				showToast({
 					type: "error",

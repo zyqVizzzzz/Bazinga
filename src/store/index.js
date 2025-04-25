@@ -80,7 +80,6 @@ export const useNotebookStore = defineStore("notebook", {
 		setCurrentActiveNote(note) {
 			this.currentActiveNote = note;
 			this.noteChangeCounter++;
-			console.log(this.noteChangeCounter);
 		},
 	},
 	// persist: true,
@@ -116,7 +115,6 @@ export const usePointsStore = defineStore("points", {
 		async fetchPoints() {
 			try {
 				const response = await apiClient.get("/points");
-				console.log(response.data.data);
 				return response.data.data.points;
 			} catch (error) {
 				console.error("Failed to fetch points:", error);

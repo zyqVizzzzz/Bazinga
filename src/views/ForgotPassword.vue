@@ -306,7 +306,6 @@ const passwordStrength = computed(() => {
 
 // 注册
 const register = async () => {
-	console.log("inter");
 	try {
 		const isFormValid = await v$.value.$validate();
 		if (!isFormValid) {

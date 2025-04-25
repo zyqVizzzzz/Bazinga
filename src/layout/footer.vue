@@ -185,12 +185,10 @@ const handleSubmit = async () => {
 	if (!userInput.value.trim()) return;
 
 	// 这里处理提交逻辑
-	console.log("提交留言:", userInput.value);
 	try {
 		const response = await apiClient.post("/messages", {
 			content: userInput.value,
 		});
-		console.log(response.data.code);
 		if (response.data.code === 200) {
 			tips.value = "留言发送成功!";
 			setTimeout(() => {

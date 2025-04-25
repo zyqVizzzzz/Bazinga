@@ -246,7 +246,6 @@ const confirmKnowledge = () => {
 		const selectedKnowledge = knowledgeGroups.value.map((group) =>
 			group.join(" ")
 		);
-		console.log(selectedKnowledge);
 		emit("manual-generate-knowledge", selectedKnowledge);
 		clearSelection();
 		modalRef.value?.close();

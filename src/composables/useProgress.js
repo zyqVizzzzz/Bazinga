@@ -69,14 +69,6 @@ export function useProgress(
 		const page = currentPage.value;
 		const sign = route.query.sign;
 
-		console.log("Saving local progress:", {
-			course,
-			season,
-			episode,
-			page,
-			sign,
-		});
-
 		// 只保存到 store，不发送请求
 		appStore.saveProgress(course, season, episode, page, sign);
 	};

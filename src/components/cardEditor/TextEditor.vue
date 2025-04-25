@@ -394,10 +394,8 @@ const importFromUrl = async (url) => {
 		}
 	} catch (error) {
 		if (error.name === "AbortError") {
-			console.log("导入已取消");
 			return;
 		}
-		console.error("导入失败:", error);
 		// 保持原有内容，在后面添加错误信息
 		const existingContent = editorContent.value.split("正在导入")[0].trim();
 		editorContent.value = existingContent ? existingContent + "\n\n" : "";

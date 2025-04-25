@@ -488,7 +488,6 @@ const handlePlayComplete = () => {
 
 const togglePracticeMode = () => {
 	if (needUnlock.value) {
-		console.log("hello");
 		showToast({
 			message: "解锁资源包体验完整内容",
 			type: "warning",
