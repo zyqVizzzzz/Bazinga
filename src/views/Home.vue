@@ -126,25 +126,6 @@ const goToCollection = (id) => {
 	margin: 0 auto;
 }
 
-.title-decoration {
-	position: absolute;
-	width: 40px;
-	height: 40px;
-	border: 4px solid currentColor;
-}
-
-.title-decoration.left {
-	left: -20px;
-	top: 50%;
-	transform: translateY(-50%) rotate(45deg);
-}
-
-.title-decoration.right {
-	right: -20px;
-	top: 50%;
-	transform: translateY(-50%) rotate(45deg);
-}
-
 .text-shadow-retro {
 	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2),
 		-1px -1px 0 rgba(255, 255, 255, 0.2);
@@ -172,6 +153,15 @@ const goToCollection = (id) => {
 	width: 20rem;
 	cursor: pointer;
 	transition: transform 0.3s;
+}
+
+.retro-card:hover {
+	transform: translateY(-5px);
+}
+
+.retro-card:hover .card-edge,
+.retro-card:hover .card-face {
+	transform: translateY(-6px);
 }
 
 .card-shadow {
@@ -244,15 +234,6 @@ const goToCollection = (id) => {
 	);
 }
 
-.retro-card:hover {
-	transform: translateY(-5px);
-}
-
-.retro-card:hover .card-edge,
-.retro-card:hover .card-face {
-	transform: translateY(-6px);
-}
-
 .retro-btn-medium:hover .btn-face {
 	background-color: white;
 }
@@ -302,15 +283,5 @@ const goToCollection = (id) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-.icp-info a {
-	color: inherit;
-	text-decoration: none;
-	transition: color 0.2s;
-}
-
-.icp-info a:hover {
-	color: var(--primary-color);
 }
 </style>

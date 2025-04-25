@@ -9,9 +9,7 @@
 							<h1
 								class="font-bold text-shadow-retro flex justify-between items-center"
 							>
-								<div class="text-xl">
-									{{ t("login.title") }}
-								</div>
+								<div class="text-xl">登录</div>
 								<div class="title-decoration-right">
 									<i class="bi bi-sunglasses text-3xl"></i>
 								</div>
@@ -22,14 +20,14 @@
 							<!-- 邮箱输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text">{{ t("login.email") }}:</span>
+									<span class="label-text">邮箱:</span>
 								</label>
 								<div class="retro-input-wrapper">
 									<input
 										type="text"
 										v-model="email"
 										class="retro-input"
-										:placeholder="t('login.emailInput')"
+										placeholder="输入邮箱"
 										required
 									/>
 								</div>
@@ -38,14 +36,14 @@
 							<!-- 密码输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text">{{ t("login.password") }}:</span>
+									<span class="label-text">密码:</span>
 								</label>
 								<div class="retro-input-wrapper">
 									<input
 										type="password"
 										v-model="password"
 										class="retro-input"
-										:placeholder="t('login.passwordInput')"
+										placeholder="输入密码"
 										required
 									/>
 								</div>
@@ -90,9 +88,7 @@
 								<button type="submit" class="retro-btn-large">
 									<div class="btn-shadow">
 										<div class="btn-edge">
-											<div class="btn-face">
-												{{ t("login.submit") }}
-											</div>
+											<div class="btn-face">登录</div>
 										</div>
 									</div>
 								</button>
@@ -104,7 +100,7 @@
 									@click="goToSignup"
 									class="text-blue-600 cursor-pointer hover:text-blue-800"
 								>
-									{{ t("login.tips2") }}
+									立即注册
 								</a>
 								<a
 									@click="goToResetPassword"
@@ -124,11 +120,8 @@
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import apiClient from "@/api";
-
 import { useLoginStore } from "@/store/index";
-import { useI18n } from "vue-i18n";
 
-const { t } = useI18n();
 const loginStore = useLoginStore();
 const { setLoginState, setUserInfo } = loginStore;
 
@@ -179,7 +172,7 @@ const login = async () => {
 				}
 			}
 		} else {
-			errorMessage.value = t("login.error");
+			errorMessage.value = "邮箱或密码有误，请重新登录";
 		}
 	} catch (error) {
 		console.error("登录错误:", error);
@@ -188,7 +181,7 @@ const login = async () => {
 			response: error.response?.data,
 			status: error.response?.status,
 		});
-		errorMessage.value = t("login.error");
+		errorMessage.value = "邮箱或密码有误，请重新登录";
 	}
 };
 

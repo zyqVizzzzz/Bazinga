@@ -1,7 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import { i18n } from "./i18n";
 
 import "./style.css";
 import "./main.css";
@@ -16,6 +15,5 @@ pinia.use(piniaPluginPersistedstate);
 createApp(App)
 	.use(router)
 	.use(pinia)
-	.use(i18n)
 	.directive("debounce-click", vDebounceClick)
 	.mount("#app");

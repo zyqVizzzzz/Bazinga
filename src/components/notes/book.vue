@@ -11,7 +11,7 @@
 							class="retro-input"
 							@input="onInputWord"
 							@keydown.enter="searchWord"
-							:placeholder="t('notes.searchInput')"
+							placeholder="快速搜索"
 							:disabled="isGenerating"
 						/>
 					</div>
@@ -98,12 +98,9 @@ import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
 import { useNotebookStore, useLoginStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
-import { useI18n } from "vue-i18n";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
-
-const { t } = useI18n();
 
 const emit = defineEmits([
 	"on-select-note",

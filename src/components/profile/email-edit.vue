@@ -10,7 +10,7 @@
 						v-model="tempEmail"
 						:class="{ 'input-error': v$.tempEmail.$error }"
 						class="input input-bordered w-full text-sm"
-						:placeholder="t('profile.account_form.email_input')"
+						placeholder="输入新邮箱地址"
 						autocomplete="off"
 						autocorrect="off"
 						spellcheck="false"
@@ -71,10 +71,8 @@ import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useVuelidate } from "@vuelidate/core";
-import { useI18n } from "vue-i18n";
 import { required, helpers } from "@vuelidate/validators";
 
-const { t } = useI18n();
 const router = useRouter();
 const isSubmitting = ref(false);
 const verificationCode = ref("");

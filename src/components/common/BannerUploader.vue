@@ -1,13 +1,13 @@
 <template>
 	<div class="form-control">
 		<label class="retro-label">
-			<span class="label-text">{{ t(labelKey) }}</span>
+			<span class="label-text">封面图</span>
 		</label>
 		<div class="retro-upload-area" @click="triggerFileInput">
 			<template v-if="!previewUrl">
 				<div class="upload-content">
 					<i class="bi bi-upload text-2xl"></i>
-					<span class="mt-2">{{ t(placeholderKey) }}</span>
+					<span class="mt-2">点击此处上传</span>
 				</div>
 			</template>
 			<template v-else>
@@ -105,20 +105,9 @@
 
 <script setup>
 import { ref, watch, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
 
 const props = defineProps({
 	modelValue: String,
-	labelKey: {
-		type: String,
-		default: "collectionSetup.form.banner",
-	},
-	placeholderKey: {
-		type: String,
-		default: "collectionSetup.form.bannerInput",
-	},
 });
 
 const emit = defineEmits(["update:modelValue", "file-selected"]);

@@ -1,13 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { onMounted } from "vue";
 import Navbar from "@/layout/navbar.vue";
-import Footer from "@/layout/footer.vue";
 import apiClient from "@/api";
 import { useLoginStore } from "@/store/index";
 
 const loginStore = useLoginStore();
 const { setLoginState, setUserInfo } = loginStore;
-const isLogin = computed(() => loginStore.isLogin);
 
 const getUserProfile = async () => {
 	try {
@@ -42,8 +40,5 @@ onMounted(async () => {
 .content {
 	flex: 1 0 auto;
 	min-height: 600px;
-}
-.footer {
-	margin-top: auto;
 }
 </style>

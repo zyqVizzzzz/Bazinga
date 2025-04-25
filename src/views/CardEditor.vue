@@ -16,11 +16,11 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
+import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { showToast } from "@/components/common/toast.js";
-import TextEditor from "@/components/cardEditorNext/TextEditor.vue";
-import CardView from "@/components/cardEditorNext/CardView.vue";
+import TextEditor from "@/components/cardEditor/TextEditor.vue";
+import CardView from "@/components/cardEditor/CardView.vue";
 
 const route = useRoute();
 const router = useRouter();

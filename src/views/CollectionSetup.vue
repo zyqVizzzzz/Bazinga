@@ -3,11 +3,7 @@
 		<!-- 标题 -->
 		<div class="retro-title-box my-10 text-center">
 			<h1 class="text-2xl font-bold text-shadow-retro">
-				{{
-					resourceId
-						? t("collectionSetup.updateTitle")
-						: t("collectionSetup.createTitle")
-				}}
+				{{ resourceId ? "更新合集" : "创建合集" }}
 			</h1>
 		</div>
 
@@ -23,10 +19,8 @@
 								<div class="form-control">
 									<label class="retro-label">
 										<span class="label-text"
-											>{{ t("collectionSetup.form.title") }}
-											<span class="text-red-500"
-												>({{ t("collectionSetup.form.titleDesc") }})</span
-											>
+											>合集名
+											<span class="text-red-500">(必填项)</span>
 										</span>
 									</label>
 									<div class="retro-input-wrapper">
@@ -37,7 +31,7 @@
 											:class="{
 												'border-red-500': showError && !noteForm.showName,
 											}"
-											:placeholder="t('collectionSetup.form.titleInput')"
+											placeholder="请输入合辑名"
 											@blur="v$.showName.$touch()"
 										/>
 									</div>
@@ -52,16 +46,14 @@
 								<!-- 副标题输入 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">{{
-											t("collectionSetup.form.subTitle")
-										}}</span>
+										<span class="label-text"> 副标题 </span>
 									</label>
 									<div class="retro-input-wrapper">
 										<input
 											v-model="noteForm.name"
 											type="text"
 											class="retro-input"
-											:placeholder="t('collectionSetup.form.subTitleInput')"
+											placeholder="请输入副标题"
 											@blur="v$.name.$touch()"
 										/>
 									</div>
@@ -73,15 +65,13 @@
 								<!-- 合集简介 -->
 								<div class="form-control">
 									<label class="retro-label">
-										<span class="label-text">{{
-											t("collectionSetup.form.description")
-										}}</span>
+										<span class="label-text">合集简介</span>
 									</label>
 									<div class="retro-textarea-wrapper">
 										<textarea
 											v-model="noteForm.description"
 											class="retro-textarea"
-											:placeholder="t('collectionSetup.form.descriptionInput')"
+											placeholder="请输入合集简介"
 											@blur="v$.description.$touch()"
 										></textarea>
 									</div>
@@ -167,7 +157,7 @@
 			>
 				<div class="btn-shadow">
 					<div class="btn-edge">
-						<div class="btn-face">{{ t("collectionSetup.form.submit") }}</div>
+						<div class="btn-face">提交</div>
 					</div>
 				</div>
 			</button>
@@ -178,7 +168,7 @@
 			>
 				<div class="btn-shadow btn-shadow-danger">
 					<div class="btn-edge btn-edge-danger">
-						<div class="btn-face">{{ t("collectionSetup.form.delete") }}</div>
+						<div class="btn-face">删除合集</div>
 					</div>
 				</div>
 			</button>
@@ -189,12 +179,8 @@
 			<div class="retro-modal">
 				<div class="modal-content">
 					<h3 class="text-lg font-bold mb-6">
-						{{ t("collectionSetup.form.deleteTips") }}
-						<!-- <div class="text-base"> -->
-						<mark class="text-red-500">{{
-							t("collectionSetup.form.deleteTips2")
-						}}</mark>
-						<!-- </div> -->
+						确认删除当前合集？
+						<mark class="text-red-500">此操作不可撤销</mark>
 					</h3>
 					<div class="flex space-x-4 justify-center">
 						<button
@@ -206,18 +192,14 @@
 						>
 							<div class="btn-shadow btn-shadow-danger">
 								<div class="btn-edge btn-edge-danger">
-									<div class="btn-face">
-										{{ t("collectionSetup.form.deleteConfirm") }}
-									</div>
+									<div class="btn-face">确认</div>
 								</div>
 							</div>
 						</button>
 						<button class="retro-btn-small modal-btn" @click="closeDeleteModal">
 							<div class="btn-shadow">
 								<div class="btn-edge">
-									<div class="btn-face">
-										{{ t("collectionSetup.form.deleteCancel") }}
-									</div>
+									<div class="btn-face">取消</div>
 								</div>
 							</div>
 						</button>
@@ -233,13 +215,10 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-import { useI18n } from "vue-i18n";
 import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
 import { useAppStore } from "@/store";
 import BannerUploader from "@/components/common/BannerUploader.vue";
-
-const { t, locale } = useI18n();
 
 const router = useRouter();
 const route = useRoute();

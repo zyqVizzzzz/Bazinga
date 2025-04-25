@@ -31,7 +31,7 @@
 							:class="{ active: route.path === '/' }"
 							@click="goToHome()"
 						>
-							{{ t("nav.home") }}
+							首页
 						</a>
 					</li>
 					<li>
@@ -40,7 +40,7 @@
 							:class="{ active: route.path === '/collections' }"
 							@click="goToLink('collections')"
 						>
-							{{ t("nav.collections") }}
+							合集
 						</a>
 					</li>
 					<li>
@@ -67,9 +67,7 @@
 						</a>
 					</li>
 					<li v-if="!isLogin">
-						<a class="retro-link" @click="goToLink('login')">
-							{{ t("nav.login") }}
-						</a>
+						<a class="retro-link" @click="goToLink('login')"> 登录 </a>
 					</li>
 				</ul>
 			</div>
@@ -79,13 +77,9 @@
 <script setup>
 import { useRouter, useRoute } from "vue-router";
 import { ref, onMounted, watch, computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { useLoginStore } from "@/store/index";
-import ExitIcon from "@/components/icons/Exit.vue";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
-
-const { t, locale } = useI18n();
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);

@@ -9,7 +9,7 @@
 					id="current-password"
 					v-model="passwordForm.currentPassword"
 					class="input input-bordered w-full text-sm"
-					:placeholder="t('profile.account_form.password_input')"
+					placeholder="输入当前密码"
 					autocomplete="new-password"
 				/>
 				<div class="text-red-500 text-xs mt-1" v-if="v$.currentPassword.$error">
@@ -25,7 +25,7 @@
 					id="new-password"
 					v-model="passwordForm.newPassword"
 					class="input input-bordered w-full text-sm"
-					:placeholder="t('profile.account_form.password_new_input')"
+					placeholder="输入新密码"
 					autocomplete="new-password"
 				/>
 				<div v-if="passwordForm.newPassword" class="mt-2">
@@ -57,7 +57,7 @@
 					id="confirm-password"
 					v-model="passwordForm.confirmPassword"
 					class="input input-bordered w-full text-sm"
-					:placeholder="t('profile.account_form.password_confirm_input')"
+					placeholder="确认新密码"
 					autocomplete="new-password"
 				/>
 				<div class="text-red-500 text-xs mt-1" v-if="v$.confirmPassword.$error">
@@ -84,17 +84,9 @@ import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useVuelidate } from "@vuelidate/core";
-import { useI18n } from "vue-i18n";
-import {
-	required,
-	maxLength,
-	minLength,
-	sameAs,
-	helpers,
-} from "@vuelidate/validators";
+import { required, minLength, sameAs, helpers } from "@vuelidate/validators";
 
 const router = useRouter();
-const { t, locale } = useI18n();
 
 const passwordForm = ref({
 	currentPassword: "",

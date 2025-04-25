@@ -9,9 +9,7 @@
 							<h1
 								class="font-bold text-shadow-retro flex justify-between items-center"
 							>
-								<div class="text-xl">
-									{{ t("signup.title") }}
-								</div>
+								<div class="text-xl">注册</div>
 								<div class="title-decoration-right">
 									<i class="bi bi-flower3 text-3xl"></i>
 								</div>
@@ -22,7 +20,7 @@
 							<!-- 邮箱输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text">{{ t("signup.email") }}:</span>
+									<span class="label-text">邮箱:</span>
 								</label>
 								<div class="flex space-x-2 items-center">
 									<div class="retro-input-wrapper flex-1">
@@ -31,7 +29,7 @@
 											v-model="formData.email"
 											class="retro-input text-sm"
 											:class="{ 'border-red-500': v$.email.$error }"
-											:placeholder="t('signup.emailInput')"
+											placeholder="输入邮箱"
 											required
 											autocomplete="off"
 											autocorrect="off"
@@ -47,9 +45,7 @@
 										<div class="btn-shadow">
 											<div class="btn-edge">
 												<div class="btn-face">
-													{{
-														cooldown > 0 ? `${cooldown}s` : t("signup.sendCode")
-													}}
+													{{ cooldown > 0 ? `${cooldown}s` : "发送验证码" }}
 												</div>
 											</div>
 										</div>
@@ -63,9 +59,7 @@
 							<!-- 验证码输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text"
-										>{{ t("signup.verificationCode") }}:</span
-									>
+									<span class="label-text">验证码:</span>
 								</label>
 								<div class="retro-input-wrapper">
 									<input
@@ -73,7 +67,7 @@
 										v-model="formData.verificationCode"
 										class="retro-input text-sm"
 										:class="{ 'border-red-500': v$.verificationCode.$error }"
-										:placeholder="t('signup.verificationCodeInput')"
+										placeholder="请输入验证码"
 										required
 										autocomplete="off"
 										autocorrect="off"
@@ -91,7 +85,7 @@
 							<!-- 密码输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text">{{ t("signup.password") }}:</span>
+									<span class="label-text">密码:</span>
 								</label>
 								<div class="retro-input-wrapper">
 									<input
@@ -99,7 +93,7 @@
 										v-model="formData.password"
 										class="retro-input text-sm"
 										:class="{ 'border-red-500': v$.password.$error }"
-										:placeholder="t('signup.passwordInput')"
+										placeholder="输入密码"
 										required
 										autocomplete="new-password"
 									/>
@@ -136,9 +130,7 @@
 							<!-- 确认密码输入 -->
 							<div class="form-control">
 								<label class="retro-label">
-									<span class="label-text"
-										>{{ t("signup.passwordRepeat") }}:</span
-									>
+									<span class="label-text">确认密码:</span>
 								</label>
 								<div class="retro-input-wrapper">
 									<input
@@ -146,7 +138,7 @@
 										v-model="formData.confirmPassword"
 										class="retro-input text-sm"
 										:class="{ 'border-red-500': v$.confirmPassword.$error }"
-										:placeholder="t('signup.passwordRepeatInput')"
+										placeholder="再次输入密码"
 										required
 										autocomplete="new-password"
 									/>
@@ -218,9 +210,7 @@
 								<button class="retro-btn-large" @click="register">
 									<div class="btn-shadow">
 										<div class="btn-edge">
-											<div class="btn-face">
-												{{ t("signup.submit") }}
-											</div>
+											<div class="btn-face">注册</div>
 										</div>
 									</div>
 								</button>
@@ -228,12 +218,12 @@
 
 							<!-- 登录链接 -->
 							<p class="text-center text-sm mt-6 text-gray-600">
-								{{ t("signup.tips") }}
+								已经有账户了
 								<a
 									@click="goToLogin"
 									class="text-blue-600 cursor-pointer hover:text-blue-800 ml-1"
 								>
-									{{ t("signup.tips2") }}
+									立即登录
 								</a>
 							</p>
 						</div>
@@ -249,11 +239,9 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
-import { useI18n } from "vue-i18n";
 import { useVuelidate } from "@vuelidate/core";
 import { required, helpers } from "@vuelidate/validators";
 
-const { t } = useI18n();
 const router = useRouter();
 
 // 表单数据 - 改用 formData 对象统一管理
@@ -262,7 +250,6 @@ const formData = ref({
 	password: "",
 	confirmPassword: "",
 	verificationCode: "",
-	// invitationCode: "",
 });
 const errorMessage = ref("");
 const cooldown = ref(0);
@@ -344,12 +331,12 @@ const sendVerificationCode = async () => {
 			}
 		}, 1000);
 
-		showToast({ message: t("signup.codeSent"), type: "success" });
+		showToast({ message: "验证码已发送", type: "success" });
 	} catch (error) {
 		if (error.response?.data?.code) {
 			errorMessage.value = error.response.data.data;
 		} else {
-			errorMessage.value = t("signup.sendCodeError");
+			errorMessage.value = "验证码发送失败";
 		}
 	}
 };
@@ -411,7 +398,7 @@ const register = async () => {
 
 		// 根据你的后端响应格式调整
 		if (response.data.code === 200 || response.data.code === 0) {
-			showToast({ message: t("signup.success"), type: "success" });
+			showToast({ message: "注册成功", type: "success" });
 			router.push("/login");
 		} else {
 			errorMessage.value = response.data.data || response.data.message;
@@ -421,7 +408,7 @@ const register = async () => {
 			errorMessage.value = error.response.data.message;
 			showToast({ message: errorMessage.value, type: "error" });
 		} else {
-			errorMessage.value = t("signup.error");
+			errorMessage.value = "注册失败";
 		}
 	}
 };
