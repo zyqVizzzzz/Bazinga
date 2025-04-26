@@ -139,7 +139,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
@@ -739,14 +739,6 @@ const getDefaultKnowledge = () => {
 .panel-collapsed .collapse-btn i {
 	color: white;
 }
-
-/* .action-buttons {
-	transition: all 0.3s ease;
-	background: white;
-	padding: 0.5rem;
-	border-radius: 9999px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-} */
 
 .collapse-btn {
 	z-index: 60;

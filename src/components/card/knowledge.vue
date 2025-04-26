@@ -193,6 +193,9 @@
 				<!-- 关闭按钮 -->
 				<div class="manual-footer"></div>
 			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>关闭</button>
+			</form>
 		</dialog>
 	</div>
 </template>
