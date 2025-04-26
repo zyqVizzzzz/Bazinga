@@ -22,7 +22,7 @@
 				<ul class="menu menu-horizontal gap-2">
 					<li>
 						<a class="retro-link create-card-btn mr-8" @click="createNewCard">
-							<i class="bi bi-plus-circle"></i> 快速开始
+							<i class="bi bi-lightning-charge"></i> 快速开始
 						</a>
 					</li>
 					<li>

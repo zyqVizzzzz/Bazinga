@@ -113,7 +113,10 @@
 									Enter
 								</span></span
 							><span class="command-desc ml-2 text-gray-500 font-normal"
-								>从URL导入内容</span
+								>从URL导入内容<span
+									class="text-xs text-gray-400 font-light ml-1"
+									>(不支持科学上网)</span
+								></span
 							>
 						</div>
 						<div class="mt-6">
