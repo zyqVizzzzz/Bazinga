@@ -115,7 +115,7 @@
 							><span class="command-desc ml-2 text-gray-500 font-normal"
 								>从URL导入内容<span
 									class="text-xs text-gray-400 font-light ml-1"
-									>(不支持科学上网)</span
+									>(仅支持国内可访问网站)</span
 								></span
 							>
 						</div>
@@ -215,6 +215,18 @@ const checkCommand = (event) => {
 		.filter((line) => line.trim() !== "");
 	const lastLine = allLines[allLines.length - 1].trim();
 
+	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
+	const match = lastLine.match(urlCommandRegex);
+
+	if (match) {
+		event.preventDefault();
+		// 移除包含命令的最后一行
+		editorContent.value = allLines.slice(0, -1).join("\n");
+		const url = match[1];
+		importFromUrl(url);
+		return;
+	}
+
 	// 检查最后一行是否为命令
 	if (lastLine.includes("/new")) {
 		event.preventDefault(); // 阻止回车键的默认行为
@@ -296,18 +308,6 @@ const checkCommand = (event) => {
 		waitingForConfirmation.value = false;
 		return;
 	}
-
-	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
-	const match = lastLine.match(urlCommandRegex);
-
-	if (match) {
-		event.preventDefault();
-		// 移除包含命令的最后一行
-		editorContent.value = allLines.slice(0, -1).join("\n");
-		const url = match[1];
-		importFromUrl(url);
-		return;
-	}
 };
 
 const showRitualAnimation = async () => {
@@ -380,10 +380,25 @@ const importFromUrl = async (url) => {
 			let importedContent = "";
 			importedContent += "# Default Title\n\n";
 
+			// 中文行过滤
 			content.paragraphs.forEach((paragraph) => {
-				if (paragraph.trim()) {
-					importedContent += paragraph + "\n\n";
-				}
+				// 将段落按换行符分割成单独的行
+				const lines = paragraph.split("\n");
+
+				// 处理每一行
+				lines.forEach((line) => {
+					if (line.trim()) {
+						// 计算中文字符比例
+						const chineseChars = line.match(/[\u4e00-\u9fa5]/g) || [];
+						const totalChars = line.length;
+						const chineseRatio = chineseChars.length / totalChars;
+
+						// 如果中文字符比例小于10%，则保留该行
+						if (chineseRatio <= 0.1) {
+							importedContent += line + "\n\n";
+						}
+					}
+				});
 			});
 
 			// 将新内容追加到现有内容后

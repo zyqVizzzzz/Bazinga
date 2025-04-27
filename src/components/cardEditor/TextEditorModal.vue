@@ -40,9 +40,15 @@
 
 						<div
 							v-if="showGuidePanel"
-							class="guide-panel p-4 border-t-2 border-gray-200"
+							class="guide-panel p-4 pl-1 border-t-2 border-gray-200"
 						>
 							<div class="command-list text-sm space-y-2">
+								<div class="command-item">
+									<span class="command-code">/go</span>
+									<span class="command-desc ml-2 text-gray-600"
+										>确认创建场景卡片</span
+									>
+								</div>
 								<div class="command-item">
 									<span class="command-code">/new</span>
 									<span class="command-desc ml-2 text-gray-600"
@@ -55,18 +61,13 @@
 										>从URL导入内容</span
 									>
 								</div>
-								<div class="command-item">
-									<span class="command-code">/go</span>
-									<span class="command-desc ml-2 text-gray-600"
-										>确认生成卡片</span
-									>
-								</div>
-								<div class="command-item">
+
+								<!-- <div class="command-item">
 									<span class="command-code">/go:{number}</span>
 									<span class="command-desc ml-2 text-gray-600"
 										>确认生成卡片并插入到指定位置</span
 									>
-								</div>
+								</div> -->
 							</div>
 						</div>
 					</div>
@@ -104,6 +105,7 @@ const isReconfirming = ref(false);
 const insertScenePosition = ref(-1); // 默认为-1，表示插入到最后
 // 添加指南面板显示状态
 const showGuidePanel = ref(false);
+const abortController = ref(null);
 
 // 切换指南面板显示状态
 const toggleGuide = () => {
@@ -121,6 +123,18 @@ const checkCommand = (event) => {
 	const allLines = newSceneContent.value.split("\n");
 	// 获取最后一行文本并去除首尾空格
 	const lastLine = allLines[allLines.length - 1].trim();
+
+	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
+	const match = lastLine.match(urlCommandRegex);
+
+	if (match) {
+		event.preventDefault();
+		// 移除包含命令的最后一行
+		newSceneContent.value = allLines.slice(0, -1).join("\n");
+		const url = match[1];
+		importFromUrl(url);
+		return;
+	}
 
 	// 检查最后一行是否为命令
 	if (lastLine.includes("/new")) {
@@ -236,18 +250,6 @@ const checkCommand = (event) => {
 
 		return;
 	}
-
-	const urlCommandRegex = /\/url:(https?:\/\/.+)/i;
-	const match = lastLine.match(urlCommandRegex);
-
-	if (match) {
-		event.preventDefault();
-		// 移除包含命令的最后一行
-		newSceneContent.value = allLines.slice(0, -1).join("\n");
-		const url = match[1];
-		importFromUrl(url);
-		return;
-	}
 };
 
 // 从URL导入内容
@@ -256,39 +258,46 @@ const importFromUrl = async (url) => {
 	if (!url || importing.value) return;
 
 	try {
-		// 显示加载中提示
-
 		importing.value = true;
+		abortController.value = new AbortController();
+
+		// 保存现有内容
+		const existingContent = newSceneContent.value.split("/url")[0].trim();
 
 		showToast({ message: "正在导入内容...", type: "info" });
-
-		const response = await apiClient.post("/scripts/import-url", {
-			url: url,
-		});
+		const response = await apiClient.post(
+			"/scripts/import-url",
+			{ url: url },
+			{ signal: abortController.value.signal }
+		);
 
 		if (response.data.code === 200) {
 			const content = response.data.data.content;
-
-			// 处理导入的内容
-
 			let importedContent = "";
+			importedContent += "# Default Title\n\n";
 
-			// 添加标题
-
-			importedContent += "# 导入的内容\n\n";
-
-			// 添加段落，保持段落间距
-
+			// 中文行过滤
 			content.paragraphs.forEach((paragraph) => {
-				if (paragraph.trim()) {
-					// 只添加非空段落
+				// 将段落按换行符分割成单独的行
+				const lines = paragraph.split("\n");
 
-					importedContent += paragraph + "\n\n"; // 使用两个换行符增加段间距
-				}
+				// 处理每一行
+				lines.forEach((line) => {
+					if (line.trim()) {
+						// 计算中文字符比例
+						const chineseChars = line.match(/[\u4e00-\u9fa5]/g) || [];
+						const totalChars = line.length;
+						const chineseRatio = chineseChars.length / totalChars;
+
+						// 如果中文字符比例小于20%，则保留该行
+						if (chineseRatio <= 0.1) {
+							importedContent += line + "\n\n";
+						}
+					}
+				});
 			});
 
 			// 设置到编辑器
-
 			newSceneContent.value = importedContent.trim();
 
 			showToast({ message: "内容导入成功", type: "success" });
