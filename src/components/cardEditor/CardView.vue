@@ -1325,6 +1325,7 @@ const handleConfirmDeleteBlock = () => {
 const exportToMarkdown = async () => {
 	if (!isLogin.value) {
 		showToast({ message: "登录后可使用导出功能", type: "info" });
+		return;
 	}
 	try {
 		isLoading.value = true;

@@ -141,7 +141,7 @@ const getDocumentCount = () => {
 };
 
 const goToCollection = (id) => {
-	if (!isLogin.value) return;
+	// if (!isLogin.value) return;
 	router.push("/collections/" + id);
 };
 
