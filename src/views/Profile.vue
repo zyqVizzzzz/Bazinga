@@ -7,6 +7,7 @@
 					class="action-btn update-password rotate-6 hover:-rotate-2"
 					:class="{ 'btn-hide': isUpdatingPassword || isUpdatingEmail }"
 					@click="togglePasswordUpdate"
+					:disabled="isEditing"
 				>
 					<i class="bi bi-key-fill mr-1"></i>
 					更新密码
@@ -28,6 +29,7 @@
 					class="action-btn update-email -rotate-3 hover:rotate-1"
 					:class="{ 'btn-hide': isUpdatingPassword || isUpdatingEmail }"
 					@click="toggleEmailUpdate"
+					:disabled="isEditing"
 				>
 					<i class="bi bi-envelope-fill mr-1"></i>
 					更新邮箱
@@ -77,6 +79,7 @@
 					class="action-btn edit-profile rotate-6 hover:-rotate-1"
 					:class="{ 'btn-hide': isEditing }"
 					@click="toggleEdit"
+					:disabled="isUpdatingPassword || isUpdatingEmail"
 				>
 					<i class="bi bi-pencil-fill mr-1"></i>
 					修改资料

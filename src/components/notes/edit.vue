@@ -338,8 +338,8 @@ watch(
 }
 
 .word-title {
-	color: var(--secondary-color);
-	font-size: 1.2rem;
+	color: #222;
+	font-size: 1.1rem;
 	font-weight: 800;
 	letter-spacing: 1px;
 	margin-bottom: 0.2rem;
@@ -367,14 +367,6 @@ watch(
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-}
-
-.word-title {
-	/* color: var(--secondary-color); */
-	font-size: 1.2rem;
-	font-weight: 800;
-	letter-spacing: 1px;
-	line-height: 1.2;
 }
 
 .word-subtitle {

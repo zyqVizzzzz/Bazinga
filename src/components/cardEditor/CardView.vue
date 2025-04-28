@@ -1049,6 +1049,7 @@ const handleConfirmDelete = () => {
 	if (pendingDeleteWord.value) {
 		// 1. 获取完整的知识点数据
 		const knowledgeData = currentKnowledge.value.get(pendingDeleteWord.value);
+		const origin = knowledgeData?.origin || pendingDeleteWord.value;
 		if (!knowledgeData) return;
 
 		// 2. 添加到删除缓存
@@ -1096,11 +1097,12 @@ const handleConfirmDelete = () => {
 		// 5. 移除原文中的高亮
 		currentBlocks.value.forEach((block) => {
 			if (!block.isKnowledge && block.displayText) {
+				// 创建一个精确匹配的正则表达式
 				const regex = new RegExp(
-					`<mark class="highlight-knowledge">(${pendingDeleteWord.value})</mark>`,
-					"gi"
+					`<mark class="highlight-knowledge">${origin}</mark>`,
+					"g"
 				);
-				block.displayText = block.displayText.replace(regex, "$1");
+				block.displayText = block.displayText.replace(regex, origin);
 			}
 		});
 
