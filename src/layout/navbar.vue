@@ -237,9 +237,6 @@ watch(
 .navbar {
 	flex: 0 1 64px;
 }
-.nav-brand {
-	font-size: 24px;
-}
 
 .logo-image {
 	height: 32px;
@@ -253,10 +250,8 @@ watch(
 .navbar {
 	height: 64px;
 	background: white;
-	/* border-bottom: 2px solid #e6e6e6; */
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(8px);
-	/* border-radius: 15px; */
 }
 
 .container {
@@ -265,6 +260,7 @@ watch(
 }
 
 .nav-brand {
+	font-family: "Comic Sans MS";
 	font-size: 24px; /* 稍微减小字体大小 */
 	font-weight: bold;
 	transform: skew(-6deg);

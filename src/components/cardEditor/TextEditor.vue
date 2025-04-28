@@ -77,9 +77,9 @@
 							快捷指令
 						</p>
 						<div class="command-item">
-							<span class="command-code text-secondary font-mono"
+							<span class="command-code text-secondary"
 								>/go +
-								<span class="text-secondary enter-hint mr-4 font-sans">
+								<span class="text-secondary enter-hint mr-4">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
@@ -91,9 +91,9 @@
 							>
 						</div>
 						<div class="command-item">
-							<span class="command-code font-mono">
+							<span class="command-code">
 								/new +
-								<span class="enter-hint mr-4 font-sans">
+								<span class="enter-hint mr-4">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
@@ -104,15 +104,15 @@
 							>
 						</div>
 						<div class="command-item">
-							<span class="command-code font-mono"
+							<span class="command-code"
 								>/url:{url} +
-								<span class="enter-hint mr-4 font-sans">
+								<span class="enter-hint mr-4">
 									<i
 										class="bi bi-arrow-return-left text-xxs relative top-[1px]"
 									></i>
 									Enter
 								</span></span
-							><span class="command-desc ml-2 text-gray-500 font-normal"
+							><span class="command-desc ml-2 text-gray-500"
 								>从URL导入内容<span
 									class="text-xs text-gray-400 font-light ml-1"
 									>(仅支持国内可访问网站)</span
@@ -126,8 +126,8 @@
 								格式
 							</p>
 							<div class="command-item">
-								<span class="command-code font-mono"># Title </span>
-								<span class="command-desc ml-2 text-gray-500 font-normal"
+								<span class="command-code"># Title </span>
+								<span class="command-desc ml-2 text-gray-500"
 									>标题用于分割场景 / 卡片</span
 								>
 							</div>

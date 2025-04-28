@@ -1,11 +1,12 @@
 @font-face {
-	font-family: "Kanaka";
-	src: url("/fonts/2002.ttf") format("truetype");
+	font-family: "Yozai";
+	src: url("https://static.molidoki.com/fonts/Yozai.woff2") format("woff2"),
+		url("https://static.molidoki.com/fonts/Yozai.ttf") format("truetype");
 }
 :root {
 	/*  */
-	font-family: "Comic Sans MS", Hannotate SC, "Kanaka", "Hiragino Sans GB",
-		"Microsoft YaHei", "Courier New", monospace;
+	font-family: "Comic Sans MS", "Yozai", Hannotate SC, "Kanaka",
+		"Hiragino Sans GB", "Microsoft YaHei", "Courier New", monospace;
 	line-height: 1.5;
 	font-weight: 400;
 

@@ -8,7 +8,7 @@
 		style="height: 400px"
 		v-if="highlightedText.length"
 	>
-		<!-- 电流动画和提示文字 -->
+		<!-- 动画和提示文字 -->
 		<Transition name="mode-switch">
 			<div v-if="showModeSwitch" class="mode-switch-overlay">
 				<div class="electric-effect"></div>
@@ -19,12 +19,6 @@
 				</div>
 			</div>
 		</Transition>
-
-		<!-- <Transition name="fade">
-			<div v-if="showHeadphone" class="headphone-background" aria-hidden="true">
-				<i class="bi bi-headphones"></i>
-			</div>
-		</Transition> -->
 
 		<div class="relative z-10">
 			<div v-for="(dialogue, index) in highlightedText" :key="index">
@@ -45,7 +39,7 @@
 				<!-- 中文旁白翻译 -->
 				<p
 					v-if="showTrans && dialogue.isNarration"
-					class="text-narration text-gray-500 font-normal text-xs italic mt-2 mb-6"
+					class="text-narration text-gray-500 font-normal text-sm italic mt-2 mb-6"
 				>
 					<span v-html="highlightedTextZh[index].line"></span>
 				</p>
@@ -91,7 +85,7 @@
 				<!-- 中文台词翻译 -->
 				<p
 					v-if="showTrans && !dialogue.isNarration"
-					class="text-dialogue text-gray-500 font-normal text-xs italic mb-2"
+					class="text-dialogue text-gray-500 font-normal text-sm italic mb-2"
 				>
 					<span v-html="highlightedTextZh[index].line"></span>
 				</p>
