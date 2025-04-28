@@ -260,7 +260,6 @@ watch(
 }
 
 .nav-brand {
-	font-family: "Comic Sans MS";
 	font-size: 24px; /* 稍微减小字体大小 */
 	font-weight: bold;
 	transform: skew(-6deg);

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chinese-fonts/yozai": "^2.0.1",
     "@editorjs/editorjs": "^2.30.6",
     "@editorjs/header": "^2.8.8",
     "@editorjs/list": "^1.10.0",

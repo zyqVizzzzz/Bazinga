@@ -11,7 +11,7 @@
 					<button
 						v-if="hasPodcast"
 						class="podcast-btn"
-						@click="showPodcastModal = true"
+						@click="handlePodcastModal"
 						title="查看播客内容"
 					>
 						<PodcastIcon size="6" />
@@ -75,48 +75,25 @@
 			</div>
 		</div>
 
-		<dialog id="podcast_modal" class="modal" :open="showPodcastModal">
+		<dialog id="podcast_modal" class="modal">
 			<div
 				class="modal-box max-w-2xl border-2 border-gray-800"
 				style="background-color: var(--milk-color)"
 			>
-				<div class="flex justify-between items-center mb-4">
-					<h3 class="font-bold text-lg text-secondary">
-						{{ podcastData?.knowledge }}
-					</h3>
-					<button
-						class="btn btn-sm btn-circle"
-						@click="showPodcastModal = false"
-					>
-						<i class="bi bi-x-lg"></i>
-					</button>
-				</div>
-
 				<!-- 音频播放器 -->
-				<div class="mb-4">
+				<div class="flex justify-between items-center mb-4">
 					<audio
 						v-if="podcastData?.audioPath"
 						controls
 						class="w-full"
 						:src="podcastData.audioPath"
 					></audio>
-				</div>
-
-				<!-- 文本切换按钮 -->
-				<div class="flex justify-center gap-4 mb-4">
 					<button
-						class="btn btn-sm"
-						:class="{ 'btn-secondary': !showChinese }"
-						@click="showChinese = false"
+						class="translation-toggle-btn text-sm ml-4"
+						@click="showChinese = !showChinese"
+						title="显示/隐藏中文翻译"
 					>
-						English
-					</button>
-					<button
-						class="btn btn-sm"
-						:class="{ 'btn-secondary': showChinese }"
-						@click="showChinese = true"
-					>
-						中文
+						<TranslationIcon size="4" />
 					</button>
 				</div>
 
@@ -146,6 +123,7 @@ import apiClient from "@/api";
 import { generateTextHash } from "@/utils";
 import PodcastIcon from "@/components/icons/Podcast.vue";
 import { useNotebookStore } from "@/store/index";
+import TranslationIcon from "@/components/icons/Translation.vue";
 
 const props = defineProps({
 	selectedNote: Object,
@@ -187,6 +165,11 @@ const checkPodcast = async () => {
 		hasPodcast.value = false;
 		podcastData.value = null;
 	}
+};
+
+const handlePodcastModal = () => {
+	const modal = document.getElementById("podcast_modal");
+	modal.showModal();
 };
 
 // 添加删除方法
@@ -254,140 +237,11 @@ watch(
 	color: #333;
 }
 
-.pronunciation-btn,
-.bookmark-btn {
-	background: none;
-	border: none;
-	cursor: pointer;
-	transition: transform 0.2s;
-}
-
-.pronunciation-btn:hover,
-.bookmark-btn:hover {
-	transform: scale(1.1);
-}
-
-/* 内容区域 */
-.content-section {
-	padding: 1rem 0;
-	border-bottom: 1px solid #ddd;
-	text-align: left;
-}
-
-/* 词根词缀分析 */
-.word-analysis {
-}
-
-.analysis-item {
-	margin-bottom: 0.5rem;
-	font-size: 0.875rem;
-}
-
-.term {
-	color: var(--primary-color);
-	font-weight: bold;
-}
-
-/* 变形表格 */
-.inflections-grid {
-	display: grid;
-}
-
-.inflection-item {
-	font-size: 0.875rem;
-	display: flex;
-	gap: 0.5rem;
-	align-items: center;
-}
-
 /* 例句样式 */
 .example-box {
 	background: rgba(var(--primary-color-rgb), 0.05);
 	padding: 0.5rem 1rem 1rem;
 	border-radius: 8px;
-}
-
-.example {
-	margin: 0.5rem 0;
-	color: #333;
-}
-
-.translation {
-	color: #666;
-	font-size: 0.875rem;
-}
-
-/* 注释编辑区 */
-.retro-textarea {
-	width: 100%;
-	padding: 0.75rem;
-	border: 2px solid #333;
-	border-radius: 8px;
-	background: rgba(255, 255, 255, 0.8);
-	font-family: inherit;
-	resize: vertical;
-	box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.1);
-}
-
-.retro-textarea:focus {
-	outline: none;
-	box-shadow: inset 2px 2px 0 rgba(var(--primary-color-rgb), 0.2);
-}
-
-/* 按钮样式 */
-.button-group {
-	display: flex;
-	gap: 1rem;
-	margin-top: 1rem;
-}
-
-.retro-btn {
-	position: relative;
-	height: 2.5rem;
-	border: none;
-	background: none;
-	cursor: pointer;
-}
-
-.btn-shadow {
-	position: absolute;
-	inset: 0;
-	background-color: #666;
-	border-radius: 8px;
-	transform: translateY(2px);
-}
-
-.btn-edge {
-	position: absolute;
-	inset: 0;
-	border-radius: 8px;
-	transform: translateY(-2px);
-	transition: transform 0.1s;
-}
-
-.btn-face {
-	position: absolute;
-	inset: 0;
-	background-color: white;
-	border: 2px solid #333;
-	border-radius: 8px;
-	color: #333;
-	font-weight: bold;
-	transform: translateY(-2px);
-	transition: transform 0.1s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 0.875rem;
-}
-
-.retro-btn:hover .btn-face {
-	/* background-color: white; */
-}
-
-.retro-btn:active .btn-edge,
-.retro-btn:active .btn-face {
-	transform: translateY(0);
 }
 
 /* 装饰效果 */
@@ -468,14 +322,33 @@ watch(
 	height: 36px;
 	transition: transform 0.3s;
 }
-
-.ghost-btn .btn-face {
-	/* background-color: white; */
-	color: #666;
-	font-size: 0.875rem;
-	font-weight: 500;
+.manual-header {
+	border-bottom: 2px solid #000;
+	margin-bottom: 0.1rem;
+	padding-bottom: 1rem;
 }
 
+.manual-logo {
+	font-family: "Courier New", monospace;
+	font-size: 0.75rem;
+	font-weight: bold;
+	letter-spacing: 1px;
+	margin-bottom: 1.5rem;
+	color: #666;
+}
+
+.word-title {
+	color: var(--secondary-color);
+	font-size: 1.2rem;
+	font-weight: 800;
+	letter-spacing: 1px;
+	margin-bottom: 0.2rem;
+}
+
+.word-subtitle {
+	font-size: 0.875rem;
+	color: #666;
+}
 .manual-title {
 	display: flex;
 	justify-content: space-between;
@@ -507,5 +380,68 @@ watch(
 .word-subtitle {
 	font-size: 0.875rem;
 	color: #666;
+}
+
+.manual-section {
+	margin-bottom: 1.5rem;
+}
+
+.section-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+	border-bottom: 1px dashed #000;
+	padding-bottom: 0.5rem;
+}
+
+.title-decoration {
+	font-size: 0.875rem;
+	color: #666;
+}
+
+.section-content {
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: #333;
+}
+
+.section-list {
+	list-style-type: decimal;
+	padding-left: 1.5rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: #333;
+}
+
+.example-box {
+	background: #fff;
+	border: 1px solid #000;
+	padding: 1rem;
+	font-size: 0.875rem;
+	line-height: 1.6;
+	border-radius: 12px;
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.example-translation {
+	margin-top: 0.5rem;
+	color: #666;
+	font-style: italic;
+}
+
+/* 翻译切换按钮样式 */
+.translation-toggle-btn {
+	padding: 8px;
+	border-radius: 6px;
+	background-color: transparent;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.2s ease-in-out;
+}
+
+.translation-toggle-btn:hover {
+	background-color: rgba(200, 200, 200, 0.2);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 </style>
