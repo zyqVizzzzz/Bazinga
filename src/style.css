@@ -1,12 +1,12 @@
 @font-face {
 	font-family: "Yozai";
-	src: url("./assets/Yozai.woff2") format("woff2");
+	src: url("https://static.molidoki.com/fonts/Yozai.woff2") format("woff2");
 	font-display: swap;
 }
 :root {
 	/*  */
-	font-family: "Comic Sans MS", "Yozai", Hannotate SC, "Kanaka",
-		"Hiragino Sans GB", "Microsoft YaHei", "Courier New", monospace;
+	font-family: "Comic Sans MS", "Yozai", Hannotate SC, "Hiragino Sans GB",
+		"Microsoft YaHei", "Courier New", monospace;
 	line-height: 1.5;
 	font-weight: 400;
 
