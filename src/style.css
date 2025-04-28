@@ -1,7 +1,7 @@
 @font-face {
 	font-family: "Yozai";
-	src: url("/fonts/Yozai.woff2") format("woff2"),
-		url("/fonts/Yozai.ttf") format("truetype");
+	src: url("./assets/Yozai.woff2") format("woff2");
+	font-display: swap;
 }
 :root {
 	/*  */
