@@ -1,7 +1,7 @@
 @font-face {
 	font-family: "Yozai";
-	src: url("https://static.molidoki.com/fonts/Yozai.woff2") format("woff2"),
-		url("https://static.molidoki.com/fonts/Yozai.ttf") format("truetype");
+	src: url("https://static.molidoki.com/default/Yozai.woff2") format("woff2"),
+		url("https://static.molidoki.com/default/Yozai.ttf") format("truetype");
 }
 :root {
 	/*  */
