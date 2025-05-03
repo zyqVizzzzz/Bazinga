@@ -267,6 +267,7 @@ defineExpose({
 	padding: 24px;
 	position: relative;
 	max-width: 600px;
+	background: var(--milk-color, #f5f2eb);
 }
 
 .vintage-title {

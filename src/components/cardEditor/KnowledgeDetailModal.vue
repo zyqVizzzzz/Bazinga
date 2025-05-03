@@ -131,15 +131,16 @@ defineExpose({
 
 .word-title {
 	color: var(--secondary-color);
-	font-size: 1.5rem;
+	font-size: 1.3rem;
 	font-weight: 800;
 	letter-spacing: 1px;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.2rem;
 }
 
 .word-subtitle {
 	font-size: 0.875rem;
 	color: #666;
+	letter-spacing: 2px;
 }
 
 .manual-section {
