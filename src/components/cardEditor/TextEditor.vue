@@ -134,7 +134,7 @@
 						</div>
 					</div>
 					<p class="text-right text-xs mt-6 mr-2 text-gray-400 font-light">
-						单个场景/卡片控制在20000字符以内，效果更佳
+						单个场景/卡片可处理2500词左右（约12000字符）
 					</p>
 				</div>
 			</div>
@@ -195,11 +195,7 @@ const handleCreateNote = () => {
 	const trimmedContent = editorContent.value.trim();
 	if (trimmedContent) {
 		editorContent.value = trimmedContent; // 使用 .value 更新
-		showRitualAnimation().then((success) => {
-			if (success) {
-				createCollection();
-			}
-		});
+		createCollection();
 	} else {
 		editorContent.value = "文本内容为空，请先添加文本再生成卡片。"; // 使用 .value 更新
 		setTimeout(() => {
@@ -476,6 +472,29 @@ const handleAutoGenerate = async () => {
 	} catch (error) {
 		if (error.name === "AbortError") {
 			console.log("生成已取消");
+			return;
+		}
+		// 处理限流异常
+		if (error.response?.status === 429) {
+			const { message } = error.response.data;
+			// 从 error.response.data.data 获取限流详情
+			const { retryAfter, reset } = error.response.data.data || {};
+
+			// 将 reset 时间戳转换为可读格式
+			let resetTimeStr = "";
+			if (reset) {
+				const resetDate = new Date(reset);
+				// 使用 toLocaleTimeString 获取本地时间格式 HH:mm:ss
+				resetTimeStr = resetDate.toLocaleTimeString();
+			}
+
+			// 显示限流提示，包含重试时间
+			showToast({
+				message: `${message} 请等待 ${retryAfter || "60"} 秒后重试`,
+				type: "warning",
+				duration: 5000, // 延长显示时间
+			});
+
 			return;
 		}
 		// 保持原有内容，在后面添加错误信息

@@ -362,6 +362,29 @@ const handleAutoGenerate = async () => {
 		}
 	} catch (error) {
 		console.error("自动生成文章失败:", error);
+		// 处理限流异常
+		if (error.response?.status === 429) {
+			const { message } = error.response.data;
+			// 从 error.response.data.data 获取限流详情
+			const { retryAfter, reset } = error.response.data.data || {};
+
+			// 将 reset 时间戳转换为可读格式
+			let resetTimeStr = "";
+			if (reset) {
+				const resetDate = new Date(reset);
+				// 使用 toLocaleTimeString 获取本地时间格式 HH:mm:ss
+				resetTimeStr = resetDate.toLocaleTimeString();
+			}
+
+			// 显示限流提示，包含重试时间
+			showToast({
+				message: `${message} 请等待 ${retryAfter || "60"} 秒后重试`,
+				type: "warning",
+				duration: 5000, // 延长显示时间
+			});
+
+			return;
+		}
 		newSceneContent.value = `# 自动生成的文章\n\n很抱歉，无法从服务器获取文章内容。请稍后再试。`;
 		showToast({ message: "生成失败，请重试", type: "error" });
 	}

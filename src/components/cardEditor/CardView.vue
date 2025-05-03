@@ -190,7 +190,7 @@
 			</div>
 			<!-- 全局 Loading -->
 			<div
-				v-if="isLoading && (isBatchTranslating || isBatchGeneratingKnowledge)"
+				v-if="isLoading"
 				class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
 				style="border-radius: 12px; pointer-events: auto"
 				@click.stop
@@ -789,6 +789,28 @@ const handleBatchTranslate = async () => {
 		showToast({ message: "翻译完成", type: "success" });
 	} catch (error) {
 		console.error("批量翻译失败:", error);
+		if (error.response?.status === 429) {
+			const { message } = error.response.data;
+			// 从 error.response.data.data 获取限流详情
+			const { retryAfter, reset } = error.response.data.data || {};
+
+			// 将 reset 时间戳转换为可读格式
+			let resetTimeStr = "";
+			if (reset) {
+				const resetDate = new Date(reset);
+				// 使用 toLocaleTimeString 获取本地时间格式 HH:mm:ss
+				resetTimeStr = resetDate.toLocaleTimeString();
+			}
+
+			// 显示限流提示，包含重试时间
+			showToast({
+				message: `${message}，请等待 ${retryAfter || "60"} 秒后重试`,
+				type: "info",
+				duration: 5000,
+			});
+
+			return;
+		}
 		showToast({ message: "批量翻译失败，请重试", type: "error" });
 	} finally {
 		isLoading.value = false;
@@ -1446,6 +1468,9 @@ const groupTextByLength = async (blocks) => {
 	const groups = [];
 	let currentGroup = [];
 	let currentLength = 0;
+	let totalProcessedChars = 0; // 新增：跟踪已处理的总字符数
+	const MAX_BATCH_KNOWLEDGE_CHARS = 12000; // 新增：定义最大字符数限制
+
 	// 获取已存在的知识点
 	const existingPhrases = Array.from(currentKnowledge.value.values())
 		.map((k) => k.origin)
@@ -1476,28 +1501,105 @@ const groupTextByLength = async (blocks) => {
 	);
 
 	// 分组处理
-	originalBlocks.forEach((block) => {
+	// 分组处理
+	for (const block of originalBlocks) {
+		// 改为 for...of 循环以便使用 break
+		// 检查是否已达到总字符数限制
+		if (totalProcessedChars >= MAX_BATCH_KNOWLEDGE_CHARS) {
+			console.log(
+				`已达到最大处理字符数限制 (${MAX_BATCH_KNOWLEDGE_CHARS})，停止添加更多文本块。`
+			);
+			// 如果当前组有内容，且未超出限制，则添加最后一组
+			if (
+				currentGroup.length > 0 &&
+				totalProcessedChars + currentLength <= MAX_BATCH_KNOWLEDGE_CHARS
+			) {
+				groups.push([...currentGroup]);
+				totalProcessedChars += currentLength; // 更新总字符数
+			}
+			currentGroup = []; // 清空当前组，确保不再添加
+			break; // 跳出循环
+		}
+
 		const text = block.text || "";
 		const textLength = text.length;
 
 		if (currentGroup.length === 0) {
+			// 开始新分组
+			// 检查新分组的第一个块是否直接超过总限制
+			if (totalProcessedChars + textLength > MAX_BATCH_KNOWLEDGE_CHARS) {
+				console.log(
+					`单个文本块 (${textLength} chars) 已超过剩余处理容量，停止添加。`
+				);
+				break; // 停止处理
+			}
 			currentGroup.push(block);
 			currentLength = textLength;
 		} else {
+			// 检查加入当前块是否会使当前分组超过 groupSize
 			if (currentLength >= groupSize) {
-				groups.push([...currentGroup]);
-				currentGroup = [block];
-				currentLength = textLength;
+				// 当前分组已满，先检查添加这个分组是否会超过总限制
+				if (totalProcessedChars + currentLength <= MAX_BATCH_KNOWLEDGE_CHARS) {
+					groups.push([...currentGroup]);
+					totalProcessedChars += currentLength; // 更新总字符数
+					// 开始新的分组，并检查新分组的第一个块是否超过总限制
+					if (totalProcessedChars + textLength <= MAX_BATCH_KNOWLEDGE_CHARS) {
+						currentGroup = [block];
+						currentLength = textLength;
+					} else {
+						console.log(
+							`开始新分组时，单个文本块 (${textLength} chars) 已超过剩余处理容量，停止添加。`
+						);
+						currentGroup = []; // 清空，防止后续添加
+						break;
+					}
+				} else {
+					// 添加当前分组会超过总限制，停止处理
+					console.log(
+						`添加当前分组 (${currentLength} chars) 将超过总限制 (${MAX_BATCH_KNOWLEDGE_CHARS})，停止处理。`
+					);
+					currentGroup = []; // 清空，防止后续添加
+					break;
+				}
 			} else {
-				currentGroup.push(block);
-				currentLength += textLength;
+				// 当前分组未满，检查加入当前块是否会超过总限制
+				if (
+					totalProcessedChars + currentLength + textLength <=
+					MAX_BATCH_KNOWLEDGE_CHARS
+				) {
+					currentGroup.push(block);
+					currentLength += textLength;
+				} else {
+					// 加入当前块会使总字符数超限，先处理当前分组（如果未超限）
+					if (
+						totalProcessedChars + currentLength <=
+						MAX_BATCH_KNOWLEDGE_CHARS
+					) {
+						groups.push([...currentGroup]);
+						totalProcessedChars += currentLength;
+					}
+					console.log(
+						`添加下一个文本块 (${textLength} chars) 将超过总限制 (${MAX_BATCH_KNOWLEDGE_CHARS})，停止处理。`
+					);
+					currentGroup = []; // 清空，防止后续添加
+					break; // 停止添加更多块
+				}
 			}
 		}
-	});
-
-	if (currentGroup.length > 0) {
-		groups.push(currentGroup);
 	}
+
+	// 处理循环结束后剩余的最后一个批次 (如果存在且未超限)
+	if (
+		currentGroup.length > 0 &&
+		totalProcessedChars + currentLength <= MAX_BATCH_KNOWLEDGE_CHARS
+	) {
+		groups.push([...currentGroup]);
+		totalProcessedChars += currentLength; // 更新最终的总字符数
+	}
+
+	console.log(
+		`最终处理的总字符数: ${totalProcessedChars}, 分组数量: ${groups.length}`
+	);
 
 	let hasGeneratedPhrases = false; // 检查是否所有组都没有生成知识点
 	// 为每组文本生成知识点
@@ -2347,7 +2449,29 @@ const handleTranslate = async (index) => {
 
 		// showToast({ message: "翻译成功", type: "success" });
 	} catch (error) {
-		console.error("Translation failed:", error);
+		// 处理限流异常
+		if (error.response?.status === 429) {
+			const { message } = error.response.data;
+			// 从 error.response.data.data 获取限流详情
+			const { retryAfter, reset } = error.response.data.data || {};
+
+			// 将 reset 时间戳转换为可读格式
+			let resetTimeStr = "";
+			if (reset) {
+				const resetDate = new Date(reset);
+				// 使用 toLocaleTimeString 获取本地时间格式 HH:mm:ss
+				resetTimeStr = resetDate.toLocaleTimeString();
+			}
+
+			// 显示限流提示，包含重试时间
+			showToast({
+				message: `${message} 请等待 ${retryAfter || "60"} 秒后重试`,
+				type: "info",
+				duration: 5000, // 延长显示时间
+			});
+
+			return;
+		}
 		showToast({ message: "翻译失败，请重试", type: "error" });
 	} finally {
 		translatingBlockId.value = null;
@@ -3325,6 +3449,29 @@ const handleAutoGenerateTitle = async (index) => {
 		}
 	} catch (error) {
 		console.error("生成标题失败:", error);
+		// 处理限流异常
+		if (error.response?.status === 429) {
+			const { message } = error.response.data;
+			// 从 error.response.data.data 获取限流详情
+			const { retryAfter, reset } = error.response.data.data || {};
+
+			// 将 reset 时间戳转换为可读格式
+			let resetTimeStr = "";
+			if (reset) {
+				const resetDate = new Date(reset);
+				// 使用 toLocaleTimeString 获取本地时间格式 HH:mm:ss
+				resetTimeStr = resetDate.toLocaleTimeString();
+			}
+
+			// 显示限流提示，包含重试时间
+			showToast({
+				message: `${message} 请等待 ${retryAfter || "60"} 秒后重试`,
+				type: "info",
+				duration: 5000, // 延长显示时间
+			});
+
+			return;
+		}
 		showToast({ message: "生成标题失败，请重试", type: "error" });
 	} finally {
 		isLoading.value = false;
