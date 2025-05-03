@@ -40,5 +40,6 @@ onMounted(async () => {
 .content {
 	flex: 1 0 auto;
 	min-height: 600px;
+	min-width: 1200px;
 }
 </style>
