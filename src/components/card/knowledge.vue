@@ -140,7 +140,7 @@
 				</div>
 
 				<div class="manual-content">
-					<div class="manual-logo">BAZINGA™ KNOWLEDGE SYSTEM</div>
+					<div class="manual-logo">BAZINGA KNOWLEDGE SYSTEM</div>
 					<!-- 中文释义 -->
 					<div class="manual-section">
 						<div class="section-title">

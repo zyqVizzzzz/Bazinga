@@ -75,7 +75,7 @@
 			</div>
 		</div>
 
-		<dialog id="podcast_modal" class="modal">
+		<dialog id="podcast_modal" class="modal" @close="handleClose">
 			<div
 				class="modal-box max-w-2xl border-2 border-gray-800"
 				style="background-color: var(--milk-color)"
@@ -84,6 +84,7 @@
 				<div class="flex justify-between items-center mb-4">
 					<audio
 						v-if="podcastData?.audioPath"
+						ref="audioElement"
 						controls
 						class="w-full"
 						:src="podcastData.audioPath"
@@ -117,7 +118,7 @@
 	</div>
 </template>
 <script setup>
-import { ref, toRefs, computed, watch } from "vue";
+import { onMounted, ref, toRefs, computed, watch } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import apiClient from "@/api";
 import { generateTextHash } from "@/utils";
@@ -134,12 +135,12 @@ const emit = defineEmits(["on-delete-note"]);
 
 const notebookStore = useNotebookStore();
 const storeNote = computed(() => notebookStore.currentActiveNote);
-const noteChangeCounter = computed(() => notebookStore.noteChangeCounter);
 
-const showPodcastModal = ref(false);
 const showChinese = ref(false);
 const podcastData = ref(null);
 const hasPodcast = ref(false);
+
+const audioElement = ref(null);
 
 // 去除HTML标签的辅助函数
 const removeHtmlTags = (text) => {
@@ -164,6 +165,14 @@ const checkPodcast = async () => {
 		console.error("检查播客失败:", error);
 		hasPodcast.value = false;
 		podcastData.value = null;
+	}
+};
+
+const handleClose = () => {
+	if (audioElement.value) {
+		audioElement.value.pause(); // 暂停音频
+		audioElement.value.currentTime = 0; // 将播放进度重置到开头
+		console.log("音频已停止");
 	}
 };
 

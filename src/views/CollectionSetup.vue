@@ -31,7 +31,7 @@
 											:class="{
 												'border-red-500': showError && !noteForm.showName,
 											}"
-											placeholder="请输入合辑名"
+											placeholder="请输入合集名"
 											@blur="v$.showName.$touch()"
 										/>
 									</div>

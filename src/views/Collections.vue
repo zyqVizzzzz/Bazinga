@@ -65,7 +65,7 @@
 					</div>
 				</div>
 			</div>
-			<!-- 新增合辑 -->
+			<!-- 新增合集 -->
 			<div class="retro-card add-card" @click="addNewScene">
 				<div class="card-shadow">
 					<div class="card-edge">
@@ -147,7 +147,7 @@ const goToCollection = (id) => {
 
 const addNewScene = () => {
 	if (!isLogin.value) {
-		showToast({ message: "登录后可创建合辑", type: "info" });
+		showToast({ message: "登录后可创建合集", type: "info" });
 		return;
 	}
 	router.push("/setup-collection");

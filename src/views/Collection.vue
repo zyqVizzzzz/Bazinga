@@ -70,7 +70,7 @@
 		</div>
 
 		<!-- 内容区域 -->
-		<div class="w-2/3 relative mt-4">
+		<div class="w-4/5 relative mt-4">
 			<!-- 添加编辑控制区域 -->
 			<div v-if="isCustom" class="flex justify-between items-center mb-6">
 				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>

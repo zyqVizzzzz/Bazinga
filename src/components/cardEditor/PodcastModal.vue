@@ -61,7 +61,7 @@
 								<span class="loading loading-spinner loading-sm"></span>
 								音频生成中...
 							</div>
-							<audio v-else controls class="radio-player" ref="audioElement">
+							<audio v-else controls class="radio-player">
 								<source :src="undefined" type="audio/mpeg" />
 							</audio>
 						</div>

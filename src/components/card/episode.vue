@@ -115,6 +115,7 @@ const saveTitle = () => {
 .retro-episode-card {
 	position: relative;
 	aspect-ratio: 4/3;
+	min-height: 120px;
 	cursor: pointer;
 	transition: transform 0.3s;
 }
@@ -242,9 +243,10 @@ const saveTitle = () => {
 .title-container {
 	position: absolute;
 	inset: 0;
-	padding: 1.5rem;
+	padding: 1rem;
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
 }
 
 /* EP 编号基础样式 */
@@ -252,83 +254,22 @@ const saveTitle = () => {
 	font-size: 0.75rem;
 	font-weight: bold;
 	color: #666;
-	font-family: monospace;
+	font-family: "monospace";
+	flex-shrink: 0;
 }
 
 /* 主标题基础样式 */
 .main-title {
-	font-size: 1.25rem;
+	font-size: 1rem;
 	font-weight: bold;
 	line-height: 1.2;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	cursor: pointer;
-}
-
-.layout-1 .title-container {
-	justify-content: center;
-	align-items: center;
-	text-align: center;
-	transform: skew(-12deg);
-}
-
-.layout-1 .ep-number {
-	font-size: 2rem;
-	color: #333;
-	margin-bottom: 0.5rem;
-	font-weight: 900;
-	letter-spacing: 0.2em;
-}
-
-.layout-1 .main-title {
-	font-size: 1.2rem;
-	transform: scale(1, 1.2);
-	letter-spacing: 0.1em;
-}
-
-/* 布局变体 2：垂直排版 */
-.layout-2 .title-container {
-	writing-mode: vertical-rl;
-	text-orientation: mixed;
-	align-items: center;
-	justify-content: center;
-}
-
-.layout-2 .ep-number {
-	writing-mode: horizontal-tb;
-	font-size: 1.5rem;
-	position: absolute;
-	top: 1rem;
-	right: 1rem;
-}
-
-.layout-2 .main-title {
-	letter-spacing: 0.3em;
-	font-weight: 900;
-}
-
-/* 布局变体 3：对角线布局 */
-.layout-3 .title-container {
-	justify-content: space-between;
-	padding: 2rem;
-	transform: rotate(-8deg);
-}
-
-.layout-3 .ep-number {
-	font-size: 2.5rem;
-	opacity: 0.2;
-	position: absolute;
-	bottom: 1rem;
-	right: 1rem;
-}
-
-.layout-3 .main-title {
-	font-size: 1.4rem;
-	font-weight: 900;
-	line-height: 1.2;
+	flex-grow: 1;
 }
 
 /* 布局变体 4：分裂式布局 */
@@ -345,6 +286,7 @@ const saveTitle = () => {
 	border-bottom: 2px solid #333;
 	padding-bottom: 0.25rem;
 	text-align: right;
+	align-self: flex-end; /* 使其在水平方向靠右 */
 }
 
 .layout-4 .main-title {
@@ -354,7 +296,7 @@ const saveTitle = () => {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
-	-webkit-line-clamp: 3;
+	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 }
 

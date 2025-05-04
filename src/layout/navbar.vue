@@ -234,10 +234,6 @@ watch(
 );
 </script>
 <style scoped>
-.navbar {
-	flex: 0 1 64px;
-}
-
 .logo-image {
 	height: 32px;
 	width: auto;
@@ -248,16 +244,20 @@ watch(
 }
 
 .navbar {
+	flex: 0 1 64px;
+	position: relative;
 	height: 64px;
 	background: white;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(8px);
-	min-width: 1200px;
+	padding-left: 1rem;
+	padding-right: 1rem;
 }
 
 .container {
 	max-width: 1280px;
 	height: 100%;
+	width: 100%;
 }
 
 .nav-brand {
@@ -267,6 +267,8 @@ watch(
 	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 	padding: 0.5rem 1rem;
 	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
 }
 
 .retro-link {
@@ -352,5 +354,39 @@ watch(
 	background-color: #222 !important;
 	border: 2px solid #222 !important;
 	color: white !important;
+}
+
+/* 移动端适配样式 */
+@media (max-width: 768px) {
+	.navbar .container {
+		/* 移除最大宽度限制，让其撑满 */
+		max-width: none;
+	}
+
+	.navbar .menu-horizontal {
+		/* 隐藏桌面端的横向菜单 */
+		display: none;
+	}
+
+	.nav-brand {
+		/* 调整 logo 区域的内边距或外边距（如果需要） */
+		padding: 0.5rem;
+		font-size: 20px; /* 可选：进一步缩小字体 */
+	}
+
+	.logo-image {
+		height: 28px; /* 可选：调整 logo 大小 */
+		margin-right: -5px;
+	}
+
+	/* 在这里可以添加汉堡菜单按钮的样式，或者为后续实现预留 */
+
+	.mobile-menu-button {
+		display: block;
+		position: absolute;
+		right: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+	}
 }
 </style>
