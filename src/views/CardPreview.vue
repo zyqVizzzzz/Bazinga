@@ -453,11 +453,10 @@ const editCard = () => {
 	const season = route.params.season;
 	const episode = route.params.episode;
 	const sign = route.query.sign;
+	const title = route.query.title;
 	router.push({
 		path: `/card-editor/${courseId}/${season}/${episode}`,
-		query: {
-			sign: sign,
-		},
+		query: { sign, title },
 	});
 };
 

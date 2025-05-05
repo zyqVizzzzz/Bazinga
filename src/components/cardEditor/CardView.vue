@@ -188,25 +188,10 @@
 					</div>
 				</div>
 			</div>
-			<!-- 全局 Loading -->
-			<div
-				v-if="isLoading"
-				class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
-				style="border-radius: 12px; pointer-events: auto"
-				@click.stop
-			>
-				<div class="crt-loading bg-white">
-					<span class="loading loading-bars"></span>
-				</div>
-				<div
-					class="text-sm text-gray-800 mt-2 bg-white px-3 py-2 rounded-lg font-bold"
-				>
-					处理时间取决于文本长度，最多可能需要4-5分钟，请耐心等待...
-				</div>
-			</div>
+
 			<!-- 场景缩略图列表 -->
 			<div
-				class="scene-thumbnails-container w-1/5"
+				class="scene-thumbnails-container w-[155px]"
 				:class="{ 'opacity-75 pointer-events-none': isLoading }"
 			>
 				<div class="scene-thumbnails">
@@ -279,6 +264,22 @@
 					</draggable>
 				</div>
 			</div>
+			<!-- 全局 Loading -->
+			<div
+				v-if="isLoading"
+				class="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded loading-overlay"
+				style="border-radius: 12px; pointer-events: auto"
+				@click.stop
+			>
+				<div class="crt-loading bg-white">
+					<span class="loading loading-bars"></span>
+				</div>
+				<div
+					class="text-sm text-gray-800 mt-2 bg-white px-3 py-2 rounded-lg font-bold"
+				>
+					处理时间取决于文本长度，最多可能需要4-5分钟，请耐心等待...
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -299,6 +300,7 @@
 		ref="podcastModalRef"
 		:scene-index="currentIndex"
 		:knowledge="selectedPodcastKnowledge"
+		:isCustom="isCustom"
 		@update-podcast="handlePodcastUpdate"
 	/>
 
@@ -568,21 +570,21 @@ const handleBeforeUnload = (e) => {
 
 const handleBack = () => {
 	const { id: courseId, season, episode } = route.params;
-	const { sign } = route.query;
+	const { sign, title } = route.query;
 
 	if (hasUnsavedChanges.value) {
 		if (window.confirm("您有未保存的更改，确定要离开吗？")) {
 			clearAllStates();
 			router.replace({
 				path: `/collections/${courseId}/${season}/${episode}`,
-				query: { sign },
+				query: { sign, title },
 			});
 		}
 	} else {
 		clearAllStates();
 		router.replace({
 			path: `/collections/${courseId}/${season}/${episode}`,
-			query: { sign },
+			query: { sign, title },
 		});
 	}
 };
@@ -2640,6 +2642,17 @@ const formatKnowledgeDisplay = (knowledgeData, blockId) => {
 							? `<path d="M422.4 601.6m-217.6 0a217.6 217.6 0 1 0 435.2 0 217.6 217.6 0 1 0-435.2 0Z" fill="#e8447a"></path>`
 							: ""
 					}
+          <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
+          <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
+        </svg>
+      </button>`
+						: ""
+				}
+				${
+					!isCustom.value && knowledgeData.hasPodcast
+						? `<button class="knowledge-btn knowledge-detail-btn transition-colors" onclick="document.dispatchEvent(new CustomEvent('showPodcastModal', { detail: '${safeJsonString}' }))">
+        <svg style="width:1.35rem" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+          <path d="M422.4 601.6m-217.6 0a217.6 217.6 0 1 0 435.2 0 217.6 217.6 0 1 0-435.2 0Z" fill="#e8447a"></path>
           <path d="M499.2 179.2C315.392 179.2 166.4 328.192 166.4 512S315.392 844.8 499.2 844.8s332.8-148.992 332.8-332.8S683.008 179.2 499.2 179.2z m0 51.2c155.52 0 281.6 126.08 281.6 281.6s-126.08 281.6-281.6 281.6S217.6 667.52 217.6 512 343.68 230.4 499.2 230.4z" fill="#222222"></path>
           <path d="M643.264 569.4592l-153.216 87.5392a51.2 51.2 0 0 1-76.5952-44.4544V437.4528a51.2 51.2 0 0 1 76.608-44.4544l153.2032 87.552a51.2 51.2 0 0 1 0 88.9088zM464.64 612.544l153.216-87.552-153.216-87.5392v175.0912zM838.4 793.6a25.6 25.6 0 0 1 1.92 51.136L838.4 844.8h-320a25.6 25.6 0 0 1-1.92-51.136L518.4 793.6h320z" fill="#222222"></path>
         </svg>

@@ -151,7 +151,7 @@
 								</div>
 							</div>
 
-							<!-- <div class="form-control">
+							<div class="form-control">
 								<label class="retro-label">
 									<span class="label-text">内测码:</span>
 								</label>
@@ -174,7 +174,7 @@
 								>
 									{{ v$.invitationCode.$errors[0].$message }}
 								</div>
-							</div> -->
+							</div>
 
 							<div
 								class="flex items-center justify-center mb-2 text-sm text-gray-600"
@@ -301,9 +301,9 @@ const rules = computed(() => ({
 			(value) => value.length === 6
 		),
 	},
-	// invitationCode: {
-	// 	required: helpers.withMessage("请输入内测码", required),
-	// },
+	invitationCode: {
+		required: helpers.withMessage("请输入内测码", required),
+	},
 }));
 
 const v$ = useVuelidate(rules, formData);
@@ -393,7 +393,7 @@ const register = async () => {
 			email: formData.value.email,
 			password: formData.value.password,
 			verificationCode: formData.value.verificationCode,
-			// invitationCode: formData.value.invitationCode,
+			invitationCode: formData.value.invitationCode,
 		});
 
 		// 根据你的后端响应格式调整

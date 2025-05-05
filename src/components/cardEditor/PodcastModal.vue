@@ -22,6 +22,7 @@
 
 						<!-- 将按钮移到这里，并添加绝对定位样式 -->
 						<div
+							v-if="isCustom"
 							class="tooltip absolute bottom-0 right-2 w-8 h-8"
 							:data-tip="hasContent ? '重新生成' : '生成播客'"
 						>
@@ -130,6 +131,10 @@ const props = defineProps({
 		type: Number,
 		default: 0,
 	},
+	isCustom: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 const route = useRoute();
@@ -139,9 +144,6 @@ const generating = ref(false);
 const audioUrl = ref("");
 const podcastScript = ref([]);
 const podcastChineseScript = ref([]);
-const showScript = ref(true);
-const showEnglish = ref(true);
-const showChinese = ref(false);
 const showTranslated = ref(false);
 
 // 引用
@@ -306,19 +308,6 @@ defineExpose({
 	font-family: "Courier New", monospace; /* 使用等宽字体 */
 }
 
-/* 收音机指示灯 */
-.radio-indicator {
-	width: 10px; /* 调整大小 */
-	height: 10px;
-	background: var(--secondary-color); /* 使用 secondary-color */
-	border-radius: 50%;
-	border: 2px solid #000; /* 黑色边框 */
-	box-shadow: 0 0 0 2px var(--milk-color, #f5f2eb),
-		/* 内部白色辉光 */ 0 0 8px var(--secondary-color),
-		0 0 15px var(--secondary-color); /* 外部辉光效果 */
-	animation: blink 2s ease-in-out infinite; /* 保持闪烁动画 */
-}
-
 /* 知识点显示屏 */
 .radio-display {
 	background: #ffffff;
@@ -394,39 +383,6 @@ defineExpose({
 	color: #333; /* 深灰色文字 */
 }
 
-/* 语言切换按钮组 */
-.vintage-toggle-group {
-	display: flex;
-	border: 2px solid #000; /* 黑色边框 */
-	border-radius: 20px; /* 圆角 */
-	overflow: hidden;
-	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2); /* 阴影 */
-}
-
-.vintage-toggle-btn {
-	padding: 4px 12px;
-	background: #fff; /* 白色背景 */
-	border: none;
-	cursor: pointer;
-	font-weight: bold;
-	color: #000; /* 黑色文字 */
-	transition: all 0.2s ease;
-	font-size: 0.75rem; /* 调整字体大小 */
-}
-
-.vintage-toggle-btn:not(:last-child) {
-	border-right: 2px solid #000; /* 分隔线 */
-}
-
-.vintage-toggle-btn:hover {
-	background: #ccc; /* 悬停时灰色背景 */
-}
-
-.vintage-toggle-btn.active {
-	background: #000; /* 激活时黑色背景 */
-	color: #fff; /* 激活时白色文字 */
-}
-
 /* 翻译切换按钮样式 */
 .translation-toggle-btn {
 	padding: 8px;
@@ -446,7 +402,7 @@ defineExpose({
 .radio-script-panel {
 	margin-top: 1rem; /* 增加上边距 */
 	min-height: 150px; /* 确保即使内容为空也有最小高度 */
-	max-height: 200px; /* 限制最大高度 */
+	max-height: 500px; /* 限制最大高度 */
 	overflow-y: auto; /* 允许滚动 */
 	background: #fff; /* 白色背景 */
 	border: 2px solid #000; /* 黑色边框 */
@@ -513,20 +469,5 @@ defineExpose({
 .script-paragraph .text-base-700\/70 {
 	color: #555; /* 中文翻译用深灰色 */
 	font-style: italic; /* 斜体 */
-}
-
-/* 闪烁动画 */
-@keyframes blink {
-	0%,
-	100% {
-		opacity: 1;
-		box-shadow: 0 0 0 2px var(--milk-color, #f5f2eb),
-			0 0 8px var(--secondary-color), 0 0 15px var(--secondary-color);
-	}
-	50% {
-		opacity: 0.5;
-		box-shadow: 0 0 0 2px var(--milk-color, #f5f2eb),
-			0 0 4px var(--secondary-color), 0 0 8px var(--secondary-color);
-	}
 }
 </style>

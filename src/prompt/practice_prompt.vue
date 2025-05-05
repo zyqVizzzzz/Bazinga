@@ -60,7 +60,7 @@
 				提交
 			</button>
 			<button
-				@click="submitSingleContentByDoryn"
+				@click="submitSingleContent"
 				class="bg-green-500 ml-2 text-white px-4 py-2 rounded-md hover:bg-green-600 mb-4"
 			>
 				校正
@@ -329,7 +329,7 @@ const submitContent = async () => {
 const submitSingleContent = async () => {
 	const dialogue = {
 		english:
-			"Alright folks, that's a wrap for today! Keep having fun and keep moving forward. I'm Moryn, signing off for now. Catch you next time!",
+			"这里可以输入网址，导入网页内容，也可以输入new指令自动生成一篇文章。",
 		character: "Moryn",
 		emoji: "happy",
 	};
