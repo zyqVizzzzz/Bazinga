@@ -66,6 +66,11 @@ const routes = [
 		name: "privacypolicy",
 		component: () => import("@/layout/privacyPolicy.vue"),
 	},
+	{
+		path: "/mochi",
+		name: "Mochi",
+		component: () => import("@/mochi/MochiView.vue"),
+	},
 	// {
 	// 	path: "/test",
 	// 	name: "Test",

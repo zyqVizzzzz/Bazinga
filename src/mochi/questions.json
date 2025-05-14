@@ -1,0 +1,37 @@
+[
+	{
+		"id": "q1",
+		"text": "Which of the following is a synonym for 'happy'?",
+		"options": ["Sad", "Joyful", "Angry", "Tired"],
+		"correctAnswerIndex": 1,
+		"coinsOnCorrect": 10
+	},
+	{
+		"id": "q2",
+		"text": "What is the opposite of 'hot'?",
+		"options": ["Warm", "Cold", "Spicy", "Burning"],
+		"correctAnswerIndex": 1,
+		"coinsOnCorrect": 10
+	},
+	{
+		"id": "q3",
+		"text": "Complete the sentence: 'An apple a day keeps the ______ away.'",
+		"options": ["Friend", "Doctor", "Teacher", "Dog"],
+		"correctAnswerIndex": 1,
+		"coinsOnCorrect": 15
+	},
+	{
+		"id": "q4",
+		"text": "Which word is a type of fruit?",
+		"options": ["Carrot", "Broccoli", "Banana", "Potato"],
+		"correctAnswerIndex": 2,
+		"coinsOnCorrect": 10
+	},
+	{
+		"id": "q5",
+		"text": "What do you use to write on a blackboard?",
+		"options": ["Pen", "Pencil", "Chalk", "Crayon"],
+		"correctAnswerIndex": 2,
+		"coinsOnCorrect": 12
+	}
+]

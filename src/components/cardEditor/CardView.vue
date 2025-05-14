@@ -620,7 +620,7 @@ const initializeView = async () => {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
-				isCustom.value = res.data.data.isCustom;
+				isCustom.value = !res.data.data.isCustom;
 
 				if (scriptData?.scenes?.[0]?.dialogues) {
 					// 将对话按场景分组处理
