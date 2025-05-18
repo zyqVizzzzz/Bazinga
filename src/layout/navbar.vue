@@ -14,8 +14,11 @@
 					@click="goToHome"
 					class="nav-brand btn btn-ghost hover:bg-transparent hover:text-inherit"
 				>
-					<img src="../assets/logo.png" alt="Bazinga Logo" class="logo-image" />
-					azinga!
+					<img
+						src="../assets/molidoki.png"
+						alt="Bazinga Logo"
+						class="logo-image"
+					/>
 				</a>
 			</div>
 			<div class="flex-none">
@@ -235,12 +238,11 @@ watch(
 </script>
 <style scoped>
 .logo-image {
-	height: 32px;
+	height: 56px;
 	width: auto;
 	object-fit: contain;
-	transform: rotate(4deg);
 	transition: all 0.3s ease;
-	margin-right: -9px;
+	margin-top: -0px;
 }
 
 .navbar {
@@ -249,7 +251,6 @@ watch(
 	height: 64px;
 	background: white;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	backdrop-filter: blur(8px);
 	padding-left: 1rem;
 	padding-right: 1rem;
 }
@@ -263,12 +264,13 @@ watch(
 .nav-brand {
 	font-size: 24px; /* 稍微减小字体大小 */
 	font-weight: bold;
-	transform: skew(-6deg);
+	/* transform: skew(-6deg); */
 	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
-	padding: 0.5rem 1rem;
+	/* padding: 0.5rem 1rem; */
 	transition: all 0.3s ease;
 	display: flex;
 	align-items: center;
+	justify-content: center;
 }
 
 .retro-link {

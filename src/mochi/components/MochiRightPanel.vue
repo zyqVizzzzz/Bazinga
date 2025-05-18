@@ -1,133 +1,363 @@
 <template>
 	<aside class="right-panel">
-		<div class="points-earned">
-			<h4>Points Earned</h4>
-			<div class="point-item">
-				<span>Current Points:</span>
-				<span>157</span>
+		<div class="monitor-container">
+			<div class="monitor-frame">
+				<div class="monitor-top">
+					<div class="power-button"></div>
+					<div class="indicator-lights">
+						<div class="light light-red"></div>
+						<div class="light light-green"></div>
+						<div class="light light-blue"></div>
+					</div>
+				</div>
+				<div class="monitor-screen">
+					<div class="screen-glare"></div>
+					<div class="status-report">
+						<h4>Tips</h4>
+						<div v-if="!catStore.isAnswering" class="tip-container">
+							<div class="tip-text">
+								<!-- <div class="tip-en mb-4">{{ currentTip.en }}</div> -->
+								<div class="tip-zh text-sm">{{ currentTip.zh }}</div>
+							</div>
+						</div>
+						<div v-if="catStore.isAnswering">
+							<!-- <div class="question-text text-normal" style="margin-bottom: 0">
+								{{ catStore.currentQuestion.question }}
+							</div> -->
+							<div class="question-text">
+								<span
+									v-for="(char, index) in catStore.currentQuestion.question_zh"
+									:key="index"
+									:class="isChinese(char) ? 'text-zh' : 'text-en'"
+									>{{ char }}</span
+								>
+							</div>
+							<div
+								v-if="
+									catStore.showExplanation &&
+									catStore.currentQuestion.explanation
+								"
+								class="explanation-text mt-4"
+							>
+								<div class="explanation-content">
+									<span
+										v-for="(char, index) in catStore.currentQuestion
+											.explanation"
+										:key="index"
+										:class="isChinese(char) ? 'text-zh' : 'text-en'"
+										>{{ char }}</span
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="monitor-controls">
+					<div class="control-button"></div>
+					<div class="control-button"></div>
+					<div class="control-button"></div>
+				</div>
+				<div class="monitor-brand">
+					<span>MOCHI-6900</span>
+				</div>
 			</div>
-			<div class="point-item">
-				<span>Multiplier:</span>
-				<span>1x</span>
-			</div>
-			<div class="point-item">
-				<span>Next points in:</span>
-				<span>4.1s</span>
-			</div>
-			<div class="points-info">+2 points every 10s</div>
 		</div>
-		<div class="recent-activity">
-			<div class="activity-header">
-				<h4>Recent</h4>
-				<button class="refresh-button">Refresh</button>
-			</div>
-			<ul>
-				<li>Ash <span>+15</span> <small>1m ago</small></li>
-				<li>Brush <span>+10</span> <small>3m ago</small></li>
-				<li>Feather <span>+15</span> <small>6m ago</small></li>
-				<li>Loser <span>+20</span> <small>7m ago</small></li>
-			</ul>
-		</div>
-		<button class="rewards-guide-button">Rewards Points Guide</button>
 	</aside>
 </template>
 
 <script setup>
-// Right panel logic
+import { ref, onMounted } from "vue";
+import { useCatStore } from "../store/catStore";
+
+const catStore = useCatStore();
+
+const currentTip = ref({ en: "", zh: "" });
+
+const tips = [
+	{
+		en: "Answer questions to help your cat recover! Different types of questions provide different levels of recovery.",
+		zh: "回答问题来帮助猫猫恢复状态！不同类型的问题会带来不同程度的恢复效果哦～",
+	},
+	{
+		en: "Time flies: 1 hour in game equals 1 day in real life. Watch your cat grow!",
+		zh: "游戏中的1小时等于现实中的1天，一起见证猫猫的成长吧！",
+	},
+	{
+		en: "Secret: Your cat will develop unique quirks between ages 1-2. What will they be?",
+		zh: "猫猫在1-2岁时会解锁独特的性格特征，期待它会有什么有趣的怪癖呢？",
+	},
+	{
+		en: "Tip: Keep your cat happy for faster recovery!",
+		zh: "保持猫猫心情愉悦，状态恢复会更快哦！",
+	},
+	{
+		en: "Hint: Try different interactions for well-rounded care.",
+		zh: "尝试不同类型的互动，让猫猫获得更全面的照顾～",
+	},
+	{
+		en: "Cat Facts: Daily interactions shape your cat's unique personality!",
+		zh: "每天的互动和学习，都在塑造着猫猫独特的性格！",
+	},
+	{
+		en: "Discovery: Watch as your cat's personality traits emerge with growth!",
+		zh: "随着成长，猫猫会逐渐展现出不同的性格特征，让我们拭目以待吧！",
+	},
+	{
+		en: "Growth Guide: Answering questions improves both stats and bonding!",
+		zh: "回答问题不仅能提升猫猫的状态，还能增进你们之间的感情呢～",
+	},
+	{
+		en: "Remember: Patience and love will help your cat become a wonderful companion!",
+		zh: "保持耐心和爱心，猫猫一定会成长为一个有趣的小伙伴！",
+	},
+];
+
+// 随机展示提示
+const showRandomTip = () => {
+	const randomIndex = Math.floor(Math.random() * tips.length);
+	currentTip.value = tips[randomIndex];
+};
+
+const isChinese = (char) => {
+	return /[\u4e00-\u9fa5]/.test(char);
+};
+
+onMounted(() => {
+	showRandomTip();
+	setInterval(showRandomTip, 20000); // 每10秒更新一次提示
+});
 </script>
 
 <style scoped>
 .right-panel {
-	width: 25%; /* Adjust as needed */
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
-}
-
-.points-earned,
-.recent-activity {
-	background-color: #f9f9f9; /* Placeholder color */
-	border: 2px solid #000; /* Pixel border */
-	padding: 15px;
-	box-shadow: 3px 3px 0px #000; /* Pixel shadow */
-}
-
-.points-earned h4,
-.recent-activity h4 {
-	font-weight: bold;
-	margin-bottom: 10px;
-}
-
-.point-item {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 5px;
-	font-size: 0.9em;
-}
-
-.points-info {
-	text-align: center;
-	font-size: 0.8em;
-	color: #555;
-	margin-top: 10px;
-	padding: 5px;
-	background-color: #e0e0e0;
-	border: 1px dashed #000;
-}
-
-.activity-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 10px;
-}
-
-.refresh-button {
-	background-color: #e0e0e0;
-	border: 1px solid #000;
-	padding: 3px 8px;
-	font-size: 0.8em;
-	cursor: pointer;
-}
-
-.recent-activity ul {
-	list-style: none;
-	padding: 0;
-}
-
-.recent-activity li {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 5px 0;
-	border-bottom: 1px dashed #ccc;
-	font-size: 0.9em;
-}
-
-.recent-activity li:last-child {
-	border-bottom: none;
-}
-
-.recent-activity li span {
-	color: green;
-	font-weight: bold;
-}
-
-.recent-activity li small {
-	color: #777;
-}
-
-.rewards-guide-button {
-	background-color: #555;
-	color: white;
-	border: 2px solid #000;
 	padding: 10px;
-	text-align: center;
-	font-weight: bold;
-	cursor: pointer;
-	box-shadow: 2px 2px 0px #000;
 }
-.rewards-guide-button:hover {
-	background-color: #333;
+
+.monitor-container {
+	position: relative;
+	width: 100%;
+}
+
+.monitor-frame {
+	background: linear-gradient(145deg, rgb(235, 239, 244), rgb(215, 219, 224));
+	border-radius: 10px;
+	padding: 15px;
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+	position: relative;
+}
+
+.monitor-top {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.power-button {
+	width: 15px;
+	height: 15px;
+	background-color: #444;
+	border-radius: 50%;
+	border: 2px solid #555;
+	box-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.power-button:hover {
+	background-color: #666;
+	box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.indicator-lights {
+	display: flex;
+	gap: 8px;
+}
+
+.light {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	box-shadow: 0 0 3px currentColor;
+}
+
+.light-red {
+	background-color: rgb(111, 0, 0);
+	box-shadow: 0 0 5px rgb(111, 0, 0);
+}
+
+.light-green {
+	background-color: rgb(48, 71, 0);
+	box-shadow: 0 0 5px rgb(48, 71, 0);
+}
+
+.light-blue {
+	background-color: rgb(0, 48, 71);
+	box-shadow: 0 0 5px rgb(0, 48, 71);
+}
+
+.monitor-screen {
+	background-color: #eff8cb;
+	overflow: hidden;
+	z-index: 5;
+	/* padding: 8px; */
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.1);
+	border: 3px solid #444;
+	border-radius: 5px;
+	padding: 15px;
+	position: relative;
+	overflow: hidden;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.monitor-screen::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.1) 2px,
+		rgba(0, 0, 0, 0.03) 4px
+	);
+	border-radius: 9px;
+	pointer-events: none;
+}
+
+.screen-glare {
+	position: absolute;
+	top: -50px;
+	left: -50px;
+	width: 100px;
+	height: 100px;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.1) 0%,
+		transparent 70%
+	);
+	border-radius: 50%;
+	pointer-events: none;
+}
+
+.status-report {
+	background-color: rgba(239, 248, 203, 0.5);
+	overflow: hidden;
+	z-index: 5;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	color: rgb(48, 71, 0);
+	/* padding: 15px; */
+	border-radius: 3px;
+	text-shadow: 0 0 5px rgba(48, 71, 0, 0.5);
+	position: relative;
+}
+
+.status-report h4 {
+	font-weight: bold;
+	margin-bottom: 15px;
+	text-align: center;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	border-bottom: 1px solid #00aa00;
+	padding-bottom: 5px;
+}
+
+.monitor-controls {
+	display: flex;
+	justify-content: center;
+	gap: 15px;
+	margin-top: 10px;
+}
+
+.control-button {
+	width: 25px;
+	height: 25px;
+	background-color: #444;
+	border-radius: 5px;
+	border: 2px solid #555;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.control-button:hover {
+	background-color: #666;
+	transform: scale(1.05);
+}
+
+.monitor-brand {
+	text-align: center;
+	margin-top: 10px;
+	font-size: 0.8em;
+	color: #888;
+	font-family: "Arial", sans-serif;
+	letter-spacing: 1px;
+}
+
+.tip-container {
+	padding: 12px;
+	margin-top: 8px;
+}
+
+.tip-text {
+	color: #304700;
+	text-align: justify;
+}
+
+.tip-en {
+	font-size: 16px;
+	line-height: 1;
+}
+
+.tip-zh {
+	font-size: 15px;
+	line-height: 1.5;
+	color: #4a6b00;
+}
+
+.question-text {
+	color: #304700;
+	text-align: center;
+	margin-bottom: 12px;
+	display: inline-block;
+}
+
+.text-en {
+	font-size: 16px;
+}
+
+.text-zh {
+	font-size: 14px;
+}
+.explanation-text {
+	margin-top: 12px;
+	padding: 8px;
+	background-color: rgba(48, 71, 0, 0.1);
+	border-radius: 6px;
+	border-left: 3px solid rgba(48, 71, 0, 0.5);
+}
+
+.explanation-title {
+	font-weight: bold;
+	color: #304700;
+	margin-bottom: 4px;
+	font-size: 12px;
+}
+
+.explanation-content {
+	color: #4a6b00;
+	text-align: left;
+	font-size: 11px;
+	line-height: 1.4;
 }
 </style>

@@ -17,11 +17,12 @@ export const catService = {
 	},
 
 	// 与猫猫互动
-	async interactWithCat(catId, actionType, actionSubType = "") {
+	async interactWithCat(catId, actionType, actionSubType = "", type = 1) {
 		try {
 			const response = await apiClient.post(`/cats/${catId}/interact`, {
 				actionType,
 				actionSubType,
+				type,
 			});
 			if (response.data.code === 200) {
 				return response.data.data;
@@ -30,6 +31,32 @@ export const catService = {
 			}
 		} catch (error) {
 			console.error(`猫猫互动失败: ${actionType}`, error);
+			throw error;
+		}
+	},
+
+	// 回答错误时与猫猫互动（状态减少）
+	async interactWithCatWhenWrong(
+		catId,
+		actionType,
+		actionSubType = "",
+		type = 1
+	) {
+		try {
+			console.log("df");
+			const response = await apiClient.post(`/cats/${catId}/interact-wrong`, {
+				actionType,
+				actionSubType,
+				type,
+			});
+			console.log("df", response.data);
+			if (response.data.code === 200) {
+				return response.data.data;
+			} else {
+				throw new Error(response.data.message);
+			}
+		} catch (error) {
+			console.error(`回答错误猫猫互动失败: ${actionType}`, error);
 			throw error;
 		}
 	},

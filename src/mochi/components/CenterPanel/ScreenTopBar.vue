@@ -8,7 +8,9 @@
 					class="mr-1 w-[25px] h-[25px]"
 					style="image-rendering: pixelated"
 				/>
-				<span class="text-base text-[#4b6130] font-numbers">157</span>
+				<span class="text-base text-[#4b6130] font-numbers">{{
+					pointsStore.points
+				}}</span>
 			</div>
 		</div>
 
@@ -55,15 +57,24 @@
 						>
 							<div class="w-full h-full bg-gray-200/20 flex">
 								<div
-									class="h-full bg-[#304700]"
+									class="h-full bg-[rgb(151,174,98)]/70 relative"
 									:style="{
 										width: `${
-											(props.catState?.currentHealthPoints /
-												props.catState?.maxHealthPoints) *
+											(catStore.catState?.currentHealthiness /
+												catStore.catState?.maxHealthPoints) *
 											100
 										}%`,
 									}"
-								></div>
+								>
+									<!-- 健康条分格 -->
+									<div class="absolute inset-0 flex">
+										<div
+											v-for="i in 10"
+											:key="i"
+											class="flex-1 border-r border-[#ebffb7]/50"
+										></div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -74,22 +85,15 @@
 </template>
 
 <script setup>
-// 接收猫猫状态作为props
-const props = defineProps({
-	catState: {
-		type: Object,
-		default: () => ({
-			shortTermStates: {
-				food: 50,
-				happiness: 50,
-				cleanliness: 50,
-				energy: 50,
-				health: 50,
-			},
-			currentHealthPoints: 100,
-			maxHealthPoints: 100,
-		}),
-	},
+import { onMounted } from "vue";
+import { useCatStore } from "../../store/catStore";
+import { usePointsStore } from "@/store/index";
+
+const catStore = useCatStore();
+const pointsStore = usePointsStore();
+onMounted(async () => {
+	const points = await pointsStore.fetchPoints();
+	pointsStore.setPoints(points);
 });
 </script>
 
@@ -98,7 +102,7 @@ const props = defineProps({
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	font-size: 0.9em; /* Tailwind: text-sm */
+	font-size: 0.9em;
 	color: #1b5e20;
 }
 </style>

@@ -2,11 +2,9 @@ import apiClient from "@/api";
 
 export const questionService = {
 	// 获取随机问题
-	async getRandomQuestion(difficulty = 1) {
+	async getRandomQuestion(type = 1) {
 		try {
-			const response = await apiClient.get(
-				`/questions/random?difficulty=${difficulty}`
-			);
+			const response = await apiClient.get(`/questions/random?type=${type}`);
 			if (response.data.code === 200) {
 				return response.data.data;
 			} else {

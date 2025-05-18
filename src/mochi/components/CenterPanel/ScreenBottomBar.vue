@@ -1,19 +1,26 @@
 <template>
 	<div class="screen-bottom-icons">
-		<template v-if="!props.isSubMenu">
+		<template v-if="!catStore.isSubMenu">
 			<div class="transform">
 				<div class="flex flex-col items-center relative group">
 					<div
 						class="w-12 h-12 relative flex items-center justify-center rounded-sm transition-all duration-200"
 						:class="[
-							props.activeIndex === 0
+							catStore.currentActiveIconIndex === 0
 								? 'bg-[#eeffc9] ring-2 ring-[#cada9b]'
 								: 'bg-transparent',
-							props.isAnimating === 0
+							catStore.isAnimating === 0 && !catStore.isSubMenu
 								? 'opacity-50 cursor-not-allowed'
 								: 'cursor-pointer',
 						]"
 					>
+						<!-- 添加加载进度条 -->
+						<transition name="fade-progress">
+							<div
+								v-if="catStore.isAnimating === 0 && !catStore.isSubMenu"
+								class="loading-progress-bar"
+							></div>
+						</transition>
 						<div class="z-10">
 							<img
 								alt="Food"
@@ -43,14 +50,18 @@
 					<div
 						class="w-12 h-12 relative flex items-center justify-center rounded-sm transition-all duration-200"
 						:class="[
-							props.activeIndex === 1
+							catStore.currentActiveIconIndex === 1
 								? 'bg-[#eeffc9] ring-2 ring-[#cada9b]'
 								: 'bg-transparent',
-							props.isAnimating === 1
+							catStore.isAnimating === 1 && !catStore.isSubMenu
 								? 'opacity-50 cursor-not-allowed'
 								: 'cursor-pointer',
 						]"
 					>
+						<div
+							v-if="catStore.isAnimating === 1 && !catStore.isSubMenu"
+							class="loading-progress-bar"
+						></div>
 						<div class="z-10">
 							<img
 								alt="Clean"
@@ -80,14 +91,18 @@
 					<div
 						class="w-12 h-12 relative flex items-center justify-center rounded-sm transition-all duration-200"
 						:class="[
-							props.activeIndex === 2
+							catStore.currentActiveIconIndex === 2
 								? 'bg-[#eeffc9] ring-2 ring-[#cada9b]'
 								: 'bg-transparent',
-							props.isAnimating === 2
+							catStore.isAnimating === 2 && !catStore.isSubMenu
 								? 'opacity-50 cursor-not-allowed'
 								: 'cursor-pointer',
 						]"
 					>
+						<div
+							v-if="catStore.isAnimating === 2 && !catStore.isSubMenu"
+							class="loading-progress-bar"
+						></div>
 						<div class="z-10">
 							<img
 								alt="Doctor"
@@ -117,14 +132,18 @@
 					<div
 						class="w-12 h-12 relative flex items-center justify-center rounded-sm transition-all duration-200"
 						:class="[
-							props.activeIndex === 3
+							catStore.currentActiveIconIndex === 3
 								? 'bg-[#eeffc9] ring-2 ring-[#cada9b]'
 								: 'bg-transparent',
-							props.isAnimating === 3
+							catStore.isAnimating === 3 && !catStore.isSubMenu
 								? 'opacity-50 cursor-not-allowed'
 								: 'cursor-pointer',
 						]"
 					>
+						<div
+							v-if="catStore.isAnimating === 3 && !catStore.isSubMenu"
+							class="loading-progress-bar"
+						></div>
 						<div class="z-10">
 							<img
 								alt="Play"
@@ -160,12 +179,10 @@
 					<div
 						class="w-12 h-12 relative flex items-center justify-center rounded-sm transition-all duration-200"
 						:class="[
-							props.activeIndex === index
+							catStore.currentActiveIconIndex === index
 								? 'bg-[#eeffc9] ring-2 ring-[#cada9b]'
 								: 'bg-transparent',
-							props.isAnimating === index
-								? 'opacity-50 cursor-not-allowed'
-								: 'cursor-pointer',
+							'cursor-pointer',
 						]"
 					>
 						<div class="z-10">
@@ -198,6 +215,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { useCatStore } from "../../store/catStore";
 import foodCatFood from "@/mochi/assets/icons/food-catfood.png";
 import foodCatnip from "@/mochi/assets/icons/food-catnip.png";
 import foodDonat from "@/mochi/assets/icons/food-donat.png";
@@ -214,25 +232,8 @@ import gameLaser from "@/mochi/assets/icons/game-laser.png";
 import gameFeather from "@/mochi/assets/icons/game-feather.png";
 import gameBall from "@/mochi/assets/icons/game-ball.png";
 import gamePuzzle from "@/mochi/assets/icons/game-puzzle.png";
-const props = defineProps({
-	activeIndex: {
-		type: Number,
-		default: -1,
-	},
-	isSubMenu: {
-		type: Boolean,
-		default: false,
-	},
-	parentType: {
-		type: String,
-		default: "",
-	},
-	// 正在动画的按钮索引
-	isAnimating: {
-		type: Number,
-		default: -1,
-	},
-});
+
+const catStore = useCatStore();
 
 const subMenuItems = {
 	Food: [
@@ -262,7 +263,7 @@ const subMenuItems = {
 };
 
 const getSubMenuItems = computed(() => {
-	return subMenuItems[props.parentType] || [];
+	return subMenuItems[catStore.currentParentType] || [];
 });
 </script>
 
@@ -272,5 +273,69 @@ const getSubMenuItems = computed(() => {
 	justify-content: space-around;
 	font-size: 1.2rem;
 	padding-bottom: 4px;
+}
+
+.loading-progress-bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(76, 175, 80, 0.3); /* 半透明绿色背景 */
+	z-index: 15; /* 确保在图标上方但在提示下方 */
+	border-radius: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.loading-progress-bar::after {
+	content: "";
+	position: absolute;
+	width: 50%;
+	height: 50%;
+	background: conic-gradient(#8bc68d 0%, transparent 0);
+	border-radius: 50%;
+	animation: progress-animation 8s linear forwards;
+}
+
+@keyframes progress-animation {
+	0% {
+		background: conic-gradient(#8bc68d 0%, transparent 0%);
+	}
+	12.5% {
+		background: conic-gradient(#8bc68d 12.5%, transparent 12.5%);
+	}
+	25% {
+		background: conic-gradient(#8bc68d 25%, transparent 25%);
+	}
+	37.5% {
+		background: conic-gradient(#8bc68d 37.5%, transparent 37.5%);
+	}
+	50% {
+		background: conic-gradient(#8bc68d 50%, transparent 50%);
+	}
+	62.5% {
+		background: conic-gradient(#8bc68d 62.5%, transparent 62.5%);
+	}
+	75% {
+		background: conic-gradient(#8bc68d 75%, transparent 75%);
+	}
+	87.5% {
+		background: conic-gradient(#8bc68d 87.5%, transparent 87.5%);
+	}
+	100% {
+		background: conic-gradient(#8bc68d 100%, transparent 100%);
+	}
+}
+.fade-progress-enter-active,
+.fade-progress-leave-active {
+	transition: opacity 0.3s ease;
+}
+
+.fade-progress-enter-from,
+.fade-progress-leave-to {
+	opacity: 0;
 }
 </style>

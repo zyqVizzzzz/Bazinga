@@ -69,7 +69,7 @@ const routes = [
 	{
 		path: "/mochi",
 		name: "Mochi",
-		component: () => import("@/mochi/MochiView.vue"),
+		component: () => import("@/mochi/index.vue"),
 	},
 	// {
 	// 	path: "/test",

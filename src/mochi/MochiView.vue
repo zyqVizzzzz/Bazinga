@@ -1,17 +1,17 @@
 <template>
 	<div class="mochi-page font-pixel">
 		<div class="mochi-main-content">
-			<MochiLeftPanel :catState="catState" />
-			<MochiCenterPanel ref="centerPanelRef" @cat-updated="updateCatState" />
-			<MochiRightPanel />
+			<div class="wire wire-left"></div>
+			<div class="left-panel-container">
+				<MochiLeftPanel />
+			</div>
+			<MochiCenterPanel ref="centerPanelRef" />
+			<div class="right-panel-container">
+				<MochiRightPanel />
+			</div>
+			<div class="wire wire-right"></div>
 		</div>
 	</div>
-	<!-- 添加测试按钮 -->
-	<!-- <div class="test-buttons">
-		<button class="test-button" @click="testOffline(12)">测试12小时离线</button>
-		<button class="test-button" @click="testOffline(24)">测试24小时离线</button>
-		<button class="test-button" @click="testOffline(48)">测试48小时离线</button>
-	</div> -->
 </template>
 
 <script setup>
@@ -20,104 +20,38 @@ import MochiLeftPanel from "./components/MochiLeftPanel.vue";
 import MochiCenterPanel from "./components/MochiCenterPanel.vue";
 import MochiRightPanel from "./components/MochiRightPanel.vue";
 import { catService } from "./services/catService";
-import { showToast } from "@/components/common/toast.js";
+import { useLoginStore } from "@/store";
+import { useCatStore } from "./store/catStore";
 
 const centerPanelRef = ref(null);
-const catState = ref(null);
-const isPaused = ref(false);
+const loginStore = useLoginStore();
+const catStore = useCatStore();
 let decayInterval = null;
-let snapshotInterval = null;
-
-// 更新猫猫状态
-const updateCatState = (newState) => {
-	catState.value = newState;
-};
 
 // 设置定时任务
 const setupIntervals = () => {
-	// 每分钟衰减一次状态
+	// 每分钟衰减一次状态，持续10分钟，10分钟无交互，后台判断为离线状态
 	decayInterval = setInterval(async () => {
-		console.log("ddd", catState.value);
-		if (catState.value?._id) {
+		if (catStore.catId) {
 			try {
-				const updatedCat = await catService.decayCatState(catState.value._id);
-				catState.value = updatedCat;
+				const updatedCat = await catService.decayCatState(catStore.catId);
+				catStore.updateCatState(updatedCat);
 			} catch (error) {
-				console.error("猫猫状态衰减失败", error);
+				console.error("状态衰减失败", error);
 			}
 		}
 	}, 60 * 1000);
-
-	// 每小时创建一次状态快照
-	snapshotInterval = setInterval(async () => {
-		if (centerPanelRef.value?.catId) {
-			try {
-				await catService.createCatSnapshot(centerPanelRef.value.catId);
-			} catch (error) {
-				console.error("创建猫猫状态快照失败", error);
-			}
-		}
-	}, 60 * 60 * 1000);
 };
 
-// 测试离线衰减
-const testOffline = async (hours) => {
-	if (catState.value?._id) {
-		try {
-			console.log(`测试${hours}小时离线状态衰减...`);
-
-			// 记录当前状态
-			const beforeStates = { ...catState.value.shortTermStates };
-
-			// 调用测试接口
-			const updatedCat = await catService.testOfflineDecay(
-				catState.value._id,
-				hours
-			);
-
-			// 更新状态
-			catState.value = updatedCat;
-
-			// 显示状态变化
-			console.log("离线衰减前状态:", beforeStates);
-			console.log("离线衰减后状态:", updatedCat.shortTermStates);
-			console.log(
-				`离线时间: ${hours}小时, 离线因子: ${
-					hours >= 48 ? 0.1 : hours >= 24 ? 0.25 : 0.5
-				}`
-			);
-
-			// 显示提示
-			showToast({
-				message: `${hours}小时离线状态衰减完成`,
-				type: "success",
-				duration: 3000,
-			});
-		} catch (error) {
-			console.error("离线状态衰减测试失败", error);
-			showToast({
-				message: "离线状态衰减测试失败",
-				type: "error",
-				duration: 3000,
-			});
-		}
-	} else {
-		console.warn("猫猫ID未定义，无法执行测试");
-		showToast({
-			message: "猫猫ID未定义，无法执行测试",
-			type: "warning",
-			duration: 3000,
-		});
+onMounted(async () => {
+	if (loginStore.userInfo?._id) {
+		await catStore.initCat(loginStore.userInfo._id);
+		setupIntervals();
 	}
-};
-
-onMounted(() => {
-	setupIntervals();
 });
 
 onUnmounted(() => {
-	clearInterval(decayInterval);
-	clearInterval(snapshotInterval);
+	if (decayInterval) clearInterval(decayInterval);
 });
 </script>
 
@@ -133,40 +67,30 @@ onUnmounted(() => {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	min-height: 600px;
-	height: 700px;
-	border: 3px solid #000; /* Black border, similar to image */
-	margin-top: 100px;
-	border-radius: 20px; /* Rounded corners, similar to image */
-	background: #fff;
-	overflow: hidden; /* To prevent scrollbars if content overflows during layout */
+	background: transparent;
+	overflow: hidden;
 	font-family: "PixelFont", sans-serif;
+	padding-bottom: 5vh;
+	min-width: 1260px !important;
 }
 
 .mochi-main-content {
 	display: flex;
 	align-items: center;
+	justify-content: center; /* 确保内容居中 */
 	flex-grow: 1;
 	padding: 20px;
-	gap: 20px;
+	gap: 40px;
 }
 
-.mochi-main-content::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: repeating-linear-gradient(
-		45deg,
-		transparent,
-		transparent 2px,
-		rgba(0, 0, 0, 0.1) 2px,
-		rgba(0, 0, 0, 0.03) 4px
-	);
-	border-radius: 9px;
-	pointer-events: none;
+.left-panel-container {
+	width: 300px;
+	flex-shrink: 0;
+}
+
+.right-panel-container {
+	width: 350px;
+	flex-shrink: 0;
 }
 
 .pause-button {
@@ -201,5 +125,31 @@ onUnmounted(() => {
 	margin: 4px 2px;
 	cursor: pointer;
 	border-radius: 5px;
+}
+
+.wire {
+	position: absolute;
+	z-index: -10;
+	pointer-events: none; /* 确保电线不会阻挡用户交互 */
+}
+
+.wire-left {
+	width: 100px;
+	height: 112px;
+	left: 310px;
+	top: 250px;
+	background-image: url("./assets/1.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+
+.wire-right {
+	width: 100px;
+	height: 112px;
+	right: 332px;
+	top: 250px;
+	background-image: url("./assets/2.png");
+	background-size: contain;
+	background-repeat: no-repeat;
 }
 </style>
