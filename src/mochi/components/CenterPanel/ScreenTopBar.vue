@@ -1,5 +1,8 @@
 <template>
-	<div class="screen-top-bar px-5 pt-2">
+	<div
+		class="screen-top-bar px-5 pt-2"
+		:class="{ 'night-owl-bar text-[#4b6130] ': hasNightOwlQuirk }"
+	>
 		<div class="flex-1">
 			<div class="flex items-center">
 				<img
@@ -85,7 +88,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useCatStore } from "../../store/catStore";
 import { usePointsStore } from "@/store/index";
 
@@ -95,6 +98,9 @@ onMounted(async () => {
 	const points = await pointsStore.fetchPoints();
 	pointsStore.setPoints(points);
 });
+
+// 检查是否有夜猫子怪癖
+const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 </script>
 
 <style scoped>
@@ -104,5 +110,31 @@ onMounted(async () => {
 	align-items: center;
 	font-size: 0.9em;
 	color: #1b5e20;
+}
+
+/* 夜猫子模式下的顶部栏 */
+.night-owl-bar {
+	color: #b8c7e0;
+}
+
+.night-owl-bar {
+	color: #a0c78a !important;
+}
+
+.night-owl-bar [class*="text-[#4b6130]"] {
+	color: #a0c78a !important;
+}
+
+/* 夜猫子模式下的健康条 */
+.night-owl-bar [style*="background-color: rgb(235, 255, 183)"] {
+	background-color: rgba(26, 52, 34, 0.8) !important;
+}
+
+.night-owl-bar [style*="background-color: rgb(97, 101, 74)"] {
+	background-color: rgba(60, 89, 66, 0.5) !important;
+}
+
+.night-owl-bar [style*="background-color: rgb(151, 174, 98)"] {
+	background-color: rgba(60, 89, 66, 0.7) !important;
 }
 </style>

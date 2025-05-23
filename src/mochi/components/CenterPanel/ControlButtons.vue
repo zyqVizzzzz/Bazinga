@@ -195,37 +195,37 @@ const handleBack = () => {
 }
 
 .prev-button {
-	width: 53px;
-	height: 55px;
-	top: 459px;
-	left: 86px;
+	width: 58px;
+	height: 58px;
+	top: 465px;
+	left: 90px;
 }
 .next-button {
-	width: 53px;
-	height: 54px;
-	top: 459px;
-	left: 172px;
+	width: 58px;
+	height: 58px;
+	top: 465px;
+	left: 175px;
 }
 .a-button {
-	width: 61px;
-	height: 61px;
-	top: 474px;
-	left: 261px;
+	width: 58px;
+	height: 58px;
+	top: 465px;
+	left: 263px;
 }
 .b-button {
-	width: 61px;
-	height: 62px;
-	top: 454px;
-	left: 350px;
+	width: 58px;
+	height: 58px;
+	top: 465px;
+	left: 348px;
 }
 
 .age-display {
 	position: absolute;
 	width: 80px;
-	top: 555px;
-	right: 32%;
+	top: 545px;
+	right: 30%;
 	padding: 3px;
-	background: #d1d2d7;
+	background: rgb(208, 213, 214);
 	border-radius: 4px;
 	box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.8),
 		inset -1px -1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -233,7 +233,7 @@ const handleBack = () => {
 }
 
 .age-screen {
-	background: #c4c5c9;
+	background: rgb(208, 213, 214);
 	padding: 0px 8px;
 	border: 2px inset #b2b3b8;
 	position: relative;

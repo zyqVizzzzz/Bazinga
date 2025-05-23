@@ -1,10 +1,14 @@
 <template>
-	<main class="center-panel">
+	<main class="center-panel" v-if="catStore.catState">
 		<div
 			class="gochi-device relative device-3d"
 			ref="deviceRef"
 			@mousemove="handleMouseMove"
 			@mouseleave="resetTilt"
+			:class="{
+				'night-owl-mode': hasNightOwlQuirk,
+				'is-answering': catStore.isAnswering,
+			}"
 		>
 			<!-- Gamepad Device Image -->
 			<img
@@ -14,7 +18,10 @@
 			/>
 
 			<!-- Screen, positioned over the device image -->
-			<div class="gochi-screen-overlay rounded-lg z-[-1]">
+			<div
+				class="gochi-screen-overlay rounded-lg z-[-1]"
+				:class="{ 'night-owl-screen': hasNightOwlQuirk }"
+			>
 				<ScreenTopBar v-if="!catStore.isAnswering" />
 				<PetDisplay
 					ref="petDisplayRef"
@@ -106,6 +113,9 @@ const resetTilt = () => {
 		"perspective(1000px) rotateX(0deg) rotateY(0deg)";
 	deviceRef.value.style.transition = "transform 0.5s ease-out";
 };
+
+// 检查是否有夜猫子怪癖
+const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 
 onMounted(async () => {
 	if (userId.value) {
@@ -310,5 +320,16 @@ const handleAnswerSelect = (index) => {
 
 .gochi-device:hover {
 	cursor: default;
+}
+
+/* 夜猫子模式样式 */
+.night-owl-mode .device-background {
+	filter: brightness(0.9) hue-rotate(30deg);
+}
+
+.night-owl-screen {
+	background-color: #3c5942 !important;
+	box-shadow: inset 0px 0px 20px rgba(78, 115, 223, 0.2) !important;
+	position: relative;
 }
 </style>

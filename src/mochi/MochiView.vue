@@ -11,6 +11,11 @@
 			</div>
 			<div class="wire wire-right"></div>
 		</div>
+		<div class="test-button-container">
+			<button class="test-quirk-button" @click="handleTestQuirk">
+				测试获取怪癖
+			</button>
+		</div>
 	</div>
 </template>
 
@@ -41,6 +46,15 @@ const setupIntervals = () => {
 			}
 		}
 	}, 60 * 1000);
+};
+
+const handleTestQuirk = async () => {
+	try {
+		const updatedCat = await catService.testQuirk(catStore.catId);
+		if (updatedCat) {
+			emit("cat-updated", updatedCat);
+		}
+	} catch (error) {}
 };
 
 onMounted(async () => {
@@ -151,5 +165,26 @@ onUnmounted(() => {
 	background-image: url("./assets/2.png");
 	background-size: contain;
 	background-repeat: no-repeat;
+}
+
+.test-button-container {
+	position: absolute;
+	bottom: 20px;
+	right: 20px;
+	z-index: 100;
+}
+
+.test-quirk-button {
+	background-color: #304700;
+	color: #ebffb7;
+	padding: 8px 16px;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.test-quirk-button:hover {
+	background-color: #3f5c00;
 }
 </style>

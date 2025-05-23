@@ -107,4 +107,17 @@ export const catService = {
 			throw error;
 		}
 	},
+
+	testQuirk: async (catId) => {
+		try {
+			const response = await apiClient.post(`/cats/${catId}/test-quirk`);
+			if (response.data.code === 200) {
+				return response.data.data;
+			}
+			throw new Error(response.data.message);
+		} catch (error) {
+			console.error("Test quirk failed:", error);
+			throw error;
+		}
+	},
 };

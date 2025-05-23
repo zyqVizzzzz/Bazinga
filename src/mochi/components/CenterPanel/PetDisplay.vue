@@ -1,7 +1,20 @@
 <template>
-	<div class="pet-area">
+	<div class="pet-area" :class="{ 'night-owl-pet-area': hasNightOwlQuirk }">
 		<div class="w-full">
 			<div class="relative flex justify-center items-center">
+				<div
+					v-if="!catStore.isAnswering && catStore.catState?.quirks?.length > 0"
+					class="quirk-tags"
+				>
+					<span
+						v-for="(quirk, index) in catStore.catState.quirks"
+						:key="index"
+						class="quirk-tag"
+						:class="{ 'night-owl-quirk': hasNightOwlQuirk }"
+					>
+						{{ formatQuirkName(quirk.quirkId) }}
+					</span>
+				</div>
 				<transition name="fade-bubble">
 					<div
 						v-if="
@@ -23,6 +36,7 @@
 					decoding="async"
 					data-nimg="1"
 					class="absolute top-[96px] object-contain opacity-50"
+					:class="{ 'night-owl-pet': hasNightOwlQuirk }"
 					:src="shadowImage"
 					style="color: transparent; image-rendering: pixelated"
 				/>
@@ -61,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import idleImage from "../../assets/idle.webp";
 import eatingImage from "../../assets/food.webp";
 import cleaningImage from "../../assets/bath.webp";
@@ -134,6 +148,23 @@ defineExpose({
 	hideQuestion,
 	setSelectedOption,
 });
+
+// 格式化怪癖名称
+const formatQuirkName = (quirkId) => {
+	if (!quirkId) return "";
+
+	// 处理特殊情况
+	if (quirkId === "nightOwl") return "Night Owl";
+
+	// 通用处理：将驼峰命名转换为空格分隔的单词，并首字母大写
+	return quirkId
+		.replace(/([A-Z])/g, " $1") // 在大写字母前添加空格
+		.replace(/^./, (str) => str.toUpperCase()) // 首字母大写
+		.trim(); // 移除多余空格
+};
+
+// 检查是否有夜猫子怪癖
+const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 </script>
 
 <style scoped>
@@ -249,5 +280,82 @@ defineExpose({
 .fade-bubble-enter-from,
 .fade-bubble-leave-to {
 	opacity: 0;
+}
+
+/* 夜猫子模式下的宠物区域 */
+.night-owl-pet-area {
+	background: radial-gradient(
+		circle at center,
+		rgba(78, 115, 223, 0.1) 0%,
+		transparent 70%
+	);
+}
+
+/* 夜猫子模式下的宠物区域 */
+.night-owl-pet-area {
+	background: radial-gradient(
+		circle at center,
+		rgba(60, 89, 66, 0.1) 0%,
+		transparent 70%
+	);
+}
+
+/* 夜猫子模式下的宠物图像 */
+.night-owl-pet {
+	filter: drop-shadow(0 0 5px rgba(60, 89, 66, 0.5));
+}
+
+/* 夜猫子模式下的问题容器 */
+.night-owl-pet-area .question-container {
+	background-color: rgba(26, 52, 34, 0.7);
+	border: 1px solid rgba(60, 89, 66, 0.3);
+}
+
+.night-owl-pet-area .question-text {
+	color: #a0c78a;
+}
+
+.night-owl-pet-area .option-item {
+	background-color: rgba(26, 52, 34, 0.8);
+	border: 1px solid rgba(60, 89, 66, 0.5);
+	color: #a0c78a;
+}
+
+.night-owl-pet-area .option-item:hover {
+	background-color: rgba(60, 89, 66, 0.3);
+}
+
+.night-owl-pet-area .option-item.selected {
+	background-color: rgba(60, 89, 66, 0.5);
+	color: #ffffff;
+}
+
+.quirk-tags {
+	position: absolute;
+	top: -20px;
+	right: 3%;
+	transform: rotate(5deg);
+	display: flex;
+	gap: 6px;
+	z-index: 10;
+}
+
+.quirk-tag {
+	background-color: #cada9b;
+	color: #304700;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 14px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border: 1px solid #97ae62;
+	transform: rotate(-2deg); /* 每个标签有轻微的反向倾斜，增加活泼感 */
+	transition: transform 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 夜猫子模式下的标签样式 */
+.night-owl-quirk {
+	background-color: rgba(60, 89, 66, 0.8);
+	color: #a0c78a;
+	border-color: rgba(60, 89, 66, 0.5);
 }
 </style>

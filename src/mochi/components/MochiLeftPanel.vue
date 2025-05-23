@@ -162,14 +162,16 @@ const getStateClass = (value) => {
 .monitor-container {
 	position: relative;
 	width: 100%;
+	transition: all 0.3s ease;
 }
 
 .monitor-frame {
-	background: linear-gradient(145deg, rgb(235, 239, 244), rgb(215, 219, 224));
+	background: linear-gradient(145deg, rgb(208, 213, 214), rgb(208, 213, 214));
 	border-radius: 10px;
 	padding: 15px;
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 	position: relative;
+	transition: all 0.3s ease;
 }
 
 .monitor-top {
@@ -256,6 +258,93 @@ const getStateClass = (value) => {
 	pointer-events: none;
 }
 
+.monitor-container:hover .monitor-frame {
+	background: linear-gradient(145deg, rgb(218, 223, 224), rgb(198, 203, 204));
+	box-shadow: 0 7px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(120, 220, 255, 0.3);
+	transform: translateY(-3px);
+}
+
+.monitor-container:hover .monitor-screen {
+	background-color: #f0ffcf;
+	box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.7),
+		0 0 8px rgba(120, 255, 120, 0.2);
+}
+
+.monitor-container:hover .light-red {
+	background-color: rgb(255, 0, 0);
+	box-shadow: 0 0 8px rgb(255, 0, 0), 0 0 12px rgba(255, 0, 0, 0.5);
+}
+
+.monitor-container:hover .light-green {
+	background-color: rgb(0, 255, 0);
+	box-shadow: 0 0 8px rgb(0, 255, 0), 0 0 12px rgba(0, 255, 0, 0.5);
+}
+
+.monitor-container:hover .light-blue {
+	background-color: rgb(0, 150, 255);
+	box-shadow: 0 0 8px rgb(0, 150, 255), 0 0 12px rgba(0, 150, 255, 0.5);
+}
+
+/* 屏幕闪烁效果 */
+@keyframes screenFlicker {
+	/* 前10%时间快速闪烁 */
+	0% {
+		opacity: 1;
+	}
+	1% {
+		opacity: 0.7;
+	}
+	2% {
+		opacity: 1;
+	}
+	3% {
+		opacity: 0.9;
+	}
+	4% {
+		opacity: 1;
+	}
+	5% {
+		opacity: 0.8;
+	}
+	6% {
+		opacity: 1;
+	}
+	/* 10%-80%保持稳定 */
+	10%,
+	80% {
+		opacity: 1;
+	}
+	/* 80%-90%再次快速闪烁 */
+	81% {
+		opacity: 0.7;
+	}
+	82% {
+		opacity: 1;
+	}
+	83% {
+		opacity: 0.9;
+	}
+	84% {
+		opacity: 1;
+	}
+	85% {
+		opacity: 0.8;
+	}
+	86% {
+		opacity: 1;
+	}
+	/* 剩余时间保持稳定 */
+	90%,
+	100% {
+		opacity: 1;
+	}
+}
+
+.monitor-container:hover .monitor-screen {
+	animation: screenFlicker 5s infinite;
+}
+
+/* 移动光晕效果 */
 .screen-glare {
 	position: absolute;
 	top: -50px;
@@ -269,6 +358,30 @@ const getStateClass = (value) => {
 	);
 	border-radius: 50%;
 	pointer-events: none;
+	transition: all 0.5s ease;
+}
+
+.monitor-container:hover .screen-glare {
+	transform: translate(30px, 30px);
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.2) 0%,
+		transparent 70%
+	);
+}
+
+.monitor-container:hover .control-button {
+	background-color: #666;
+	box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* 品牌名称发光效果 */
+.monitor-container:hover .monitor-brand span {
+	color: #ffffff;
+	text-shadow: 0 0 5px rgba(120, 255, 120, 0.7);
+	letter-spacing: 2px;
 }
 
 .status-report {

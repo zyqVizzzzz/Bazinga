@@ -1,5 +1,8 @@
 <template>
-	<div class="screen-bottom-icons">
+	<div
+		class="screen-bottom-icons"
+		:class="{ 'night-owl-bar': hasNightOwlQuirk }"
+	>
 		<template v-if="!catStore.isSubMenu">
 			<div class="transform">
 				<div class="flex flex-col items-center relative group">
@@ -265,6 +268,9 @@ const subMenuItems = {
 const getSubMenuItems = computed(() => {
 	return subMenuItems[catStore.currentParentType] || [];
 });
+
+// 检查是否有夜猫子怪癖
+const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 </script>
 
 <style scoped>
@@ -337,5 +343,31 @@ const getSubMenuItems = computed(() => {
 .fade-progress-enter-from,
 .fade-progress-leave-to {
 	opacity: 0;
+}
+
+/* 夜猫子模式下的底部栏 */
+.night-owl-bar [class*="bg-[#eeffc9]"] {
+	background-color: rgba(120, 160, 130, 0.5) !important;
+}
+
+.night-owl-bar [class*="ring-[#cada9b]"] {
+	--tw-ring-color: rgba(160, 200, 170, 0.7) !important;
+}
+
+.night-owl-bar [class*="bg-[#304700]"] {
+	background-color: #2a4a35 !important;
+}
+
+.night-owl-bar [class*="text-[#ebffb7]"] {
+	color: #d0f0c0 !important;
+}
+
+.night-owl-bar .loading-progress-bar {
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(120, 160, 130, 0.7),
+		transparent
+	);
 }
 </style>

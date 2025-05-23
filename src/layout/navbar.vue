@@ -8,7 +8,7 @@
 		}"
 		v-if="!isEditor && !isLaunch"
 	>
-		<div class="container mx-auto px-4 flex justify-between items-center">
+		<div class="container mx-auto flex justify-between items-center">
 			<div class="flex-none">
 				<a
 					@click="goToHome"
@@ -23,11 +23,6 @@
 			</div>
 			<div class="flex-none">
 				<ul class="menu menu-horizontal gap-2">
-					<li>
-						<a class="retro-link create-card-btn mr-8" @click="createNewCard">
-							<i class="bi bi-lightning-charge"></i> 快速开始
-						</a>
-					</li>
 					<li>
 						<a
 							class="retro-link"
@@ -106,87 +101,6 @@ const goToLink = (path) => {
 	router.push("/" + path);
 };
 
-// 创建新卡片
-const createNewCard = async () => {
-	if (!isLogin.value) {
-		showToast({
-			message: "登录后解锁全部功能",
-			type: "info",
-			duration: 3000,
-		});
-		return;
-	}
-	try {
-		const today = new Date();
-		const dateStr = today.toLocaleDateString("zh-CN").replace(/\//g, "-");
-		const defaultDocName = `Doc-${dateStr}`;
-		// 获取用户的默认合集
-		const res = await apiClient.get("/catalogs/default");
-		if (res.data.code === 200 && res.data.data) {
-			const defaultCatalog = res.data.data;
-			// 获取默认合集的第一个季节
-			if (defaultCatalog.seasons && defaultCatalog.seasons.length > 0) {
-				const season = defaultCatalog.seasons[0];
-
-				// 检查是否有episodes
-				if (season.episodes && season.episodes.length > 0) {
-					// 获取最后一个episode
-					const lastEpisode = season.episodes[season.episodes.length - 1];
-
-					// 如果最后一个episode的scriptUrl为空，直接打开它
-					if (!lastEpisode.scriptUrl || lastEpisode.scriptUrl === "") {
-						router.push({
-							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${lastEpisode.ep}`,
-							query: { mode: "edit", sign: lastEpisode._id },
-						});
-						return; // 提前返回，不创建新的
-					}
-
-					// 如果最后一个episode有内容，创建新的
-					const nextEp = season.episodes.length + 1;
-					const createRes = await apiClient.post("/catalogs/episodes/create", {
-						catalogId: defaultCatalog._id,
-						ep: nextEp,
-						epName: defaultDocName,
-						seasonNumber: season.seasonNumber,
-					});
-
-					if (createRes.data.code === 200) {
-						const newEpisode = createRes.data.data;
-						router.push({
-							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${nextEp}`,
-							query: { mode: "edit", sign: newEpisode._id },
-						});
-					}
-				} else {
-					// 没有episodes，创建第一个
-					const createRes = await apiClient.post("/catalogs/episodes/create", {
-						catalogId: defaultCatalog._id,
-						ep: 1,
-						epName: defaultDocName,
-						seasonNumber: season.seasonNumber,
-					});
-
-					if (createRes.data.code === 200) {
-						const newEpisode = createRes.data.data;
-						router.push({
-							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/1`,
-							query: { mode: "edit", sign: newEpisode._id },
-						});
-					}
-				}
-			} else {
-				showToast({ message: "默认合集没有可用的季节", type: "error" });
-			}
-		} else {
-			showToast({ message: "未找到默认合集", type: "error" });
-		}
-	} catch (error) {
-		console.error("获取默认合集失败:", error);
-		showToast({ message: "获取默认合集失败", type: "error" });
-	}
-};
-
 // 登出逻辑
 const logout = () => {
 	localStorage.removeItem("token"); // 删除 JWT
@@ -238,11 +152,11 @@ watch(
 </script>
 <style scoped>
 .logo-image {
-	height: 56px;
+	height: 42px;
 	width: auto;
 	object-fit: contain;
 	transition: all 0.3s ease;
-	margin-top: -0px;
+	margin-top: 6px;
 }
 
 .navbar {

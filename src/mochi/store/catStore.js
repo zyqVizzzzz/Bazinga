@@ -35,6 +35,7 @@ export const useCatStore = defineStore("cat", {
 		selectedAnswer: -1,
 		isAnimating: -1,
 		showExplanation: false,
+		quirks: [],
 	}),
 
 	getters: {
@@ -46,6 +47,14 @@ export const useCatStore = defineStore("cat", {
 			if (healthiness >= 50) return "一般";
 			if (healthiness >= 30) return "不佳";
 			return "糟糕";
+		},
+		// 检查是否有夜猫子怪癖
+		hasNightOwlQuirk: (state) => {
+			return (
+				state.catState &&
+				state.catState.quirks &&
+				state.catState?.quirks[0]?.quirkId?.includes("nightOwl")
+			);
 		},
 	},
 
