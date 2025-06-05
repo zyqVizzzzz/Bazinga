@@ -1,7 +1,17 @@
 <template>
 	<div>
+		<div v-if="isMobile" class="mobile-notice">
+			<div class="notice-content">
+				<i class="bi bi-phone text-2xl mb-2"></i>
+				<h3 class="text-lg font-bold mb-1">编辑功能在移动端暂不可用</h3>
+				<p class="text-sm text-gray-600">请使用桌面设备进行文本编辑操作</p>
+			</div>
+		</div>
 		<!-- 原文编辑器 -->
-		<div class="editor-container w-4/5 mx-auto relative" v-if="isCustom">
+		<div
+			class="editor-container w-4/5 mx-auto relative"
+			v-if="isCustom && !isMobile"
+		>
 			<!-- 使用指南按钮 -->
 			<button
 				class="absolute right-[11%] top-[-2rem] flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -146,6 +156,7 @@ import { ref, onMounted } from "vue";
 import { showToast } from "@/components/common/toast.js";
 import { useRoute, useRouter } from "vue-router";
 import apiClient from "@/api";
+import { useMobile } from "@/composables/useBreakpoint";
 
 const route = useRoute();
 const router = useRouter();
@@ -167,6 +178,8 @@ const isReconfirming = ref(false); // 重新确认状态标志
 // 添加指南面板显示状态
 const showGuidePanel = ref(false);
 const isPanelCollapsed = ref(false);
+
+const { isMobile } = useMobile();
 
 const emit = defineEmits(["update:modelValue", "create-collection"]);
 
@@ -784,5 +797,25 @@ const getDefaultKnowledge = () => {
 
 .collapse-btn i {
 	transition: all 0.3s ease;
+}
+
+.mobile-notice {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 2rem 1rem;
+	text-align: center;
+}
+
+.notice-content {
+	max-width: 300px;
+	padding: 2rem;
+	border-radius: 12px;
+	background-color: #f8f9fa;
+	border: 1px solid #e5e5e5;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 </style>
