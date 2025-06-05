@@ -287,6 +287,43 @@
 					处理时间取决于文本长度，最多可能需要4-5分钟，请耐心等待...
 				</div>
 			</div>
+
+			<div v-if="isMobile && props.scenes.length > 0" class="mobile-pagination">
+				<div class="pagination-controls">
+					<button
+						class="pagination-btn prev-btn"
+						@click="prevScene"
+						:disabled="currentIndex === 0"
+					>
+						<i class="bi bi-chevron-left"></i>
+					</button>
+
+					<div class="page-indicator">
+						<input
+							type="number"
+							v-model="pageInput"
+							@change="goToPage"
+							min="1"
+							:max="props.scenes.length"
+							class="page-input"
+						/>
+						<span class="page-total">/ {{ props.scenes.length }}</span>
+					</div>
+
+					<button
+						class="pagination-btn next-btn"
+						@click="nextScene"
+						:disabled="currentIndex === props.scenes.length - 1"
+					>
+						<i class="bi bi-chevron-right"></i>
+					</button>
+				</div>
+			</div>
+
+			<div
+				v-if="isMobile && props.scenes.length > 0"
+				class="mobile-pagination-spacer"
+			></div>
 		</div>
 	</div>
 
@@ -458,6 +495,7 @@ const textEditorModalRef = ref(null);
 
 // 使用响应式变量代替计算属性
 const scenesWithIds = ref([]);
+const pageInput = ref(1);
 
 // 监听 props.scenes 变化，更新本地数据
 watch(
@@ -469,6 +507,14 @@ watch(
 		}));
 	},
 	{ immediate: true, deep: true }
+);
+
+watch(
+	currentIndex,
+	(newIndex) => {
+		pageInput.value = newIndex + 1;
+	},
+	{ immediate: true }
 );
 
 // 处理场景拖拽变化
@@ -508,10 +554,6 @@ const handleScenesDragChange = (evt) => {
 		// 显示提示
 		showToast({ message: "场景顺序已更新", type: "success" });
 	}
-};
-
-const handleGuideModal = () => {
-	guideModalRef.value?.showModal();
 };
 
 const handleShowTextEditorModal = () => {
@@ -613,7 +655,7 @@ onBeforeRouteLeave((to, from, next) => {
 	const { sign } = route.query;
 
 	// 如果目标路径不是完整的课程路径，重定向到完整路径
-	if (!to.fullPath.includes(sign)) {
+	if (!to.fullPath.includes(sign) && !isMobile.value) {
 		next({
 			path: `/collections/${courseId}/${season}/${episode}`,
 			query: { sign },
@@ -1156,10 +1198,6 @@ const handleConfirmDelete = () => {
 		// 8. 清空待删除词
 		pendingDeleteWord.value = null;
 	}
-};
-
-const handleShowRecycleBin = () => {
-	recycleBinModalRef.value?.showModal();
 };
 
 const handleRestoreKnowledge = (item) => {
@@ -1932,6 +1970,13 @@ const switchScene = async (index) => {
 	currentIndex.value = index;
 	currentBlocks.value = props.scenes[index];
 	await updateCurrentSceneKnowledge();
+
+	if (isMobile.value) {
+		window.scrollTo({
+			top: 0,
+			behavior: "smooth", // 使用平滑滚动效果
+		});
+	}
 };
 
 const clearAllStates = () => {
@@ -2102,29 +2147,6 @@ const handleTitleEdit = (event, index) => {
 		hasUnsavedChanges.value = true; // 标记未保存更改
 	}
 };
-
-// 解析对话行
-function parseDialogueLine(line, tag) {
-	let speaker = "";
-	let text = line.trim();
-
-	if (tag === "zh") {
-		text = text.replace(/<\/?[^>]+(>|$)/g, "");
-	} else {
-		if (/^<i>.*<\/i>$/.test(text)) {
-			text = text.slice(3, -4).trim();
-			speaker = "narration";
-		} else {
-			const match = text.match(/^\[([^\[\]]*)\]\s*(.*)/);
-			if (match) {
-				speaker = match[1].replace(/\[.*?\]/g, "").trim();
-				text = match[2].trim();
-			}
-		}
-	}
-
-	return { speaker, text };
-}
 
 // 保存知识点
 const saveAllKnowledge = async () => {
@@ -3435,6 +3457,33 @@ const handleDeleteScene = async (index) => {
 	showToast({ message: "场景删除成功", type: "success" });
 };
 
+// 移动端场景切换
+const prevScene = () => {
+	if (currentIndex.value > 0) {
+		switchScene(currentIndex.value - 1);
+	}
+};
+
+const nextScene = () => {
+	if (currentIndex.value < props.scenes.length - 1) {
+		switchScene(currentIndex.value + 1);
+	}
+};
+
+const goToPage = () => {
+	let page = parseInt(pageInput.value);
+
+	// 确保页码在有效范围内
+	if (isNaN(page) || page < 1) {
+		page = 1;
+	} else if (page > props.scenes.length) {
+		page = props.scenes.length;
+	}
+
+	pageInput.value = page;
+	switchScene(page - 1);
+};
+
 const handleAutoGenerateTitle = async (index) => {
 	try {
 		isLoading.value = true;
@@ -4335,5 +4384,77 @@ const handleSceneUpdate = (updatedScenes) => {
 	.scene-thumbnails-container {
 		display: none !important;
 	}
+}
+
+/* 移动端底部分页区域样式 */
+.mobile-pagination {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(5px);
+	padding: 12px;
+	border-top: 1px solid #eee;
+	z-index: 100;
+	box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 底部空白区域，防止内容被固定分页区域遮挡 */
+.mobile-pagination-spacer {
+	height: 64px; /* 与分页区域高度保持一致 */
+	width: 100%;
+}
+
+.pagination-controls {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	max-width: 300px;
+	margin: 0 auto;
+}
+
+.pagination-btn {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	background-color: #f8f8f8;
+	border: 1px solid #eee;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.2rem;
+	transition: all 0.2s ease;
+}
+
+.pagination-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+	background-color: #eee;
+	transform: scale(1.05);
+}
+
+.page-indicator {
+	display: flex;
+	align-items: center;
+	font-size: 1rem;
+}
+
+.page-input {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	border: 1px solid #eee;
+	text-align: center;
+	font-size: 1rem;
+	background-color: #f8f8f8;
+}
+
+.page-total {
+	margin-left: 4px;
+	color: #666;
 }
 </style>
