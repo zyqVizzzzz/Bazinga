@@ -1,8 +1,11 @@
 <template>
 	<div class="profile-page mt-20 px-10 relative w-full">
-		<div class="profile-container">
-			<!-- 左侧按钮组 -->
-			<div class="action-buttons left-buttons relative right-[-10px]">
+		<div class="profile-container" :class="{ 'mt-20': isMobile }">
+			<!-- 左侧按钮组 - 在移动端隐藏 -->
+			<div
+				class="action-buttons left-buttons relative right-[-10px]"
+				v-if="!isMobile"
+			>
 				<button
 					class="action-btn update-password rotate-6 hover:-rotate-2"
 					:class="{ 'btn-hide': isUpdatingPassword || isUpdatingEmail }"
@@ -55,8 +58,8 @@
 			<div
 				class="personal-card"
 				:class="{
-					'slide-left': isEditing,
-					'slide-right': isUpdatingPassword || isUpdatingEmail,
+					'slide-left': isEditing && !isMobile,
+					'slide-right': (isUpdatingPassword || isUpdatingEmail) && !isMobile,
 				}"
 			>
 				<CharacterCard
@@ -73,8 +76,8 @@
 				</CharacterCard>
 			</div>
 
-			<!-- 右侧按钮 -->
-			<div class="action-buttons right-buttons">
+			<!-- 右侧按钮 - 在移动端隐藏 -->
+			<div class="action-buttons right-buttons" v-if="!isMobile">
 				<button
 					class="action-btn edit-profile rotate-6 hover:-rotate-1"
 					:class="{ 'btn-hide': isEditing }"
@@ -141,6 +144,123 @@
 					</div>
 				</div>
 			</div>
+
+			<!-- 移动端按钮组 -->
+			<div class="mobile-action-buttons" v-if="isMobile">
+				<!-- 密码更新按钮 -->
+				<button
+					class="mobile-action-btn"
+					@click="togglePasswordUpdate"
+					:disabled="isEditing"
+				>
+					<i class="bi bi-key-fill"></i>
+				</button>
+
+				<!-- 邮箱更新按钮 -->
+				<button
+					class="mobile-action-btn"
+					@click="toggleEmailUpdate"
+					:disabled="isEditing"
+				>
+					<i class="bi bi-envelope-fill"></i>
+				</button>
+
+				<!-- 修改资料按钮 -->
+				<button
+					class="mobile-action-btn"
+					@click="toggleEdit"
+					:disabled="isUpdatingPassword || isUpdatingEmail"
+				>
+					<i class="bi bi-pencil-fill"></i>
+				</button>
+			</div>
+
+			<!-- 移动端弹窗 -->
+			<!-- 密码更新弹窗 -->
+			<div class="mobile-modal" v-if="isMobile && isUpdatingPassword">
+				<div class="mobile-modal-content">
+					<div class="bubble-header">
+						<h3 class="text-lg font-bold">更新密码</h3>
+						<button class="close-btn" @click="togglePasswordUpdate">
+							<i class="bi bi-x-lg"></i>
+						</button>
+					</div>
+					<PasswordEdit />
+				</div>
+			</div>
+
+			<!-- 邮箱更新弹窗 -->
+			<div class="mobile-modal" v-if="isMobile && isUpdatingEmail">
+				<div class="mobile-modal-content">
+					<div class="bubble-header">
+						<h3 class="text-lg font-bold">更新邮箱</h3>
+						<button class="close-btn" @click="toggleEmailUpdate">
+							<i class="bi bi-x-lg"></i>
+						</button>
+					</div>
+					<EmailEdit
+						:userEmail="user.email"
+						@update:userEmail="(newEmail) => (user.email = newEmail)"
+					/>
+				</div>
+			</div>
+
+			<!-- 资料编辑弹窗 -->
+			<div class="mobile-modal" v-if="isMobile && isEditing">
+				<div class="mobile-modal-content">
+					<div class="bubble-header">
+						<h3 class="text-lg font-bold">修改个人资料</h3>
+						<button class="close-btn" @click="toggleEdit">
+							<i class="bi bi-x-lg"></i>
+						</button>
+					</div>
+					<!-- 编辑表单 -->
+					<div class="space-y-4">
+						<!-- 昵称部分 -->
+						<div>
+							<input
+								type="text"
+								v-model="tempNickname"
+								class="input input-bordered w-full text-sm"
+								:class="{ 'input-error': v$.tempNickname.$error }"
+								placeholder="输入你的昵称"
+							/>
+							<div
+								class="text-red-500 text-xs mt-1 text-left"
+								v-if="v$.tempNickname.$error"
+							>
+								{{ v$.tempNickname.$errors[0].$message }}
+							</div>
+						</div>
+
+						<!-- 签名部分 -->
+						<div>
+							<textarea
+								v-model="tempSignature"
+								class="input input-bordered w-full text-sm height form-textarea"
+								:class="{ 'input-error': v$.tempSignature.$error }"
+								placeholder="写下你的个性签名"
+							></textarea>
+							<div
+								class="text-red-500 text-xs mt-1 text-left"
+								v-if="v$.tempSignature.$error"
+							>
+								{{ v$.tempSignature.$errors[0].$message }}
+							</div>
+						</div>
+
+						<!-- 保存按钮 -->
+						<div class="mt-6">
+							<button
+								class="w-full py-3 bg-secondary hover:bg-secondary-focus text-white rounded-lg font-semibold text-sm transition-colors"
+								@click="saveProfileChanges"
+							>
+								保存更改
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -155,10 +275,12 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, maxLength, helpers } from "@vuelidate/validators";
 import EmailEdit from "@/components/profile/email-edit.vue";
 import PasswordEdit from "../components/profile/password-edit.vue";
+import { useBreakpoint } from "@/composables/useBreakpoint";
 
 const user = ref({});
 const isEditing = ref(false);
 const statistics = ref({});
+const { isMobile } = useBreakpoint();
 
 // 签到状态变量
 const checkInStatus = ref({
@@ -613,5 +735,75 @@ onMounted(async () => {
 	color: #dc2626;
 	font-size: 0.75rem;
 	margin-top: 0.25rem;
+}
+
+/* 移动端按钮样式 */
+.mobile-action-buttons {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	margin: 1.5rem 0;
+	width: 100%;
+}
+
+.mobile-action-btn {
+	width: 3rem;
+	height: 3rem;
+	border-radius: 50%;
+	background-color: white;
+	border: 2px solid black;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+	transition: all 0.3s ease;
+}
+
+.mobile-action-btn:hover {
+	transform: translateY(-2px);
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.mobile-action-btn:active {
+	transform: translateY(1px);
+	box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* 移动端弹窗样式 */
+.mobile-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 100;
+}
+
+.mobile-modal-content {
+	width: 90%;
+	max-width: 350px;
+	background: white;
+	border: 3px solid black;
+	border-radius: 12px;
+	padding: 1.5rem;
+	box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* 媒体查询优化 */
+@media (max-width: 768px) {
+	.profile-page {
+		padding: 0 1rem;
+		margin-top: 1rem;
+	}
+
+	.personal-card {
+		width: 100%;
+		max-width: 300px;
+	}
 }
 </style>
