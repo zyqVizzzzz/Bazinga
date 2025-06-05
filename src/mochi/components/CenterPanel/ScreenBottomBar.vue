@@ -346,7 +346,7 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 }
 
 /* 夜猫子模式下的底部栏 */
-.night-owl-bar [class*="bg-[#eeffc9]"] {
+/* .night-owl-bar [class*="bg-[#eeffc9]"] {
 	background-color: rgba(120, 160, 130, 0.5) !important;
 }
 
@@ -369,5 +369,5 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 		rgba(120, 160, 130, 0.7),
 		transparent
 	);
-}
+} */
 </style>

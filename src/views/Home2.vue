@@ -1,31 +1,19 @@
 <template>
 	<div class="home">
-		<!-- 标题 -->
-		<div class="retro-title-box text-center mb-10">
-			<h1 class="text-2xl font-bold">
-				<!-- <div class="text-shadow-retro">
-					<span><mark class="retro-highlight">molidoki</mark></span>
-				</div> -->
-				<!-- <div class="pronunciation">
-					<span>v. 魔力心脏 - /dong'dong'dong/</span>
-				</div> -->
-			</h1>
-		</div>
-
 		<!-- 卡片展示区 -->
 		<div class="flex flex-wrap justify-center my-10 gap-12">
 			<div
-				class="tamagotchi-card"
-				onclick="window.mochi_modal2.showModal()"
+				class="molidoki-card"
+				@click="handleCardClick"
 				v-for="scene in displayedScenes"
 				:key="scene.id"
 			>
 				<div class="card-shadow">
 					<div class="card-edge">
 						<div class="card-face">
-							<div class="tamagotchi-frame">
+							<div class="molidoki-frame">
 								<div class="paw-icon"></div>
-								<div class="tamagotchi-screen gochi-screen-overlay">
+								<div class="molidoki-screen gochi-screen-overlay">
 									<div class="screen-content">
 										<div class="chapter-title">CHAPTER 0</div>
 										<div class="chapter-name">SORTING HAT</div>
@@ -63,14 +51,16 @@
 
 		<dialog id="mochi_modal2" class="modal modal-mochi">
 			<div
-				class="modal-box w-11/12 max-w-5xl p-0 flex items-center justify-center mochi-container"
+				class="modal-box p-0 flex items-center justify-center mochi-container"
+				:class="{ 'w-11/12 max-w-5xl': !isMobile, 'w-full': isMobile }"
 			>
 				<form method="dialog" class="absolute right-6 top-6 z-[999]">
 					<button class="btn btn-circle btn-ghost text-2xl hover-glow">
 						<i class="bi bi-x"></i>
 					</button>
 				</form>
-				<MochiView />
+				<MochiView v-if="!isMobile" />
+				<MochiViewMobile v-else />
 			</div>
 			<form method="dialog" class="modal-backdrop">
 				<button>关闭</button>
@@ -84,14 +74,17 @@ import { showToast } from "@/components/common/toast.js";
 import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import MochiView from "@/mochi/MochiView.vue";
+import MochiViewMobile from "@/mochi/MochiViewMobile.vue";
 
 import { useLoginStore } from "@/store/index";
+import { useBreakpoint } from "@/composables/useBreakpoint";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
 
 const router = useRouter();
 const scenes = ref([]);
+const { isMobile } = useBreakpoint();
 
 onMounted(() => {
 	getCatalogs();
@@ -126,6 +119,16 @@ const toggleExpand = () => {
 const goToCollection = (id) => {
 	// if (!isLogin.value) return;
 	router.push("/collections/" + id);
+};
+
+const handleCardClick = () => {
+	if (isMobile.value) {
+		// 移动端：导航到Mochi页面
+		router.push("/mochi");
+	} else {
+		// 桌面端：打开对话框
+		window.mochi_modal2.showModal();
+	}
 };
 </script>
 <style scoped>
@@ -358,7 +361,7 @@ const goToCollection = (id) => {
 	}
 }
 
-.tamagotchi-card {
+.molidoki-card {
 	margin-top: 50px;
 	position: relative;
 	width: 320px;
@@ -371,12 +374,12 @@ const goToCollection = (id) => {
 	justify-content: center;
 }
 
-.tamagotchi-card:hover {
+.molidoki-card:hover {
 	transform: translateY(-5px);
 }
 
-.tamagotchi-card:hover .card-edge,
-.tamagotchi-card:hover .card-face {
+.molidoki-card:hover .card-edge,
+.molidoki-card:hover .card-face {
 	transform: translateY(-6px);
 }
 
@@ -406,7 +409,7 @@ const goToCollection = (id) => {
 	/* padding: 30px 20px; */
 }
 
-.tamagotchi-frame {
+.molidoki-frame {
 	width: 96%;
 	height: 96%;
 	border-radius: 10px;
@@ -430,7 +433,7 @@ const goToCollection = (id) => {
 		no-repeat center;
 }
 
-.tamagotchi-screen {
+.molidoki-screen {
 	width: 280px;
 	height: 200px;
 	background: #4a4a4a;
@@ -442,7 +445,7 @@ const goToCollection = (id) => {
 	font-family: "PixelFont", sans-serif;
 }
 
-.tamagotchi-screen::before {
+.molidoki-screen::before {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -491,7 +494,7 @@ const goToCollection = (id) => {
 	font-style: normal;
 	font-display: swap;
 }
-.tamagotchi-frame::after {
+.molidoki-frame::after {
 	content: "MOCHI-0001";
 	position: absolute;
 	bottom: 15px;

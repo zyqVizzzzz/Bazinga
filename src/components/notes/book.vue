@@ -98,6 +98,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import apiClient from "@/api";
 import { useNotebookStore, useLoginStore } from "@/store/index";
 import { showToast } from "@/components/common/toast.js";
+import { useMobile } from "@/composables/useBreakpoint";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
@@ -118,6 +119,8 @@ const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const totalCounts = ref(0);
 const activeNote = ref({});
+
+const { isMobile } = useMobile();
 
 const notebookStore = useNotebookStore();
 const { setCurrentActiveNote } = notebookStore;
@@ -159,11 +162,16 @@ const getNotebook = async (page = 1, limit = 10) => {
 		vocabularyNotes.value = notes;
 		totalCounts.value = total;
 
-		if (notes.length > 0) {
+		// 只在桌面端自动选中第一个笔记
+		if (notes.length > 0 && !isMobile.value) {
 			// 使用 store 设置当前笔记
 			setCurrentActiveNote(notes[0]);
 			activeNote.value = notes[0];
 			emit("on-select-note", notes[0]);
+		} else if (isMobile.value) {
+			// 移动端清空选中状态
+			activeNote.value = {};
+			emit("on-select-note", null);
 		}
 	} else {
 		showToast({ message: "未查到单词", type: "error" });

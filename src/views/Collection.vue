@@ -1,7 +1,10 @@
 <template>
 	<div
-		class="collection w-full mx-auto flex flex-col items-center"
-		:class="{ 'default-collection': isDefault }"
+		:class="[
+			'collection w-full mx-auto flex flex-col items-center',
+			{ 'default-collection': isDefault },
+			isMobile ? 'px-2' : '',
+		]"
 	>
 		<!-- Banner 区域 -->
 		<div
@@ -70,9 +73,12 @@
 		</div>
 
 		<!-- 内容区域 -->
-		<div class="w-4/5 relative mt-4">
+		<div :class="isMobile ? 'w-full px-2' : 'w-4/5'" class="relative mt-4">
 			<!-- 添加编辑控制区域 -->
-			<div v-if="isCustom" class="flex justify-between items-center mb-6">
+			<div
+				v-if="isCustom && !isMobile"
+				class="flex justify-between items-center mb-6"
+			>
 				<h2 class="text-xl font-bold relative top-[-2px]">文档</h2>
 				<div>
 					<button
@@ -102,7 +108,10 @@
 				item-key="_id"
 				handle=".drag-handle"
 				ghost-class="ghost"
-				class="grid grid-cols-3 md:grid-cols-4 gap-6 mb-10"
+				:class="[
+					'grid gap-6 mb-10',
+					isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-3 md:grid-cols-4',
+				]"
 				@start="dragStart"
 				@end="dragEnd"
 				@change="handleChange"
@@ -207,6 +216,7 @@ import { useAppStore } from "@/store";
 import { useRouter, useRoute } from "vue-router";
 import { useLoginStore } from "@/store/index";
 import draggable from "vuedraggable";
+import { useMobile } from "@/composables/useBreakpoint";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
@@ -230,6 +240,7 @@ const hasPackageAccess = ref(false); // 检测是否已购入资源包
 const isEditMode = ref(false);
 const editingEp = ref(null);
 const isDragging = ref(false);
+const { isMobile } = useMobile();
 
 // 移动相关状态
 const moveModal = ref(null);
@@ -466,7 +477,12 @@ const goToLesson = (seasonNumber, episode) => {
 	const params = `${route.params.id}/${seasonNumber}/${episode.ep.toString()}`;
 	const query = { sign: episode._id, title: episode.epName };
 	episode.scriptUrl
-		? router.push({ path: `/collections/${params}`, query })
+		? isMobile.value
+			? router.push({
+					path: `/card-editor/${params}`,
+					query: { sign: episode._id, title: episode.epName },
+			  })
+			: router.push({ path: `/collections/${params}`, query })
 		: router.push({
 				path: `/card-editor/${params}`,
 				query: { mode: "edit", sign: episode._id },
@@ -697,5 +713,103 @@ button:disabled {
 .retro-btn:active .btn-edge,
 .retro-btn:active .btn-face {
 	transform: translateY(0);
+}
+
+/* 移动端Banner适配 */
+@media (max-width: 768px) {
+	.collection-content {
+		padding-top: 80px; /* 减少顶部padding */
+		padding-bottom: 20px;
+		margin-bottom: 4px;
+	}
+
+	.manga-title-box h1 {
+		font-size: 1.875rem; /* 从text-4xl减小到text-3xl */
+	}
+
+	.manga-sub-box h1 {
+		font-size: 1.125rem; /* 从text-xl减小 */
+	}
+
+	.retro-display-box {
+		width: 90%; /* 从w-3/5增加到90% */
+		margin-top: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.collection-status-badge {
+		top: 10px;
+		right: 10px;
+		font-size: 0.7rem;
+		padding: 2px 8px;
+	}
+}
+
+@media (max-width: 768px) {
+	.grid {
+		grid-template-columns: repeat(2, 1fr) !important; /* 强制两列 */
+		gap: 1rem; /* 减少间距 */
+	}
+}
+
+@media (max-width: 480px) {
+	.grid {
+		grid-template-columns: 1fr !important; /* 小屏幕单列 */
+		gap: 0.75rem;
+	}
+}
+
+/* 移动端编辑控制区域 */
+@media (max-width: 768px) {
+	.flex.justify-between.items-center {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+
+	.flex.justify-between.items-center h2 {
+		margin-bottom: 0;
+	}
+
+	.flex.justify-between.items-center > div {
+		display: flex;
+		gap: 0.5rem;
+		width: 100%;
+		justify-content: flex-end;
+	}
+
+	.flex.justify-between.items-center button {
+		flex: 1;
+		max-width: 120px;
+		font-size: 0.875rem;
+		padding: 0.5rem 1rem;
+	}
+}
+
+/* 移动端整体适配 */
+@media (max-width: 768px) {
+	.collection {
+		margin-top: -60px; /* 调整负margin */
+	}
+
+	.default-collection {
+		margin-top: 10px;
+	}
+
+	/* 模态框移动端适配 */
+	.vintage-modal {
+		max-width: 95vw;
+		margin: 0 auto;
+	}
+
+	.modal-box {
+		padding: 1rem;
+		min-height: 250px;
+	}
+
+	.collection-item {
+		padding: 0.75rem;
+		font-size: 0.875rem;
+	}
 }
 </style>

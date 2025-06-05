@@ -29,6 +29,19 @@
 	--milk-color-rgb: 252, 251, 242;
 }
 
+* {
+	touch-action: manipulation;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+input,
+textarea {
+	-webkit-user-select: auto;
+	user-select: auto;
+}
+
 a {
 	font-weight: 500;
 	color: #646cff;
@@ -52,6 +65,12 @@ body {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
+}
+
+@media (max-width: 768px) {
+	#app {
+		padding: 0;
+	}
 }
 
 #app.launch {

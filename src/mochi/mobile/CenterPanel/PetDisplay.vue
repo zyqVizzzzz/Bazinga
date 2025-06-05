@@ -1,15 +1,15 @@
 <template>
-	<div class="pet-area" :class="{ 'night-owl-pet-area': hasNightOwlQuirk }">
+	<div class="pet-area-mobile">
 		<div class="w-full">
 			<div class="relative flex justify-center items-center">
 				<div
 					v-if="!catStore.isAnswering && catStore.catState?.quirks?.length > 0"
-					class="quirk-tags"
+					class="quirk-tags-mobile"
 				>
 					<span
 						v-for="(quirk, index) in catStore.catState.quirks"
 						:key="index"
-						class="quirk-tag"
+						class="quirk-tag-mobile"
 						:class="{ 'night-owl-quirk': hasNightOwlQuirk }"
 					>
 						{{ formatQuirkName(quirk.quirkId) }}
@@ -22,7 +22,7 @@
 							catStore.catState?.aiContext?.lastSaid &&
 							catStore.isAnimating > -1
 						"
-						class="cat-speech-bubble mb-2"
+						class="cat-speech-bubble-mobile mb-2"
 					>
 						{{ catStore.catState.aiContext.lastSaid }}
 					</div>
@@ -31,12 +31,11 @@
 					v-if="!catStore.isAnswering"
 					alt="Shadow"
 					loading="lazy"
-					width="97"
-					height="26"
+					width="67"
+					height="22"
 					decoding="async"
 					data-nimg="1"
-					class="absolute top-[96px] object-contain opacity-50"
-					:class="{ 'night-owl-pet': hasNightOwlQuirk }"
+					class="absolute top-[60px] object-contain opacity-50"
 					:src="shadowImage"
 					style="color: transparent; image-rendering: pixelated"
 				/>
@@ -48,21 +47,20 @@
 						loading="lazy"
 						decoding="async"
 						data-nimg="1"
-						class="pet-image object-contain relative"
+						class="pet-image-mobile object-contain relative"
 						:src="currentImage"
 						style="color: transparent; image-rendering: pixelated"
 					/>
 				</transition>
-				<!-- 问题显示区域 -->
-				<div v-if="catStore.isAnswering" class="question-container">
-					<div class="question-text">
+				<div v-if="catStore.isAnswering" class="question-container-mobile">
+					<div class="question-text-mobile">
 						{{ catStore.currentQuestion.question }}
 					</div>
-					<div class="options-container">
+					<div class="options-container-mobile">
 						<div
 							v-for="(option, index) in catStore.currentQuestion.options"
 							:key="index"
-							class="option-item"
+							class="option-item-mobile"
 							:class="{ selected: catStore.selectedAnswer === index }"
 						>
 							{{ option.text || option.content }}
@@ -168,17 +166,19 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 </script>
 
 <style scoped>
-.pet-area {
-	flex-grow: 1;
+.pet-area-mobile {
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	margin: 8px 0;
+	margin: 4px 0;
+	height: 100%;
+	/* min-height: 180px; */
 }
 
-.pet-image {
-	width: 144px;
-	height: 114px;
+.pet-image-mobile {
+	width: min(120px, 25vw);
+	height: min(95px, 20vw);
 	object-fit: contain;
 }
 
@@ -192,7 +192,7 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 	opacity: 0;
 }
 
-.question-container {
+.question-container-mobile {
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -206,41 +206,47 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 	gap: 10px;
 }
 
-.question-text {
-	font-size: 18px;
+.question-text-mobile {
+	font-size: 16px;
+	font-weight: bold;
 	color: #304700;
 	text-align: center;
-	margin-bottom: 8px;
-	line-height: 1;
+	line-height: 1.3;
+	margin-bottom: 4px;
 }
 
-.options-container {
+.options-container-mobile {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px;
 }
 
-.option-item {
+.option-item-mobile {
 	padding: 6px 8px;
 	border: 1px solid #cada9b;
 	border-radius: 4px;
-	font-size: 16px;
-	cursor: pointer;
-	transition: all 0.2s;
-	line-height: 1;
-}
-
-.option-item:hover {
 	background-color: #eeffc9;
+	color: #304700;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 14px;
+	text-align: center;
+	line-height: 1.2;
 }
 
-.option-item.selected {
+.option-item-mobile:hover {
 	background-color: #cada9b;
-	color: #304700;
+	transform: translateY(-1px);
+}
+
+.option-item-mobile.selected {
+	background-color: #304700;
+	color: #ebffb7;
+	border-color: #304700;
 	font-weight: bold;
 }
 
-.cat-speech-bubble {
+.cat-speech-bubble-mobile {
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -257,19 +263,35 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 	border-radius: 8px;
 }
 
-@keyframes fadeInOut {
-	0% {
-		opacity: 0;
-	}
-	15% {
-		opacity: 1;
-	}
-	85% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
+.quirk-tags-mobile {
+	position: absolute;
+	top: -30px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+	justify-content: center;
+	max-width: 160px;
+	z-index: 4;
+}
+
+.quirk-tag-mobile {
+	background-color: rgba(235, 255, 183, 0.9);
+	color: #304700;
+	border: 1px solid rgba(48, 71, 0, 0.3);
+	border-radius: 8px;
+	padding: 2px 6px;
+	font-size: 10px;
+	font-weight: bold;
+	white-space: nowrap;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	transform: rotate(-1deg);
+	transition: transform 0.3s ease;
+}
+
+.quirk-tag-mobile:nth-child(even) {
+	transform: rotate(1deg);
 }
 
 .fade-bubble-enter-active,
@@ -282,32 +304,10 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 	opacity: 0;
 }
 
-.quirk-tags {
-	position: absolute;
-	top: -20px;
-	right: 3%;
-	transform: rotate(5deg);
-	display: flex;
-	gap: 6px;
-	z-index: 10;
-}
-
-.quirk-tag {
-	background-color: #cada9b;
-	color: #304700;
-	padding: 2px 8px;
-	border-radius: 12px;
-	font-size: 14px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	border: 1px solid #97ae62;
-	transform: rotate(-2deg); /* 每个标签有轻微的反向倾斜，增加活泼感 */
-	transition: transform 0.3s ease; /* 添加过渡效果 */
-}
-
-/* 夜猫子模式下的标签样式 */
-/* .night-owl-quirk {
+/* 夜猫子模式样式 */
+.night-owl-quirk {
 	background-color: rgba(60, 89, 66, 0.8);
 	color: #a0c78a;
 	border-color: rgba(60, 89, 66, 0.5);
-} */
+}
 </style>

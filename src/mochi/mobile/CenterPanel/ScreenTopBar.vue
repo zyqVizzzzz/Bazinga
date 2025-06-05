@@ -1,17 +1,14 @@
 <template>
-	<div
-		class="screen-top-bar px-5 pt-2"
-		:class="{ 'night-owl-bar text-[#4b6130] ': hasNightOwlQuirk }"
-	>
+	<div class="screen-top-bar px-5 pt-2">
 		<div class="flex-1">
 			<div class="flex items-center">
 				<img
 					src="../../assets/icons/coin.png"
 					alt="Points"
-					class="mr-1 w-[25px] h-[25px]"
+					class="mr-1 w-[18px] h-[18px]"
 					style="image-rendering: pixelated"
 				/>
-				<span class="text-base text-[#4b6130] font-numbers">{{
+				<span class="text-sm text-[#4b6130] font-numbers">{{
 					pointsStore.points
 				}}</span>
 			</div>
@@ -23,12 +20,12 @@
 				<img
 					src="../../assets/icons/hart.png"
 					alt="Health"
-					class="mr-2 w-[21px] h-[21px]"
+					class="mr-2 w-[15px] h-[15px]"
 					style="image-rendering: pixelated"
 				/>
 				<div class="w-full flex-1 mb-1">
 					<div
-						class="relative h-[10px]"
+						class="relative h-[6px]"
 						style="background-color: rgb(235, 255, 183)"
 					>
 						<div

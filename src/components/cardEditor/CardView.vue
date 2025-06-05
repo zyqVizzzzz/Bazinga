@@ -1,8 +1,11 @@
 <template>
-	<div class="card-view mx-auto flex gap-4 justify-center items-start w-4/5">
-		<div class="editor-container w-4/5">
+	<div
+		class="card-view flex gap-4 justify-center items-start"
+		:class="isMobile ? 'w-full flex-col mx-0 px-0' : 'w-4/5 mx-auto'"
+	>
+		<div class="editor-container" :class="isMobile ? 'w-full' : 'w-4/5'">
 			<!-- 控制按钮组 -->
-			<div class="editor-action-buttons">
+			<div class="editor-action-buttons" v-if="!isMobile">
 				<div class="tooltip" data-tip="退出">
 					<button class="retro-btn" @click="handleBack">
 						<div class="btn-shadow">
@@ -91,8 +94,11 @@
 					</button>
 				</div>
 			</div>
-			<div class="editor-wrapper text-sm">
-				<div class="decorated-card py-6 px-4">
+			<div
+				class="editor-wrapper text-sm"
+				:class="{ 'mobile-editor': isMobile }"
+			>
+				<div class="decorated-card" :class="isMobile ? 'p-0' : 'py-6 px-4'">
 					<!-- 场景内容显示区 -->
 					<div class="scene-content space-y-4">
 						<div class="original-text space-y-2">
@@ -191,6 +197,7 @@
 
 			<!-- 场景缩略图列表 -->
 			<div
+				v-show="!isMobile"
 				class="scene-thumbnails-container w-[155px]"
 				:class="{ 'opacity-75 pointer-events-none': isLoading }"
 			>
@@ -381,6 +388,7 @@ import KnowledgeIcon from "@/components/icons/Knowledge.vue";
 import ExportIcon from "@/components/icons/Export.vue";
 import SceneIcon from "@/components/icons/Scene.vue";
 import draggable from "vuedraggable";
+import { useMobile } from "@/composables/useBreakpoint";
 
 const route = useRoute();
 const router = useRouter();
@@ -388,6 +396,8 @@ const hasUnsavedChanges = ref(false); // 未保存更改标记
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
+
+const { isMobile } = useMobile();
 
 const props = defineProps({
 	isCustom: {
@@ -620,7 +630,7 @@ const initializeView = async () => {
 			const res = await apiClient.get(`/scripts/episode/${route.query.sign}`);
 			if (res.data.code === 200 && res.data.data) {
 				const scriptData = res.data.data.scriptData;
-				isCustom.value = !res.data.data.isCustom;
+				isCustom.value = res.data.data.isCustom;
 
 				if (scriptData?.scenes?.[0]?.dialogues) {
 					// 将对话按场景分组处理
@@ -4298,5 +4308,32 @@ const handleSceneUpdate = (updatedScenes) => {
 /* 确保tooltip正确显示 */
 .fixed-action-buttons .tooltip {
 	margin: 5px 0;
+}
+
+/* 移动端样式调整 */
+@media (max-width: 768px) {
+	.mobile-buttons {
+		position: static;
+		margin-bottom: 1rem;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.mobile-editor {
+		width: 100% !important;
+		margin: 0;
+	}
+
+	.editor-container {
+		border: none !important;
+		position: relative;
+		height: 100% !important;
+	}
+
+	/* 确保场景缩略图在移动端完全隐藏 */
+	.scene-thumbnails-container {
+		display: none !important;
+	}
 }
 </style>

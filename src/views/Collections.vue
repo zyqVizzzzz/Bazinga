@@ -1,7 +1,7 @@
 <template>
 	<div class="all-collections">
 		<!-- 合集 -->
-		<div class="flex justify-end items-center mx-8">
+		<div class="flex justify-end items-center mx-8" v-if="!isMobile">
 			<button class="retro-btn" @click="createNewCard">
 				<div class="btn-shadow">
 					<div class="btn-edge">
@@ -79,7 +79,7 @@
 				</div>
 			</div>
 			<!-- 新增合集 -->
-			<div class="retro-card add-card" @click="addNewScene">
+			<div class="retro-card add-card" @click="addNewScene" v-if="!isMobile">
 				<div class="card-shadow">
 					<div class="card-edge">
 						<div class="card-face">
@@ -101,9 +101,13 @@ import { useRouter } from "vue-router";
 import apiClient from "@/api";
 import { showToast } from "@/components/common/toast.js";
 import { useLoginStore } from "@/store/index";
+import { useMobile } from "@/composables/useBreakpoint";
 
 const loginStore = useLoginStore();
 const isLogin = computed(() => loginStore.isLogin);
+
+// 移动端检测
+const { isMobile } = useMobile();
 
 const router = useRouter();
 const scenes = ref([]);
@@ -257,11 +261,49 @@ const addNewScene = () => {
 	padding: 20px;
 }
 
+/* 移动端适配 */
+@media (max-width: 768px) {
+	.all-collections {
+		margin-top: 0;
+		padding: 10px;
+		margin-bottom: 60px;
+	}
+}
+
 .grid-container {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 2rem;
 	padding: 1rem;
+
+	/* 移动端响应式布局 */
+	@media (max-width: 768px) {
+		grid-template-columns: 1fr; /* 单列布局 */
+		gap: 1.5rem;
+		padding: 0.5rem;
+	}
+
+	@media (min-width: 769px) and (max-width: 1024px) {
+		grid-template-columns: repeat(2, 1fr); /* 平板双列 */
+		gap: 1.5rem;
+	}
+}
+
+/* 移动端卡片优化 */
+@media (max-width: 768px) {
+	.retro-card {
+		max-width: 100%;
+		margin: 0 auto;
+	}
+
+	.banner-container {
+		height: 120px; /* 稍微降低高度 */
+	}
+
+	.content-container {
+		height: 140px; /* 减少内容区域高度 */
+		padding: 1rem;
+	}
 }
 
 /* 默认合集样式 */

@@ -1,27 +1,19 @@
 <template>
-	<main class="center-panel" v-if="catStore.catState">
+	<main class="center-panel-mobile" v-if="catStore.catState">
 		<div
-			class="gochi-device relative device-3d responsive-device"
+			class="gochi-device-mobile relative"
 			ref="deviceRef"
-			@mousemove="handleMouseMove"
-			@mouseleave="resetTilt"
 			:class="{
-				'night-owl-mode': hasNightOwlQuirk,
 				'is-answering': catStore.isAnswering,
 			}"
 		>
-			<!-- Gamepad Device Image -->
 			<img
 				src="../assets/b.png"
 				alt="Gochi Device Background"
-				class="device-background"
+				class="device-background-mobile"
 			/>
 
-			<!-- Screen, positioned over the device image -->
-			<div
-				class="gochi-screen-overlay rounded-lg z-[-1]"
-				:class="{ 'night-owl-screen': hasNightOwlQuirk }"
-			>
+			<div class="gochi-screen-overlay-mobile rounded-lg">
 				<ScreenTopBar v-if="!catStore.isAnswering" />
 				<PetDisplay
 					ref="petDisplayRef"
@@ -29,7 +21,8 @@
 				/>
 				<ScreenBottomBar v-if="!catStore.isAnswering" />
 			</div>
-			<!-- Controls, positioned over the device image -->
+
+			<!-- 设备控制按钮 -->
 			<ControlButtons
 				@update:activeIndex="handleActiveIndexUpdate"
 				@confirm="handleConfirm"
@@ -65,54 +58,20 @@ const catStore = useCatStore();
 const userId = computed(() => loginStore.userInfo._id);
 const petDisplayRef = ref(null);
 const shouldResetIndex = ref(false);
-
 const deviceRef = ref(null);
-const maxTilt = 5; // 最大倾斜角度
 
-// 监听isAnswering的变化，当从答题模式切换回普通模式时触发重置
+// 监听isAnswering的变化
 watch(
 	() => catStore.isAnswering,
 	(newVal, oldVal) => {
 		if (oldVal && !newVal) {
-			// 从答题模式切换到非答题模式时触发重置
 			shouldResetIndex.value = true;
-			// 重置触发器状态
 			setTimeout(() => {
 				shouldResetIndex.value = false;
 			}, 100);
 		}
 	}
 );
-
-// 处理鼠标移动事件
-const handleMouseMove = (e) => {
-	if (!deviceRef.value) return;
-
-	const rect = deviceRef.value.getBoundingClientRect();
-	const centerX = rect.left + rect.width / 2;
-	const centerY = rect.top + rect.height / 2;
-
-	// 计算鼠标位置相对于中心点的偏移百分比
-	const xPercentage = (e.clientX - centerX) / (rect.width / 2);
-	const yPercentage = (e.clientY - centerY) / (rect.height / 2);
-
-	// 计算倾斜角度 (鼠标在上方时设备向后倾斜，在下方时向前倾斜)
-	// 鼠标在左侧时设备向左倾斜，在右侧时向右倾斜
-	const tiltY = -yPercentage * maxTilt;
-	const tiltX = xPercentage * maxTilt;
-
-	// 应用变换 - 注意这里使用rotateY来实现左右倾斜
-	deviceRef.value.style.transform = `perspective(1000px) rotateX(${tiltY}deg) rotateY(${tiltX}deg)`;
-	deviceRef.value.style.transition = "transform 0.1s ease-out";
-};
-
-// 重置倾斜状态
-const resetTilt = () => {
-	if (!deviceRef.value) return;
-	deviceRef.value.style.transform =
-		"perspective(1000px) rotateX(0deg) rotateY(0deg)";
-	deviceRef.value.style.transition = "transform 0.5s ease-out";
-};
 
 // 检查是否有夜猫子怪癖
 const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
@@ -255,35 +214,41 @@ const handleAnswerSelect = (index) => {
 </script>
 
 <style scoped>
-.center-panel {
-	width: 50%;
+.center-panel-mobile {
+	width: 100%;
+	height: 100%;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	padding: 10px;
+	box-sizing: border-box;
 }
 
-.gochi-device {
-	width: 498px;
-	height: 664px;
+.gochi-device-mobile {
+	/* 移动端适配的设备尺寸 */
+	width: 100vw;
+	height: calc(100vw * 326 / 185);
+	position: relative;
 }
 
-.device-background {
+.device-background-mobile {
 	position: absolute;
 	left: 0;
-	width: 498;
+	top: 0;
+	width: 100%;
 	height: 100%;
 	object-fit: contain;
 	z-index: 99;
 }
 
-.gochi-screen-overlay {
+.gochi-screen-overlay-mobile {
+	/* 按比例调整屏幕位置和大小 */
 	position: absolute;
-	top: 154px;
-	left: 96px;
-	width: 304px;
-	height: 277px;
+	top: 30.8%;
+	left: 19.3%; /* 96/498 ≈ 19.3% */
+	width: 61%; /* 304/498 ≈ 61% */
+	height: 30.7%; /* 277/664 ≈ 41.7% */
 	background-color: #eff8cb;
-	/* overflow: hidden; */
 	border-radius: 40px;
 	z-index: 5;
 	padding: 8px;
@@ -293,7 +258,7 @@ const handleAnswerSelect = (index) => {
 	box-shadow: inset 0px 0px 20px rgba(0, 0, 0, 0.8);
 }
 
-.gochi-screen-overlay::before {
+.gochi-screen-overlay-mobile::before {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -304,32 +269,16 @@ const handleAnswerSelect = (index) => {
 		0deg,
 		transparent,
 		transparent 2px,
-		rgba(0, 0, 0, 0.1) 2px,
-		rgba(0, 0, 0, 0.03) 4px
+		rgba(0, 0, 0, 0.05) 2px,
+		rgba(0, 0, 0, 0.01) 4px
 	);
 	border-radius: 40px;
 	pointer-events: none;
 }
 
-.device-3d {
-	transform-style: preserve-3d;
-	transform: perspective(1000px) rotateX(0deg);
-	transition: transform 0.5s ease-out;
-	will-change: transform;
-}
-
-.gochi-device:hover {
-	cursor: default;
-}
-
-/* 夜猫子模式样式 */
-/* .night-owl-mode .device-background {
-	filter: brightness(0.9) hue-rotate(30deg);
-}
-
+/* 夜猫子模式样式（如果需要的话） */
 .night-owl-screen {
 	background-color: #3c5942 !important;
 	box-shadow: inset 0px 0px 20px rgba(78, 115, 223, 0.2) !important;
-	position: relative;
-} */
+}
 </style>

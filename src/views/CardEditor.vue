@@ -1,5 +1,8 @@
 <template>
-	<div class="container w-full mx-auto mt-10 pt-2">
+	<div
+		class="container w-full mx-auto"
+		:class="isMobile ? 'mt-0 pt-0' : 'mt-10 pt-2'"
+	>
 		<TextEditor
 			v-if="route.query.mode === 'edit'"
 			v-model="editorContent"
@@ -19,8 +22,11 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { showToast } from "@/components/common/toast.js";
+import { useMobile } from "@/composables/useBreakpoint";
 import TextEditor from "@/components/cardEditor/TextEditor.vue";
 import CardView from "@/components/cardEditor/CardView.vue";
+
+const { isMobile } = useMobile();
 
 const route = useRoute();
 const router = useRouter();
