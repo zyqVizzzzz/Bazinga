@@ -6,7 +6,7 @@
 			isMobile ? 'px-2' : '',
 		]"
 	>
-		<!-- Banner 区域 -->
+		<!-- Banner -->
 		<div
 			v-if="!isDefault"
 			class="collection-content relative w-full mb-8 retro-banner"
@@ -71,10 +71,7 @@
 				</button>
 			</div>
 		</div>
-
-		<!-- 内容区域 -->
 		<div :class="isMobile ? 'w-full px-2' : 'w-4/5'" class="relative mt-4">
-			<!-- 添加编辑控制区域 -->
 			<div
 				v-if="isCustom && !isMobile"
 				class="flex justify-between items-center mb-6"
@@ -109,8 +106,8 @@
 				handle=".drag-handle"
 				ghost-class="ghost"
 				:class="[
-					'grid gap-6 mb-10',
-					isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-3 md:grid-cols-4',
+					'grid mb-10',
+					isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-3 md:grid-cols-4 gap-6',
 				]"
 				@start="dragStart"
 				@end="dragEnd"
@@ -135,10 +132,9 @@
 		</div>
 	</div>
 
-	<!-- 移动模态框 -->
+	<!-- 移动 -->
 	<dialog ref="moveModal" class="modal">
 		<div class="modal-box vintage-modal max-w-md min-h-[300px] p-6">
-			<!-- 关闭按钮 -->
 			<form method="dialog" class="absolute right-4 top-4">
 				<button class="btn btn-sm btn-circle btn-ghost">
 					<i class="bi bi-x-lg"></i>
@@ -749,13 +745,6 @@ button:disabled {
 	.grid {
 		grid-template-columns: repeat(2, 1fr) !important; /* 强制两列 */
 		gap: 1rem; /* 减少间距 */
-	}
-}
-
-@media (max-width: 480px) {
-	.grid {
-		grid-template-columns: 1fr !important; /* 小屏幕单列 */
-		gap: 0.75rem;
 	}
 }
 

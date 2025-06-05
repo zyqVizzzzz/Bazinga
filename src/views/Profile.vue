@@ -1,7 +1,7 @@
 <template>
 	<div class="profile-page mt-20 px-10 relative w-full">
 		<div class="profile-container" :class="{ 'mt-20': isMobile }">
-			<!-- 左侧按钮组 - 在移动端隐藏 -->
+			<!-- 左侧按钮组 -->
 			<div
 				class="action-buttons left-buttons relative right-[-10px]"
 				v-if="!isMobile"
@@ -76,7 +76,7 @@
 				</CharacterCard>
 			</div>
 
-			<!-- 右侧按钮 - 在移动端隐藏 -->
+			<!-- 右侧按钮组 -->
 			<div class="action-buttons right-buttons" v-if="!isMobile">
 				<button
 					class="action-btn edit-profile rotate-6 hover:-rotate-1"
@@ -147,7 +147,6 @@
 
 			<!-- 移动端按钮组 -->
 			<div class="mobile-action-buttons" v-if="isMobile">
-				<!-- 密码更新按钮 -->
 				<button
 					class="mobile-action-btn"
 					@click="togglePasswordUpdate"
@@ -155,8 +154,6 @@
 				>
 					<i class="bi bi-key-fill"></i>
 				</button>
-
-				<!-- 邮箱更新按钮 -->
 				<button
 					class="mobile-action-btn"
 					@click="toggleEmailUpdate"
@@ -164,8 +161,6 @@
 				>
 					<i class="bi bi-envelope-fill"></i>
 				</button>
-
-				<!-- 修改资料按钮 -->
 				<button
 					class="mobile-action-btn"
 					@click="toggleEdit"
@@ -176,7 +171,6 @@
 			</div>
 
 			<!-- 移动端弹窗 -->
-			<!-- 密码更新弹窗 -->
 			<div class="mobile-modal" v-if="isMobile && isUpdatingPassword">
 				<div class="mobile-modal-content">
 					<div class="bubble-header">
@@ -189,7 +183,6 @@
 				</div>
 			</div>
 
-			<!-- 邮箱更新弹窗 -->
 			<div class="mobile-modal" v-if="isMobile && isUpdatingEmail">
 				<div class="mobile-modal-content">
 					<div class="bubble-header">
@@ -205,7 +198,6 @@
 				</div>
 			</div>
 
-			<!-- 资料编辑弹窗 -->
 			<div class="mobile-modal" v-if="isMobile && isEditing">
 				<div class="mobile-modal-content">
 					<div class="bubble-header">
@@ -216,7 +208,6 @@
 					</div>
 					<!-- 编辑表单 -->
 					<div class="space-y-4">
-						<!-- 昵称部分 -->
 						<div>
 							<input
 								type="text"
@@ -232,8 +223,6 @@
 								{{ v$.tempNickname.$errors[0].$message }}
 							</div>
 						</div>
-
-						<!-- 签名部分 -->
 						<div>
 							<textarea
 								v-model="tempSignature"
@@ -248,8 +237,6 @@
 								{{ v$.tempSignature.$errors[0].$message }}
 							</div>
 						</div>
-
-						<!-- 保存按钮 -->
 						<div class="mt-6">
 							<button
 								class="w-full py-3 bg-secondary hover:bg-secondary-focus text-white rounded-lg font-semibold text-sm transition-colors"
@@ -737,7 +724,7 @@ onMounted(async () => {
 	margin-top: 0.25rem;
 }
 
-/* 移动端按钮样式 */
+/* 移动端 */
 .mobile-action-buttons {
 	display: flex;
 	justify-content: center;

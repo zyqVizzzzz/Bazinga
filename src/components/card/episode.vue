@@ -118,6 +118,7 @@ const saveTitle = () => {
 	min-height: 120px;
 	cursor: pointer;
 	transition: transform 0.3s;
+	width: 100%;
 }
 
 .card-shadow {
@@ -338,5 +339,19 @@ const saveTitle = () => {
 .editing .title-container {
 	transform: none !important;
 	padding: 1rem;
+}
+@media (max-width: 768px) {
+	.retro-episode-card {
+		min-height: 100px;
+	}
+
+	.main-title {
+		font-size: 0.875rem;
+		-webkit-line-clamp: 2;
+	}
+
+	.card-face {
+		border-width: 2px;
+	}
 }
 </style>
