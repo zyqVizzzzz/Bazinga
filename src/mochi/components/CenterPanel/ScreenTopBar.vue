@@ -1,8 +1,5 @@
 <template>
-	<div
-		class="screen-top-bar px-5 pt-2"
-		:class="{ 'night-owl-bar text-[#4b6130] ': hasNightOwlQuirk }"
-	>
+	<div class="screen-top-bar px-5 pt-2">
 		<div class="flex-1">
 			<div class="flex items-center">
 				<img
@@ -72,7 +69,7 @@
 									<!-- 健康条分格 -->
 									<div class="absolute inset-0 flex">
 										<div
-											v-for="i in 10"
+											v-for="i in healthBarSegments"
 											:key="i"
 											class="flex-1 border-r border-[#ebffb7]/50"
 										></div>
@@ -99,8 +96,15 @@ onMounted(async () => {
 	pointsStore.setPoints(points);
 });
 
-// 检查是否有夜猫子怪癖
-const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
+// 计算健康条格子数量
+const healthBarSegments = computed(() => {
+	const currentHealth = catStore.catState?.currentHealthiness || 0;
+	const maxHealth = catStore.catState?.maxHealthPoints || 100;
+
+	// 根据健康值百分比计算格子数，最少1个，最多10个
+	const healthPercentage = currentHealth / maxHealth;
+	return Math.max(1, Math.ceil(healthPercentage * 10));
+});
 </script>
 
 <style scoped>
