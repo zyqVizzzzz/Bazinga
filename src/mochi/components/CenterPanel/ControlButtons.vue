@@ -41,6 +41,8 @@ const emit = defineEmits([
 	"answer-select",
 	"play-animation",
 	"show-question",
+	"dialog-button-select",
+	"dialog-confirm",
 ]);
 
 const catStore = useCatStore();
@@ -48,6 +50,10 @@ const activeIndex = ref(-1);
 const totalIcons = 4; // Food, Clean, Doctor, Play
 
 const selectNext = () => {
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-button-select", "next");
+		return;
+	}
 	if (catStore.isAnswering) {
 		// 如果正在答题，则在选项中切换
 		const optionsCount = catStore.currentQuestion?.options.length || 4;
@@ -78,6 +84,10 @@ const selectNext = () => {
 };
 
 const selectPrevious = () => {
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-button-select", "prev");
+		return;
+	}
 	if (catStore.isAnswering) {
 		// 如果正在答题，则在选项中切换
 		const optionsCount = catStore.currentQuestion?.options.length || 4;
@@ -109,6 +119,18 @@ const selectPrevious = () => {
 };
 
 const handleConfirm = async () => {
+	// 检查是否为出生状态，如果是则执行创建猫猫操作
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-confirm");
+		return;
+	}
+
+	// 检查是否为死亡状态，如果是则执行复活操作
+	if (catStore.lifeStatus === "dead") {
+		await catStore.reviveCat();
+		return;
+	}
+
 	if (activeIndex.value !== -1 || catStore.isAnswering) {
 		// 在非答题模式下，处理菜单选择
 		if (!catStore.isAnswering) {
@@ -171,6 +193,10 @@ const formatAge = (birthDate) => {
 };
 
 const handleBack = () => {
+	if (catStore.showCreateCatDialog) {
+		catStore.cancelCreateCat();
+		return;
+	}
 	catStore.resetState();
 	activeIndex.value = -1; // 重置状态
 };

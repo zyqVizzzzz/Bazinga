@@ -1,6 +1,31 @@
 <template>
 	<div class="pet-area-mobile">
-		<div class="w-full">
+		<!-- 创建猫猫对话框 -->
+		<div v-if="catStore.showCreateCatDialog" class="create-cat-dialog">
+			<div class="dialog-content">
+				<h3 class="dialog-title">Welcome to the Molidoki</h3>
+				<p class="dialog-description">你还没有属于自己的猫猫伙伴呢～<br /></p>
+
+				<div class="dialog-buttons">
+					<button
+						class="btn-secondary"
+						:class="{ selected: selectedDialogButton === 0 }"
+						@click="handleCancelCreate"
+					>
+						暂时不要
+					</button>
+					<button
+						class="btn-secondary"
+						:class="{ selected: selectedDialogButton === 1 }"
+						:disabled="isCreating"
+						@click.prevent
+					>
+						{{ isCreating ? "创建中..." : "创建猫猫" }}
+					</button>
+				</div>
+			</div>
+		</div>
+		<div v-else class="w-full">
 			<div class="relative flex justify-center items-center">
 				<div
 					v-if="!catStore.isAnswering && catStore.catState?.quirks?.length > 0"
@@ -28,7 +53,7 @@
 					</div>
 				</transition>
 				<img
-					v-if="!catStore.isAnswering"
+					v-if="!catStore.isAnswering && catStore.lifeStatus !== 'dead'"
 					alt="Shadow"
 					loading="lazy"
 					width="67"
@@ -42,7 +67,7 @@
 				<transition name="fade" mode="out-in">
 					<img
 						:key="currentImage"
-						v-if="!catStore.isAnswering"
+						v-if="!catStore.isAnswering && catStore.lifeStatus !== 'dead'"
 						alt="Pet character"
 						loading="lazy"
 						decoding="async"
@@ -52,7 +77,47 @@
 						style="color: transparent; image-rendering: pixelated"
 					/>
 				</transition>
-				<div v-if="catStore.isAnswering" class="question-container-mobile">
+
+				<!-- 死亡状态显示 -->
+				<div
+					v-if="catStore.lifeStatus === 'dead'"
+					class="death-container flex flex-col items-center"
+				>
+					<!-- 死亡提示文字 -->
+					<div class="death-message text-red-500 font-bold text-lg mb-4">
+						Your Mochi is DEAD
+					</div>
+
+					<!-- 死亡图片 -->
+					<transition name="fade" mode="out-in">
+						<img
+							alt="Pet character"
+							loading="lazy"
+							decoding="async"
+							data-nimg="1"
+							class="dead-image object-contain relative"
+							:src="deathImage"
+							style="color: transparent; image-rendering: pixelated"
+						/>
+					</transition>
+
+					<!-- 复活按钮和积分提示 -->
+					<div class="revive-section mt-4 flex flex-col items-center">
+						<button class="btn-secondary dead selected" @click.prevent>
+							Revive (A)
+						</button>
+						<div class="cost-notice">-100 POINTS</div>
+					</div>
+				</div>
+
+				<div
+					v-if="
+						catStore.isAnswering &&
+						catStore.lifeStatus !== 'dead' &&
+						catStore.currentQuestion
+					"
+					class="question-container-mobile"
+				>
 					<div class="question-text-mobile">
 						{{ catStore.currentQuestion.question }}
 					</div>
@@ -86,7 +151,50 @@ const emit = defineEmits(["animation-state-change"]);
 const catStore = useCatStore();
 
 const currentImage = ref(idleImage);
+const newCatName = ref("");
+const isCreating = ref(false);
+const selectedDialogButton = ref(0);
 let animationTimer = null;
+
+const handleCreateCat = async () => {
+	isCreating.value = true;
+	try {
+		await catStore.createCat();
+		newCatName.value = "";
+	} catch (error) {
+		console.error("创建猫猫失败:", error);
+	} finally {
+		isCreating.value = false;
+	}
+};
+
+const handleCancelCreate = () => {
+	catStore.cancelCreateCat();
+};
+
+// 处理控制按钮的选择
+const handleDialogButtonSelect = (direction) => {
+	if (catStore.showCreateCatDialog) {
+		if (direction === "next") {
+			selectedDialogButton.value = (selectedDialogButton.value + 1) % 2;
+		} else if (direction === "prev") {
+			selectedDialogButton.value = (selectedDialogButton.value - 1 + 2) % 2;
+		}
+	}
+};
+
+// 处理确认按钮
+const handleDialogConfirm = async () => {
+	if (catStore.showCreateCatDialog) {
+		if (selectedDialogButton.value === 0) {
+			// 暂时不要
+			handleCancelCreate();
+		} else if (selectedDialogButton.value === 1) {
+			// 创建猫猫
+			await handleCreateCat();
+		}
+	}
+};
 
 const playAnimation = (actionType) => {
 	catStore.isAnswering = false;
@@ -145,6 +253,8 @@ defineExpose({
 	showQuestion,
 	hideQuestion,
 	setSelectedOption,
+	handleDialogButtonSelect,
+	handleDialogConfirm,
 });
 
 // 格式化怪癖名称
@@ -305,9 +415,56 @@ const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
 }
 
 /* 夜猫子模式样式 */
-.night-owl-quirk {
-	background-color: rgba(60, 89, 66, 0.8);
-	color: #a0c78a;
-	border-color: rgba(60, 89, 66, 0.5);
+.dialog-title {
+	font-size: 18px;
+	color: #304700;
+	text-align: center;
+	margin-bottom: 16px;
+	font-weight: bold;
+}
+
+.dialog-description {
+	font-size: 14px;
+	color: #5a6b2d;
+	text-align: center;
+	margin-bottom: 24px;
+	line-height: 1.5;
+}
+
+.dialog-buttons {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+}
+
+.btn-secondary {
+	padding: 8px 24px;
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border: none;
+}
+.btn-secondary {
+	background-color: transparent;
+	color: #5a6b2d;
+	border: 2px solid #cada9b;
+}
+
+.btn-secondary:hover {
+	background-color: #f0f7e8;
+	transform: translateY(-1px);
+}
+
+.btn-secondary.selected {
+	border: 2px solid #cada9b;
+	box-shadow: 0 0 10px rgba(202, 218, 155, 0.5);
+	background-color: rgba(202, 218, 155, 0.5);
+}
+
+.btn-secondary {
+	pointer-events: none; /* 禁用直接点击 */
+	cursor: default;
 }
 </style>

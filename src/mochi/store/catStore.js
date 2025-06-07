@@ -36,6 +36,11 @@ export const useCatStore = defineStore("cat", {
 		isAnimating: -1,
 		showExplanation: false,
 		quirks: [],
+		lifeStatus: "budding", // 'budding', 'alive', 'dead'
+		activationDate: null,
+		deathDate: null,
+		hasCat: false, // 添加是否有cat的状态
+		showCreateCatDialog: false, // 添加显示创建cat对话框的状态
 	}),
 
 	getters: {
@@ -56,6 +61,26 @@ export const useCatStore = defineStore("cat", {
 				state.catState?.quirks[0]?.quirkId?.includes("nightOwl")
 			);
 		},
+		canInteract: (state) => {
+			return state.lifeStatus === "alive" || state.lifeStatus === "budding";
+		},
+
+		isBudding: (state) => state.lifeStatus === "budding",
+		isAlive: (state) => state.lifeStatus === "alive",
+		isDead: (state) => state.lifeStatus === "dead",
+
+		statusText: (state) => {
+			switch (state.lifeStatus) {
+				case "budding":
+					return "萌芽中";
+				case "alive":
+					return "健康";
+				case "dead":
+					return "已死亡";
+				default:
+					return "未知";
+			}
+		},
 	},
 
 	actions: {
@@ -66,13 +91,113 @@ export const useCatStore = defineStore("cat", {
 				if (cat) {
 					this.catId = cat._id;
 					this.catState = cat;
+					this.lifeStatus = cat.lifeStatus || "budding";
+					this.activationDate = cat.activationDate;
+					this.deathDate = cat.deathDate;
+					this.hasCat = true;
+				} else {
+					// 没有cat时，显示创建对话框
+					this.hasCat = false;
+					this.showCreateCatDialog = true;
 				}
 			} catch (error) {
+				// 如果是404错误（没有找到cat），也显示创建对话框
+				if (error.response && error.response.status === 404) {
+					this.hasCat = false;
+					this.showCreateCatDialog = true;
+				} else {
+					showToast({
+						message: "获取猫猫信息失败",
+						type: "error",
+						duration: 3000,
+					});
+				}
+			}
+		},
+
+		// 创建新猫猫
+		async createCat() {
+			try {
+				this.isCreating = true;
+				const cat = await catService.createCat(); // 不再传递参数
+
+				this.catId = cat._id;
+				this.catState = cat;
+				this.lifeStatus = cat.lifeStatus || "budding";
+				this.hasCat = true;
+				this.showCreateCatDialog = false;
+				this.isCreating = false;
+
 				showToast({
-					message: "获取猫猫信息失败",
+					message: `猫猫 MOCHI 创建成功！`, // 固定显示MOCHI
+					type: "success",
+					duration: 3000,
+				});
+
+				return cat;
+			} catch (error) {
+				this.isCreating = false;
+				showToast({
+					message: "创建猫猫失败",
 					type: "error",
 					duration: 3000,
 				});
+				throw error;
+			}
+		},
+
+		// 取消创建猫猫
+		cancelCreateCat() {
+			this.showCreateCatDialog = false;
+		},
+
+		// 复活猫猫
+		async reviveCat() {
+			if (!this.catId) {
+				throw new Error("没有找到猫猫ID");
+			}
+
+			if (this.lifeStatus !== "dead") {
+				throw new Error("只有死亡的猫猫才能复活");
+			}
+
+			try {
+				const revivedCat = await catService.reviveCat(this.catId);
+
+				// 更新猫咪状态
+				this.catState = revivedCat;
+				this.lifeStatus = revivedCat.lifeStatus || "alive";
+				this.deathDate = null;
+
+				showToast({
+					message: "猫猫复活成功！",
+					type: "success",
+					duration: 3000,
+				});
+
+				return revivedCat;
+			} catch (error) {
+				showToast({
+					message: "复活猫猫失败",
+					type: "error",
+					duration: 3000,
+				});
+				throw error;
+			}
+		},
+
+		async activateCat() {
+			if (this.lifeStatus !== "budding") {
+				throw new Error("只有萌芽状态的猫猫才能被激活");
+			}
+
+			try {
+				const response = await api.post(`/cats/${this.catId}/activate`);
+				this.updateCatState(response.data);
+				return response.data;
+			} catch (error) {
+				console.error("激活猫猫失败:", error);
+				throw error;
 			}
 		},
 
@@ -83,6 +208,10 @@ export const useCatStore = defineStore("cat", {
 
 		// 与猫咪互动
 		async interactWithCat() {
+			if (this.lifeStatus === "dead") {
+				throw new Error("猫猫已经死亡，无法进行交互");
+			}
+
 			if (!this.catId || !this.currentParentType) return;
 
 			try {

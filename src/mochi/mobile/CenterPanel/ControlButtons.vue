@@ -53,6 +53,8 @@ const emit = defineEmits([
 	"answer-select",
 	"play-animation",
 	"show-question",
+	"dialog-button-select",
+	"dialog-confirm",
 ]);
 
 const catStore = useCatStore();
@@ -73,6 +75,11 @@ const handleTouchEnd = () => {
 };
 
 const selectNext = () => {
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-button-select", "next");
+		return;
+	}
+
 	if (catStore.isAnswering) {
 		// 如果正在答题，则在选项中切换
 		const optionsCount = catStore.currentQuestion?.options.length || 4;
@@ -103,6 +110,11 @@ const selectNext = () => {
 };
 
 const selectPrevious = () => {
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-button-select", "prev");
+		return;
+	}
+
 	if (catStore.isAnswering) {
 		// 如果正在答题，则在选项中切换
 		const optionsCount = catStore.currentQuestion?.options.length || 4;
@@ -134,6 +146,17 @@ const selectPrevious = () => {
 };
 
 const handleConfirm = async () => {
+	if (catStore.showCreateCatDialog) {
+		emit("dialog-confirm");
+		return;
+	}
+
+	// 检查是否为死亡状态，如果是则执行复活操作
+	if (catStore.lifeStatus === "dead") {
+		await catStore.reviveCat();
+		return;
+	}
+
 	if (activeIndex.value !== -1 || catStore.isAnswering) {
 		// 在非答题模式下，处理菜单选择
 		if (!catStore.isAnswering) {
@@ -196,6 +219,11 @@ const formatAge = (birthDate) => {
 };
 
 const handleBack = () => {
+	if (catStore.showCreateCatDialog) {
+		catStore.cancelCreateCat();
+		return;
+	}
+
 	catStore.resetState();
 	activeIndex.value = -1; // 重置状态
 };
@@ -218,34 +246,31 @@ const handleBack = () => {
 	aspect-ratio: 1;
 }
 
-/* 按钮位置转换为百分比 */
 .prev-button {
-	top: 64.5%; /* 465/664 ≈ 70% */
-	left: 18.1%; /* 90/498 ≈ 18.1% */
+	top: 64.5%;
+	left: 18.1%;
 }
 
 .next-button {
-	top: 64.4%; /* 465/664 ≈ 70% */
-	left: 34.9%; /* 175/498 ≈ 35.1% */
+	top: 64.4%;
+	left: 34.9%;
 }
 
 .a-button {
-	/* 原位置: top: 465px, left: 263px */
-	top: 64.4%; /* 465/664 ≈ 70% */
-	left: 52.8%; /* 263/498 ≈ 52.8% */
+	top: 64.4%;
+	left: 52.8%;
 }
 
 .b-button {
-	/* 原位置: top: 465px, left: 348px */
-	top: 64.4%; /* 465/664 ≈ 70% */
-	left: 69.9%; /* 348/498 ≈ 69.9% */
+	top: 64.4%;
+	left: 69.9%;
 }
 
 .age-display {
 	position: absolute;
-	width: 18.2%; /* 80/498 ≈ 16.1% */
-	top: 73.1%; /* 545/664 ≈ 82.1% */
-	right: 30%; /* 保持原有的 30% */
+	width: 18.2%;
+	top: 73.1%;
+	right: 30%;
 	padding: 3px;
 	background: rgb(208, 213, 214);
 	border-radius: 4px;
@@ -271,6 +296,7 @@ const handleBack = () => {
 	letter-spacing: 0.5px;
 	text-shadow: 0 0 1px rgba(85, 99, 54, 0.3);
 }
+
 /* 添加触摸反馈样式 */
 .button-pressed {
 	background-color: rgba(230, 230, 230, 0.88) !important;

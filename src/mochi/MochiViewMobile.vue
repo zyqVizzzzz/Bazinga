@@ -1,13 +1,13 @@
 <template>
 	<div class="mochi-mobile-page font-pixel">
 		<div class="mobile-layout">
-			<div class="mobile-bottom-section">
+			<div class="mobile-bottom-section" v-if="catStore.hasCat">
 				<MochiBottomPanel />
 			</div>
 			<div class="mobile-center-section">
 				<MochiCenterPanel ref="centerPanelRef" />
 			</div>
-			<div class="mobile-top-section">
+			<div class="mobile-top-section" v-if="catStore.hasCat">
 				<MochiTopPanel />
 			</div>
 		</div>

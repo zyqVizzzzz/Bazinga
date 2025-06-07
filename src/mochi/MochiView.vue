@@ -11,15 +11,15 @@
 			</div>
 		</div>
 		<div class="mochi-main-content">
-			<div class="wire wire-left"></div>
-			<div class="left-panel-container">
+			<div class="wire wire-left" v-if="catStore.hasCat"></div>
+			<div class="left-panel-container" v-if="catStore.hasCat">
 				<MochiLeftPanel />
 			</div>
 			<MochiCenterPanel ref="centerPanelRef" />
-			<div class="right-panel-container">
+			<div class="right-panel-container" v-if="catStore.hasCat">
 				<MochiRightPanel />
 			</div>
-			<div class="wire wire-right"></div>
+			<div class="wire wire-right" v-if="catStore.hasCat"></div>
 		</div>
 		<!-- <div class="test-button-container">
 			<button class="test-quirk-button" @click="handleTestQuirk">
@@ -87,9 +87,10 @@ const setRandomTearPositions = () => {
 };
 
 onMounted(async () => {
-	setRandomTearPositions();
+	// setRandomTearPositions();
 	if (loginStore.userInfo?._id) {
 		await catStore.initCat(loginStore.userInfo._id);
+		console.log(catStore.lifeStatus);
 		setupIntervals();
 	}
 });

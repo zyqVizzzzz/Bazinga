@@ -16,6 +16,40 @@ export const catService = {
 		}
 	},
 
+	async createCat() {
+		try {
+			const response = await apiClient.post("/cats", {
+				appearance: {
+					baseSprite: "default",
+					accessories: [],
+				},
+			});
+			if (response.data.code === 200) {
+				return response.data.data;
+			} else {
+				throw new Error(response.data.message);
+			}
+		} catch (error) {
+			console.error("创建猫猫失败", error);
+			throw error;
+		}
+	},
+
+	// 复活猫猫
+	async reviveCat(catId) {
+		try {
+			const response = await apiClient.post(`/cats/${catId}/revive`);
+			if (response.data.code === 200) {
+				return response.data.data;
+			} else {
+				throw new Error(response.data.message);
+			}
+		} catch (error) {
+			console.error("复活猫猫失败", error);
+			throw error;
+		}
+	},
+
 	// 与猫猫互动
 	async interactWithCat(catId, actionType, actionSubType = "", type = 1) {
 		try {

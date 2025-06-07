@@ -10,24 +10,34 @@
 				'is-answering': catStore.isAnswering,
 			}"
 		>
-			<!-- Gamepad Device Image -->
 			<img
 				src="../assets/b.png"
 				alt="Gochi Device Background"
 				class="device-background"
 			/>
 
-			<!-- Screen, positioned over the device image -->
 			<div
 				class="gochi-screen-overlay rounded-lg z-[-1]"
 				:class="{ 'night-owl-screen': hasNightOwlQuirk }"
 			>
-				<ScreenTopBar v-if="!catStore.isAnswering" />
+				<ScreenTopBar
+					v-if="
+						!catStore.isAnswering &&
+						catStore.hasCat &&
+						catStore.lifeStatus !== 'dead'
+					"
+				/>
 				<PetDisplay
 					ref="petDisplayRef"
 					@animation-state-change="handleAnimationStateChange"
 				/>
-				<ScreenBottomBar v-if="!catStore.isAnswering" />
+				<ScreenBottomBar
+					v-if="
+						!catStore.isAnswering &&
+						catStore.hasCat &&
+						catStore.lifeStatus !== 'dead'
+					"
+				/>
 			</div>
 			<!-- Controls, positioned over the device image -->
 			<ControlButtons
@@ -36,6 +46,8 @@
 				@back="handleBack"
 				@answer-select="handleAnswerSelect"
 				@play-animation="handlePlayAnimation"
+				@dialog-button-select="handleDialogButtonSelect"
+				@dialog-confirm="handleDialogConfirm"
 				:isAnswering="catStore.isAnswering"
 				:questionOptions="catStore.currentQuestion?.options || []"
 				:resetIndex="shouldResetIndex"
@@ -250,6 +262,20 @@ const handleAnswerSelect = (index) => {
 		catStore.selectAnswer(index);
 		// 更新 PetDisplay 组件的选中状态
 		petDisplayRef.value?.setSelectedOption(index);
+	}
+};
+
+// 处理对话框按钮选择
+const handleDialogButtonSelect = (direction) => {
+	if (petDisplayRef.value) {
+		petDisplayRef.value.handleDialogButtonSelect(direction);
+	}
+};
+
+// 处理对话框确认
+const handleDialogConfirm = () => {
+	if (petDisplayRef.value) {
+		petDisplayRef.value.handleDialogConfirm();
 	}
 };
 </script>
