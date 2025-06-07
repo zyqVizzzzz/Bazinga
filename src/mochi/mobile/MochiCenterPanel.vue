@@ -87,9 +87,6 @@ watch(
 	}
 );
 
-// 检查是否有夜猫子怪癖
-const hasNightOwlQuirk = computed(() => catStore.hasNightOwlQuirk);
-
 onMounted(async () => {
 	if (userId.value) {
 		await catStore.initCat(userId.value);

@@ -36,7 +36,7 @@ export const useCatStore = defineStore("cat", {
 		isAnimating: -1,
 		showExplanation: false,
 		quirks: [],
-		lifeStatus: "budding", // 'budding', 'alive', 'dead'
+		lifeStatus: "alive", // 'budding', 'alive', 'dead'
 		activationDate: null,
 		deathDate: null,
 		hasCat: false, // 添加是否有cat的状态
@@ -182,21 +182,6 @@ export const useCatStore = defineStore("cat", {
 					type: "error",
 					duration: 3000,
 				});
-				throw error;
-			}
-		},
-
-		async activateCat() {
-			if (this.lifeStatus !== "budding") {
-				throw new Error("只有萌芽状态的猫猫才能被激活");
-			}
-
-			try {
-				const response = await api.post(`/cats/${this.catId}/activate`);
-				this.updateCatState(response.data);
-				return response.data;
-			} catch (error) {
-				console.error("激活猫猫失败:", error);
 				throw error;
 			}
 		},
