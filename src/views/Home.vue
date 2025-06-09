@@ -2,14 +2,24 @@
 	<div class="home">
 		<!-- 标题 -->
 		<div class="retro-title-box text-center mb-10">
+			<!-- 左侧图标 -->
+			<div class="side-icon left-icon" @click="createCatArea">
+				<img src="/src/assets/logo-m.png" alt="Left Icon" />
+			</div>
+
 			<h1 class="text-2xl font-bold">
 				<div class="text-shadow-retro">
-					<span><mark class="retro-highlight">Bazinga</mark></span>
+					<span><mark class="retro-highlight">Molidoki</mark></span>
 				</div>
 				<div class="pronunciation">
-					<span>int. 妙哉 - /bəˈzɪŋɡə/</span>
+					<span>int. 魔力心脏 - /pongˈpong/</span>
 				</div>
 			</h1>
+
+			<!-- 右侧图标 -->
+			<div class="side-icon right-icon" @click="createNewCard">
+				<img src="/src/assets/logo-d.png" alt="Right Icon" />
+			</div>
 		</div>
 
 		<!-- 卡片展示区 -->
@@ -107,6 +117,91 @@ const toggleExpand = () => {
 	isExpanded.value = !isExpanded.value;
 };
 
+// 创建新卡片
+const createNewCard = async () => {
+	if (!isLogin.value) {
+		showToast({
+			message: "登录后解锁全部功能",
+			type: "info",
+			duration: 3000,
+		});
+		return;
+	}
+	try {
+		const today = new Date();
+		const dateStr = today.toLocaleDateString("zh-CN").replace(/\//g, "-");
+		const defaultDocName = `Doc-${dateStr}`;
+		// 获取用户的默认合集
+		const res = await apiClient.get("/catalogs/default");
+		if (res.data.code === 200 && res.data.data) {
+			const defaultCatalog = res.data.data;
+			// 获取默认合集的第一个季节
+			if (defaultCatalog.seasons && defaultCatalog.seasons.length > 0) {
+				const season = defaultCatalog.seasons[0];
+
+				// 检查是否有episodes
+				if (season.episodes && season.episodes.length > 0) {
+					// 获取最后一个episode
+					const lastEpisode = season.episodes[season.episodes.length - 1];
+
+					// 如果最后一个episode的scriptUrl为空，直接打开它
+					if (!lastEpisode.scriptUrl || lastEpisode.scriptUrl === "") {
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${lastEpisode.ep}`,
+							query: { mode: "edit", sign: lastEpisode._id },
+						});
+						return; // 提前返回，不创建新的
+					}
+
+					// 如果最后一个episode有内容，创建新的
+					const nextEp = season.episodes.length + 1;
+					const createRes = await apiClient.post("/catalogs/episodes/create", {
+						catalogId: defaultCatalog._id,
+						ep: nextEp,
+						epName: defaultDocName,
+						seasonNumber: season.seasonNumber,
+					});
+
+					if (createRes.data.code === 200) {
+						const newEpisode = createRes.data.data;
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/${nextEp}`,
+							query: { mode: "edit", sign: newEpisode._id },
+						});
+					}
+				} else {
+					// 没有episodes，创建第一个
+					const createRes = await apiClient.post("/catalogs/episodes/create", {
+						catalogId: defaultCatalog._id,
+						ep: 1,
+						epName: defaultDocName,
+						seasonNumber: season.seasonNumber,
+					});
+
+					if (createRes.data.code === 200) {
+						const newEpisode = createRes.data.data;
+						router.push({
+							path: `/card-editor/${defaultCatalog._id}/${season.seasonNumber}/1`,
+							query: { mode: "edit", sign: newEpisode._id },
+						});
+					}
+				}
+			} else {
+				showToast({ message: "默认合集没有可用的季节", type: "error" });
+			}
+		} else {
+			showToast({ message: "未找到默认合集", type: "error" });
+		}
+	} catch (error) {
+		console.error("获取默认合集失败:", error);
+		showToast({ message: "获取默认合集失败", type: "error" });
+	}
+};
+
+const createCatArea = async () => {
+	router.push("/mochi");
+};
+
 const goToCollection = (id) => {
 	// if (!isLogin.value) return;
 	router.push("/collections/" + id);
@@ -124,6 +219,67 @@ const goToCollection = (id) => {
 	display: inline-block;
 	padding: 1rem 3rem;
 	margin: 0 auto;
+}
+
+/* 侧边图标样式 */
+.side-icon {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 120px;
+	height: 120px;
+	opacity: 0.3;
+	transition: opacity 0.3s ease;
+	cursor: pointer;
+	z-index: 10;
+}
+
+.side-icon:hover {
+	opacity: 0.8;
+}
+
+.side-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.left-icon {
+	left: -320px;
+}
+
+.right-icon {
+	right: -320px;
+	width: 110px;
+	height: 110px;
+}
+
+/* 响应式设计 - 在小屏幕上隐藏图标 */
+@media (max-width: 768px) {
+	.side-icon {
+		display: none;
+	}
+}
+
+.text-shadow-retro {
+	text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2),
+		-1px -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pronunciation {
+	font-size: 0.875rem;
+	color: #666;
+	font-weight: normal;
+	margin-top: 0.5rem;
+}
+
+.retro-highlight {
+	background: linear-gradient(
+		transparent 60%,
+		rgba(var(--secondary-color-rgb), 0.2) 40%
+	);
+	padding: 0 0.5rem;
+	border-radius: 4px;
 }
 
 .text-shadow-retro {

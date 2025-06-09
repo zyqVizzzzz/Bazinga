@@ -1,18 +1,39 @@
 <template>
-	<div class="mochi-page-container">
-		<MochiViewMobile />
+	<div
+		class="mochi-page-container mochi-fullwidth"
+		:class="{
+			'w-11/12  p-0 flex items-center justify-center mochi-container':
+				!isMobile,
+			'w-full': isMobile,
+		}"
+	>
+		<MochiViewMobile v-if="isMobile" />
+		<MochiView v-else />
 	</div>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
+import { useBreakpoint } from "@/composables/useBreakpoint";
 import MochiViewMobile from "./MochiViewMobile.vue";
+import MochiView from "./MochiView.vue";
+import { onMounted, onUnmounted } from "vue";
 
-const router = useRouter();
+const { isMobile } = useBreakpoint();
 
-const goBack = () => {
-	router.go(-1);
-};
+onMounted(() => {
+	const appElement = document.getElementById("app");
+	if (appElement) {
+		appElement.classList.add("mochi-fullwidth");
+	}
+});
+
+onUnmounted(() => {
+	const appElement = document.getElementById("app");
+	if (appElement) {
+		appElement.classList.remove("mochi-fullwidth");
+	}
+});
 </script>
 
 <style scoped>

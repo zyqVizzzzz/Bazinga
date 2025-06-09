@@ -67,6 +67,11 @@ body {
 	height: 100vh;
 }
 
+#app.mochi-fullwidth {
+	max-width: none !important;
+	padding: 0 !important;
+}
+
 @media (max-width: 768px) {
 	#app {
 		padding: 0;

@@ -1,16 +1,15 @@
 <template>
 	<div class="password-section flex-1 bg-white">
-		<div class="space-y-4">
+		<form @submit.prevent="validateAndSavePassword" class="space-y-4">
 			<!-- 当前密码 -->
 			<div>
-				<!-- <label class="text-sm text-gray-600 mb-2 block">当前密码</label> -->
 				<input
 					type="password"
 					id="current-password"
 					v-model="passwordForm.currentPassword"
 					class="input input-bordered w-full text-sm"
 					placeholder="输入当前密码"
-					autocomplete="new-password"
+					autocomplete="current-password"
 				/>
 				<div class="text-red-500 text-xs mt-1" v-if="v$.currentPassword.$error">
 					{{ v$.currentPassword.$errors[0].$message }}
@@ -19,7 +18,6 @@
 
 			<!-- 新密码 -->
 			<div>
-				<!-- <label class="text-sm text-gray-600 mb-2 block">新密码</label> -->
 				<input
 					type="password"
 					id="new-password"
@@ -51,7 +49,6 @@
 
 			<!-- 确认新密码 -->
 			<div>
-				<!-- <label class="text-sm text-gray-600 mb-2 block">确认新密码</label> -->
 				<input
 					type="password"
 					id="confirm-password"
@@ -68,13 +65,13 @@
 			<!-- 密码部分的保存按钮 -->
 			<div class="mt-6">
 				<button
+					type="submit"
 					class="w-full py-3 bg-primary hover:bg-primary-focus text-white rounded-lg font-semibold text-sm transition-colors"
-					@click="validateAndSavePassword"
 				>
 					更新密码
 				</button>
 			</div>
-		</div>
+		</form>
 	</div>
 </template>
 

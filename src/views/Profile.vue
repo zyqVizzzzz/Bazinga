@@ -192,7 +192,7 @@
 						</button>
 					</div>
 					<EmailEdit
-						:userEmail="user.email"
+						:userEmail="userEmail || ''"
 						@update:userEmail="(newEmail) => (user.email = newEmail)"
 					/>
 				</div>

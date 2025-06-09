@@ -44,10 +44,8 @@ const setupIntervals = () => {
 };
 
 onMounted(async () => {
-	if (loginStore.userInfo?._id) {
-		await catStore.initCat(loginStore.userInfo._id);
-		setupIntervals();
-	}
+	await catStore.initCat();
+	setupIntervals();
 });
 
 onUnmounted(() => {

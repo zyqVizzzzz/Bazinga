@@ -36,7 +36,7 @@ export const useCatStore = defineStore("cat", {
 		isAnimating: -1,
 		showExplanation: false,
 		quirks: [],
-		lifeStatus: "alive", // 'budding', 'alive', 'dead'
+		lifeStatus: "alive", // 'alive', 'dead'
 		activationDate: null,
 		deathDate: null,
 		hasCat: false, // 添加是否有cat的状态
@@ -62,17 +62,14 @@ export const useCatStore = defineStore("cat", {
 			);
 		},
 		canInteract: (state) => {
-			return state.lifeStatus === "alive" || state.lifeStatus === "budding";
+			return state.lifeStatus === "alive";
 		},
 
-		isBudding: (state) => state.lifeStatus === "budding",
 		isAlive: (state) => state.lifeStatus === "alive",
 		isDead: (state) => state.lifeStatus === "dead",
 
 		statusText: (state) => {
 			switch (state.lifeStatus) {
-				case "budding":
-					return "萌芽中";
 				case "alive":
 					return "健康";
 				case "dead":
@@ -85,13 +82,13 @@ export const useCatStore = defineStore("cat", {
 
 	actions: {
 		// 初始化猫咪数据
-		async initCat(userId) {
+		async initCat() {
 			try {
-				const cat = await catService.getUserCat(userId);
+				const cat = await catService.getUserCat();
 				if (cat) {
 					this.catId = cat._id;
 					this.catState = cat;
-					this.lifeStatus = cat.lifeStatus || "budding";
+					this.lifeStatus = cat.lifeStatus || "alive";
 					this.activationDate = cat.activationDate;
 					this.deathDate = cat.deathDate;
 					this.hasCat = true;
@@ -123,7 +120,7 @@ export const useCatStore = defineStore("cat", {
 
 				this.catId = cat._id;
 				this.catState = cat;
-				this.lifeStatus = cat.lifeStatus || "budding";
+				this.lifeStatus = cat.lifeStatus || "alive";
 				this.hasCat = true;
 				this.showCreateCatDialog = false;
 				this.isCreating = false;
@@ -442,6 +439,42 @@ export const useCatStore = defineStore("cat", {
 
 		selectAnswer(index) {
 			this.selectedAnswer = index;
+		},
+
+		// 在 actions 中添加重置方法
+		resetStore() {
+			this.catId = null;
+			this.catState = {
+				shortTermStates: {
+					food: 50,
+					happiness: 50,
+					cleanliness: 50,
+					energy: 50,
+					health: 50,
+				},
+				currentHealthPoints: 100,
+				maxHealthPoints: 100,
+				currentHealthiness: 100,
+				aiContext: {
+					lastSaid: "喵～",
+					moodKeywords: [],
+				},
+			};
+			this.currentActiveIconIndex = -1;
+			this.isSubMenu = false;
+			this.isAnswering = false;
+			this.currentParentType = "";
+			this.currentSubType = "";
+			this.currentQuestion = null;
+			this.selectedAnswer = -1;
+			this.isAnimating = -1;
+			this.showExplanation = false;
+			this.quirks = [];
+			this.lifeStatus = "alive";
+			this.activationDate = null;
+			this.deathDate = null;
+			this.hasCat = false;
+			this.showCreateCatDialog = false;
 		},
 	},
 });

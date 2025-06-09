@@ -46,11 +46,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.app-container {
-	/* min-height: 100vh; */
-	/* background: linear-gradient(135deg, #f5f5f5, #e0e0e0); */
-}
-
 .content {
 	flex: 1 0 auto;
 	min-height: 600px;
@@ -58,7 +53,6 @@ onMounted(async () => {
 	padding: 0 1rem;
 }
 
-/* 移动端移除 padding */
 .mobile-content {
 	padding: 0 !important;
 }

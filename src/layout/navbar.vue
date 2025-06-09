@@ -23,7 +23,7 @@
 					/>
 					<!-- 移动端显示 -->
 					<img
-						src="../assets/logo-sm.png"
+						src="../assets/molidoki.png"
 						alt="Bazinga Logo"
 						class="logo-image block sm:hidden"
 					/>
@@ -206,11 +206,19 @@ const goToLink = (path) => {
 };
 
 // 登出逻辑
-const logout = () => {
+const logout = async () => {
 	localStorage.removeItem("token");
 	setLoginState(false);
 	setUserInfo({});
 	username.value = "";
+
+	try {
+		const { useCatStore } = await import("@/mochi/store/catStore");
+		const catStore = useCatStore();
+		catStore.$reset();
+	} catch (error) {
+		console.warn("Failed to reset catStore:", error);
+	}
 
 	const currentQuery = { ...route.query };
 	const fullPath =
@@ -266,7 +274,7 @@ watch(
 <style scoped>
 /* 保持原有样式 */
 .logo-image {
-	height: 40px;
+	height: 32px;
 	width: auto;
 	object-fit: contain;
 	transition: all 0.3s ease;
@@ -277,7 +285,7 @@ watch(
 .navbar {
 	flex: 0 1 64px;
 	position: relative;
-	height: 64px;
+	height: 44px;
 	background: white;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	padding-left: 1rem;

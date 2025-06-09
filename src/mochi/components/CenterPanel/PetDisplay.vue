@@ -145,7 +145,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
+import aliveImage from "../../assets/foot.png";
 import deathImage from "../../assets/raw.png";
 import idleImage from "../../assets/idle.webp";
 import eatingImage from "../../assets/food.webp";
@@ -163,6 +164,12 @@ const newCatName = ref("");
 const isCreating = ref(false);
 const selectedDialogButton = ref(0);
 let animationTimer = null;
+
+watch(
+	() => catStore.showCreateCatDialog,
+	(newValue) => {},
+	{ immediate: true }
+);
 
 const handleCreateCat = async () => {
 	isCreating.value = true;

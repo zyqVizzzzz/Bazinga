@@ -2,9 +2,9 @@ import apiClient from "@/api";
 
 export const catService = {
 	// 获取用户的猫猫
-	async getUserCat(userId) {
+	async getUserCat() {
 		try {
-			const response = await apiClient.get(`/cats/user/${userId}`);
+			const response = await apiClient.get(`/cats/user/current`);
 			if (response.data.code === 200) {
 				return response.data.data;
 			} else {
@@ -23,6 +23,7 @@ export const catService = {
 					baseSprite: "default",
 					accessories: [],
 				},
+				lifeStatus: "alive",
 			});
 			if (response.data.code === 200) {
 				return response.data.data;

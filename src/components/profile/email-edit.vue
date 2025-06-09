@@ -82,6 +82,7 @@ const props = defineProps({
 	userEmail: {
 		type: String,
 		required: true,
+		default: "",
 	},
 });
 
